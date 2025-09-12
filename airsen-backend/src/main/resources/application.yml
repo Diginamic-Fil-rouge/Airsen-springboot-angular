@@ -1,0 +1,80 @@
+# Default configuration
+spring:
+  application:
+    name: airsen-api
+  
+  profiles:
+    active: dev
+  
+  # JPA Configuration
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  # Cache Configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000 # 1 hour
+  
+  # Security Configuration
+  security:
+    jwt:
+      secret: ${JWT_SECRET:default-secret-key-change-in-production}
+      expiration: 86400000 # 24 hours
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# External APIs Configuration
+external:
+  atmo-api:
+    base-url: ${ATMO_API_URL:https://www.atmo-france.org/api}
+    timeout-ms: 10000
+    retry-attempts: 3
+  
+  open-meteo:
+    base-url: ${OPEN_METEO_URL:https://api.open-meteo.com/v1}
+    timeout-ms: 5000
+    retry-attempts: 3
+  
+  insee-api:
+    base-url: ${INSEE_API_URL:https://geo.api.gouv.fr}
+    timeout-ms: 5000
+    retry-attempts: 3
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method

@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: airsen-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - airsen-network
+
+  # Backend - Spring Boot Application
+  airsen-backend:
+    build:
+      context: ./airsen-backend
+      dockerfile: Dockerfile
+    container_name: airsen-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      ATMO_API_URL: ${ATMO_API_URL}
+      OPEN_METEO_URL: ${OPEN_METEO_URL}
+      INSEE_API_URL: ${INSEE_API_URL}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    networks:
+      - airsen-network
+    profiles:
+      - backend
+      - full-stack
+
+  # Frontend - Angular Application
+  airsen-frontend:
+    build:
+      context: ./airsen-frontend
+      dockerfile: Dockerfile
+    container_name: airsen-frontend
+    environment:
+      NODE_ENV: development
+      API_BASE_URL: http://airsen-backend:8080/api/v1
+    ports:
+      - "4200:80"
+    depends_on:
+      - airsen-backend
+    networks:
+      - airsen-network
+    profiles:
+      - frontend
+      - full-stack
+
+  # Development Tools (Optional)
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: airsen-phpmyadmin
+    environment:
+      PMA_HOST: ${DB_HOST}
+      PMA_PORT: ${DB_PORT}
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8081:80"
+    networks:
+      - airsen-network
+    profiles:
+      - development
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: airsen-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8082:8081"
+    depends_on:
+      - redis
+    networks:
+      - airsen-network
+    profiles:
+      - development
+
+volumes:
+  redis_data:
+
+networks:
+  airsen-network:
+    driver: bridge

@@ -1,0 +1,393 @@
+# =============================================================================
+# Airsen Project - GitIgnore Configuration
+# =============================================================================
+
+# =============================================================================
+# PROJECT DOCUMENTATION AND CLAUDE CODE FILES (DO NOT COMMIT)
+# =============================================================================
+
+# Claude Code configuration and documentation
+CLAUDE.md
+claude.md
+
+# Documentation directory (contains sensitive project info and design docs)
+/docs/
+docs/
+
+# Project design and specification files
+*.md
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!LICENSE.md
+
+# Project structure documentation
+spring-boot-project-structure.md
+project-structure.md
+endpoints.md
+api-endpoints.md
+class-diagram.md
+dossier-conception-*.md
+
+# Implementation guides and installation docs
+installation-guide.md
+setup-guide.md
+deployment-guide.md
+
+# Architecture and design documents
+architecture/
+design/
+specifications/
+
+# OpenAPI specifications (until finalized)
+openapi-spec.yaml
+swagger-spec.yaml
+api-spec.json
+
+# =============================================================================
+# SENSITIVE CONFIGURATION FILES
+# =============================================================================
+
+# Environment variables and secrets
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Configuration files with sensitive data
+config/secrets/
+secrets/
+certificates/
+*.key
+*.pem
+*.p12
+*.jks
+
+# Database configuration files
+database.yml
+db-config.properties
+
+# =============================================================================
+# JAVA / SPRING BOOT (BACKEND)
+# =============================================================================
+
+# Maven
+**/target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# Spring Boot
+application-*.properties
+application-*.yml
+!application.properties
+!application.yml
+!application-example.properties
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# IDE - Eclipse
+.metadata
+.classpath
+.project
+.settings/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# IDE - Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IDE - NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# =============================================================================
+# NODE.JS / ANGULAR (FRONTEND)
+# =============================================================================
+
+# Node modules
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Angular
+**/dist/
+/tmp/
+/out-tsc/
+.angular/
+
+# Package managers
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# =============================================================================
+# DATABASE
+# =============================================================================
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+*.mdb
+
+# MySQL
+mysql-data/
+
+# PostgreSQL
+postgres-data/
+
+# MongoDB
+mongo-data/
+
+# Redis dump files
+*.rdb
+redis-data/
+
+# Database migration files (development)
+**/migrations/dev/
+**/seeds/dev/
+
+# =============================================================================
+# DOCKER
+# =============================================================================
+
+# Docker volumes and data
+docker-data/
+**/data/
+volumes/
+
+# Docker Compose override files
+docker-compose.override.yml
+docker-compose.dev.yml
+docker-compose.prod.yml
+docker-compose.local.yml
+
+# Docker build context
+.dockerignore
+
+# =============================================================================
+# OPERATING SYSTEM
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# =============================================================================
+# LOGS AND TEMPORARY FILES
+# =============================================================================
+
+# Application logs
+logs/
+*.log
+log/
+**/*.log
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Cache directories
+.cache/
+**/cache/
+.sass-cache/
+
+# =============================================================================
+# DEVELOPMENT AND TESTING
+# =============================================================================
+
+# Test coverage reports
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# JaCoCo (Java Code Coverage)
+**/target/site/jacoco/
+
+# SonarQube
+.sonar/
+.scannerwork/
+
+# Development databases
+dev.db
+test.db
+local.db
+
+# =============================================================================
+# BUILD TOOLS AND CI/CD
+# =============================================================================
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.properties
+
+# Gradle wrapper
+gradle/wrapper/gradle-wrapper.properties
+
+# Build artifacts
+build-artifacts/
+artifacts/
+
+# CI/CD temporary files
+.github/workflows/temp/
+.gitlab-ci-temp/
+
+# =============================================================================
+# EXTERNAL APIS AND THIRD PARTY
+# =============================================================================
+
+# External API response cache files
+**/api-cache/
+external-api-responses/
+
+# Third-party libraries (development)
+vendor/
+lib/external/
+
+# =============================================================================
+# BACKUP AND ARCHIVE FILES
+# =============================================================================
+
+# Backup files
+*.backup
+*.bak
+*.old
+*~
+
+# Archive files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
+
+# =============================================================================
+# REPOMIX OUTPUT (IF USED)
+# =============================================================================
+
+# Repomix output files
+repomix-output.txt
+repomix-output.md
+codebase-summary.*
+repo-summary.*
+
+# =============================================================================
+# CUSTOM PROJECT EXCLUSIONS
+# =============================================================================
+
+# Project-specific temporary directories
+airsen-temp/
+temp-exports/
+generated-files/
+
+# Development scripts
+dev-scripts/
+local-scripts/
+setup-*.sh
+cleanup-*.sh
+
+# Testing data
+test-data/
+mock-data/
+sample-exports/
+
+# Performance and profiling
+*.prof
+*.trace
+profiling-results/
+
+# =============================================================================
+# END OF GITIGNORE
+# =============================================================================
