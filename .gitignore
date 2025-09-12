@@ -9,6 +9,12 @@
 # Claude Code configuration and documentation
 CLAUDE.md
 claude.md
+.claude/
+
+# Specify framework files and specifications (DO NOT COMMIT)
+.specify/
+specs/
+specifications/
 
 # Documentation directory (contains sensitive project info and design docs)
 /docs/
@@ -20,6 +26,17 @@ docs/
 !CHANGELOG.md
 !CONTRIBUTING.md
 !LICENSE.md
+
+# Specification and planning artifacts
+plan.md
+tasks.md
+research.md
+data-model.md
+spec.md
+quickstart.md
+*-template.md
+contracts/
+implementation-plan.md
 
 # Project structure documentation
 spring-boot-project-structure.md
