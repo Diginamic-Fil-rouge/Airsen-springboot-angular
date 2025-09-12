@@ -6,7 +6,7 @@ services:
     image: redis:7-alpine
     container_name: airsen-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -33,7 +33,7 @@ services:
       OPEN_METEO_URL: ${OPEN_METEO_URL}
       INSEE_API_URL: ${INSEE_API_URL}
     ports:
-      - "8080:8080"
+      - '8080:8080'
     depends_on:
       - redis
     networks:
@@ -52,7 +52,7 @@ services:
       NODE_ENV: development
       API_BASE_URL: http://airsen-backend:8080/api/v1
     ports:
-      - "4200:80"
+      - '4200:80'
     depends_on:
       - airsen-backend
     networks:
@@ -62,20 +62,6 @@ services:
       - full-stack
 
   # Development Tools (Optional)
-  phpmyadmin:
-    image: phpmyadmin:5.2
-    container_name: airsen-phpmyadmin
-    environment:
-      PMA_HOST: ${DB_HOST}
-      PMA_PORT: ${DB_PORT}
-      PMA_USER: ${DB_USERNAME}
-      PMA_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "8081:80"
-    networks:
-      - airsen-network
-    profiles:
-      - development
 
   redis-commander:
     image: rediscommander/redis-commander:latest
@@ -83,7 +69,7 @@ services:
     environment:
       REDIS_HOSTS: local:redis:6379
     ports:
-      - "8082:8081"
+      - '8082:8081'
     depends_on:
       - redis
     networks:
