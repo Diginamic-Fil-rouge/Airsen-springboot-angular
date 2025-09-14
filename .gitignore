@@ -13,7 +13,6 @@ claude.md
 
 # Specify framework files and specifications (DO NOT COMMIT)
 .specify/
-specs/
 specifications/
 
 # Documentation directory (contains sensitive project info and design docs)
@@ -28,11 +27,7 @@ docs/
 !LICENSE.md
 
 # Specification and planning artifacts
-plan.md
-tasks.md
-research.md
-data-model.md
-spec.md
+
 quickstart.md
 *-template.md
 contracts/
