@@ -7,6 +7,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entité représentant un utilisateur de l'application Airsen.
@@ -89,6 +91,11 @@ public class User {
      */
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
+
+    @ManyToMany
+    @JoinTable(name = "user_favorite", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "commune_id"))
+    private Set<Commune> favoris = new HashSet<>();
+
 
     /**
      * Constructeur par défaut.

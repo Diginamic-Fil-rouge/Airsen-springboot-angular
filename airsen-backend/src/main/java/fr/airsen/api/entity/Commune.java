@@ -2,6 +2,9 @@ package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 public class Commune {
 
@@ -15,6 +18,11 @@ public class Commune {
     private String regionCode;
 
     private long population;
+
+    @ManyToMany
+    @JoinTable(name = "user_favorite", joinColumns = @JoinColumn(name = "commune_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> favoris = new HashSet<>();
+
 
     @ManyToOne
     @JoinColumn(name = "department_id")
