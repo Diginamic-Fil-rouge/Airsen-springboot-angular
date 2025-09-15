@@ -66,10 +66,10 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         
-        <!-- Database -->
+        <!-- Database - MariaDB -->
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
             <scope>runtime</scope>
         </dependency>
         
@@ -148,7 +148,7 @@
         
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>mysql</artifactId>
+            <artifactId>mariadb</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
