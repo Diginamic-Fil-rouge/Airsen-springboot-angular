@@ -59,12 +59,12 @@ public class ForumVote {
         this.thread = thread;
     }
 
-    public boolean isLike() {
-        return like;
+    public VoteType getVoteType() {
+        return voteType;
     }
 
-    public void setLike(boolean like) {
-        this.like = like;
+    public void setVoteType(VoteType voteType) {
+        this.voteType = voteType;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ForumVote {
                 "id=" + id +
                 ", user=" + user +
                 ", thread=" + thread +
-                ", like=" + like +
+                ", voteType=" + voteType +
                 '}';
     }
 
