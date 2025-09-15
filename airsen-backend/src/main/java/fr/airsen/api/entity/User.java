@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Entité représentant un utilisateur de l'application Airsen.
@@ -89,6 +90,15 @@ public class User {
      */
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
+
+    @OneToMany(mappedBy = "author")
+    private List<ForumThread> threads;
+
+    @OneToMany(mappedBy = "author")
+    private List<ForumMessage> messages;
+
+    @OneToMany(mappedBy = "user")
+    private List<ForumVote> votes;
 
     /**
      * Constructeur par défaut.
@@ -344,5 +354,29 @@ public class User {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public List<ForumThread> getThreads() {
+        return threads;
+    }
+
+    public void setThreads(List<ForumThread> threads) {
+        this.threads = threads;
+    }
+
+    public List<ForumMessage> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<ForumMessage> messages) {
+        this.messages = messages;
+    }
+
+    public List<ForumVote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(List<ForumVote> votes) {
+        this.votes = votes;
     }
 }

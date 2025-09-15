@@ -23,6 +23,7 @@ public class ForumVote {
     @JoinColumn(name = "thread_id", nullable = false)
     private ForumThread thread;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "vote_type", nullable = false)
     private VoteType voteType;
 
