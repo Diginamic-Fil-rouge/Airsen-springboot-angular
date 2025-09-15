@@ -1,5 +1,6 @@
 package fr.airsen.api.repository;
 
+import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.ForumVote;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,5 +12,5 @@ public interface ForumVoteRepository extends JpaRepository<ForumVote, Integer> {
 
     ForumVote findById(int id);
 
-    List<ForumVote> findByThread(int threadId);
+    List<ForumVote> findByThread(ForumThread thread);
 }

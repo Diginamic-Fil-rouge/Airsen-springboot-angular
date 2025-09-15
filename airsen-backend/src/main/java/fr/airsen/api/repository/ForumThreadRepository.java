@@ -1,6 +1,8 @@
 package fr.airsen.api.repository;
 
+import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
+import fr.airsen.api.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,7 +13,7 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Intege
 
     ForumThread findById(int id);
 
-    List<ForumThread> findByCategory(int categoryId);
+    List<ForumThread> findByCategory(ForumCategory category);
 
-    List<ForumThread> findByAuthor(int authorId);
+    List<ForumThread> findByAuthor(User author);
 }
