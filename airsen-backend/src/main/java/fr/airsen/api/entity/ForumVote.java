@@ -1,6 +1,6 @@
 package fr.airsen.api.entity;
 
-import fr.airsen.api.enums.VoteType;
+import fr.airsen.api.entity.enums.VoteType;
 import jakarta.persistence.*;
 
 import java.util.Objects;

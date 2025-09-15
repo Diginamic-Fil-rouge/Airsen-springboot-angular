@@ -1,4 +1,4 @@
-package fr.airsen.api.enums;
+package fr.airsen.api.entity.enums;
 
 public enum VoteType {
     LIKE,
