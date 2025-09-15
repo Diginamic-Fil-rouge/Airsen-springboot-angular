@@ -1,6 +1,39 @@
 version: '3.8'
 
 services:
+  # MariaDB Database - Local Development
+  mariadb:
+    image: mariadb:11.6
+    container_name: airsen-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-airsen_dev}
+      MYSQL_USER: ${DB_USERNAME:-airsen_dev}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-dev_password}
+      MARIADB_CHARACTER_SET_SERVER: utf8mb4
+      MARIADB_COLLATE_SERVER: utf8mb4_unicode_ci
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./docs/database/init:/docker-entrypoint-initdb.d:ro
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=200
+      --innodb-buffer-pool-size=256M
+    networks:
+      - airsen-network
+    profiles:
+      - database
+      - local-dev
+      - full-stack
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Redis Cache
   redis:
     image: redis:7-alpine
@@ -20,7 +53,7 @@ services:
       dockerfile: Dockerfile
     container_name: airsen-backend
     environment:
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_NAME: ${DB_NAME}
@@ -36,6 +69,7 @@ services:
       - '8080:8080'
     depends_on:
       - redis
+      - mariadb
     networks:
       - airsen-network
     profiles:
@@ -63,6 +97,25 @@ services:
 
   # Development Tools (Optional)
 
+  # phpMyAdmin for MariaDB Management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: airsen-phpmyadmin
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - '8081:80'
+    depends_on:
+      - mariadb
+    networks:
+      - airsen-network
+    profiles:
+      - development
+
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: airsen-redis-commander
@@ -78,6 +131,7 @@ services:
       - development
 
 volumes:
+  mariadb_data:
   redis_data:
 
 networks:

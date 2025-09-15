@@ -193,7 +193,8 @@ coverage/
 *.db
 *.mdb
 
-# MySQL
+# MariaDB & MySQL
+mariadb-data/
 mysql-data/
 
 # PostgreSQL
