@@ -1,5 +1,6 @@
 package fr.airsen.api.entity;
 
+import fr.airsen.api.enums.VoteType;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -15,12 +16,15 @@ public class ForumVote {
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
+    @JoinColumn(name = "thread_id", nullable = false)
     private ForumThread thread;
 
-    private boolean like;
+    @Column(name = "vote_type", nullable = false)
+    private VoteType voteType;
 
     public ForumVote() {
     }
