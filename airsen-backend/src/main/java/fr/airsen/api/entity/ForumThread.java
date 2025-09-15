@@ -1,0 +1,191 @@
+package fr.airsen.api.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * This entity represents a thread in the forum. It is linked to a {@link ForumCategory } entity.
+ */
+@Entity
+public class ForumThread {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, length = 10)
+    private Integer id;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private ForumCategory category;
+
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ForumMessage> messages;
+
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ForumVote> votes;
+
+    @Column(name = "title", nullable = false)
+    @Size(min = 1, max = 255, message = "Title must not be empty and max 255 characters long")
+    private String title;
+
+    @Column(name = "content", nullable = false, length = 65535)
+    @Min(value = 1, message = "Content must not be empty")
+    private String content;
+
+    @Column(name = "created_date", nullable = false)
+    private LocalDateTime createdDate;
+
+    @Column(name = "last_message_date", nullable = false)
+    private LocalDateTime lastMessageDate;
+
+    @Column(name = "view_count", nullable = false, length = 10)
+    private Integer viewCount;
+
+    private boolean pinned;
+
+    private boolean closed;
+
+    @Column(name = "like_count", nullable = false, length = 10)
+    private Integer likeCount;
+
+    public ForumThread() {
+    }
+
+    public ForumThread(User author, ForumCategory category, String title, String content, LocalDateTime createdDate, LocalDateTime lastMessageDate, Integer viewCount, boolean pinned, boolean closed, Integer likeCount) {
+        this.author = author;
+        this.category = category;
+        this.title = title;
+        this.content = content;
+        this.createdDate = createdDate;
+        this.lastMessageDate = lastMessageDate;
+        this.viewCount = viewCount;
+        this.pinned = pinned;
+        this.closed = closed;
+        this.likeCount = likeCount;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public ForumCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(ForumCategory category) {
+        this.category = category;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public LocalDateTime getLastMessageDate() {
+        return lastMessageDate;
+    }
+
+    public void setLastMessageDate(LocalDateTime lastMessageDate) {
+        this.lastMessageDate = lastMessageDate;
+    }
+
+    public Integer getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(Integer viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
+    }
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void setClosed(boolean closed) {
+        this.closed = closed;
+    }
+
+    public Integer getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(Integer likeCount) {
+        this.likeCount = likeCount;
+    }
+
+    @Override
+    public String toString() {
+        return "ForumThread{" +
+                "id=" + id +
+                ", author=" + author +
+                ", category=" + category +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", createdDate=" + createdDate +
+                ", lastMessageDate=" + lastMessageDate +
+                ", viewCount=" + viewCount +
+                ", pinned=" + pinned +
+                ", closed=" + closed +
+                ", likeCount=" + likeCount +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ForumThread that)) return false;
+        return Objects.equals(author, that.author) && Objects.equals(category, that.category) && Objects.equals(title, that.title) && Objects.equals(createdDate, that.createdDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(author, category, title, createdDate);
+    }
+}
