@@ -8,6 +8,9 @@ import jakarta.persistence.Id;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/**
+ * Entity representing the weather data for a given commune.
+ */
 @Entity
 public class WeatherData {
 
