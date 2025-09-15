@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * This entity represents a message in the forum. It is linked to a {@link ForumThread } entity.
+ */
 @Entity
 public class ForumMessage {
 

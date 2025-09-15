@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 
 import java.util.Objects;
 
+/**
+ * This entity represents a vote in the forum. It is linked to a {@link User } entity and a {@link ForumThread } entity.
+ */
 @Entity
 public class ForumVote {
 

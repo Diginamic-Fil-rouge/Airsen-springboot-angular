@@ -7,6 +7,9 @@ import jakarta.persistence.Id;
 
 import java.util.Objects;
 
+/**
+ * This entity represents a category in the forum.
+ */
 @Entity
 public class ForumCategory {
 
