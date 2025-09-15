@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * 
  * Cette application Spring Boot fournit une API REST pour consulter les données
  * environnementales (qualité de l'air, météo) des communes françaises.
- * 
- * @author Airsen Team
- * @version 1.0.0
- * @since 2024-09-12
+ *
  */
 @SpringBootApplication
 @EnableCaching
