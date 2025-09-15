@@ -1,10 +1,10 @@
 package fr.airsen.api.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,13 +15,22 @@ public class ForumCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, length = 10)
     private Integer id;
 
+    @Column(name = "name", nullable = false, length = 50)
+    @Min(value = 3, message = "Name must be at least 3 characters long")
     private String name;
 
+    @Column(name = "description", nullable = false, length = 255)
     private String description;
 
+    @Column(name = "color", nullable = false, length = 7)
+    @Size(min = 7, max = 7, message = "Color must be a valid hex code")
     private String color;
+
+    @OneToMany(mappedBy = "category")
+    private List<ForumThread> threads;
 
     public ForumCategory() {
     }
