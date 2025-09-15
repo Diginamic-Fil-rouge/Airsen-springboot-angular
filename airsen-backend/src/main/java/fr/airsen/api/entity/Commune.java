@@ -19,6 +19,12 @@ public class Commune {
 
     private long population;
 
+    @OneToMany(mappedBy = "commune")
+    private Set<WeatherData> weatherData = new HashSet<>();
+
+    @OneToMany(mappedBy = "commune")
+    private Set<AirQuality> airQuality = new HashSet<>();
+
     @ManyToMany
     @JoinTable(name = "user_favorite", joinColumns = @JoinColumn(name = "commune_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> favoris = new HashSet<>();
@@ -59,4 +65,32 @@ public class Commune {
 
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Set<WeatherData> getWeatherData() {
+        return weatherData;
+    }
+
+    public void setWeatherData(Set<WeatherData> weatherData) {
+        this.weatherData = weatherData;
+    }
+
+    public Set<AirQuality> getAirQuality() {
+        return airQuality;
+    }
+
+    public void setAirQuality(Set<AirQuality> airQuality) {
+        this.airQuality = airQuality;
+    }
+
+    public Set<User> getFavoris() {
+        return favoris;
+    }
+
+    public void setFavoris(Set<User> favoris) {
+        this.favoris = favoris;
+    }
 }

@@ -1,14 +1,14 @@
 package fr.airsen.api.repository;
 
-import fr.airsen.api.entity.AirQuality;
+import fr.airsen.api.entity.WeatherData;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface AirQualityRepository extends JpaRepository<AirQuality, Integer> {
+public interface AirQualityRepository extends JpaRepository<WeatherData, Integer> {
 
-    List<AirQuality> findAll();
+    List<WeatherData> findAll();
 
-    AirQuality findById(int id);
+    WeatherData findById(int id);
 
 }

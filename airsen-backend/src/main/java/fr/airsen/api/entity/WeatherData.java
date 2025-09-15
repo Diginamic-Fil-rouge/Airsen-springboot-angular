@@ -1,9 +1,7 @@
 package fr.airsen.api.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -18,42 +16,45 @@ public class WeatherData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @ManyToOne
+    @JoinColumn(name = "commune_id")
     private Commune commune;
 
+    @Column(name = "measurement_date")
     private LocalDate measurementDate;
 
-    private Integer atmIndex;
+    @Column(name = "temperature")
+    @Size(min = -50, max = 60, message = "The temperature must be between -50 and 60")
+    private double temperature;
 
-    private String atmoQual;
+    @Column(name = "humidity")
+    @Size(min = 0, max = 100, message = "The humidity must be between 0 and 100")
+    private double humidity;
 
-    private String atmoColor;
+    @Column(name = "wind_speed")
+    private double windSpeed;
 
-    private double NO2;
+    @Column(name = "wind_direction")
+    @Size(min = 0, max = 360, message = "The wind direction must be between 0 and 360")
+    private double windDirection;
 
-    private double O3;
+    @Column(name = "weather_code")
+    private Integer weatherCode;
 
-    private double Pm10;
-
-    private Integer Pm25;
-
-    private double SO2;
-
+    @Column(name = "created_at")
     private LocalDate createdAt;
 
     public WeatherData() {
     }
 
-    public WeatherData(Commune commune, LocalDate measurementDate, Integer atmIndex, String atmoQual, String atmoColor, double NO2, double o3, double pm10, Integer pm25, double SO2, LocalDate createdAt) {
+    public WeatherData(Commune commune, LocalDate measurementDate, double temperature, double humidity, double windSpeed, double windDirection, Integer weatherCode, LocalDate createdAt) {
         this.commune = commune;
         this.measurementDate = measurementDate;
-        this.atmIndex = atmIndex;
-        this.atmoQual = atmoQual;
-        this.atmoColor = atmoColor;
-        this.NO2 = NO2;
-        O3 = o3;
-        Pm10 = pm10;
-        Pm25 = pm25;
-        this.SO2 = SO2;
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.windSpeed = windSpeed;
+        this.windDirection = windDirection;
+        this.weatherCode = weatherCode;
         this.createdAt = createdAt;
     }
 
@@ -81,68 +82,44 @@ public class WeatherData {
         this.measurementDate = measurementDate;
     }
 
-    public Integer getAtmIndex() {
-        return atmIndex;
+    public double getTemperature() {
+        return temperature;
     }
 
-    public void setAtmIndex(Integer atmIndex) {
-        this.atmIndex = atmIndex;
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
     }
 
-    public String getAtmoQual() {
-        return atmoQual;
+    public double getHumidity() {
+        return humidity;
     }
 
-    public void setAtmoQual(String atmoQual) {
-        this.atmoQual = atmoQual;
+    public void setHumidity(double humidity) {
+        this.humidity = humidity;
     }
 
-    public String getAtmoColor() {
-        return atmoColor;
+    public double getWindSpeed() {
+        return windSpeed;
     }
 
-    public void setAtmoColor(String atmoColor) {
-        this.atmoColor = atmoColor;
+    public void setWindSpeed(double windSpeed) {
+        this.windSpeed = windSpeed;
     }
 
-    public double getNO2() {
-        return NO2;
+    public double getWindDirection() {
+        return windDirection;
     }
 
-    public void setNO2(double NO2) {
-        this.NO2 = NO2;
+    public void setWindDirection(double windDirection) {
+        this.windDirection = windDirection;
     }
 
-    public double getO3() {
-        return O3;
+    public Integer getWeatherCode() {
+        return weatherCode;
     }
 
-    public void setO3(double o3) {
-        O3 = o3;
-    }
-
-    public double getPm10() {
-        return Pm10;
-    }
-
-    public void setPm10(double pm10) {
-        Pm10 = pm10;
-    }
-
-    public Integer getPm25() {
-        return Pm25;
-    }
-
-    public void setPm25(Integer pm25) {
-        Pm25 = pm25;
-    }
-
-    public double getSO2() {
-        return SO2;
-    }
-
-    public void setSO2(double SO2) {
-        this.SO2 = SO2;
+    public void setWeatherCode(Integer weatherCode) {
+        this.weatherCode = weatherCode;
     }
 
     public LocalDate getCreatedAt() {
@@ -153,20 +130,19 @@ public class WeatherData {
         this.createdAt = createdAt;
     }
 
+
+
     @Override
     public String toString() {
-        return "WeatherData{" +
+        return "AirQuality{" +
                 "id=" + id +
                 ", commune=" + commune +
                 ", measurementDate=" + measurementDate +
-                ", atmIndex=" + atmIndex +
-                ", atmoQual='" + atmoQual + '\'' +
-                ", atmoColor='" + atmoColor + '\'' +
-                ", NO2=" + NO2 +
-                ", O3=" + O3 +
-                ", Pm10=" + Pm10 +
-                ", Pm25=" + Pm25 +
-                ", SO2=" + SO2 +
+                ", temperature=" + temperature +
+                ", humidity=" + humidity +
+                ", windSpeed=" + windSpeed +
+                ", windDirection=" + windDirection +
+                ", weatherCode=" + weatherCode +
                 ", createdAt=" + createdAt +
                 '}';
     }
@@ -174,11 +150,11 @@ public class WeatherData {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof WeatherData that)) return false;
-        return Double.compare(NO2, that.NO2) == 0 && Double.compare(O3, that.O3) == 0 && Double.compare(Pm10, that.Pm10) == 0 && Double.compare(SO2, that.SO2) == 0 && Objects.equals(commune, that.commune) && Objects.equals(measurementDate, that.measurementDate) && Objects.equals(atmIndex, that.atmIndex) && Objects.equals(atmoQual, that.atmoQual) && Objects.equals(atmoColor, that.atmoColor) && Objects.equals(Pm25, that.Pm25);
+        return Double.compare(temperature, that.temperature) == 0 && Double.compare(humidity, that.humidity) == 0 && Double.compare(windSpeed, that.windSpeed) == 0 && Double.compare(windDirection, that.windDirection) == 0 && Objects.equals(commune, that.commune) && Objects.equals(measurementDate, that.measurementDate) && Objects.equals(weatherCode, that.weatherCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(commune, measurementDate, atmIndex, atmoQual, atmoColor, NO2, O3, Pm10, Pm25, SO2);
+        return Objects.hash(commune, measurementDate, temperature, humidity, windSpeed, windDirection, weatherCode);
     }
 }
