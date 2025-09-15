@@ -67,9 +67,11 @@
         </dependency>
         
         <!-- Database - MariaDB -->
+        <!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
+            <version>3.5.6</version>
             <scope>runtime</scope>
         </dependency>
         
