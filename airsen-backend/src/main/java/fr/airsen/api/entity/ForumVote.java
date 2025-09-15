@@ -29,10 +29,10 @@ public class ForumVote {
     public ForumVote() {
     }
 
-    public ForumVote(User user, ForumThread thread, boolean like) {
+    public ForumVote(User user, ForumThread thread, VoteType voteType) {
         this.user = user;
         this.thread = thread;
-        this.like = like;
+        this.voteType = voteType;
     }
 
     public Integer getId() {
