@@ -1,8 +1,11 @@
 package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -13,28 +16,45 @@ public class ForumThread {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, length = 10)
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
     @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
     private ForumCategory category;
 
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ForumMessage> messages;
+
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ForumVote> votes;
+
+    @Column(name = "title", nullable = false)
+    @Size(min = 1, max = 255, message = "Title must not be empty and max 255 characters long")
     private String title;
 
+    @Column(name = "content", nullable = false, length = 65535)
+    @Min(value = 1, message = "Content must not be empty")
     private String content;
 
+    @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
 
+    @Column(name = "last_message_date", nullable = false)
     private LocalDateTime lastMessageDate;
 
+    @Column(name = "view_count", nullable = false, length = 10)
     private Integer viewCount;
 
     private boolean pinned;
 
     private boolean closed;
 
+    @Column(name = "like_count", nullable = false, length = 10)
     private Integer likeCount;
 
     public ForumThread() {

@@ -22,7 +22,7 @@ public class ForumCategory {
     @Min(value = 3, message = "Name must be at least 3 characters long")
     private String name;
 
-    @Column(name = "description", nullable = false, length = 255)
+    @Column(name = "description", nullable = false, length = 65535)
     private String description;
 
     @Column(name = "color", nullable = false, length = 7)

@@ -1,6 +1,7 @@
 package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -13,16 +14,22 @@ public class ForumMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, length = 10)
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
     @ManyToOne
+    @JoinColumn(name = "thread_id", nullable = false)
     private ForumThread thread;
 
+    @Column(name = "content", nullable = false, length = 65535)
+    @Min(value = 1, message = "Content must not be empty")
     private String content;
 
+    @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
 
     public ForumMessage() {
