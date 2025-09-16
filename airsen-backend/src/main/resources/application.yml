@@ -54,7 +54,7 @@ spring:
   # Security Configuration
   security:
     jwt:
-      secret: ${JWT_SECRET:default-secret-key-change-in-production}
+      secret: ${JWT_SECRET}
       expiration: 86400000 # 24 hours
 
 # Server Configuration
@@ -76,17 +76,17 @@ management:
 # External APIs Configuration
 external:
   atmo-api:
-    base-url: ${ATMO_API_URL:https://www.atmo-france.org/api}
+    base-url: ${ATMO_API_URL}
     timeout-ms: 10000
     retry-attempts: 3
   
   open-meteo:
-    base-url: ${OPEN_METEO_URL:https://api.open-meteo.com/v1}
+    base-url: ${OPEN_METEO_URL}
     timeout-ms: 5000
     retry-attempts: 3
   
   insee-api:
-    base-url: ${INSEE_API_URL:https://geo.api.gouv.fr}
+    base-url: ${INSEE_API_URL}
     timeout-ms: 5000
     retry-attempts: 3
 
