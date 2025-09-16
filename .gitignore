@@ -233,6 +233,9 @@ docker-data/
 **/data/
 volumes/
 
+# Maven cache directory (host-mounted)
+docker/maven-cache/
+
 # Docker Compose override files
 docker-compose.override.yml
 docker-compose.dev.yml
