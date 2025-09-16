@@ -35,7 +35,7 @@ USER airsen
 
 # Development server with hot reload
 EXPOSE 8080
-CMD ["mvn", "spring-boot:run"]
+CMD ["mvn","clean", "spring-boot:run"]
 
 # Production stage
 FROM eclipse-temurin:21-jdk-alpine AS production

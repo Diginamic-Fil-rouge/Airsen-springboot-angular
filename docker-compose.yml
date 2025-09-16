@@ -14,7 +14,7 @@ services:
       MARIADB_CHARACTER_SET_SERVER: utf8mb4
       MARIADB_COLLATE_SERVER: utf8mb4_unicode_ci
     ports:
-      - '${DB_PORT}:3306'
+      - '${DB_PORT:-3306}:3306'
     volumes:
       - mariadb_data:/var/lib/mysql
       - ./docs/database/init:/docker-entrypoint-initdb.d:ro
@@ -82,8 +82,8 @@ services:
       target: development
     container_name: airsen-backend
     env_file:
-      - .env
-      - .env.local
+     - .env
+     - .env.local
     environment:
       # Spring profiles
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
@@ -97,7 +97,7 @@ services:
       # JVM options for development
       MAVEN_OPTS: -Xmx512m -XX:MaxMetaspaceSize=128m
     ports:
-      - '${BACKEND_PORT}:8080'
+      - '${BACKEND_PORT:-8080}:8080'
     volumes:
       # Mount source code for hot reload (without :ro flag)
       - ./airsen-backend/src:/app/src
