@@ -97,7 +97,7 @@ services:
       # JVM options for development
       MAVEN_OPTS: -Xmx512m -XX:MaxMetaspaceSize=128m
     ports:
-      - '${BACKEND_PORT}:8080'
+      - '${BACKEND_PORT:-8080}:8080'
     volumes:
       # Mount source code for hot reload (without :ro flag)
       - ./airsen-backend/src:/app/src
