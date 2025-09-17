@@ -3,9 +3,7 @@ services:
   mariadb:
     image: mariadb:11.6
     container_name: airsen-mariadb
-    env_file:
-      - .env
-      - .env.local
+
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -51,9 +49,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: airsen-redis
-    env_file:
-      - .env
-      - .env.local
     ports:
       - '${REDIS_PORT}:6379'
     volumes:
@@ -81,9 +76,6 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: airsen-backend
-    env_file:
-      - .env
-      - .env.local
     environment:
       # Spring profiles
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
@@ -130,9 +122,6 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: airsen-frontend
-    env_file:
-      - .env
-      - .env.local
     environment:
       NODE_ENV: development
       API_BASE_URL: ${API_BASE_URL:-http://localhost:8080/api/v1}

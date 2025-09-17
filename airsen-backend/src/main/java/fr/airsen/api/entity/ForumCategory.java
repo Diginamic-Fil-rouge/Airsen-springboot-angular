@@ -11,6 +11,7 @@ import java.util.Objects;
  * This entity represents a category in the forum.
  */
 @Entity
+@Table(name = "forum_categories")
 public class ForumCategory {
 
     @Id
