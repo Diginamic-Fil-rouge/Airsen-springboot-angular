@@ -97,6 +97,12 @@ public class Notification {
     private LocalDateTime createdDate;
 
     /**
+     * Date and time when this notification was sent (if successful).
+     */
+    @Column(name = "sent_date")
+    private LocalDateTime sentDate;
+
+    /**
      * Error message if delivery failed.
      */
     @Column(name = "error_message", columnDefinition = "TEXT")
@@ -217,6 +223,14 @@ public class Notification {
         this.createdDate = createdDate;
     }
 
+    public LocalDateTime getSentDate() {
+        return sentDate;
+    }
+
+    public void setSentDate(LocalDateTime sentDate) {
+        this.sentDate = sentDate;
+    }
+
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -232,6 +246,7 @@ public class Notification {
      */
     public void markAsSent() {
         this.sendStatus = true;
+        this.sentDate = LocalDateTime.now();
         this.errorMessage = null;
     }
 
@@ -243,6 +258,7 @@ public class Notification {
     public void markAsFailed(String errorMessage) {
         this.sendStatus = false;
         this.errorMessage = errorMessage;
+        this.sentDate = null;
     }
 
     /**
