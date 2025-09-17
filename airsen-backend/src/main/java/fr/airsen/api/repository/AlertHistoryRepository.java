@@ -53,6 +53,22 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
     Page<AlertHistory> findByStatus(AlertStatus status, Pageable pageable);
 
     /**
+     * Finds failed alert deliveries for retry processing.
+     * 
+     * @return list of failed alert deliveries
+     */
+    @Query("SELECT ah FROM AlertHistory ah WHERE ah.status = 'FAILED' ORDER BY ah.sendDate DESC")
+    List<AlertHistory> findFailedDeliveries();
+
+    /**
+     * Finds pending alert deliveries for processing.
+     * 
+     * @return list of pending alert deliveries
+     */
+    @Query("SELECT ah FROM AlertHistory ah WHERE ah.status = 'PENDING' ORDER BY ah.sendDate ASC")
+    List<AlertHistory> findPendingDeliveries();
+
+    /**
      * Finds alert history within a date range.
      * 
      * @param startDate start of date range

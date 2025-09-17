@@ -36,6 +36,16 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     Page<Alert> findActiveAlertsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     /**
+     * Finds all alerts (active and inactive) for a specific user.
+     * 
+     * @param userId user identifier
+     * @param pageable pagination parameters
+     * @return page of all alerts for the user
+     */
+    @Query("SELECT a FROM Alert a WHERE a.user.id = :userId ORDER BY a.createdDate DESC")
+    Page<Alert> findAllAlertsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
      * Finds all active alerts for a specific commune and pollutant.
      * Used for threshold checking when new air quality data arrives.
      * 
@@ -94,6 +104,15 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
      */
     @Query("SELECT COUNT(a) FROM Alert a WHERE a.user.id = :userId AND a.active = true")
     long countActiveAlertsByUserId(@Param("userId") Long userId);
+
+    /**
+     * Counts all alerts for a user.
+     * 
+     * @param userId user identifier
+     * @return number of alerts for the user
+     */
+    @Query("SELECT COUNT(a) FROM Alert a WHERE a.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
 
     /**
      * Counts all alerts for a commune.
