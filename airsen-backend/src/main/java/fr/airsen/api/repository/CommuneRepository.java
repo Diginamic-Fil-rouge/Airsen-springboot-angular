@@ -19,7 +19,7 @@ import java.util.Optional;
  * according to Airsens data model specifications.
  */
 @Repository
-public interface CommuneRepository extends JpaRepository<Commune, Long> {
+public interface CommuneRepository extends JpaRepository<Commune, Integer> {
 
     /**
      * Finds commune by INSEE code.
@@ -47,17 +47,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      * @return page of communes in the department
      */
     @Query("SELECT c FROM Commune c WHERE c.department.id = :departmentId")
-    Page<Commune> findByDepartmentId(@Param("departmentId") Long departmentId, Pageable pageable);
-
-    /**
-     * Finds communes by region (through department relationship).
-     * 
-     * @param regionId region identifier
-     * @param pageable pagination parameters
-     * @return page of communes in the region
-     */
-    @Query("SELECT c FROM Commune c WHERE c.department.region.id = :regionId")
-    Page<Commune> findByRegionId(@Param("regionId") Long regionId, Pageable pageable);
+    Page<Commune> findByDepartmentId(@Param("departmentId") Integer departmentId, Pageable pageable);
 
     /**
      * Searches communes by name or INSEE code.
@@ -98,7 +88,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      * @return number of communes in the department
      */
     @Query("SELECT COUNT(c) FROM Commune c WHERE c.department.id = :departmentId")
-    long countByDepartmentId(@Param("departmentId") Long departmentId);
+    long countByDepartmentId(@Param("departmentId") Integer departmentId);
 
     /**
      * Finds communes that have air quality data.
