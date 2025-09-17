@@ -30,7 +30,13 @@ public class CommuneService {
     }
 
     public CommuneDTO createCommune(CommuneDTO dto) {
-        Commune commune = new Commune(dto.getInseeCode(), dto.getName(), dto.getDepartmentCode(), dto.getRegionCode(), dto.getPopulation(), null);
+        Commune commune = new Commune();
+        commune.setInseeCode(dto.getInseeCode());
+        commune.setName(dto.getName());
+        commune.setDepartmentCode(dto.getDepartmentCode());
+        commune.setRegionCode(dto.getRegionCode());
+        commune.setPopulation(dto.getPopulation());
+
         Commune saved = communeRepository.save(commune);
         return new CommuneDTO(saved.getId(), saved.getInseeCode(), saved.getName(), saved.getDepartmentCode(), saved.getRegionCode(), saved.getPopulation());
     }
