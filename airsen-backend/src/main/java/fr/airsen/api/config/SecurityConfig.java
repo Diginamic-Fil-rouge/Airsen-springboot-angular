@@ -2,9 +2,13 @@ package fr.airsen.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -12,10 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
  * 
  * Cette configuration définit les règles d'accès aux différents endpoints
  * de l'application avec une authentification JWT.
- * 
- * @author Airsen Team
- * @version 1.0.0
- * @since 2024-09-12
  */
 @Configuration
 @EnableWebSecurity
@@ -47,7 +47,7 @@ public class SecurityConfig {
                     "/test/**"
                 ).permitAll()
                 // Endpoints d'authentification publics
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()
                 // Endpoints de données géographiques publics
                 .requestMatchers("/regions/**", "/departments/**", "/communes/**").permitAll()
                 // Endpoints de données environnementales publics
@@ -58,5 +58,30 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .build();
+    }
+
+    /**
+     * Configuration du PasswordEncoder pour le hachage sécurisé des mots de passe.
+     * 
+     * Utilise BCrypt avec une force de 12 pour un bon équilibre entre sécurité
+     * et performance.
+     * 
+     * @return BCryptPasswordEncoder configuré
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+
+    /**
+     * Configuration de l'AuthenticationManager pour l'authentification des utilisateurs.
+     * 
+     * @param authConfig configuration d'authentification Spring Security
+     * @return AuthenticationManager configuré
+     * @throws Exception si une erreur de configuration survient
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 }

@@ -86,6 +86,11 @@ services:
       # Redis configuration
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      # JWT configuration
+      JWT_SECRET: ${JWT_SECRET}
+      # Email configuration
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
       # JVM options for development
       MAVEN_OPTS: -Xmx512m -XX:MaxMetaspaceSize=128m
     ports:
