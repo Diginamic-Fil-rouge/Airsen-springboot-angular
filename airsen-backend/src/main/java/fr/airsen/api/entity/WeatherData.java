@@ -10,6 +10,7 @@ import java.util.Objects;
  * Entity representing the weather data for a given commune.
  */
 @Entity
+@Table(name = "weather_data")
 public class WeatherData {
 
     @Id

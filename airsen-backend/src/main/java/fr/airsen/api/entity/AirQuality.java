@@ -13,6 +13,7 @@ import java.util.Objects;
  * Entity representing the air quality for a given commune.
  */
 @Entity
+@Table(name = "air_quality")
 public class AirQuality {
 
     @Id
