@@ -34,29 +34,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Endpoints publics (pas d'authentification requise)
-                .requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html", 
-                    "/api-docs/**",
-                    "/v3/api-docs/**",
-                    "/actuator/health",
-                    "/test/**"
-                ).permitAll()
-                // Endpoints d'authentification publics
-                .requestMatchers("/auth/**").permitAll()
-                // Endpoints de données géographiques publics
-                .requestMatchers("/regions/**", "/departments/**", "/communes/**").permitAll()
-                // Endpoints de données environnementales publics
-                .requestMatchers("/air-quality/**", "/weather/**").permitAll()
-                // Endpoints forum publics en lecture
-                .requestMatchers("/forum/categories", "/forum/categories/**", "/forum/threads/**").permitAll()
-                // Tous les autres endpoints nécessitent une authentification
-                .anyRequest().authenticated()
-            )
-            .build();
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                )
+                .build();
     }
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        return http
+//            .csrf(csrf -> csrf.disable())
+//            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//            .authorizeHttpRequests(auth -> auth
+//                // Endpoints publics (pas d'authentification requise)
+//                .requestMatchers(
+//                    "/swagger-ui/**",
+//                    "/swagger-ui.html",
+//                    "/api-docs/**",
+//                    "/v3/api-docs/**",
+//                    "/actuator/health",
+//                    "/test/**"
+//                ).permitAll()
+//                // Endpoints d'authentification publics
+//                .requestMatchers("/auth/**").permitAll()
+//                // Endpoints de données géographiques publics
+//                .requestMatchers("/api/v1/regions","/api/v1/regions/**", "/api/v1/departments/**", "/api/v1/communes/**").permitAll()
+//                // Endpoints de données environnementales publics
+//                .requestMatchers("/air-quality/**", "/weather/**").permitAll()
+//                // Endpoints forum publics en lecture
+//                .requestMatchers("/forum/categories", "/forum/categories/**", "/forum/threads/**").permitAll()
+//                // Tous les autres endpoints nécessitent une authentification
+//                .anyRequest().authenticated()
+//            )
+//            .build();
+//    }
 }

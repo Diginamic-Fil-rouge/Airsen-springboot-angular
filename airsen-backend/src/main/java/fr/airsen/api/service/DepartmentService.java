@@ -3,6 +3,8 @@ package fr.airsen.api.service;
 import fr.airsen.api.dto.DepartmentDTO;
 import fr.airsen.api.entity.Department;
 import fr.airsen.api.repository.DepartmentRepository;
+import fr.airsen.api.entity.Region;
+import fr.airsen.api.repository.RegionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +14,12 @@ import java.util.stream.Collectors;
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final RegionRepository regionRepository;
 
-    public DepartmentService(DepartmentRepository departmentRepository) {
+    public DepartmentService(DepartmentRepository departmentRepository, RegionRepository regionRepository ) {
         this.departmentRepository = departmentRepository;
+        this.regionRepository = regionRepository;
+
     }
 
     public List<DepartmentDTO> getAllDepartments() {
@@ -30,7 +35,10 @@ public class DepartmentService {
     }
 
     public DepartmentDTO createDepartment(DepartmentDTO dto) {
-        Department department = new Department(dto.getName(), dto.getDepartmentCode(), dto.getRegionCode(), null);
+        Region region = regionRepository.findByRegionCode(dto.getRegionCode())
+                .orElseThrow(() -> new RuntimeException("Region not found"));
+
+        Department department = new Department(dto.getName(), dto.getDepartmentCode(), dto.getRegionCode(), region);
         Department saved = departmentRepository.save(department);
         return new DepartmentDTO(saved.getId(), saved.getName(), saved.getDepartmentCode(), saved.getRegionCode());
     }

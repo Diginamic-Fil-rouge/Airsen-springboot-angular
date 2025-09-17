@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/communes")
+@RequestMapping("/communes")
 public class CommuneController {
 
     private final CommuneService communeService;
