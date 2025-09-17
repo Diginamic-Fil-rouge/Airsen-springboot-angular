@@ -62,6 +62,12 @@ public class AirQuality {
     @PastOrPresent(message = "The created at date must be in the past or present")
     private LocalDate createdAt;
 
+    /**
+     * Alert histories triggered by this air quality measurement.
+     */
+    @OneToMany(mappedBy = "airQuality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<AlertHistory> alertHistories;
+
     public AirQuality() {
     }
 
