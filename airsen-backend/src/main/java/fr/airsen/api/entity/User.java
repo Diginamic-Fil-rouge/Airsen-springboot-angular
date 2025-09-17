@@ -108,6 +108,24 @@ public class User {
     private List<ForumVote> votes;
 
     /**
+     * Air quality alerts created by this user.
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Alert> alerts;
+
+    /**
+     * Notifications sent by this user.
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notification> sentNotifications;
+
+    /**
+     * Notifications received by this user.
+     */
+    @OneToMany(mappedBy = "userReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notification> receivedNotifications;
+
+    /**
      * Constructeur par défaut.
      */
     public User() {

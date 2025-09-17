@@ -62,6 +62,12 @@ public class Commune {
     @ManyToMany(mappedBy = "favoris", fetch = FetchType.LAZY)
     private Set<User> favoriteUsers = new HashSet<>();
 
+    /**
+     * Air quality alerts monitoring this commune.
+     */
+    @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Alert> alerts = new HashSet<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     @NotNull(message = "Commune must belong to a valid department")
