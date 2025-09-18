@@ -32,7 +32,7 @@ import java.util.Optional;
  * Airsens API specification.
  */
 @RestController
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("/notifications")
 @Tag(name = "Notifications", description = "User notification management endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class NotificationController {

@@ -62,7 +62,7 @@ public class AlertProcessingService {
                     airQuality.getCommune().getId(), airQuality.getMeasurementDate());
 
         int alertsTriggered = 0;
-        Long communeId = (long) airQuality.getCommune().getId();
+        Long communeId = airQuality.getCommune().getId();
 
         // Check each pollutant value against alerts
         alertsTriggered += checkPollutantAlerts(communeId, Pollutant.NO2, 

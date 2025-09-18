@@ -65,7 +65,7 @@ public class AlertService {
      * @return created alert
      * @throws IllegalArgumentException if user/commune not found or business rules violated
      */
-    public Alert createAlert(Long userId, Long communeId, Pollutant pollutant, 
+    public Alert createAlert(Long userId, Long communeId, Pollutant pollutant,
                            BigDecimal thresholdValue, NotificationType notificationType) {
         
         // Validate user exists

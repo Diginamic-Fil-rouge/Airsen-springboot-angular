@@ -19,7 +19,7 @@ public class Department {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name = "name", nullable = false, length = 100)
     @NotBlank(message = "Department name must not be empty")
@@ -53,11 +53,11 @@ public class Department {
     }
 
     // Getters & Setters
-    public int getId() { 
+    public Long getId() { 
         return id; 
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

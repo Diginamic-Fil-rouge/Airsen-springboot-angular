@@ -12,24 +12,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Spring Security UserDetailsService implementation for loading user data.
+ * Spring Security UserDetailsService implementation for Airsen application.
  * 
- * This service integrates our application's User entity with Spring Security's
- * authentication framework. It loads user information from the database and
- * adapts it to Spring Security's UserDetails interface through UserPrincipal.
+ * This service integrates the Airsen user management system with Spring Security's
+ * authentication framework. It loads user information from the database during
+ * authentication and converts User entities to UserPrincipal objects for
+ * security context establishment.
  * 
  * Key Responsibilities:
- * - Load user data by username (email) from the database
- * - Convert User entity to UserDetails (via UserPrincipal)
- * - Handle user not found scenarios
- * - Support Spring Security's authentication process
- * - Enable JWT-based stateless authentication
+ * - Load user details by username (email) for authentication
+ * - Convert User entities to Spring Security UserDetails
+ * - Handle user not found scenarios appropriately
+ * - Provide transactional database access for user loading
+ * - Support both login authentication and JWT token validation
  * 
  * Integration Points:
- * - Called by Spring Security during authentication
+ * - Used by Spring Security during form/basic authentication
  * - Used by JwtTokenFilter for token-based authentication
- * - Supports both form-based and JWT authentication flows
- * - Enables role-based authorization across the application
+ * - Used by AuthService for authentication and token refresh
+ * - Integrates with existing UserRepository and User entity
+ * 
+ * Security Considerations:
+ * - Email addresses are normalized to lowercase for consistent lookup
+ * - Proper exception handling for security without information leakage
+ * - Transactional operations ensure data consistency
+ * - Comprehensive logging for security monitoring
  */
 @Service
 @Transactional(readOnly = true)
@@ -41,205 +48,220 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private UserRepository userRepository;
 
     /**
-     * Loads user details by username for Spring Security authentication.
+     * Loads user details by username (email address) for Spring Security authentication.
      * 
-     * This method is called by Spring Security's authentication framework
-     * to retrieve user information during the authentication process.
-     * In our application, the username is the user's email address.
+     * This method is called by Spring Security during authentication to retrieve
+     * user information from the database. It converts the User entity to a
+     * UserPrincipal that implements UserDetails for security framework integration.
      * 
-     * Authentication Flow:
-     * 1. User submits credentials (login form) or JWT token is validated
-     * 2. Spring Security calls this method with the username
-     * 3. We query the database using UserRepository
-     * 4. Convert User entity to UserPrincipal (UserDetails)
-     * 5. Spring Security uses the returned UserDetails for authorization
+     * The method performs the following operations:
+     * 1. Normalize the username (email) to lowercase
+     * 2. Query the database for the user by email
+     * 3. Validate that the user exists and is in a valid state
+     * 4. Convert the User entity to UserPrincipal
+     * 5. Return UserDetails for authentication processing
      * 
-     * @param username the email address of the user to authenticate
-     * @return UserDetails object containing user information and authorities
-     * @throws UsernameNotFoundException if no user found with the given email
-     * @throws IllegalArgumentException if username is null or empty
+     * @param username the username (email address) identifying the user to load
+     * @return UserDetails implementation containing user authentication information
+     * @throws UsernameNotFoundException if the user is not found or invalid
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        logger.debug("Loading user by username: {}", username);
-        
-        // Validate input parameters
         if (username == null || username.trim().isEmpty()) {
             logger.warn("Attempted to load user with null or empty username");
-            throw new IllegalArgumentException("Username cannot be null or empty");
+            throw new UsernameNotFoundException("Username cannot be null or empty");
         }
-        
-        // Normalize username (email) to lowercase for case-insensitive lookup
+
+        // Normalize email to lowercase for consistent lookup
         String normalizedEmail = username.trim().toLowerCase();
         
+        logger.debug("Loading user details for username: {}", normalizedEmail);
+
         try {
-            // Query database for user by email
+            // Find user by email address
             User user = userRepository.findByEmail(normalizedEmail)
-                    .orElseThrow(() -> {
-                        logger.warn("User not found with email: {}", normalizedEmail);
-                        return new UsernameNotFoundException(
-                            "User not found with email: " + normalizedEmail
-                        );
-                    });
-            
-            // Validate user data integrity
-            if (user.getRole() == null) {
-                logger.error("User {} has null role, authentication denied", normalizedEmail);
-                throw new UsernameNotFoundException(
-                    "User account is invalid: missing role information"
-                );
+                .orElseThrow(() -> {
+                    logger.warn("User not found for email: {}", normalizedEmail);
+                    return new UsernameNotFoundException("User not found with email: " + normalizedEmail);
+                });
+
+            // Validate user state
+            if (user.getEmail() == null) {
+                logger.error("User {} has null email address", user.getId());
+                throw new UsernameNotFoundException("User account is in invalid state");
             }
-            
+
+            if (user.getRole() == null) {
+                logger.error("User {} has null role", user.getEmail());
+                throw new UsernameNotFoundException("User account is missing role information");
+            }
+
+            // Additional validation for password (should not be null for authentication)
             if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-                logger.error("User {} has null or empty password, authentication denied", normalizedEmail);
-                throw new UsernameNotFoundException(
-                    "User account is invalid: missing password information"
-                );
+                logger.error("User {} has null or empty password hash", user.getEmail());
+                throw new UsernameNotFoundException("User account is missing authentication credentials");
             }
-            
-            logger.debug("Successfully loaded user: {} with role: {}", 
-                        normalizedEmail, user.getRole());
-            
-            // Create and return UserPrincipal wrapping the User entity
-            return UserPrincipal.create(user);
-            
-        } catch (UsernameNotFoundException ex) {
+
+            // Create UserPrincipal from User entity
+            UserPrincipal userPrincipal = UserPrincipal.create(user);
+
+            logger.debug("Successfully loaded user details for: {} with role: {}", 
+                        user.getEmail(), user.getRole());
+
+            return userPrincipal;
+
+        } catch (UsernameNotFoundException e) {
             // Re-throw UsernameNotFoundException as-is
-            throw ex;
-        } catch (Exception ex) {
-            // Log unexpected database errors
-            logger.error("Unexpected error loading user by username: {}", normalizedEmail, ex);
-            throw new UsernameNotFoundException(
-                "Unable to load user due to system error", ex
-            );
+            throw e;
+        } catch (Exception e) {
+            // Log unexpected errors and convert to security exception
+            logger.error("Unexpected error loading user details for: {} - {}", normalizedEmail, e.getMessage(), e);
+            throw new UsernameNotFoundException("Error loading user account", e);
         }
     }
 
     /**
-     * Loads user details by user ID.
+     * Loads user details by user ID for token refresh and internal operations.
      * 
-     * This method is useful for JWT token authentication where we have
-     * the user ID from the token and need to load the full user details.
-     * This is an extension to the standard UserDetailsService interface.
+     * This method provides an alternative way to load user information using
+     * the user's unique identifier rather than email address. It's primarily
+     * used during JWT token refresh operations where we have the user ID
+     * from the token claims.
      * 
-     * @param userId the unique identifier of the user
-     * @return UserDetails object containing user information and authorities
-     * @throws UsernameNotFoundException if no user found with the given ID
-     * @throws IllegalArgumentException if userId is null
+     * @param userId the unique user identifier
+     * @return UserDetails implementation containing user authentication information
+     * @throws UsernameNotFoundException if the user is not found or invalid
      */
-    @Transactional(readOnly = true)
     public UserDetails loadUserById(Long userId) throws UsernameNotFoundException {
-        logger.debug("Loading user by ID: {}", userId);
-        
-        // Validate input parameters
         if (userId == null) {
-            logger.warn("Attempted to load user with null ID");
-            throw new IllegalArgumentException("User ID cannot be null");
+            logger.warn("Attempted to load user with null user ID");
+            throw new UsernameNotFoundException("User ID cannot be null");
         }
-        
+
+        logger.debug("Loading user details for user ID: {}", userId);
+
         try {
-            // Query database for user by ID
+            // Find user by ID
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> {
-                        logger.warn("User not found with ID: {}", userId);
-                        return new UsernameNotFoundException(
-                            "User not found with ID: " + userId
-                        );
-                    });
-            
-            // Validate user data integrity
-            if (user.getRole() == null) {
-                logger.error("User with ID {} has null role, authentication denied", userId);
-                throw new UsernameNotFoundException(
-                    "User account is invalid: missing role information"
-                );
+                .orElseThrow(() -> {
+                    logger.warn("User not found for ID: {}", userId);
+                    return new UsernameNotFoundException("User not found with ID: " + userId);
+                });
+
+            // Validate user state (same as loadUserByUsername)
+            if (user.getEmail() == null || user.getRole() == null) {
+                logger.error("User {} is in invalid state (missing email or role)", userId);
+                throw new UsernameNotFoundException("User account is in invalid state");
             }
-            
-            logger.debug("Successfully loaded user by ID: {} (email: {}) with role: {}", 
+
+            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                logger.error("User {} has null or empty password hash", user.getEmail());
+                throw new UsernameNotFoundException("User account is missing authentication credentials");
+            }
+
+            // Create UserPrincipal from User entity
+            UserPrincipal userPrincipal = UserPrincipal.create(user);
+
+            logger.debug("Successfully loaded user details for ID: {} (email: {}) with role: {}", 
                         userId, user.getEmail(), user.getRole());
-            
-            // Create and return UserPrincipal wrapping the User entity
-            return UserPrincipal.create(user);
-            
-        } catch (UsernameNotFoundException ex) {
+
+            return userPrincipal;
+
+        } catch (UsernameNotFoundException e) {
             // Re-throw UsernameNotFoundException as-is
-            throw ex;
-        } catch (Exception ex) {
-            // Log unexpected database errors
-            logger.error("Unexpected error loading user by ID: {}", userId, ex);
-            throw new UsernameNotFoundException(
-                "Unable to load user due to system error", ex
-            );
+            throw e;
+        } catch (Exception e) {
+            // Log unexpected errors and convert to security exception
+            logger.error("Unexpected error loading user details for ID: {} - {}", userId, e.getMessage(), e);
+            throw new UsernameNotFoundException("Error loading user account by ID", e);
         }
     }
 
     /**
-     * Checks if a user exists with the given email address.
+     * Checks if a user exists by email address.
      * 
-     * Utility method for registration and validation processes.
+     * This method provides a way to verify user existence without loading
+     * full user details, which can be useful for user registration validation
+     * and other security checks.
      * 
      * @param email the email address to check
-     * @return true if a user exists with the given email
-     * @throws IllegalArgumentException if email is null or empty
+     * @return true if a user with this email exists, false otherwise
      */
-    @Transactional(readOnly = true)
     public boolean userExists(String email) {
         if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
+            return false;
         }
-        
+
         String normalizedEmail = email.trim().toLowerCase();
-        boolean exists = userRepository.existsByEmail(normalizedEmail);
         
-        logger.debug("User existence check for email {}: {}", normalizedEmail, exists);
-        return exists;
+        try {
+            boolean exists = userRepository.existsByEmail(normalizedEmail);
+            logger.debug("User existence check for {}: {}", normalizedEmail, exists);
+            return exists;
+        } catch (Exception e) {
+            logger.error("Error checking user existence for: {} - {}", normalizedEmail, e.getMessage(), e);
+            return false; // Assume user doesn't exist on error
+        }
     }
 
     /**
-     * Validates that a user account is active and can be authenticated.
+     * Checks if a user exists by user ID.
      * 
-     * This method performs additional validation beyond the standard
-     * UserDetailsService contract. It can be used to implement custom
-     * business rules for user authentication.
+     * Similar to userExists(String email) but uses the user's unique identifier.
      * 
-     * @param user the User entity to validate
-     * @return true if the user account is valid for authentication
+     * @param userId the user ID to check
+     * @return true if a user with this ID exists, false otherwise
      */
-    private boolean isUserAccountValid(User user) {
-        if (user == null) {
+    public boolean userExistsById(Long userId) {
+        if (userId == null) {
             return false;
         }
-        
-        // Check for required fields
-        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
-            logger.warn("User {} has invalid email", user.getId());
-            return false;
+
+        try {
+            boolean exists = userRepository.existsById(userId);
+            logger.debug("User existence check for ID {}: {}", userId, exists);
+            return exists;
+        } catch (Exception e) {
+            logger.error("Error checking user existence for ID: {} - {}", userId, e.getMessage(), e);
+            return false; // Assume user doesn't exist on error
         }
-        
-        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            logger.warn("User {} has invalid password", user.getId());
-            return false;
-        }
-        
-        if (user.getRole() == null) {
-            logger.warn("User {} has invalid role", user.getId());
-            return false;
-        }
-        
-        // Additional business rules can be added here
-        // For example: account expiration, suspension, etc.
-        
-        return true;
     }
 
     /**
-     * Returns the UserRepository used by this service.
+     * Gets the total number of users in the system.
      * 
-     * Exposed for testing purposes and potential customization.
+     * This method can be used for administrative purposes and system monitoring.
      * 
-     * @return the UserRepository instance
+     * @return total count of users in the database
      */
-    protected UserRepository getUserRepository() {
-        return userRepository;
+    public long getUserCount() {
+        try {
+            long count = userRepository.count();
+            logger.debug("Total user count: {}", count);
+            return count;
+        } catch (Exception e) {
+            logger.error("Error getting user count: {}", e.getMessage(), e);
+            return 0;
+        }
+    }
+
+    /**
+     * Refreshes user details from the database.
+     * 
+     * This method reloads user information from the database, which can be
+     * useful after user profile updates or role changes to ensure the
+     * security context has the most current information.
+     * 
+     * @param currentUserDetails the current UserDetails to refresh
+     * @return fresh UserDetails loaded from the database
+     * @throws UsernameNotFoundException if the user no longer exists
+     */
+    public UserDetails refreshUserDetails(UserDetails currentUserDetails) throws UsernameNotFoundException {
+        if (currentUserDetails == null) {
+            throw new UsernameNotFoundException("Cannot refresh null UserDetails");
+        }
+
+        // Use the username to reload user details
+        return loadUserByUsername(currentUserDetails.getUsername());
     }
 }

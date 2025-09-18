@@ -19,6 +19,15 @@ import java.util.Map;
  * 
  * Ce contrôleur fournit des endpoints de test pour valider la configuration
  * de l'application et la documentation Swagger.
+<<<<<<< HEAD
+||||||| 5d70353
+ * 
+ * @author Airsen Team
+ * @version 1.0.0
+ * @since 2024-09-12
+=======
+
+>>>>>>> bugfix/update_user
  */
 @RestController
 @RequestMapping("/test")
