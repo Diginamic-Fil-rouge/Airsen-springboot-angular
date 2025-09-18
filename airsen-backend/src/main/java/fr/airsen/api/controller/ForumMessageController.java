@@ -1,6 +1,6 @@
 package fr.airsen.api.controller;
 
-import fr.airsen.api.DTO.ForumMessageDTO;
+import fr.airsen.api.dto.ForumMessageDTO;
 import fr.airsen.api.entity.ForumMessage;
 import fr.airsen.api.service.ForumMessageService;
 import io.swagger.v3.oas.annotations.tags.Tag;

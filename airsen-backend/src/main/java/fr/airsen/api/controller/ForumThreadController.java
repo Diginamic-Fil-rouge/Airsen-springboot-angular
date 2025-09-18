@@ -1,7 +1,7 @@
 package fr.airsen.api.controller;
 
-import fr.airsen.api.DTO.ForumMessageDTO;
-import fr.airsen.api.DTO.ForumThreadDTO;
+import fr.airsen.api.dto.ForumMessageDTO;
+import fr.airsen.api.dto.ForumThreadDTO;
 import fr.airsen.api.entity.ForumMessage;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.service.ForumMessageService;

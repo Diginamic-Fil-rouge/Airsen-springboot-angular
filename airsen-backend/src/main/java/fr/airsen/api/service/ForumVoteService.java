@@ -1,9 +1,9 @@
 package fr.airsen.api.service;
 
-import fr.airsen.api.DTO.ForumThreadDTO;
-import fr.airsen.api.DTO.ForumThreadMapper;
-import fr.airsen.api.DTO.ForumVoteDTO;
-import fr.airsen.api.DTO.ForumVoteMapper;
+import fr.airsen.api.dto.ForumThreadDTO;
+import fr.airsen.api.dto.ForumThreadMapper;
+import fr.airsen.api.dto.ForumVoteDTO;
+import fr.airsen.api.dto.ForumVoteMapper;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.ForumVote;
 import fr.airsen.api.entity.User;

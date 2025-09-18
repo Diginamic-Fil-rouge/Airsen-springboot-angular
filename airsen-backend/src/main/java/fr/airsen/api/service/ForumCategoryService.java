@@ -1,7 +1,7 @@
 package fr.airsen.api.service;
 
-import fr.airsen.api.DTO.ForumCategoryDTO;
-import fr.airsen.api.DTO.ForumCategoryMapper;
+import fr.airsen.api.dto.ForumCategoryDTO;
+import fr.airsen.api.dto.ForumCategoryMapper;
 import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.repository.ForumCategoryRepository;
 import jakarta.persistence.EntityExistsException;

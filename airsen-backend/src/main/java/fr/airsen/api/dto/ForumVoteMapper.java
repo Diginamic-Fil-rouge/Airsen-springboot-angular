@@ -1,4 +1,4 @@
-package fr.airsen.api.DTO;
+package fr.airsen.api.dto;
 
 import fr.airsen.api.entity.ForumVote;
 import org.springframework.stereotype.Component;
