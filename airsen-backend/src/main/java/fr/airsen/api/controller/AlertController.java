@@ -38,7 +38,7 @@ import java.util.Optional;
  * Airsens API specification.
  */
 @RestController
-@RequestMapping("/api/v1/alerts")
+@RequestMapping("/alerts")
 @Tag(name = "Alerts", description = "Air quality alert management endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class AlertController {
