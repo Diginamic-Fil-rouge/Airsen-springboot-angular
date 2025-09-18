@@ -285,6 +285,74 @@ public class JwtTokenProvider {
     }
 
     /**
+     * Gets the access token expiration time in milliseconds.
+     * This is an alias for getJwtExpirationMs() for compatibility with AuthService.
+     * 
+     * @return access token expiration time in milliseconds
+     */
+    public long getAccessTokenExpiration() {
+        return jwtExpirationMs;
+    }
+
+    /**
+     * Generates an access token for authentication with email and role.
+     * 
+     * @param email user email address
+     * @param role user role
+     * @return signed JWT access token
+     */
+    public String generateAccessToken(String email, fr.airsen.api.entity.enums.UserRole role) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email must not be null or empty for token generation");
+        }
+        if (role == null) {
+            throw new IllegalArgumentException("Role must not be null for token generation");
+        }
+
+        logger.debug("Generating access token for user: {} with role: {}", email, role);
+
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+        return Jwts.builder()
+                .setSubject(email)                        // Use email as subject for access tokens
+                .claim("email", email)                    // User email
+                .claim("role", role.name())               // User role
+                .claim("type", "access")                  // Token type
+                .setIssuedAt(now)                         // Token issued timestamp
+                .setExpiration(expiryDate)                // Token expiration
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * Generates a refresh token for token renewal.
+     * 
+     * @param email user email address
+     * @return signed JWT refresh token with longer expiration
+     */
+    public String generateRefreshToken(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email must not be null or empty for refresh token generation");
+        }
+
+        logger.debug("Generating refresh token for user: {}", email);
+
+        Date now = new Date();
+        // Refresh tokens have longer expiration (7 days)
+        Date expiryDate = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000L));
+
+        return Jwts.builder()
+                .setSubject(email)                        // Use email as subject for refresh tokens
+                .claim("email", email)                    // User email
+                .claim("type", "refresh")                 // Token type
+                .setIssuedAt(now)                         // Token issued timestamp
+                .setExpiration(expiryDate)                // Token expiration (7 days)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
      * Extracts all claims from JWT token.
      * 
      * This method handles the parsing and signature verification of JWT tokens.
