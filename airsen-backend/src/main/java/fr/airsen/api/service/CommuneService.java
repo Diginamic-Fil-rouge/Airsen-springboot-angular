@@ -3,6 +3,7 @@ package fr.airsen.api.service;
 import fr.airsen.api.dto.CommuneDTO;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.repository.CommuneRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,8 @@ public class CommuneService {
      * Recherche des communes par nom avec limite sur le nombre de résultats.
      */
     public List<CommuneDTO> searchCommunes(String query, int limit) {
-        List<Commune> communes = communeRepository.findByNameContainingIgnoreCase(query, PageRequest.of(0, limit));
+        Page<Commune> communePage = communeRepository.findByNameContainingIgnoreCase(query, PageRequest.of(0, limit));
+        List<Commune> communes = communePage.getContent();
         return communes.stream()
                 .map(c -> new CommuneDTO(
                         c.getId(),
