@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/communes")
+@RequestMapping("/departments/{departmentId}/communes")
 public class CommuneController {
 
     private final CommuneService communeService;
@@ -16,28 +16,16 @@ public class CommuneController {
         this.communeService = communeService;
     }
 
+    /**
+     * GET /departments/{departmentId}/communes
+     * Liste les communes d'un département
+     */
     @GetMapping
-    public List<CommuneDTO> getAllCommunes() {
-        return communeService.getAllCommunes();
-    }
-
-    @GetMapping("/{id}")
-    public CommuneDTO getCommuneById(@PathVariable int id) {
-        return communeService.getCommuneById(id);
-    }
-
-    @PostMapping
-    public CommuneDTO createCommune(@RequestBody CommuneDTO dto) {
-        return communeService.createCommune(dto);
-    }
-
-    @PutMapping("/{id}")
-    public CommuneDTO updateCommune(@PathVariable int id, @RequestBody CommuneDTO dto) {
-        return communeService.updateCommune(id, dto);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteCommune(@PathVariable int id) {
-        communeService.deleteCommune(id);
+    public List<CommuneDTO> getCommunesByDepartment(
+            @PathVariable int departmentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search) {
+        return communeService.getCommunesByDepartment(departmentId, page, size, search);
     }
 }
