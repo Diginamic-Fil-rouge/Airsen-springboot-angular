@@ -1,5 +1,6 @@
 package fr.airsen.api.controller;
 
+import fr.airsen.api.dto.DepartmentDTO;
 import fr.airsen.api.dto.RegionDTO;
 import fr.airsen.api.service.RegionService;
 import org.springframework.web.bind.annotation.*;
@@ -16,29 +17,21 @@ public class RegionController {
         this.regionService = regionService;
     }
 
+    /**
+     * GET /regions
+     * Liste toutes les régions
+     */
     @GetMapping
     public List<RegionDTO> getAllRegions() {
         return regionService.getAllRegions();
     }
 
-    @GetMapping("/{id}")
-    public RegionDTO getRegionById(@PathVariable int id) {
-        return regionService.getRegionById(id);
-    }
-
-    @PostMapping
-    public RegionDTO createRegion(@RequestBody RegionDTO dto) {
-        return regionService.createRegion(dto);
-    }
-
-    @PutMapping("/{id}")
-    public RegionDTO updateRegion(@PathVariable int id, @RequestBody RegionDTO dto) {
-        return regionService.updateRegion(id, dto);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteRegion(@PathVariable int id) {
-        regionService.deleteRegion(id);
+    /**
+     * GET /regions/{regionId}/departments
+     * Liste les départements d’une région donnée
+     */
+    @GetMapping("/{regionId}/departments")
+    public List<DepartmentDTO> getDepartmentsByRegion(@PathVariable int regionId) {
+        return regionService.getDepartmentsByRegion(regionId);
     }
 }
-

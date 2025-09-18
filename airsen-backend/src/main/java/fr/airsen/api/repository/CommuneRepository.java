@@ -36,8 +36,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
      * @param pageable pagination parameters
      * @return page of communes matching the name
      */
-    @Query("SELECT c FROM Commune c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))")
-    Page<Commune> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
+    Page<Commune> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     /**
      * Finds communes by department ID.
@@ -50,6 +49,15 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
     Page<Commune> findByDepartmentId(@Param("departmentId") Integer departmentId, Pageable pageable);
 
     /**
+     * Robincassan's method: List communes by department ID (returning List instead of Page).
+     * 
+     * @param departmentId department identifier
+     * @param pageable pagination parameters
+     * @return list of communes in the department
+     */
+    List<Commune> findByDepartmentId(int departmentId, Pageable pageable);
+
+    /**
      * Searches communes by name or INSEE code.
      * 
      * @param searchTerm search term to match against name or INSEE code
@@ -60,26 +68,46 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
     Page<Commune> searchByNameOrInseeCode(@Param("searchTerm") String searchTerm, Pageable pageable);
 
     /**
-     * Finds communes within a population range.
+     * Finds communes by department with name filter.
      * 
-     * @param minPopulation minimum population
-     * @param maxPopulation maximum population
+     * @param departmentId department identifier
+     * @param nameFilter name filter (case insensitive)
      * @param pageable pagination parameters
-     * @return page of communes within the population range
+     * @return page of matching communes in the department
      */
-    @Query("SELECT c FROM Commune c WHERE c.population BETWEEN :minPopulation AND :maxPopulation")
-    Page<Commune> findByPopulationBetween(@Param("minPopulation") Long minPopulation, 
-                                          @Param("maxPopulation") Long maxPopulation, 
-                                          Pageable pageable);
+    @Query("SELECT c FROM Commune c WHERE c.department.id = :departmentId AND LOWER(c.name) LIKE LOWER(CONCAT('%', :nameFilter, '%'))")
+    Page<Commune> findByDepartmentIdAndNameContaining(
+            @Param("departmentId") Integer departmentId, 
+            @Param("nameFilter") String nameFilter, 
+            Pageable pageable);
 
     /**
-     * Finds communes with population greater than specified value.
+     * Robincassan's method: Find communes by department and name (returning List).
      * 
-     * @param population minimum population threshold
+     * @param departmentId department identifier
+     * @param name name filter (case insensitive)
      * @param pageable pagination parameters
-     * @return page of communes with population above threshold
+     * @return list of matching communes in the department
      */
-    Page<Commune> findByPopulationGreaterThan(Long population, Pageable pageable);
+    List<Commune> findByDepartmentIdAndNameContainingIgnoreCase(int departmentId, String name, Pageable pageable);
+
+    /**
+     * Finds communes within a bounding box.
+     * 
+     * @param minLatitude minimum latitude
+     * @param maxLatitude maximum latitude
+     * @param minLongitude minimum longitude
+     * @param maxLongitude maximum longitude
+     * @param pageable pagination parameters
+     * @return page of communes within the geographic bounds
+     */
+    @Query("SELECT c FROM Commune c WHERE c.latitude BETWEEN :minLat AND :maxLat AND c.longitude BETWEEN :minLng AND :maxLng")
+    Page<Commune> findCommunesInBoundingBox(
+            @Param("minLat") Double minLatitude, 
+            @Param("maxLat") Double maxLatitude,
+            @Param("minLng") Double minLongitude, 
+            @Param("maxLng") Double maxLongitude, 
+            Pageable pageable);
 
     /**
      * Counts communes by department.
@@ -109,31 +137,23 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
     Page<Commune> findCommunesWithWeatherData(Pageable pageable);
 
     /**
-     * Finds the largest communes by population.
+     * Finds communes by region.
      * 
-     * @param limit maximum number of results
-     * @return list of largest communes
+     * @param regionId region identifier
+     * @param pageable pagination parameters
+     * @return page of communes in the region
      */
-    @Query("SELECT c FROM Commune c ORDER BY c.population DESC")
-    List<Commune> findTopByPopulation(Pageable pageable);
+    @Query("SELECT c FROM Commune c WHERE c.department.region.id = :regionId")
+    Page<Commune> findByRegionId(@Param("regionId") Integer regionId, Pageable pageable);
 
     /**
-     * Finds communes by partial name match (for autocomplete).
+     * Finds most populated communes.
      * 
-     * @param namePrefix name prefix to match
-     * @param limit maximum number of results
-     * @return list of communes matching the prefix
+     * @param pageable pagination parameters for limiting results
+     * @return page of communes ordered by population descending
      */
-    @Query("SELECT c FROM Commune c WHERE LOWER(c.name) LIKE LOWER(CONCAT(:namePrefix, '%')) ORDER BY c.population DESC")
-    List<Commune> findByNameStartingWithIgnoreCase(@Param("namePrefix") String namePrefix, Pageable pageable);
-
-    /**
-     * Checks if a commune exists by INSEE code.
-     * 
-     * @param inseeCode INSEE code to check
-     * @return true if commune exists
-     */
-    boolean existsByInseeCode(String inseeCode);
+    @Query("SELECT c FROM Commune c WHERE c.population IS NOT NULL ORDER BY c.population DESC")
+    Page<Commune> findMostPopulatedCommunes(Pageable pageable);
 
     /**
      * Gets communes with coordinates for mapping.

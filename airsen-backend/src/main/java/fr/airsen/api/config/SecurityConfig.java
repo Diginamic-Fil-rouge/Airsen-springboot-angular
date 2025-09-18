@@ -13,9 +13,13 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configuration de la sécurité pour l'API Airsen.
- * 
+ *
  * Cette configuration définit les règles d'accès aux différents endpoints
  * de l'application avec une authentification JWT.
+ *
+ * @author Airsen Team
+ * @version 1.0.0
+ * @since 2024-09-12
  */
 @Configuration
 @EnableWebSecurity
@@ -23,10 +27,10 @@ public class SecurityConfig {
 
     /**
      * Configuration de la chaîne de filtres de sécurité.
-     * 
+     *
      * Définit les endpoints publics et privés avec les règles d'authentification
      * appropriées pour le développement.
-     * 
+     *
      * @param http objet HttpSecurity pour la configuration
      * @return SecurityFilterChain configurée
      * @throws Exception si une erreur de configuration survient
@@ -40,16 +44,17 @@ public class SecurityConfig {
                 // Endpoints publics (pas d'authentification requise)
                 .requestMatchers(
                     "/swagger-ui/**",
-                    "/swagger-ui.html", 
+                    "/swagger-ui.html",
                     "/api-docs/**",
                     "/v3/api-docs/**",
                     "/actuator/health",
-                    "/test/**"
+                    "/test/**",
+                    "/regions/**", "/departments/**", "/communes/**"
                 ).permitAll()
                 // Endpoints d'authentification publics
                 .requestMatchers("/api/v1/auth/**").permitAll()
-                // Endpoints de données géographiques publics
-                .requestMatchers("/regions/**", "/departments/**", "/communes/**").permitAll()
+                // Endpoints de données géographiques publics (robincassan's fix)
+                .requestMatchers("/api/v1/**").permitAll()
                 // Endpoints de données environnementales publics
                 .requestMatchers("/air-quality/**", "/weather/**").permitAll()
                 // Endpoints forum publics en lecture

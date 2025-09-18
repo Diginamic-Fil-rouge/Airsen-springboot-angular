@@ -1,7 +1,10 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.dto.DepartmentDTO;
 import fr.airsen.api.dto.RegionDTO;
+import fr.airsen.api.entity.Department;
 import fr.airsen.api.entity.Region;
+import fr.airsen.api.repository.DepartmentRepository;
 import fr.airsen.api.repository.RegionRepository;
 import org.springframework.stereotype.Service;
 
@@ -12,42 +15,38 @@ import java.util.stream.Collectors;
 public class RegionService {
 
     private final RegionRepository regionRepository;
+    private final DepartmentRepository departmentRepository;
 
-    public RegionService(RegionRepository regionRepository) {
+    public RegionService(RegionRepository regionRepository, DepartmentRepository departmentRepository) {
         this.regionRepository = regionRepository;
+        this.departmentRepository = departmentRepository;
     }
 
+    /**
+     * Récupère toutes les régions
+     */
     public List<RegionDTO> getAllRegions() {
         return regionRepository.findAll().stream()
-                .map(r -> new RegionDTO(r.getId(), r.getName(), r.getRegionCode()))
+                .map(r -> new RegionDTO(
+                        r.getId(),
+                        r.getName(),
+                        r.getRegionCode()
+                ))
                 .collect(Collectors.toList());
     }
 
-    public RegionDTO getRegionById(int id) {
-        return regionRepository.findById(id)
-                .map(r -> new RegionDTO(r.getId(), r.getName(), r.getRegionCode()))
-                .orElse(null);
+    /**
+     * Récupère tous les départements d’une région donnée
+     */
+    public List<DepartmentDTO> getDepartmentsByRegion(int regionId) {
+        List<Department> departments = departmentRepository.findByRegionId(regionId);
+        return departments.stream()
+                .map(d -> new DepartmentDTO(
+                        d.getId(),
+                        d.getName(),
+                        d.getDepartmentCode(),
+                        d.getRegionCode()
+                ))
+                .collect(Collectors.toList());
     }
-
-    public RegionDTO createRegion(RegionDTO dto) {
-        Region region = new Region(dto.getName(), dto.getRegionCode());
-        Region saved = regionRepository.save(region);
-        return new RegionDTO(saved.getId(), saved.getName(), saved.getRegionCode());
-    }
-
-    public void deleteRegion(int id) {
-        regionRepository.deleteById(id);
-    }
-
-    public RegionDTO updateRegion(int id, RegionDTO dto) {
-        return regionRepository.findById(id)
-                .map(existing -> {
-                    existing.setName(dto.getName());
-                    existing.setRegionCode(dto.getRegionCode());
-                    Region updated = regionRepository.save(existing);
-                    return new RegionDTO(updated.getId(), updated.getName(), updated.getRegionCode());
-                })
-                .orElse(null);
-    }
-
 }
