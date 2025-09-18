@@ -27,9 +27,6 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class Alert {
 
-    /**
-     * Unique identifier for the alert.
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -95,9 +92,6 @@ public class Alert {
     @OneToMany(mappedBy = "alert", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AlertHistory> alertHistories;
 
-    /**
-     * Default constructor.
-     */
     public Alert() {
         this.active = true;
     }

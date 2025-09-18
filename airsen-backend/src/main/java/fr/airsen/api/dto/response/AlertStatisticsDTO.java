@@ -38,18 +38,9 @@ public class AlertStatisticsDTO {
      */
     private Double quotaUsagePercentage;
 
-    /**
-     * Default constructor.
-     */
+
     public AlertStatisticsDTO() {}
 
-    /**
-     * Constructor with essential fields.
-     * 
-     * @param activeAlerts number of active alerts
-     * @param totalAlerts total number of alerts
-     * @param maxAllowedAlerts maximum allowed alerts
-     */
     public AlertStatisticsDTO(Long activeAlerts, Long totalAlerts, Integer maxAllowedAlerts) {
         this.activeAlerts = activeAlerts;
         this.totalAlerts = totalAlerts;

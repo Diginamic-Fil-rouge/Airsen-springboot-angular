@@ -14,95 +14,37 @@ import java.time.LocalDateTime;
  */
 public class AlertDTO {
 
-    /**
-     * Unique identifier of the alert.
-     */
+
     private Long id;
 
-    /**
-     * User identifier who owns this alert.
-     */
     private Long userId;
 
-    /**
-     * User email for display purposes.
-     */
     private String userEmail;
 
-    /**
-     * Commune identifier being monitored.
-     */
     private Long communeId;
 
-    /**
-     * Commune name for display purposes.
-     */
     private String communeName;
 
-    /**
-     * Pollutant being monitored.
-     */
     private Pollutant pollutant;
 
-    /**
-     * Pollutant display name.
-     */
     private String pollutantDisplayName;
 
-    /**
-     * Pollutant measurement unit.
-     */
     private String pollutantUnit;
 
-    /**
-     * Threshold value that triggers the alert.
-     */
     private BigDecimal thresholdValue;
 
-    /**
-     * Notification delivery method.
-     */
     private NotificationType notificationType;
 
-    /**
-     * Notification type display name.
-     */
     private String notificationTypeDisplayName;
 
-    /**
-     * Whether the alert is currently active.
-     */
     private Boolean active;
 
-    /**
-     * Date and time when the alert was created.
-     */
     private LocalDateTime createdDate;
 
-    /**
-     * Optional description or notes for the alert.
-     */
     private String description;
 
-    /**
-     * Default constructor.
-     */
     public AlertDTO() {}
 
-    /**
-     * Constructor with essential fields.
-     * 
-     * @param id alert identifier
-     * @param userId user identifier
-     * @param userEmail user email
-     * @param communeId commune identifier
-     * @param communeName commune name
-     * @param pollutant pollutant type
-     * @param thresholdValue threshold value
-     * @param notificationType notification type
-     * @param active active status
-     * @param createdDate creation date
-     */
     public AlertDTO(Long id, Long userId, String userEmail, Long communeId, String communeName,
                    Pollutant pollutant, BigDecimal thresholdValue, NotificationType notificationType,
                    Boolean active, LocalDateTime createdDate) {

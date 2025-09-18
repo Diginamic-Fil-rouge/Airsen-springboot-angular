@@ -12,73 +12,29 @@ import java.time.LocalDateTime;
  */
 public class AlertHistoryDTO {
 
-    /**
-     * Unique identifier of the alert history record.
-     */
     private Long id;
 
-    /**
-     * Alert identifier that was triggered.
-     */
     private Long alertId;
 
-    /**
-     * User identifier who owns the alert.
-     */
     private Long userId;
 
-    /**
-     * User email for display purposes.
-     */
     private String userEmail;
 
-    /**
-     * Air quality measurement identifier that triggered the alert.
-     */
     private Long airQualityId;
 
-    /**
-     * Date and time when the alert was sent.
-     */
     private LocalDateTime sendDate;
 
-    /**
-     * Delivery status of the alert notification.
-     */
     private AlertStatus status;
 
-    /**
-     * Status display name.
-     */
     private String statusDisplayName;
 
-    /**
-     * Error message if delivery failed.
-     */
     private String errorMessage;
 
-    /**
-     * Alert details for context.
-     */
     private AlertSummaryDTO alertSummary;
 
-    /**
-     * Default constructor.
-     */
+
     public AlertHistoryDTO() {}
 
-    /**
-     * Constructor with essential fields.
-     * 
-     * @param id history record identifier
-     * @param alertId alert identifier
-     * @param userId user identifier
-     * @param userEmail user email
-     * @param airQualityId air quality measurement identifier
-     * @param sendDate send date and time
-     * @param status delivery status
-     * @param errorMessage error message if failed
-     */
     public AlertHistoryDTO(Long id, Long alertId, Long userId, String userEmail,
                           Long airQualityId, LocalDateTime sendDate, AlertStatus status,
                           String errorMessage) {

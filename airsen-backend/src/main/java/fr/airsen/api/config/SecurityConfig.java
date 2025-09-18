@@ -20,12 +20,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-/**
- * Configuration de la sécurité pour l'API Airsen.
- * 
- * Cette configuration définit les règles d'accès aux différents endpoints
- * de l'application avec une authentification JWT.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -85,14 +79,14 @@ public class SecurityConfig {
     /**
      * Configuration du PasswordEncoder pour le hachage sécurisé des mots de passe.
      * 
-     * Utilise BCrypt avec une force de 12 pour un bon équilibre entre sécurité
+     * Utilise BCrypt avec une force de 8 pour un bon équilibre entre sécurité
      * et performance.
      * 
      * @return BCryptPasswordEncoder configuré
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+        return new BCryptPasswordEncoder(8);
     }
 
     /**
@@ -122,14 +116,13 @@ public class SecurityConfig {
         // Origines autorisées - frontend Angular
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:4200",     // Angular dev server
-            "http://localhost:3000",     // Alternative frontend port
             "https://*.airsen.fr",       // Production domain pattern
             "https://airsen.fr"          // Production domain
         ));
         
         // Méthodes HTTP autorisées
         configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+            "GET", "POST", "PUT", "DELETE"
         ));
         
         // En-têtes autorisés (inclut Authorization pour JWT)

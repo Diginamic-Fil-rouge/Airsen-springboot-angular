@@ -13,14 +13,8 @@ public class DeliveryStatsDTO {
      */
     private Long totalDeliveries;
 
-    /**
-     * Number of successful deliveries.
-     */
     private Long successfulDeliveries;
 
-    /**
-     * Number of failed deliveries.
-     */
     private Long failedDeliveries;
 
     /**
@@ -43,19 +37,8 @@ public class DeliveryStatsDTO {
      */
     private String timePeriod;
 
-    /**
-     * Default constructor.
-     */
     public DeliveryStatsDTO() {}
 
-    /**
-     * Constructor with delivery counts.
-     * 
-     * @param totalDeliveries total delivery attempts
-     * @param successfulDeliveries successful deliveries
-     * @param failedDeliveries failed deliveries
-     * @param pendingDeliveries pending deliveries
-     */
     public DeliveryStatsDTO(Long totalDeliveries, Long successfulDeliveries, 
                            Long failedDeliveries, Long pendingDeliveries) {
         this.totalDeliveries = totalDeliveries;

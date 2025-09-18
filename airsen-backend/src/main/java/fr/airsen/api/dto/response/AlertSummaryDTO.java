@@ -14,67 +14,26 @@ import java.time.LocalDateTime;
  */
 public class AlertSummaryDTO {
 
-    /**
-     * Unique identifier of the alert.
-     */
     private Long id;
 
-    /**
-     * Commune name being monitored.
-     */
     private String communeName;
 
-    /**
-     * Pollutant being monitored.
-     */
     private Pollutant pollutant;
 
-    /**
-     * Pollutant display name.
-     */
     private String pollutantDisplayName;
 
-    /**
-     * Threshold value that triggers the alert.
-     */
     private BigDecimal thresholdValue;
 
-    /**
-     * Pollutant measurement unit.
-     */
     private String unit;
 
-    /**
-     * Notification delivery method.
-     */
     private NotificationType notificationType;
 
-    /**
-     * Whether the alert is currently active.
-     */
     private Boolean active;
 
-    /**
-     * Date and time when the alert was created.
-     */
     private LocalDateTime createdDate;
 
-    /**
-     * Default constructor.
-     */
     public AlertSummaryDTO() {}
 
-    /**
-     * Constructor with essential fields.
-     * 
-     * @param id alert identifier
-     * @param communeName commune name
-     * @param pollutant pollutant type
-     * @param thresholdValue threshold value
-     * @param notificationType notification type
-     * @param active active status
-     * @param createdDate creation date
-     */
     public AlertSummaryDTO(Long id, String communeName, Pollutant pollutant,
                           BigDecimal thresholdValue, NotificationType notificationType,
                           Boolean active, LocalDateTime createdDate) {

@@ -12,16 +12,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
-/**
- * Configuration OpenAPI pour la documentation Swagger de l'API Airsen.
- * 
- * Cette configuration définit les métadonnées de l'API, les serveurs,
- * et les schémas de sécurité pour la documentation automatique.
- * 
- * @author Airsen Team
- * @version 1.0.0
- * @since 2024-09-12
- */
 @Configuration
 public class OpenApiConfig {
 

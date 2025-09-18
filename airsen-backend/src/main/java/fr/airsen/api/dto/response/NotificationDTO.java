@@ -13,9 +13,6 @@ import java.time.LocalDateTime;
  */
 public class NotificationDTO {
 
-    /**
-     * Unique identifier of the notification.
-     */
     private Long id;
 
     /**
@@ -23,14 +20,8 @@ public class NotificationDTO {
      */
     private Long senderId;
 
-    /**
-     * Sender email for display purposes.
-     */
     private String senderEmail;
 
-    /**
-     * Recipient user identifier.
-     */
     private Long recipientId;
 
     /**
@@ -38,19 +29,10 @@ public class NotificationDTO {
      */
     private String recipientEmail;
 
-    /**
-     * Notification delivery type.
-     */
     private NotificationType notificationType;
 
-    /**
-     * Notification type display name.
-     */
     private String notificationTypeDisplayName;
 
-    /**
-     * Notification title.
-     */
     private String title;
 
     /**
@@ -88,28 +70,8 @@ public class NotificationDTO {
      */
     private String errorMessage;
 
-    /**
-     * Default constructor.
-     */
     public NotificationDTO() {}
 
-    /**
-     * Constructor with essential fields.
-     * 
-     * @param id notification identifier
-     * @param senderId sender identifier
-     * @param senderEmail sender email
-     * @param recipientId recipient identifier
-     * @param recipientEmail recipient email
-     * @param notificationType notification type
-     * @param title notification title
-     * @param message notification message
-     * @param sendStatus delivery status
-     * @param sendChannel delivery channel
-     * @param createdDate creation date
-     * @param sentDate sent date
-     * @param errorMessage error message
-     */
     public NotificationDTO(Long id, Long senderId, String senderEmail, Long recipientId,
                           String recipientEmail, NotificationType notificationType, String title,
                           String message, Boolean sendStatus, NotificationChannel sendChannel,
