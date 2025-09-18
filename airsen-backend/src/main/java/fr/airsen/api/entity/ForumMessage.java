@@ -10,13 +10,12 @@ import java.util.Objects;
  * This entity represents a message in the forum. It is linked to a {@link ForumThread } entity.
  */
 @Entity
-@Table(name = "forum_messages")
 public class ForumMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, length = 10)
-    private Integer id;
+    private long id;
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
@@ -43,11 +42,11 @@ public class ForumMessage {
         this.createdDate = createdDate;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -12,13 +12,12 @@ import java.util.Objects;
  * This entity represents a thread in the forum. It is linked to a {@link ForumCategory } entity.
  */
 @Entity
-@Table(name = "forum_threads")
 public class ForumThread {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, length = 10)
-    private Integer id;
+    private long id;
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
@@ -74,11 +73,11 @@ public class ForumThread {
         this.likeCount = likeCount;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -160,6 +159,22 @@ public class ForumThread {
 
     public void setLikeCount(Integer likeCount) {
         this.likeCount = likeCount;
+    }
+
+    public List<ForumMessage> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<ForumMessage> messages) {
+        this.messages = messages;
+    }
+
+    public List<ForumVote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(List<ForumVote> votes) {
+        this.votes = votes;
     }
 
     @Override

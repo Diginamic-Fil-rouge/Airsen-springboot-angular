@@ -9,12 +9,11 @@ import java.util.Objects;
  * This entity represents a vote in the forum. It is linked to a {@link User } entity and a {@link ForumThread } entity.
  */
 @Entity
-@Table(name = "forum_votes")
 public class ForumVote {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -37,11 +36,11 @@ public class ForumVote {
         this.voteType = voteType;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 

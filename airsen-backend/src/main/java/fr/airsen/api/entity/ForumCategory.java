@@ -11,13 +11,12 @@ import java.util.Objects;
  * This entity represents a category in the forum.
  */
 @Entity
-@Table(name = "forum_categories")
 public class ForumCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, length = 10)
-    private Integer id;
+    private long id;
 
     @Column(name = "name", nullable = false, length = 50)
     @Min(value = 3, message = "Name must be at least 3 characters long")
@@ -42,11 +41,11 @@ public class ForumCategory {
         this.color = color;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -72,6 +71,14 @@ public class ForumCategory {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public List<ForumThread> getThreads() {
+        return threads;
+    }
+
+    public void setThreads(List<ForumThread> threads) {
+        this.threads = threads;
     }
 
     @Override
