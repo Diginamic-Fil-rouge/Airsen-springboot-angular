@@ -20,9 +20,6 @@ public class CommuneService {
         this.communeRepository = communeRepository;
     }
 
-    /**
-     * Liste les communes d'un département avec pagination et filtre optionnel sur le nom.
-     */
     public List<CommuneDTO> getCommunesByDepartment(Long departmentId, int page, int size, String search) {
         Pageable pageable = PageRequest.of(page, size);
         List<Commune> communes;
@@ -45,9 +42,6 @@ public class CommuneService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Recherche des communes par nom avec limite sur le nombre de résultats.
-     */
     public List<CommuneDTO> searchCommunes(String query, int limit) {
         Page<Commune> communePage = communeRepository.findByNameContainingIgnoreCase(query, PageRequest.of(0, limit));
         List<Commune> communes = communePage.getContent();

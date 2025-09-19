@@ -19,19 +19,12 @@ public class RegionController {
         this.regionService = regionService;
     }
 
-    /**
-     * GET /regions
-     * Liste toutes les régions
-     */
+
     @GetMapping
     public List<RegionDTO> getAllRegions() {
         return regionService.getAllRegions();
     }
 
-    /**
-     * GET /regions/{regionId}/departments
-     * Liste les départements d’une région donnée
-     */
     @GetMapping("/{regionId}/departments")
     public List<DepartmentDTO> getDepartmentsByRegion(@PathVariable Long regionId) {
         return regionService.getDepartmentsByRegion(regionId);

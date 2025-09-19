@@ -11,12 +11,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * User entity for the Airsen air quality monitoring application.
- * 
- * Manages user personal information, authentication, and roles
- * for the French air quality monitoring system.
- */
+
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_user_email", columnList = "email", unique = true)
@@ -30,31 +25,31 @@ public class User {
     private Long id;
 
     @Column(name = "email", nullable = false, unique = true, length = 200)
-    @NotBlank(message = "L'adresse email est obligatoire")
-    @Email(message = "L'adresse email doit être valide")
-    @Size(max = 200, message = "L'adresse email ne peut pas dépasser 200 caractères")
+    @NotBlank(message = "Email address is required")
+    @Email(message = "Email address must be valid")
+    @Size(max = 200, message = "Email address cannot exceed 200 characters")
     private String email;
 
     @Column(name = "password", nullable = false, length = 255)
-    @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(max = 255, message = "Le mot de passe crypté ne peut pas dépasser 255 caractères")
+    @NotBlank(message = "Password is required")
+    @Size(max = 255, message = "Encrypted password cannot exceed 255 characters")
     private String password;
 
     @Column(name = "first_name", length = 100)
-    @Size(max = 100, message = "Le prénom ne peut pas dépasser 100 caractères")
+    @Size(max = 100, message = "First name cannot exceed 100 characters")
     private String firstName;
 
     @Column(name = "last_name", length = 100)
-    @Size(max = 100, message = "Le nom ne peut pas dépasser 100 caractères")
+    @Size(max = 100, message = "Last name cannot exceed 100 characters")
     private String lastName;
 
     @Column(name = "address", length = 255)
-    @Size(max = 255, message = "L'adresse ne peut pas dépasser 255 caractères")
+    @Size(max = 255, message = "Address cannot exceed 255 characters")
     private String address;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    @NotNull(message = "Le rôle utilisateur est obligatoire")
+    @NotNull(message = "User role is required")
     private UserRole role;
 
     @CreatedDate

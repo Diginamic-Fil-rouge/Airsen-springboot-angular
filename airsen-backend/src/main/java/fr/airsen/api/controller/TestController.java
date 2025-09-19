@@ -15,41 +15,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Contrôleur de test pour vérifier le bon fonctionnement de l'API Airsen.
+ * Test controller to verify proper functioning of the Airsen API.
  * 
- * Ce contrôleur fournit des endpoints de test pour valider la configuration
- * de l'application et la documentation Swagger.
-<<<<<<< HEAD
-||||||| 5d70353
- * 
- * @author Airsen Team
- * @version 1.0.0
- * @since 2024-09-12
-=======
-
->>>>>>> bugfix/update_user
+ * This controller provides test endpoints to validate application
+ * configuration and Swagger documentation.
  */
 @RestController
 @RequestMapping("/test")
-@Tag(name = "Test", description = "Endpoints de test pour vérifier le fonctionnement de l'API")
+@Tag(name = "Test", description = "Test endpoints to verify API functionality")
 public class TestController {
 
     /**
      * GET /test/health
      * 
-     * Endpoint de santé basique pour vérifier que l'API fonctionne.
+     * Basic health endpoint to verify API is working.
      * 
-     * @return ResponseEntity avec le statut de l'API
+     * @return ResponseEntity with API status
      */
     @GetMapping("/health")
     @Operation(
-        summary = "Vérification de santé de l'API",
-        description = "Retourne le statut de santé de l'API avec l'heure actuelle"
+        summary = "API health check",
+        description = "Returns API health status with current time"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200", 
-            description = "API fonctionnelle",
+            description = "API is functional",
             content = @Content(schema = @Schema(implementation = Map.class))
         )
     })
@@ -66,25 +57,25 @@ public class TestController {
     /**
      * GET /test/echo/{message}
      * 
-     * Endpoint d'écho pour tester les paramètres de chemin.
+     * Echo endpoint to test path parameters.
      * 
-     * @param message message à retourner en écho
-     * @return ResponseEntity avec le message d'écho
+     * @param message message to return as echo
+     * @return ResponseEntity with echo message
      */
     @GetMapping("/echo/{message}")
     @Operation(
-        summary = "Echo d'un message",
-        description = "Retourne le message fourni en écho avec des informations supplémentaires"
+        summary = "Echo a message",
+        description = "Returns the provided message as echo with additional information"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200", 
-            description = "Message d'écho retourné avec succès",
+            description = "Echo message returned successfully",
             content = @Content(schema = @Schema(implementation = Map.class))
         )
     })
     public ResponseEntity<Map<String, Object>> echo(
-            @Parameter(description = "Message à retourner en écho", required = true)
+            @Parameter(description = "Message to return as echo", required = true)
             @PathVariable String message) {
         
         Map<String, Object> response = new HashMap<>();
@@ -98,29 +89,29 @@ public class TestController {
     /**
      * POST /test/data
      * 
-     * Endpoint de test pour les données POST.
+     * Test endpoint for POST data.
      * 
-     * @param data données à traiter
-     * @return ResponseEntity avec les données traitées
+     * @param data data to process
+     * @return ResponseEntity with processed data
      */
     @PostMapping("/data")
     @Operation(
-        summary = "Test de données POST",
-        description = "Accepte des données en POST et retourne une réponse formatée"
+        summary = "POST data test",
+        description = "Accepts POST data and returns a formatted response"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200", 
-            description = "Données traitées avec succès",
+            description = "Data processed successfully",
             content = @Content(schema = @Schema(implementation = Map.class))
         ),
         @ApiResponse(
             responseCode = "400", 
-            description = "Données invalides"
+            description = "Invalid data"
         )
     })
     public ResponseEntity<Map<String, Object>> processData(
-            @Parameter(description = "Données à traiter", required = true)
+            @Parameter(description = "Data to process", required = true)
             @RequestBody Map<String, Object> data) {
         
         Map<String, Object> response = new HashMap<>();
@@ -135,24 +126,24 @@ public class TestController {
     /**
      * GET /test/info
      * 
-     * Endpoint d'information sur l'API.
+     * API information endpoint.
      * 
-     * @return ResponseEntity avec les informations de l'API
+     * @return ResponseEntity with API information
      */
     @GetMapping("/info")
     @Operation(
-        summary = "Informations sur l'API",
-        description = "Retourne les informations détaillées sur l'API Airsen"
+        summary = "API information",
+        description = "Returns detailed information about the Airsen API"
     )
     @ApiResponse(
         responseCode = "200", 
-        description = "Informations de l'API retournées",
+        description = "API information returned",
         content = @Content(schema = @Schema(implementation = Map.class))
     )
     public ResponseEntity<Map<String, Object>> info() {
         Map<String, Object> response = new HashMap<>();
         response.put("name", "Airsen API");
-        response.put("description", "API REST pour le monitoring de la qualité de l'air en France");
+        response.put("description", "REST API for air quality monitoring in France");
         response.put("version", "1.0.0-SNAPSHOT");
         response.put("springBoot", "3.2.0");
         response.put("java", System.getProperty("java.version"));

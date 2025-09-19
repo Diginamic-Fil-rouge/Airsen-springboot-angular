@@ -20,7 +20,7 @@ public class CommuneController {
 
     /**
      * GET /departments/{departmentId}/communes
-     * Liste les communes d'un département
+     * Lists communes of a department
      */
     @GetMapping
     public List<CommuneDTO> getCommunesByDepartment(

@@ -13,57 +13,28 @@ import java.math.BigDecimal;
  */
 public class UpdateAlertRequest {
 
-    /**
-     * New threshold value for the alert.
-     * If provided, must be positive and within reasonable limits.
-     */
     @DecimalMin(value = "0.01", message = "Threshold value must be positive")
     @DecimalMax(value = "2000.00", message = "Threshold value is too high")
     @Digits(integer = 6, fraction = 2, message = "Threshold value must have at most 6 digits before decimal and 2 after")
     private BigDecimal thresholdValue;
 
-    /**
-     * New notification delivery method for the alert.
-     */
     private NotificationType notificationType;
 
-    /**
-     * Whether the alert should be active or inactive.
-     */
     private Boolean active;
 
-    /**
-     * Updated description or notes for the alert.
-     */
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
 
-    /**
-     * Default constructor.
-     */
     public UpdateAlertRequest() {}
 
-    /**
-     * Constructor with threshold and notification type.
-     * 
-     * @param thresholdValue new threshold value
-     * @param notificationType new notification type
-     */
     public UpdateAlertRequest(BigDecimal thresholdValue, NotificationType notificationType) {
         this.thresholdValue = thresholdValue;
         this.notificationType = notificationType;
     }
 
-    /**
-     * Constructor for activation/deactivation only.
-     * 
-     * @param active new active status
-     */
     public UpdateAlertRequest(Boolean active) {
         this.active = active;
     }
-
-    // Getters and Setters
 
     public BigDecimal getThresholdValue() {
         return thresholdValue;

@@ -22,9 +22,6 @@ public class RegionService {
         this.departmentRepository = departmentRepository;
     }
 
-    /**
-     * Récupère toutes les régions
-     */
     public List<RegionDTO> getAllRegions() {
         return regionRepository.findAll().stream()
                 .map(r -> new RegionDTO(
@@ -35,9 +32,6 @@ public class RegionService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Récupère tous les départements d’une région donnée
-     */
     public List<DepartmentDTO> getDepartmentsByRegion(Long regionId) {
         List<Department> departments = departmentRepository.findByRegionId(regionId);
         return departments.stream()

@@ -5,12 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
-/**
- * Entité représentant une région française.
- * 
- * Correspond au niveau administratif supérieur de la hiérarchie géographique française.
- * Contient les départements et respecte les codes INSEE officiels.
- */
 @Entity
 @Table(name = "regions")
 public class Region {

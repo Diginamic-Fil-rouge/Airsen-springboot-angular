@@ -7,37 +7,18 @@ package fr.airsen.api.entity.enums;
  * for tracking delivery success and failure.
  */
 public enum AlertStatus {
-    /**
-     * Alert notification has been successfully sent
-     */
     SENT("Sent"),
     
-    /**
-     * Alert notification failed to send
-     */
     FAILED("Failed"),
     
-    /**
-     * Alert notification is pending delivery
-     */
     PENDING("Pending");
 
     private final String displayName;
 
-    /**
-     * Constructor for AlertStatus enum.
-     * 
-     * @param displayName human-readable name of the alert status
-     */
     AlertStatus(String displayName) {
         this.displayName = displayName;
     }
 
-    /**
-     * Gets the human-readable display name of the alert status.
-     * 
-     * @return display name
-     */
     public String getDisplayName() {
         return displayName;
     }

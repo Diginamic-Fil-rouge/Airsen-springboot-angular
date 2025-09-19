@@ -16,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-/**
- * Service for handling forum messages.
- */
+
 @Service
 public class ForumMessageService {
 
@@ -34,45 +32,20 @@ public class ForumMessageService {
     @Autowired
     private ForumMessageMapper forumMessageMapper;
 
-    /**
-     * Find all forum messages.
-     *
-     * @return List of forum {@link ForumMessageDTO}.
-     */
     public List<ForumMessageDTO> findAll() {
         return forumMessageMapper.toDTOs(forumMessageRepository.findAll());
     }
 
-    /**
-     * Find forum message by ID.
-     *
-     * @param id ID of the forum message.
-     * @return {@link ForumMessageDTO}.
-     */
     public ForumMessageDTO findById(long id) {
         return forumMessageMapper.toDTO(forumMessageRepository.findById(id).orElse(null));
     }
 
-    /**
-     * Find forum messages by author ID.
-     *
-     * @param id ID of the author.
-     * @return List of {@link ForumMessageDTO}.
-     * @throws EntityNotFoundException if author with given ID is not found.
-     */
     public List<ForumMessageDTO> findByAuthor(Long id) throws EntityNotFoundException{
         User author = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         return forumMessageMapper.toDTOs(forumMessageRepository.findByAuthor(author));
     }
 
-    /**
-     * Get forum messages by thread ID.
-     *
-     * @param id ID of the thread.
-     * @return List of {@link ForumMessageDTO}.
-     * @throws EntityNotFoundException if thread with given ID is not found.
-     */
     public List<ForumMessageDTO> getMessagesByThread(long id) throws EntityNotFoundException{
         ForumThread thread = forumThreadRepository.findById(id).orElse(null);
         if (thread == null)
@@ -83,13 +56,10 @@ public class ForumMessageService {
     }
 
     /**
-     * Add a forum message to a thread.
-     *
-     * @param id         ID of the thread.
-     * @param forumMessage Forum message to add.
-     * @return {@link ForumMessageDTO}.
-     * @throws EntityNotFoundException if forum thread with given ID is not found.
+     * Adds a new message to a forum thread with validation.
+     * Validates message content and ensures thread exists before adding the message.
      */
+
     public ForumMessageDTO addMessageToThread(long id, @RequestBody ForumMessage forumMessage, BindingResult result) throws EntityNotFoundException, IllegalArgumentException{
         if (result.hasErrors()){
             throw new IllegalArgumentException("Invalid message : " + result.getAllErrors().get(0).getDefaultMessage());
@@ -104,13 +74,10 @@ public class ForumMessageService {
     }
 
     /**
-     * Update a forum message.
-     *
-     * @param id         ID of the forum message.
-     * @param forumMessage Forum message to update.
-     * @return {@link ForumMessageDTO}.
-     * @throws EntityNotFoundException if forum message with given ID is not found.
+     * Updates an existing forum message with validation.
+     * Validates message content and ensures message exists before updating.
      */
+
     public ForumMessageDTO updateMessage(long id, @RequestBody ForumMessage forumMessage, BindingResult result) throws EntityNotFoundException, IllegalArgumentException{
         if (result.hasErrors()){
             throw new IllegalArgumentException("Invalid message : " + result.getAllErrors().get(0).getDefaultMessage());
@@ -126,12 +93,6 @@ public class ForumMessageService {
         return forumMessageMapper.toDTO(forumMessageRepository.save(message));
     }
 
-    /**
-     * Delete a forum message.
-     *
-     * @param id ID of the forum message.
-     * @throws EntityNotFoundException if forum message with given ID is not found.
-     */
     public void deleteMessage(long id) throws EntityNotFoundException{
         ForumMessage message = forumMessageRepository.findById(id).orElse(null);
         if (message == null)

@@ -13,9 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * Service for handling forum votes.
- */
 @Service
 public class ForumVoteService {
     
@@ -31,13 +28,6 @@ public class ForumVoteService {
     @Autowired
     private ForumThreadRepository forumThreadRepository;
 
-    /**
-     * Find all forum votes by thread ID.
-     *
-     * @param id ID of the forum thread.
-     * @return List of forum {@link ForumVoteDTO}.
-     * @throws EntityNotFoundException if forum thread with given ID is not found.
-     */
     public List<ForumVoteDTO> findAllVoteByThread(long id) throws EntityNotFoundException
     {
         ForumThread thread = forumThreadRepository.findById(id).orElse(null);
@@ -48,13 +38,6 @@ public class ForumVoteService {
         return forumVoteMapper.toDTOs(forumVoteRepository.findByThread(thread));
     }
     
-    /**
-     * Find forum vote by ID.
-     *
-     * @param id ID of the forum vote.
-     * @return {@link ForumVoteDTO}.
-     * @throws EntityNotFoundException if forum vote with given ID is not found.
-     */
     public ForumVoteDTO findById(long id) throws EntityNotFoundException
     {
         ForumVote vote = forumVoteRepository.findById(id).orElse(null);

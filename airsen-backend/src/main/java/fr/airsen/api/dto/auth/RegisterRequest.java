@@ -46,21 +46,11 @@ public record RegisterRequest(
     @Schema(description = "User role (optional, defaults to USER)", example = "USER", allowableValues = {"USER", "ADMIN"})
     UserRole role
 ) {
-    
-    /**
-     * Normalizes email to lowercase for consistent storage.
-     * 
-     * @return normalized email address
-     */
+
     public String getNormalizedEmail() {
         return email != null ? email.toLowerCase().trim() : null;
     }
-    
-    /**
-     * Gets normalized first name with proper capitalization.
-     * 
-     * @return normalized first name
-     */
+
     public String getNormalizedFirstName() {
         if (firstName == null || firstName.trim().isEmpty()) {
             return null;
@@ -68,12 +58,7 @@ public record RegisterRequest(
         String trimmed = firstName.trim();
         return trimmed.substring(0, 1).toUpperCase() + trimmed.substring(1).toLowerCase();
     }
-    
-    /**
-     * Gets normalized last name with proper capitalization.
-     * 
-     * @return normalized last name
-     */
+
     public String getNormalizedLastName() {
         if (lastName == null || lastName.trim().isEmpty()) {
             return null;
@@ -85,12 +70,7 @@ public record RegisterRequest(
     public UserRole getAssignedRole() {
         return role != null ? role : UserRole.USER;
     }
-    
-    /**
-     * Secure toString implementation that excludes password.
-     * 
-     * @return string representation without sensitive information
-     */
+
     @Override
     public String toString() {
         return "RegisterRequest[email=" + email + ", firstName=" + firstName + 

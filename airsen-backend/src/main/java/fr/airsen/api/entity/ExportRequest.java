@@ -13,11 +13,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Entité représentant une demande d'export de données utilisateur.
+ * Entity representing a user data export request.
  * 
- * Cette entité gère les demandes d'export de données environnementales
- * avec filtrage par type de données, format de fichier et plage de dates.
- * Inclut les limites d'export par utilisateur pour respecter les contraintes système.
+ * This entity manages environmental data export requests
+ * with filtering by data type, file format and date range.
+ * Includes per-user export limits to respect system constraints.
  */
 @Entity
 @Table(name = "export_requests", indexes = {
@@ -28,79 +28,49 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class ExportRequest {
 
-    /**
-     * Identifiant unique de la demande d'export.
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    /**
-     * Utilisateur ayant effectué la demande d'export.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @NotNull(message = "L'utilisateur est obligatoire pour une demande d'export")
+    @NotNull(message = "User is required for export request")
     private User user;
 
-    /**
-     * Type de données à exporter (qualité de l'air, météo, population, complet).
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "export_type", nullable = false, length = 50)
-    @NotNull(message = "Le type d'export est obligatoire")
+    @NotNull(message = "Export type is required")
     private ExportType exportType;
 
-    /**
-     * Format du fichier d'export (PDF, CSV).
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "file_format", nullable = false, length = 10)
-    @NotNull(message = "Le format de fichier est obligatoire")
+    @NotNull(message = "File format is required")
     private FileFormat fileFormat;
 
-    /**
-     * Date de début de la plage de données à exporter.
-     */
     @Column(name = "start_date", nullable = false)
-    @NotNull(message = "La date de début est obligatoire")
-    @PastOrPresent(message = "La date de début ne peut pas être dans le futur")
+    @NotNull(message = "Start date is required")
+    @PastOrPresent(message = "Start date cannot be in the future")
     private LocalDate startDate;
 
-    /**
-     * Date de fin de la plage de données à exporter.
-     */
     @Column(name = "end_date", nullable = false)
-    @NotNull(message = "La date de fin est obligatoire")
-    @PastOrPresent(message = "La date de fin ne peut pas être dans le futur")
+    @NotNull(message = "End date is required")
+    @PastOrPresent(message = "End date cannot be in the future")
     private LocalDate endDate;
 
-    /**
-     * Statut actuel de la demande d'export.
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    @NotNull(message = "Le statut d'export est obligatoire")
+    @NotNull(message = "Export status is required")
     private ExportStatus status;
 
-    /**
-     * Date de création de la demande d'export.
-     */
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    /**
-     * Chemin du fichier généré (null si l'export n'est pas terminé).
-     */
     @Column(name = "generated_file", length = 255)
-    @Size(max = 255, message = "Le chemin du fichier ne peut pas dépasser 255 caractères")
+    @Size(max = 255, message = "File path cannot exceed 255 characters")
     private String generatedFile;
 
-    /**
-     * Communes incluses dans cette demande d'export.
-     */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "export_communes",
@@ -109,22 +79,10 @@ public class ExportRequest {
     )
     private List<Commune> communes;
 
-    /**
-     * Constructeur par défaut.
-     */
     public ExportRequest() {
         this.status = ExportStatus.IN_PROGRESS;
     }
 
-    /**
-     * Constructeur avec paramètres principaux.
-     * 
-     * @param user utilisateur demandant l'export
-     * @param exportType type de données à exporter
-     * @param fileFormat format du fichier d'export
-     * @param startDate date de début de la plage
-     * @param endDate date de fin de la plage
-     */
     public ExportRequest(User user, ExportType exportType, FileFormat fileFormat, 
                         LocalDate startDate, LocalDate endDate) {
         this();
@@ -218,11 +176,11 @@ public class ExportRequest {
     }
 
     /**
-     * Valide que la plage de dates est cohérente (date de début <= date de fin).
+     * Validates that the date range is consistent (start date <= end date).
      * 
-     * @return true si la plage de dates est valide
+     * @return true if the date range is valid
      */
-    @AssertTrue(message = "La date de début doit être antérieure ou égale à la date de fin")
+    @AssertTrue(message = "Start date must be before or equal to end date")
     public boolean isDateRangeValid() {
         if (startDate == null || endDate == null) {
             return true; // @NotNull validations handle this case
@@ -231,9 +189,9 @@ public class ExportRequest {
     }
 
     /**
-     * Marque l'export comme terminé avec succès.
+     * Marks the export as completed successfully.
      * 
-     * @param filePath chemin du fichier généré
+     * @param filePath path of the generated file
      */
     public void markAsCompleted(String filePath) {
         this.status = ExportStatus.COMPLETED;
@@ -241,7 +199,7 @@ public class ExportRequest {
     }
 
     /**
-     * Marque l'export comme échoué.
+     * Marks the export as failed.
      */
     public void markAsFailed() {
         this.status = ExportStatus.FAILED;
@@ -249,19 +207,14 @@ public class ExportRequest {
     }
 
     /**
-     * Vérifie si l'export est terminé (succès ou échec).
+     * Checks if the export is finished (success or failure).
      * 
-     * @return true si l'export est dans un état final
+     * @return true if export is in a final state
      */
     public boolean isFinished() {
         return status == ExportStatus.COMPLETED || status == ExportStatus.FAILED;
     }
 
-    /**
-     * Vérifie si l'export a réussi.
-     * 
-     * @return true si l'export est terminé avec succès
-     */
     public boolean isSuccessful() {
         return status == ExportStatus.COMPLETED && generatedFile != null;
     }

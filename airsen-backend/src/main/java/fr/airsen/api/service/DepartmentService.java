@@ -18,9 +18,6 @@ public class DepartmentService {
         this.departmentRepository = departmentRepository;
     }
 
-    /**
-     * Récupère un département pour un id donné.
-     */
     public DepartmentDTO getDepartmentById(Long id) {
         Optional<Department> opt = departmentRepository.findById(id);
         if (opt.isEmpty()) return null;
@@ -33,16 +30,13 @@ public class DepartmentService {
         );
     }
 
-    /**
-     * Récupère tous les départements d'une région donnée.
-     */
     public List<DepartmentDTO> getDepartmentsByRegion(Long regionId) {
         List<Department> departments = departmentRepository.findByRegionId(regionId);
         return departments.stream()
                 .map(d -> new DepartmentDTO(
                         d.getId(),
                         d.getName(),
-                        d.getDepartmentCode(), // <-- passe l'int directement
+                        d.getDepartmentCode(),
                         d.getRegionCode()
                 ))
                 .collect(Collectors.toList());

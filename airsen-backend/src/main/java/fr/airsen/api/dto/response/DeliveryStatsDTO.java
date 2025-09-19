@@ -8,33 +8,18 @@ package fr.airsen.api.dto.response;
  */
 public class DeliveryStatsDTO {
 
-    /**
-     * Total number of delivery attempts.
-     */
     private Long totalDeliveries;
 
     private Long successfulDeliveries;
 
     private Long failedDeliveries;
 
-    /**
-     * Number of pending deliveries.
-     */
     private Long pendingDeliveries;
 
-    /**
-     * Success rate as a percentage (0-100).
-     */
     private Double successRate;
 
-    /**
-     * Failure rate as a percentage (0-100).
-     */
     private Double failureRate;
 
-    /**
-     * Time period for these statistics (e.g., "Last 24 hours").
-     */
     private String timePeriod;
 
     public DeliveryStatsDTO() {}
@@ -48,22 +33,11 @@ public class DeliveryStatsDTO {
         calculateRates();
     }
 
-    /**
-     * Constructor with delivery counts and time period.
-     * 
-     * @param totalDeliveries total delivery attempts
-     * @param successfulDeliveries successful deliveries
-     * @param failedDeliveries failed deliveries
-     * @param pendingDeliveries pending deliveries
-     * @param timePeriod time period description
-     */
     public DeliveryStatsDTO(Long totalDeliveries, Long successfulDeliveries, 
                            Long failedDeliveries, Long pendingDeliveries, String timePeriod) {
         this(totalDeliveries, successfulDeliveries, failedDeliveries, pendingDeliveries);
         this.timePeriod = timePeriod;
     }
-
-    // Getters and Setters
 
     public Long getTotalDeliveries() {
         return totalDeliveries;

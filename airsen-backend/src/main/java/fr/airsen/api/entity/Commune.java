@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entité représentant une commune française.
+ * Entity representing a French commune.
  * 
- * Niveau administratif le plus bas de la hiérarchie géographique française.
- * Contient les données démographiques et géographiques pour l'affichage
- * sur carte interactive et la recherche de proximité.
+ * Lowest administrative level of the French geographic hierarchy.
+ * Contains demographic and geographic data for interactive map display
+ * and proximity search.
  */
 @Entity
 @Table(name = "communes")

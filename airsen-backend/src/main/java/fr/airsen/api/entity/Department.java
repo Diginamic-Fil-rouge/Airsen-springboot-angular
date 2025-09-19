@@ -8,10 +8,10 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
- * Entité représentant un département français.
+ * Entity representing a French department.
  * 
- * Niveau administratif intermédiaire de la hiérarchie géographique française.
- * Appartient à une région et contient des communes.
+ * Intermediate administrative level of the French geographic hierarchy.
+ * Belongs to a region and contains communes.
  */
 @Entity
 @Table(name = "departments")

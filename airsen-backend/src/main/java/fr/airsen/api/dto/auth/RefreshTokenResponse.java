@@ -18,82 +18,35 @@ package fr.airsen.api.dto.auth;
  */
 public class RefreshTokenResponse {
 
-    /**
-     * New JWT token string for authentication.
-     * 
-     * This token should replace the previous token and be included
-     * in the Authorization header of subsequent requests.
-     */
     private String token;
 
-    /**
-     * Token expiration time in seconds.
-     * 
-     * Indicates how long the new token will remain valid.
-     * Client should refresh again before this expiration.
-     */
     private Long expiresIn;
 
-    /**
-     * Default constructor for JSON serialization.
-     */
     public RefreshTokenResponse() {
     }
 
-    /**
-     * Constructor with token and expiration in seconds.
-     * 
-     * @param token new JWT token string
-     * @param expiresIn token expiration in seconds
-     */
     public RefreshTokenResponse(String token, Long expiresIn) {
         this.token = token;
         this.expiresIn = expiresIn;
     }
 
-    /**
-     * Constructor with token and expiration in milliseconds.
-     * 
-     * @param token new JWT token string
-     * @param expirationMs token expiration in milliseconds
-     */
     public RefreshTokenResponse(String token, long expirationMs) {
         this.token = token;
         this.expiresIn = expirationMs / 1000; // Convert to seconds
     }
 
-    /**
-     * Gets the new JWT token string.
-     * 
-     * @return JWT token for authentication
-     */
     public String getToken() {
         return token;
     }
 
-    /**
-     * Sets the new JWT token string.
-     * 
-     * @param token JWT token to set
-     */
     public void setToken(String token) {
         this.token = token;
     }
 
-    /**
-     * Gets the token expiration time in seconds.
-     * 
-     * @return seconds until token expires
-     */
     public Long getExpiresIn() {
         return expiresIn;
     }
 
-    /**
-     * Sets the token expiration time in seconds.
-     * 
-     * @param expiresIn seconds until token expires
-     */
     public void setExpiresIn(Long expiresIn) {
         this.expiresIn = expiresIn;
     }
@@ -169,44 +122,21 @@ public class RefreshTokenResponse {
         private String token;
         private Long expiresIn;
 
-        /**
-         * Sets the JWT token.
-         * 
-         * @param token JWT token string
-         * @return this builder
-         */
         public Builder token(String token) {
             this.token = token;
             return this;
         }
 
-        /**
-         * Sets the token expiration in seconds.
-         * 
-         * @param expiresIn seconds until expiration
-         * @return this builder
-         */
         public Builder expiresIn(Long expiresIn) {
             this.expiresIn = expiresIn;
             return this;
         }
 
-        /**
-         * Sets the token expiration from milliseconds.
-         * 
-         * @param expirationMs milliseconds until expiration
-         * @return this builder
-         */
         public Builder expiresInMs(long expirationMs) {
             this.expiresIn = expirationMs / 1000;
             return this;
         }
 
-        /**
-         * Builds the RefreshTokenResponse instance.
-         * 
-         * @return configured RefreshTokenResponse
-         */
         public RefreshTokenResponse build() {
             return new RefreshTokenResponse(token, expiresIn);
         }
