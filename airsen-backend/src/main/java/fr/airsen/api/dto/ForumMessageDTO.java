@@ -1,5 +1,6 @@
 package fr.airsen.api.dto;
 
+import fr.airsen.api.dto.auth.UserDTO;
 import fr.airsen.api.entity.ForumMessage;
 import fr.airsen.api.entity.User;
 
@@ -10,7 +11,7 @@ public class ForumMessageDTO {
 
     private long id;
 
-    private User author;
+    private UserDTO author;
 
     private ForumThreadDTO thread;
 
@@ -23,9 +24,7 @@ public class ForumMessageDTO {
 
     public ForumMessageDTO(ForumMessage forumMessage, boolean withThread){
         this.id = forumMessage.getId();
-        this.author = forumMessage.getAuthor();
-        // TODO after UserDTO implementation
-//        this.author = new UserDTO(forumMessage.getAuthor());
+        this.author = new UserDTO(forumMessage.getAuthor().getId(), forumMessage.getAuthor().getEmail(), forumMessage.getAuthor().getFirstName(), forumMessage.getAuthor().getLastName(), forumMessage.getAuthor().getRole());
         this.content = forumMessage.getContent();
         this.createdDate = forumMessage.getCreatedDate();
         if(withThread){
@@ -41,11 +40,11 @@ public class ForumMessageDTO {
         this.id = id;
     }
 
-    public User getAuthor() {
+    public UserDTO getAuthor() {
         return author;
     }
 
-    public void setAuthor(User author) {
+    public void setAuthor(UserDTO author) {
         this.author = author;
     }
 
