@@ -31,14 +31,14 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     /**
-     * Configuration de la chaîne de filtres de sécurité.
+     * Configures the security filter chain.
      * 
-     * Définit les endpoints publics et privés avec les règles d'authentification
-     * appropriées pour le développement.
+     * Defines public and private endpoints with appropriate authentication rules
+     * for development.
      * 
-     * @param http objet HttpSecurity pour la configuration
-     * @return SecurityFilterChain configurée
-     * @throws Exception si une erreur de configuration survient
+     * @param http HttpSecurity object for configuration
+     * @return configured SecurityFilterChain
+     * @throws Exception if configuration error occurs
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -47,7 +47,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Endpoints publics (pas d'authentification requise)
+                // Public endpoints (no authentication required)
                 .requestMatchers(
                     "/swagger-ui/**",
                     "/swagger-ui.html", 
@@ -56,33 +56,33 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/test/**"
                 ).permitAll()
-                // Endpoints d'authentification publics
+                // Public authentication endpoints
                 .requestMatchers("/auth/**").permitAll()
-                // Endpoints de données géographiques publics
+                // Public geographic data endpoints
                 .requestMatchers("/regions/**", "/departments/**", "/communes/**").permitAll()
-                // Endpoints de données environnementales publics
+                // Public environmental data endpoints
                 .requestMatchers("/air-quality/**", "/weather/**").permitAll()
-                // Endpoints forum publics en lecture
+                // Public read-only forum endpoints
                 .requestMatchers("/forum/categories", "/forum/categories/**", "/forum/threads/**").permitAll()
-                // Tous les autres endpoints nécessitent une authentification
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
-            // Configuration de la gestion des exceptions d'authentification
+            // Authentication exception handling configuration
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             )
-            // Ajouter le filtre JWT avant l'authentification par formulaire
+            // Add JWT filter before form authentication
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }
 
     /**
-     * Configuration du PasswordEncoder pour le hachage sécurisé des mots de passe.
+     * Configures PasswordEncoder for secure password hashing.
      * 
-     * Utilise BCrypt avec une force de 8 pour un bon équilibre entre sécurité
-     * et performance.
+     * Uses BCrypt with strength 8 for good balance between security
+     * and performance.
      * 
-     * @return BCryptPasswordEncoder configuré
+     * @return configured BCryptPasswordEncoder
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -90,11 +90,11 @@ public class SecurityConfig {
     }
 
     /**
-     * Configuration de l'AuthenticationManager pour l'authentification des utilisateurs.
+     * Configures AuthenticationManager for user authentication.
      * 
-     * @param authConfig configuration d'authentification Spring Security
-     * @return AuthenticationManager configuré
-     * @throws Exception si une erreur de configuration survient
+     * @param authConfig Spring Security authentication configuration
+     * @return configured AuthenticationManager
+     * @throws Exception if configuration error occurs
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
@@ -102,30 +102,30 @@ public class SecurityConfig {
     }
 
     /**
-     * Configuration CORS pour permettre les requêtes cross-origin depuis le frontend Angular.
+     * CORS configuration to allow cross-origin requests from Angular frontend.
      * 
-     * Configure les origines autorisées, les méthodes HTTP acceptées, et les en-têtes
-     * nécessaires pour l'authentification JWT.
+     * Configures allowed origins, accepted HTTP methods, and headers
+     * necessary for JWT authentication.
      * 
-     * @return CorsConfigurationSource configurée pour le développement et la production
+     * @return CorsConfigurationSource configured for development and production
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Origines autorisées - frontend Angular
+        // Allowed origins - Angular frontend
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:4200",     // Angular dev server
             "https://*.airsen.fr",       // Production domain pattern
             "https://airsen.fr"          // Production domain
         ));
         
-        // Méthodes HTTP autorisées
+        // Allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE"
         ));
         
-        // En-têtes autorisés (inclut Authorization pour JWT)
+        // Allowed headers (includes Authorization for JWT)
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization", 
             "Content-Type", 
@@ -134,17 +134,17 @@ public class SecurityConfig {
             "Cache-Control"
         ));
         
-        // En-têtes exposés au client
+        // Headers exposed to client
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
             "Content-Length",
             "X-Total-Count"
         ));
         
-        // Permettre l'envoi de cookies/credentials
+        // Allow sending cookies/credentials
         configuration.setAllowCredentials(true);
         
-        // Durée de cache pour les requêtes preflight
+        // Cache duration for preflight requests
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

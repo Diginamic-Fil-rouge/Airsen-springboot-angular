@@ -16,12 +16,12 @@ import java.util.List;
 public class OpenApiConfig {
 
     /**
-     * Configuration personnalisée d'OpenAPI pour l'API Airsen.
+     * Custom OpenAPI configuration for the Airsen API.
      * 
-     * Définit les informations de l'API, les serveurs disponibles et 
-     * les schémas de sécurité JWT.
+     * Defines API information, available servers and
+     * JWT security schemes.
      * 
-     * @return Configuration OpenAPI personnalisée
+     * @return Custom OpenAPI configuration
      */
     @Bean
     public OpenAPI airsenOpenAPI() {
@@ -29,29 +29,29 @@ public class OpenApiConfig {
             .info(new Info()
                 .title("Airsen API")
                 .description("""
-                    **API REST pour le monitoring de la qualité de l'air en France**
+                    **REST API for air quality monitoring in France**
                     
-                    Cette API fournit des données en temps réel sur :
-                    - **Qualité de l'air** : Indices ATMO et concentrations de polluants
-                    - **Météo** : Conditions actuelles et prévisions
-                    - **Données géographiques** : Régions, départements et communes françaises
-                    - **Gestion utilisateur** : Profils, favoris et alertes personnalisées
-                    - **Forum communautaire** : Discussions et partage d'expériences
-                    - **Export de données** : Génération de rapports PDF et CSV
+                    This API provides real-time data on:
+                    - **Air Quality**: ATMO indices and pollutant concentrations
+                    - **Weather**: Current conditions and forecasts
+                    - **Geographic Data**: French regions, departments and communes
+                    - **User Management**: Profiles, favorites and personalized alerts
+                    - **Community Forum**: Discussions and experience sharing
+                    - **Data Export**: PDF and CSV report generation
                     
-                    ## Authentification
-                    L'API utilise l'authentification JWT. Pour les endpoints protégés :
-                    1. Connectez-vous via `/auth/login`
-                    2. Utilisez le token reçu dans l'en-tête `Authorization: Bearer {token}`
+                    ## Authentication
+                    The API uses JWT authentication. For protected endpoints:
+                    1. Login via `/auth/login`
+                    2. Use the received token in the `Authorization: Bearer {token}` header
                     
-                    ## Sources de données
-                    - **ATMO France** : Données officielles de qualité de l'air
-                    - **Open-Meteo** : Données météorologiques
-                    - **INSEE** : Données géographiques et démographiques
+                    ## Data Sources
+                    - **ATMO France**: Official air quality data
+                    - **Open-Meteo**: Weather data
+                    - **INSEE**: Geographic and demographic data
                     """)
                 .version("1.0.0-SNAPSHOT")
                 .contact(new Contact()
-                    .name("Équipe Airsen")
+                    .name("Airsen Team")
                     .email("contact@airsen.fr")
                     .url("https://airsen.fr"))
                 .license(new License()
@@ -60,10 +60,10 @@ public class OpenApiConfig {
             .servers(List.of(
                 new Server()
                     .url("http://localhost:8080/api/v1")
-                    .description("Serveur de développement"),
+                    .description("Development server"),
                 new Server()
                     .url("https://api.airsen.fr/v1")
-                    .description("Serveur de production")
+                    .description("Production server")
             ))
             .components(new Components()
                 .addSecuritySchemes("bearerAuth", 
@@ -71,7 +71,7 @@ public class OpenApiConfig {
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
                         .bearerFormat("JWT")
-                        .description("Authentification JWT. Format: 'Bearer {token}'")
+                        .description("JWT Authentication. Format: 'Bearer {token}'")
                 )
             );
     }

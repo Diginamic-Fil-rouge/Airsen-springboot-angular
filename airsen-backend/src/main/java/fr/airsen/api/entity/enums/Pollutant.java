@@ -35,31 +35,15 @@ public enum Pollutant {
     private final String displayName;
     private final String unit;
 
-    /**
-     * Constructor for Pollutant enum.
-     * 
-     * @param displayName human-readable name of the pollutant
-     * @param unit measurement unit for the pollutant
-     */
     Pollutant(String displayName, String unit) {
         this.displayName = displayName;
         this.unit = unit;
     }
 
-    /**
-     * Gets the human-readable display name of the pollutant.
-     * 
-     * @return display name
-     */
     public String getDisplayName() {
         return displayName;
     }
 
-    /**
-     * Gets the measurement unit for the pollutant.
-     * 
-     * @return measurement unit
-     */
     public String getUnit() {
         return unit;
     }

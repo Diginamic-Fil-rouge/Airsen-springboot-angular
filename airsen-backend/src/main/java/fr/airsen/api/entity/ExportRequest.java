@@ -225,7 +225,7 @@ public class ExportRequest {
     @AssertTrue(message = "La date de début doit être antérieure ou égale à la date de fin")
     public boolean isDateRangeValid() {
         if (startDate == null || endDate == null) {
-            return true; // Les validations @NotNull gèrent ce cas
+            return true; // @NotNull validations handle this case
         }
         return !startDate.isAfter(endDate);
     }

@@ -80,11 +80,6 @@ public record AuthResponse(
         );
     }
     
-    /**
-     * Gets the full user name (first + last).
-     * 
-     * @return formatted full name
-     */
     public String getFullUserName() {
         if (userFirstName == null && userLastName == null) {
             return "Unknown User";

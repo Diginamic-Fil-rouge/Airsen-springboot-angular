@@ -48,7 +48,7 @@ public record RegisterRequest(
 ) {
     
     /**
-     * Gets normalized email in lowercase.
+     * Normalizes email to lowercase for consistent storage.
      * 
      * @return normalized email address
      */
@@ -82,11 +82,6 @@ public record RegisterRequest(
         return trimmed.substring(0, 1).toUpperCase() + trimmed.substring(1).toLowerCase();
     }
     
-    /**
-     * Gets the assigned role, defaulting to USER if not specified.
-     * 
-     * @return user role for registration
-     */
     public UserRole getAssignedRole() {
         return role != null ? role : UserRole.USER;
     }

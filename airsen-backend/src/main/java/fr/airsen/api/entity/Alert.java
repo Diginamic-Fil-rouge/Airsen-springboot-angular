@@ -32,63 +32,39 @@ public class Alert {
     @Column(name = "id")
     private Long id;
 
-    /**
-     * User who created this alert.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @NotNull(message = "User is required for alert")
     private User user;
 
-    /**
-     * Commune being monitored by this alert.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "commune_id", nullable = false)
     @NotNull(message = "Commune is required for alert")
     private Commune commune;
 
-    /**
-     * Pollutant being monitored by this alert.
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "pollutant", nullable = false)
     @NotNull(message = "Pollutant type is required")
     private Pollutant pollutant;
 
-    /**
-     * Threshold value that triggers the alert when exceeded.
-     */
     @Column(name = "threshold_value", nullable = false, precision = 8, scale = 2)
     @NotNull(message = "Threshold value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Threshold value must be positive")
     @Digits(integer = 6, fraction = 2, message = "Threshold value must have at most 6 digits before decimal and 2 after")
     private BigDecimal thresholdValue;
 
-    /**
-     * Notification delivery method for this alert.
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false)
     @NotNull(message = "Notification type is required")
     private NotificationType notificationType;
 
-    /**
-     * Whether this alert is currently active and monitoring.
-     */
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 
-    /**
-     * Date and time when this alert was created.
-     */
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    /**
-     * Historical records of this alert being triggered.
-     */
     @OneToMany(mappedBy = "alert", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AlertHistory> alertHistories;
 
