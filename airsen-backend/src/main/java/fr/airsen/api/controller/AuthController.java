@@ -8,6 +8,7 @@ import fr.airsen.api.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -87,7 +88,13 @@ public class AuthController {
             content = @Content(schema = @Schema(implementation = Map.class))
         )
     })
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(
+            @RequestBody(
+                description = "User login credentials",
+                required = true,
+                content = @Content(schema = @Schema(implementation = LoginRequest.class))
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody LoginRequest loginRequest) {
         try {
             logger.info("Login attempt for user: {}", loginRequest.getNormalizedEmail());
             
@@ -147,7 +154,13 @@ public class AuthController {
             content = @Content(schema = @Schema(implementation = Map.class))
         )
     })
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(
+            @RequestBody(
+                description = "User registration data",
+                required = true,
+                content = @Content(schema = @Schema(implementation = RegisterRequest.class))
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody RegisterRequest registerRequest) {
         try {
             logger.info("Registration attempt for user: {}", registerRequest.getNormalizedEmail());
             

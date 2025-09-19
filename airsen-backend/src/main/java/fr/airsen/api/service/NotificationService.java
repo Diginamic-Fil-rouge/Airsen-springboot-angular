@@ -2,7 +2,6 @@ package fr.airsen.api.service;
 
 import fr.airsen.api.entity.Notification;
 import fr.airsen.api.entity.User;
-import fr.airsen.api.entity.enums.NotificationChannel;
 import fr.airsen.api.entity.enums.NotificationType;
 import fr.airsen.api.repository.NotificationRepository;
 import fr.airsen.api.repository.UserRepository;
@@ -46,7 +45,7 @@ public class NotificationService {
      * @param userRepository user data access repository
      * @param mailSender Spring mail sender for email delivery
      */
-    @Autowired
+    @Autowired(required = false)
     public NotificationService(NotificationRepository notificationRepository,
                               UserRepository userRepository,
                               JavaMailSender mailSender) {
@@ -389,3 +388,5 @@ public class NotificationService {
         }
     }
 }
+
+
