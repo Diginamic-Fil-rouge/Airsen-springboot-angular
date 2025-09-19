@@ -5,10 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface WeatherDataRepository extends JpaRepository<AirQuality, Integer> {
+public interface WeatherDataRepository extends JpaRepository<AirQuality, Long> {
 
     List<AirQuality> findAll();
 
-    AirQuality findById(int id);
 
 }

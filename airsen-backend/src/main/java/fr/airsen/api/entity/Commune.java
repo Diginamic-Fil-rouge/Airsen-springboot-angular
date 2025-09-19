@@ -19,7 +19,7 @@ public class Commune {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Column(name = "insee_code", unique = true, nullable = false, length = 10)
     @NotBlank(message = "INSEE code must not be empty")
@@ -88,11 +88,11 @@ public class Commune {
     }
 
     // Getters & Setters
-    public Long getId() { 
+    public long getId() {
         return id; 
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Repository for {@link ForumThread} entity.
  */
-public interface ForumThreadRepository extends JpaRepository<ForumThread, Integer> {
+public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> {
 
     /**
      * Find all {@link ForumThread} entities.
@@ -19,13 +19,6 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Intege
      */
     List<ForumThread> findAll();
 
-    /**
-     * Find {@link ForumThread} entity by id.
-     *
-     * @param id id of the {@link ForumThread} entity
-     * @return {@link ForumThread} entity with the specified id
-     */
-    ForumThread findById(long id);
 
     /**
      * Find {@link ForumThread} entities by {@link ForumCategory}.
@@ -47,5 +40,5 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Intege
      * Delete thread with the corresponding id.
      * @param id id of the thread to delete
      */
-    void deleteById(long id);
+    void deleteById(Long id);
 }

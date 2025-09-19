@@ -1,16 +1,16 @@
 package fr.airsen.api.dto;
 
 public class CommuneDTO {
-    private int id;
+    private Long id;
     private String inseeCode;
     private String name;
     private String departmentCode;
     private String regionCode;
-    private long population;
+    private Long population;
 
     public CommuneDTO() {}
 
-    public CommuneDTO(int id, String inseeCode, String name, String departmentCode, String regionCode, long population) {
+    public CommuneDTO(Long id, String inseeCode, String name, String departmentCode, String regionCode, Long population) {
         this.id = id;
         this.inseeCode = inseeCode;
         this.name = name;
@@ -19,8 +19,8 @@ public class CommuneDTO {
         this.population = population;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getInseeCode() { return inseeCode; }
     public void setInseeCode(String inseeCode) { this.inseeCode = inseeCode; }
@@ -34,6 +34,6 @@ public class CommuneDTO {
     public String getRegionCode() { return regionCode; }
     public void setRegionCode(String regionCode) { this.regionCode = regionCode; }
 
-    public long getPopulation() { return population; }
-    public void setPopulation(long population) { this.population = population; }
+    public Long getPopulation() { return population; }
+    public void setPopulation(Long population) { this.population = population; }
 }

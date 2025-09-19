@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Repository for {@link ForumMessage} JPA entities.
  */
-public interface ForumMessageRepository extends JpaRepository<ForumMessage, Integer> {
+public interface ForumMessageRepository extends JpaRepository<ForumMessage, Long> {
 
     /**
      * Get all {@link ForumMessage} entities.
@@ -19,13 +19,6 @@ public interface ForumMessageRepository extends JpaRepository<ForumMessage, Inte
      */
     List<ForumMessage> findAll();
 
-    /**
-     * Get a {@link ForumMessage} entity by its id.
-     *
-     * @param id id of the {@link ForumMessage} entity.
-     * @return a {@link ForumMessage} entity by its id.
-     */
-    ForumMessage findById(long id);
 
     /**
      * Get all {@link ForumMessage} entities by {@link ForumThread}.
@@ -47,5 +40,5 @@ public interface ForumMessageRepository extends JpaRepository<ForumMessage, Inte
      * Delete message by Id.
      * @param id id of the message to delete.
      */
-    void deleteById(long id);
+    void deleteById(Long id);
 }

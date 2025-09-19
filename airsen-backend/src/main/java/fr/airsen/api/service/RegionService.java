@@ -38,7 +38,7 @@ public class RegionService {
     /**
      * Récupère tous les départements d’une région donnée
      */
-    public List<DepartmentDTO> getDepartmentsByRegion(int regionId) {
+    public List<DepartmentDTO> getDepartmentsByRegion(Long regionId) {
         List<Department> departments = departmentRepository.findByRegionId(regionId);
         return departments.stream()
                 .map(d -> new DepartmentDTO(

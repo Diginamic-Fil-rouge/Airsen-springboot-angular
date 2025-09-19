@@ -23,14 +23,14 @@ public class CommuneService {
     /**
      * Liste les communes d'un département avec pagination et filtre optionnel sur le nom.
      */
-    public List<CommuneDTO> getCommunesByDepartment(int departmentId, int page, int size, String search) {
+    public List<CommuneDTO> getCommunesByDepartment(Long departmentId, int page, int size, String search) {
         Pageable pageable = PageRequest.of(page, size);
         List<Commune> communes;
 
         if (search != null && !search.isEmpty()) {
             communes = communeRepository.findByDepartmentIdAndNameContainingIgnoreCase(departmentId, search, pageable);
         } else {
-            communes = communeRepository.findByDepartmentId(departmentId, pageable);
+            communes = communeRepository.findByDepartmentIdAsList(departmentId, pageable);
         }
 
         return communes.stream()

@@ -22,7 +22,7 @@ public class CommuneController {
      */
     @GetMapping
     public List<CommuneDTO> getCommunesByDepartment(
-            @PathVariable int departmentId,
+            @PathVariable Long departmentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search) {

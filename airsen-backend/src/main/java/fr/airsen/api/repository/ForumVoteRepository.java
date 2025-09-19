@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Repository for {@link ForumVote}.
  */
-public interface ForumVoteRepository extends JpaRepository<ForumVote, Integer> {
+public interface ForumVoteRepository extends JpaRepository<ForumVote, Long> {
 
     /**
      * Find all {@link ForumVote} entities.
@@ -19,13 +19,6 @@ public interface ForumVoteRepository extends JpaRepository<ForumVote, Integer> {
      */
     List<ForumVote> findAll();
 
-    /**
-     * Find {@link ForumVote} by ID.
-     *
-     * @param id ID of the forum vote
-     * @return {@link ForumVote} with the specified ID
-     */
-    ForumVote findById(long id);
 
     /**
      * Find {@link ForumVote} by {@link ForumThread}.

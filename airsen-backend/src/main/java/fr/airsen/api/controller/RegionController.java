@@ -31,7 +31,7 @@ public class RegionController {
      * Liste les départements d’une région donnée
      */
     @GetMapping("/{regionId}/departments")
-    public List<DepartmentDTO> getDepartmentsByRegion(@PathVariable int regionId) {
+    public List<DepartmentDTO> getDepartmentsByRegion(@PathVariable Long regionId) {
         return regionService.getDepartmentsByRegion(regionId);
     }
 }

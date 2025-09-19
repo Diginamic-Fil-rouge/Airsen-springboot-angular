@@ -17,7 +17,7 @@ public class Region {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Column(name = "name", nullable = false, length = 100)
     @NotBlank(message = "Region name must not be empty")
@@ -40,8 +40,8 @@ public class Region {
     }
 
     // Getters & Setters
-    public Long getId() { 
-        return id; 
+    public long getId() {
+        return id;
     }
 
     public void setId(Long id) {

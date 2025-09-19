@@ -14,12 +14,12 @@ import java.util.Optional;
 /**
  * Repository for managing Commune entities.
  * 
- * Provides data access methods for French administrative communes
+ * Provides data access methods for administrative communes
  * with custom queries for geographic searches and hierarchical relationships
- * according to Airsens data model specifications.
  */
+
 @Repository
-public interface CommuneRepository extends JpaRepository<Commune, Integer> {
+public interface CommuneRepository extends JpaRepository<Commune, Long> {
 
     /**
      * Finds commune by INSEE code.
@@ -46,7 +46,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
      * @return page of communes in the department
      */
     @Query("SELECT c FROM Commune c WHERE c.department.id = :departmentId")
-    Page<Commune> findByDepartmentId(@Param("departmentId") Integer departmentId, Pageable pageable);
+    Page<Commune> findByDepartmentId(@Param("departmentId") Long departmentId, Pageable pageable);
 
     /**
      * Robincassan's method: List communes by department ID (returning List instead of Page).
@@ -55,7 +55,8 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
      * @param pageable pagination parameters
      * @return list of communes in the department
      */
-    List<Commune> findByDepartmentId(int departmentId, Pageable pageable);
+    @Query("SELECT c FROM Commune c WHERE c.department.id = :departmentId")
+    List<Commune> findByDepartmentIdAsList(@Param("departmentId") Long departmentId, Pageable pageable);
 
     /**
      * Searches communes by name or INSEE code.
@@ -77,19 +78,17 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
      */
     @Query("SELECT c FROM Commune c WHERE c.department.id = :departmentId AND LOWER(c.name) LIKE LOWER(CONCAT('%', :nameFilter, '%'))")
     Page<Commune> findByDepartmentIdAndNameContaining(
-            @Param("departmentId") Integer departmentId, 
+            @Param("departmentId") Long departmentId, 
             @Param("nameFilter") String nameFilter, 
             Pageable pageable);
 
     /**
-     * Robincassan's method: Find communes by department and name (returning List).
-     * 
      * @param departmentId department identifier
      * @param name name filter (case insensitive)
      * @param pageable pagination parameters
      * @return list of matching communes in the department
      */
-    List<Commune> findByDepartmentIdAndNameContainingIgnoreCase(int departmentId, String name, Pageable pageable);
+    List<Commune> findByDepartmentIdAndNameContainingIgnoreCase(Long departmentId, String name, Pageable pageable);
 
     /**
      * Finds communes within a bounding box.
@@ -116,7 +115,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
      * @return number of communes in the department
      */
     @Query("SELECT COUNT(c) FROM Commune c WHERE c.department.id = :departmentId")
-    long countByDepartmentId(@Param("departmentId") Integer departmentId);
+    long countByDepartmentId(@Param("departmentId") Long departmentId);
 
     /**
      * Finds communes that have air quality data.
@@ -144,7 +143,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Integer> {
      * @return page of communes in the region
      */
     @Query("SELECT c FROM Commune c WHERE c.department.region.id = :regionId")
-    Page<Commune> findByRegionId(@Param("regionId") Integer regionId, Pageable pageable);
+    Page<Commune> findByRegionId(@Param("regionId") Long regionId, Pageable pageable);
 
     /**
      * Finds most populated communes.

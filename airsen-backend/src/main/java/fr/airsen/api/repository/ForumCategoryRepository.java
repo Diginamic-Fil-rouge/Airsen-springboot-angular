@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Repository for {@link ForumCategory} entities.
  */
-public interface ForumCategoryRepository extends JpaRepository<ForumCategory, Integer> {
+public interface ForumCategoryRepository extends JpaRepository<ForumCategory, Long> {
 
     /**
      * Find all {@link ForumCategory} entities.
@@ -17,13 +17,6 @@ public interface ForumCategoryRepository extends JpaRepository<ForumCategory, In
      */
     List<ForumCategory> findAll();
 
-    /**
-     * Find {@link ForumCategory} entity by ID.
-     *
-     * @param id ID of the {@link ForumCategory} entity
-     * @return {@link ForumCategory} entity with the given ID or {@code null} if not found
-     */
-    ForumCategory findById(long id);
 
     /**
      * Find {@link ForumCategory} entity by its name.
@@ -38,5 +31,5 @@ public interface ForumCategoryRepository extends JpaRepository<ForumCategory, In
      *
      * @param id ID of the {@link ForumCategory} entity
      */
-    void deleteById(long id);
+    void deleteById(Long id);
 }
