@@ -1,7 +1,6 @@
 package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -18,7 +17,7 @@ public class AirQuality {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private long id;
 
     @ManyToOne
     @JoinColumn(name = "commune_id")
@@ -85,7 +84,7 @@ public class AirQuality {
         this.createdAt = createdAt;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 

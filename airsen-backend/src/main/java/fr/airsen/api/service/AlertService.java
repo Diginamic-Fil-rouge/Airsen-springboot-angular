@@ -73,7 +73,7 @@ public class AlertService {
             .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         // Validate commune exists
-        Commune commune = communeRepository.findById(communeId.intValue())
+        Commune commune = communeRepository.findById((long) communeId.intValue())
             .orElseThrow(() -> new IllegalArgumentException("Commune not found with id: " + communeId));
 
         // Check if user has reached alert limit

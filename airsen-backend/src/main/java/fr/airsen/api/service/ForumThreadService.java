@@ -51,7 +51,7 @@ public class ForumThreadService {
      * @throws EntityNotFoundException if category with given ID is not found.
      */
     public List<ForumThreadDTO> findByCategory(long id) throws EntityNotFoundException {
-        ForumCategory category = forumCategoryRepository.findById(id);
+        ForumCategory category = forumCategoryRepository.findById(id).orElse(null);
         if (category == null){
             throw new EntityNotFoundException("Category not found");
         }
@@ -80,7 +80,7 @@ public class ForumThreadService {
      * @return The {@link ForumThreadDTO} with the specified ID.
      */
     public ForumThreadDTO findById(long id) {
-        return mapper.toDTO(forumThreadRepository.findById(id));
+        return mapper.toDTO(forumThreadRepository.findById(id).orElse(null));
     }
 
     /**
@@ -95,7 +95,7 @@ public class ForumThreadService {
         if (result.hasErrors()) {
             throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
         }
-        ForumCategory category = forumCategoryRepository.findById(categoryId);
+        ForumCategory category = forumCategoryRepository.findById(categoryId).orElse(null);
         if (category == null)
         {
             throw new EntityNotFoundException("Category not found");
@@ -116,7 +116,7 @@ public class ForumThreadService {
         if (result.hasErrors()) {
             throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
         }
-        ForumThread entityExists = forumThreadRepository.findById(id);
+        ForumThread entityExists = forumThreadRepository.findById(id).orElse(null);
         if (entityExists == null) {
             throw new EntityNotFoundException("Failed to update thread - Thread not found");
         }
@@ -132,7 +132,7 @@ public class ForumThreadService {
      * @throws EntityNotFoundException If the thread is not found.
      */
     public List<ForumThreadDTO> deleteThread(long id) throws EntityNotFoundException {
-        ForumThread entityExists = forumThreadRepository.findById(id);
+        ForumThread entityExists = forumThreadRepository.findById(id).orElse(null);
         if (entityExists == null) {
             throw new EntityNotFoundException("Failed to delete thread - Thread not found");
         }

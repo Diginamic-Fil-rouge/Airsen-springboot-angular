@@ -50,7 +50,7 @@ public class ForumMessageService {
      * @return {@link ForumMessageDTO}.
      */
     public ForumMessageDTO findById(long id) {
-        return forumMessageMapper.toDTO(forumMessageRepository.findById(id));
+        return forumMessageMapper.toDTO(forumMessageRepository.findById(id).orElse(null));
     }
 
     /**
@@ -77,7 +77,7 @@ public class ForumMessageService {
      * @throws EntityNotFoundException if thread with given ID is not found.
      */
     public List<ForumMessageDTO> getMessagesByThread(long id) throws EntityNotFoundException{
-        ForumThread thread = forumThreadRepository.findById(id);
+        ForumThread thread = forumThreadRepository.findById(id).orElse(null);
         if (thread == null)
         {
             throw new EntityNotFoundException("Thread not found");
@@ -97,7 +97,7 @@ public class ForumMessageService {
         if (result.hasErrors()){
             throw new IllegalArgumentException("Invalid message : " + result.getAllErrors().get(0).getDefaultMessage());
         }
-        ForumThread thread = forumThreadRepository.findById(id);
+        ForumThread thread = forumThreadRepository.findById(id).orElse(null);
         if (thread == null)
         {
             throw new EntityNotFoundException("Message not found");
@@ -118,7 +118,7 @@ public class ForumMessageService {
         if (result.hasErrors()){
             throw new IllegalArgumentException("Invalid message : " + result.getAllErrors().get(0).getDefaultMessage());
         }
-        ForumMessage message = forumMessageRepository.findById(id);
+        ForumMessage message = forumMessageRepository.findById(id).orElse(null);
         if (message == null)
         {
             throw new EntityNotFoundException("Message not found");
@@ -136,7 +136,7 @@ public class ForumMessageService {
      * @throws EntityNotFoundException if forum message with given ID is not found.
      */
     public void deleteMessage(long id) throws EntityNotFoundException{
-        ForumMessage message = forumMessageRepository.findById(id);
+        ForumMessage message = forumMessageRepository.findById(id).orElse(null);
         if (message == null)
         {
             throw new EntityNotFoundException("Message not found");

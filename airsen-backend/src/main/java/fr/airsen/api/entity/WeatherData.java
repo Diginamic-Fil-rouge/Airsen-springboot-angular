@@ -15,7 +15,7 @@ public class WeatherData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private long id;
 
     @ManyToOne
     @JoinColumn(name = "commune_id")
@@ -59,7 +59,7 @@ public class WeatherData {
         this.createdAt = createdAt;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 

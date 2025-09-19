@@ -1,19 +1,14 @@
 package fr.airsen.api.service;
 
-import fr.airsen.api.dto.ForumThreadDTO;
 import fr.airsen.api.dto.ForumThreadMapper;
 import fr.airsen.api.dto.ForumVoteDTO;
 import fr.airsen.api.dto.ForumVoteMapper;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.ForumVote;
-import fr.airsen.api.entity.User;
-import fr.airsen.api.entity.enums.VoteType;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.ForumVoteRepository;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,7 +40,7 @@ public class ForumVoteService {
      */
     public List<ForumVoteDTO> findAllVoteByThread(long id) throws EntityNotFoundException
     {
-        ForumThread thread = forumThreadRepository.findById(id);
+        ForumThread thread = forumThreadRepository.findById(id).orElse(null);
         if (thread == null) {
             throw new EntityNotFoundException("Thread not found");
         }
@@ -62,7 +57,7 @@ public class ForumVoteService {
      */
     public ForumVoteDTO findById(long id) throws EntityNotFoundException
     {
-        ForumVote vote = forumVoteRepository.findById(id);
+        ForumVote vote = forumVoteRepository.findById(id).orElse(null);
         if (vote == null) {
             throw new EntityNotFoundException("Vote not found");
         }

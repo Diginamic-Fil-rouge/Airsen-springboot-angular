@@ -42,7 +42,7 @@ public class ForumCategoryService {
      * @throws EntityNotFoundException If there is no forum category with the specified id.
      */
     public ForumCategoryDTO findById(long id) throws EntityNotFoundException {
-        ForumCategory category = forumCategoryRepository.findById(id);
+        ForumCategory category = forumCategoryRepository.findById(id).orElse(null);
         if (category == null)
         {
             throw new EntityNotFoundException("Category not found");
@@ -100,7 +100,7 @@ public class ForumCategoryService {
      * @throws EntityNotFoundException If there is no forum category with the specified id.
      */
     public List<ForumCategoryDTO> deleteForumCategory(long id) throws EntityNotFoundException {
-        ForumCategory entityExists = forumCategoryRepository.findById(id);
+        ForumCategory entityExists = forumCategoryRepository.findById(id).orElse(null);
         if (entityExists == null){
             throw new EntityNotFoundException("Failed to delete category - Category not found");
         }

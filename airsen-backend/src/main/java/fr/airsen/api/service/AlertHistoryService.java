@@ -1,12 +1,12 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.Alert;
 import fr.airsen.api.entity.AlertHistory;
-import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.enums.AlertStatus;
+import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.AlertHistoryRepository;
 import fr.airsen.api.repository.AlertRepository;
-import fr.airsen.api.repository.AirQualityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service for managing AlertHistory entities and alert delivery tracking.
@@ -60,7 +59,7 @@ public class AlertHistoryService {
         Alert alert = alertRepository.findById(alertId)
             .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
 
-        AirQuality airQuality = airQualityRepository.findById(airQualityId)
+        AirQuality airQuality = airQualityRepository.findById(Long.valueOf(airQualityId))
             .orElseThrow(() -> new IllegalArgumentException("AirQuality not found with id: " + airQualityId));
 
         AlertHistory alertHistory = new AlertHistory(alert, airQuality);
@@ -75,11 +74,11 @@ public class AlertHistoryService {
      * @param initialStatus initial delivery status
      * @return created alert history record
      */
-    public AlertHistory createAlertHistory(Long alertId, Integer airQualityId, AlertStatus initialStatus) {
+    public AlertHistory createAlertHistory(Long alertId, Long airQualityId, AlertStatus initialStatus) {
         Alert alert = alertRepository.findById(alertId)
             .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
 
-        AirQuality airQuality = airQualityRepository.findById(airQualityId)
+        AirQuality airQuality = airQualityRepository.findById(Long.valueOf(airQualityId))
             .orElseThrow(() -> new IllegalArgumentException("AirQuality not found with id: " + airQualityId));
 
         AlertHistory alertHistory = new AlertHistory(alert, airQuality, initialStatus);
