@@ -8,6 +8,7 @@ import fr.airsen.api.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
@@ -37,6 +38,12 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
+    
+    @Value("${airsen.mail.from.address}")
+    private String fromAddress;
+    
+    @Value("${airsen.mail.from.name}")
+    private String fromName;
 
     /**
      * Constructor for NotificationService.
@@ -45,7 +52,7 @@ public class NotificationService {
      * @param userRepository user data access repository
      * @param mailSender Spring mail sender for email delivery
      */
-    @Autowired(required = false)
+    @Autowired
     public NotificationService(NotificationRepository notificationRepository,
                               UserRepository userRepository,
                               JavaMailSender mailSender) {
@@ -212,7 +219,7 @@ public class NotificationService {
             mailMessage.setTo(notification.getRecipientEmail());
             mailMessage.setSubject(notification.getTitle());
             mailMessage.setText(notification.getMessage());
-            mailMessage.setFrom("noreply@airsen.fr"); // Configure this in application properties
+            mailMessage.setFrom(fromName + " <" + fromAddress + ">");
 
             mailSender.send(mailMessage);
             

@@ -56,6 +56,24 @@ spring:
     jwt:
       secret: ${JWT_SECRET}
       expiration: 86400000 # 24 hours
+  
+  # Email Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+    protocol: smtp
+    test-connection: false
 
 # Server Configuration
 server:
@@ -97,3 +115,26 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+
+# Custom application email settings
+airsen:
+  mail:
+    from:
+      address: ${MAIL_FROM_ADDRESS:noreply@airsen.fr}
+      name: ${MAIL_FROM_NAME:Airsen Air Quality System}
+
+---
+# Development Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: dev
+  mail:
+    properties:
+      mail:
+        debug: true
+
+logging:
+  level:
+    org.springframework.mail: DEBUG
+    fr.airsen.api.service.NotificationService: DEBUG
