@@ -35,39 +35,18 @@ import java.util.Objects;
  */
 public class UserPrincipal implements UserDetails {
 
-    /**
-     * User's unique identifier.
-     */
     private final Long id;
 
-    /**
-     * User's email address (serves as username).
-     */
     private final String email;
 
-    /**
-     * User's hashed password.
-     */
     private final String password;
 
-    /**
-     * User's first name for display purposes.
-     */
     private final String firstName;
 
-    /**
-     * User's last name for display purposes.
-     */
     private final String lastName;
 
-    /**
-     * User's role for authorization.
-     */
     private final UserRole role;
 
-    /**
-     * Whether the user account is active.
-     */
     private final boolean enabled;
 
     /**
@@ -140,56 +119,26 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
-    /**
-     * Gets the user's unique identifier.
-     * 
-     * @return user ID
-     */
     public Long getId() {
         return id;
     }
 
-    /**
-     * Gets the user's email address.
-     * 
-     * @return user email
-     */
     public String getEmail() {
         return email;
     }
 
-    /**
-     * Gets the user's first name.
-     * 
-     * @return first name
-     */
     public String getFirstName() {
         return firstName;
     }
 
-    /**
-     * Gets the user's last name.
-     * 
-     * @return last name
-     */
     public String getLastName() {
         return lastName;
     }
 
-    /**
-     * Gets the user's role.
-     * 
-     * @return user role
-     */
     public UserRole getRole() {
         return role;
     }
 
-    /**
-     * Gets the user's full display name.
-     * 
-     * @return combined first and last name, or email if names unavailable
-     */
     public String getFullName() {
         if (firstName != null && lastName != null) {
             return firstName + " " + lastName;

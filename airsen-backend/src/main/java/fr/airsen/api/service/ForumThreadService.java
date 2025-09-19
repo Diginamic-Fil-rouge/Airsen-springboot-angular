@@ -65,11 +65,9 @@ public class ForumThreadService {
      * @return List of {@link ForumThreadDTO}.
      * @throws EntityNotFoundException if author with given ID is not found.
      */
-    public List<ForumThreadDTO> findByAuthor(int id) throws EntityNotFoundException {
-        User author = userRepository.findById(id);
-        if (author == null){
-            throw new EntityNotFoundException("Author not found");
-        }
+    public List<ForumThreadDTO> findByAuthor(Long id) throws EntityNotFoundException {
+        User author = userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         return mapper.toDTOs(forumThreadRepository.findByAuthor(author));
     }
 

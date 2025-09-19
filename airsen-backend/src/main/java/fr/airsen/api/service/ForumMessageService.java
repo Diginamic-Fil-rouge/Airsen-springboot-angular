@@ -60,12 +60,9 @@ public class ForumMessageService {
      * @return List of {@link ForumMessageDTO}.
      * @throws EntityNotFoundException if author with given ID is not found.
      */
-    public List<ForumMessageDTO> findByAuthor(int id) throws EntityNotFoundException{
-        User author = userRepository.findById(id);
-        if (author == null)
-        {
-            throw new EntityNotFoundException("Author not found");
-        }
+    public List<ForumMessageDTO> findByAuthor(Long id) throws EntityNotFoundException{
+        User author = userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         return forumMessageMapper.toDTOs(forumMessageRepository.findByAuthor(author));
     }
 

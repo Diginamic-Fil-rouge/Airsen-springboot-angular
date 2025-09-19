@@ -22,13 +22,6 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    /**
-     * Find user by id
-     *
-     * @param id ID of the user
-     * @return User with the given ID or null if not found
-     */
-    User findById(int id);
 
     /**
      * Recherche un utilisateur par son adresse email.
