@@ -12,6 +12,7 @@ import java.util.Objects;
  * This entity represents a thread in the forum. It is linked to a {@link ForumCategory } entity.
  */
 @Entity
+@Table(name = "forum_thread")
 public class ForumThread {
 
     @Id
