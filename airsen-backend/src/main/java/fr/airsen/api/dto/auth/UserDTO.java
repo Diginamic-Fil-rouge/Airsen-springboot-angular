@@ -102,6 +102,7 @@ public class UserDTO {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.address = address;
         this.role = role;
         this.isActive = true; // Default to active
         this.isEmailVerified = false; // Default to unverified
