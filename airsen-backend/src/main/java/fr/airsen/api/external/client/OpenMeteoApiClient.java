@@ -115,6 +115,9 @@ public class OpenMeteoApiClient {
     public Mono<OpenMeteoForecastResponse> getWeatherForecast(Double latitude, Double longitude, int forecastDays) {
         String cacheKey = String.format("weather:forecast:%.2f:%.2f:%d", latitude, longitude, forecastDays);
         
+        // Temporarily disable Redis caching to avoid deserialization issues
+        // TODO: Fix Redis serialization for Record classes
+        /*
         if (redisTemplate != null) {
             OpenMeteoForecastResponse cached = (OpenMeteoForecastResponse) redisTemplate.opsForValue().get(cacheKey);
             if (cached != null) {
@@ -122,6 +125,7 @@ public class OpenMeteoApiClient {
                 return Mono.just(cached);
             }
         }
+        */
 
         log.info("Fetching weather forecast for coordinates: [{}, {}] for {} days", 
                 longitude, latitude, forecastDays);
@@ -140,6 +144,9 @@ public class OpenMeteoApiClient {
                 Mono.error(new WeatherApiException("Forecast API error: " + response.statusCode())))
             .bodyToMono(OpenMeteoForecastResponse.class)
             .doOnSuccess(response -> {
+                // Temporarily disable Redis caching to avoid deserialization issues
+                // TODO: Fix Redis serialization for Record classes
+                /*
                 if (redisTemplate != null) {
                     // Cache for 2 hours
                     redisTemplate.opsForValue().set(cacheKey, response, Duration.ofHours(2));
@@ -147,6 +154,8 @@ public class OpenMeteoApiClient {
                 } else {
                     log.debug("Redis not available - skipping cache for forecast data: [{}, {}]", longitude, latitude);
                 }
+                */
+                log.debug("Forecast data fetched successfully for coordinates: [{}, {}]", longitude, latitude);
             })
             .doOnError(error -> log.error("Failed to fetch forecast for coordinates: [{}, {}]", 
                                         longitude, latitude, error))

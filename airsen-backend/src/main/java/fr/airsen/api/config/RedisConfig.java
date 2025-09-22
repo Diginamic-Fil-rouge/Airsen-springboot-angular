@@ -80,14 +80,12 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
         
-        // Use JSON serializer for values with type information
+
+        // Use JSON serializer for values (without polymorphic type info to avoid @class requirement)
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.activateDefaultTyping(
-            objectMapper.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            JsonTypeInfo.As.PROPERTY
-        );
+        // Disable default typing to avoid @class property requirement for Records and DTOs
+        // This prevents serialization issues with external API response objects
         
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         template.setValueSerializer(jsonSerializer);

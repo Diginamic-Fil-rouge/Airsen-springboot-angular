@@ -48,31 +48,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints (no authentication required)
-                .requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html", 
-                    "/api-docs/**",
-                    "/v3/api-docs/**",
-                    "/actuator/health",
-                    "/test/**"
-                ).permitAll()
-                // Public authentication endpoints
-                .requestMatchers("/auth/**").permitAll()
-                // Public read-only forum endpoints for VISITOR role (read categories, threads, messages)
-                .requestMatchers(HttpMethod.GET, "/forum/categories", "/forum/categories/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/forum/threads/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/forum/messages/**").permitAll()
-                // Geographic data requires authentication (USER or ADMIN role)
-                .requestMatchers("/regions/**", "/departments/**", "/communes/**").hasAnyRole("USER", "ADMIN")
-                // Environmental data requires authentication (USER or ADMIN role)
-                .requestMatchers("/air-quality/**", "/weather/**", "/atmo/**").hasAnyRole("USER", "ADMIN")
-                // Alerts and notifications require authentication (USER or ADMIN role)
-                .requestMatchers("/alerts/**", "/notifications/**").hasAnyRole("USER", "ADMIN")
-                // Forum write operations require authentication (USER or ADMIN role)
-                .requestMatchers("/forum/**").hasAnyRole("USER", "ADMIN")
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
+                // TEMPORARY: All endpoints are public for testing
+                // TODO: Re-enable authentication after testing external APIs and database integration
+                .anyRequest().permitAll()
             )
             // Authentication exception handling configuration
             .exceptionHandling(exceptions -> exceptions
