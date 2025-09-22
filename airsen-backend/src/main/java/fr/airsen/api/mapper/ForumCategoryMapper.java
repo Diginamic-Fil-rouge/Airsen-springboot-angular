@@ -1,5 +1,6 @@
-package fr.airsen.api.dto;
+package fr.airsen.api.mapper;
 
+import fr.airsen.api.dto.ForumCategoryDTO;
 import fr.airsen.api.entity.ForumCategory;
 import org.springframework.stereotype.Component;
 

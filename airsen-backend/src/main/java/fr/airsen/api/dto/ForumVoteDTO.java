@@ -1,5 +1,6 @@
 package fr.airsen.api.dto;
 
+import fr.airsen.api.dto.auth.UserDTO;
 import fr.airsen.api.entity.ForumVote;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.VoteType;
@@ -9,7 +10,7 @@ public class ForumVoteDTO {
 
     private long id;
 
-    private User user;
+    private UserDTO user;
 
     private ForumThreadDTO thread;
 
@@ -24,9 +25,7 @@ public class ForumVoteDTO {
         this.id = forumVote.getId();
         this.voteType = forumVote.getVoteType();
         if (withEntities){
-            this.user = forumVote.getUser();
-            // TODO after UserDTO implementation
-//            this.user = new UserDTO(forumVote.getUser());
+            this.user = new UserDTO(forumVote.getUser().getId(), forumVote.getUser().getEmail(), forumVote.getUser().getFirstName(), forumVote.getUser().getLastName(), forumVote.getUser().getRole());
             this.thread = new ForumThreadDTO(forumVote.getThread(), false);
         }
     }
@@ -39,11 +38,11 @@ public class ForumVoteDTO {
         this.id = id;
     }
 
-    public User getUser() {
+    public UserDTO getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserDTO user) {
         this.user = user;
     }
 

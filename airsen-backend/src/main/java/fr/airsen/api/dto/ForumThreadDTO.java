@@ -1,5 +1,6 @@
 package fr.airsen.api.dto;
 
+import fr.airsen.api.dto.auth.UserDTO;
 import fr.airsen.api.entity.*;
 
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ import java.util.List;
 public class ForumThreadDTO {
     private long id;
 
-    private User author;
+    private UserDTO author;
 
     private ForumCategoryDTO category;
 
@@ -40,11 +41,9 @@ public class ForumThreadDTO {
     public ForumThreadDTO() {
     }
 
-    public ForumThreadDTO(ForumThread forumThread, boolean withEntities){
+    public ForumThreadDTO(ForumThread forumThread, boolean withEntities) {
         this.id = forumThread.getId();
-        this.author = forumThread.getAuthor();
-        // TODO after UserDTO implementation
-//        this.author = new UserDTO(forumThread.getAuthor());
+        this.author = new UserDTO(forumThread.getAuthor().getId(), forumThread.getAuthor().getEmail(), forumThread.getAuthor().getFirstName(), forumThread.getAuthor().getLastName(), forumThread.getAuthor().getRole());
         this.category = new ForumCategoryDTO(forumThread.getCategory(), false);
         this.title = forumThread.getTitle();
         this.content = forumThread.getContent();
@@ -54,16 +53,16 @@ public class ForumThreadDTO {
         this.pinned = forumThread.isPinned();
         this.closed = forumThread.isClosed();
         this.likeCount = forumThread.getLikeCount();
-        if(withEntities){
+        if (withEntities) {
             this.messages = new ArrayList<>();
             this.votes = new ArrayList<>();
-            if (forumThread.getMessages() != null){
+            if (forumThread.getMessages() != null) {
                 for (ForumMessage message : forumThread.getMessages()) {
                     this.messages.add(new ForumMessageDTO(message, false));
                 }
             }
-            if (forumThread.getVotes() != null){
-                for (ForumVote vote : forumThread.getVotes()){
+            if (forumThread.getVotes() != null) {
+                for (ForumVote vote : forumThread.getVotes()) {
                     this.votes.add(new ForumVoteDTO(vote, false));
                 }
             }
@@ -78,11 +77,11 @@ public class ForumThreadDTO {
         this.id = id;
     }
 
-    public User getAuthor() {
+    public UserDTO getAuthor() {
         return author;
     }
 
-    public void setAuthor(User author) {
+    public void setAuthor(UserDTO author) {
         this.author = author;
     }
 

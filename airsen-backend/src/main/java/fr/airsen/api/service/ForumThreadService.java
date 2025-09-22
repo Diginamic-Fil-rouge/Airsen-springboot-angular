@@ -1,7 +1,7 @@
 package fr.airsen.api.service;
 
 import fr.airsen.api.dto.ForumThreadDTO;
-import fr.airsen.api.dto.ForumThreadMapper;
+import fr.airsen.api.mapper.ForumThreadMapper;
 import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
