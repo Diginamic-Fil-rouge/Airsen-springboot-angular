@@ -32,7 +32,7 @@ public class ForumCategoryDTO {
         this.color = forumCategory.getColor();
         if (withThreads) {
             this.threads = new ArrayList<>();
-            if (forumCategory.getThreads() != null) {
+            if (forumCategory.getThreads() != null && !forumCategory.getThreads().isEmpty()) {
                 for (ForumThread forumThread : forumCategory.getThreads()) {
                     this.threads.add(new ForumThreadDTO(forumThread, false));
                 }
