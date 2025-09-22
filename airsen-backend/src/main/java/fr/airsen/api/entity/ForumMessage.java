@@ -10,6 +10,7 @@ import java.util.Objects;
  * This entity represents a message in the forum. It is linked to a {@link ForumThread } entity.
  */
 @Entity
+@Table(name = "forum_messages")
 public class ForumMessage {
 
     @Id

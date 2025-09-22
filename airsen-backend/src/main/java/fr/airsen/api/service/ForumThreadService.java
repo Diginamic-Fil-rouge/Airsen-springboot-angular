@@ -15,10 +15,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
-/**
- * Service class for managing forum threads.
- * This class provides a set of methods for creating, reading, updating and deleting forum threads.
- */
+
 @Service
 public class ForumThreadService {
 
@@ -34,22 +31,10 @@ public class ForumThreadService {
     @Autowired
     private ForumThreadMapper mapper;
 
-    /**
-     * Finds all forum threads.
-     *
-     * @return List of {@link ForumThreadDTO}.
-     */
     public List<ForumThreadDTO> findAll() {
         return mapper.toDTOs(forumThreadRepository.findAll());
     }
 
-    /**
-     * Finds all forum threads in a given category.
-     *
-     * @param id Category ID.
-     * @return List of {@link ForumThreadDTO}.
-     * @throws EntityNotFoundException if category with given ID is not found.
-     */
     public List<ForumThreadDTO> findByCategory(long id) throws EntityNotFoundException {
         ForumCategory category = forumCategoryRepository.findById(id).orElse(null);
         if (category == null){
@@ -58,37 +43,21 @@ public class ForumThreadService {
         return mapper.toDTOs(forumThreadRepository.findByCategory(category));
     }
 
-    /**
-     * Finds all forum threads written by a given author.
-     *
-     * @param id Author ID.
-     * @return List of {@link ForumThreadDTO}.
-     * @throws EntityNotFoundException if author with given ID is not found.
-     */
     public List<ForumThreadDTO> findByAuthor(Long id) throws EntityNotFoundException {
         User author = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         return mapper.toDTOs(forumThreadRepository.findByAuthor(author));
     }
 
-    /**
-     * Finds a forum thread by its ID.
-     *
-     * @param id Thread ID.
-     * @return The {@link ForumThreadDTO} with the specified ID.
-     */
     public ForumThreadDTO findById(long id) {
         return mapper.toDTO(forumThreadRepository.findById(id).orElse(null));
     }
 
     /**
-     * Adds a new forum thread to a category.
-     *
-     * @param categoryId  The ID of the category to which the thread will be added.
-     * @param forumThread Forum thread to be added.
-     * @return List of all forum threads as {@link ForumThreadDTO}.
-     * @throws EntityNotFoundException if category with given ID is not found.
+     * Adds a new thread to a forum category with validation.
+     * Validates thread content and ensures category exists before creation.
      */
+
     public List<ForumThreadDTO> addThreadToCategory(long categoryId, @RequestBody ForumThread forumThread, BindingResult result) throws EntityNotFoundException, IllegalArgumentException {
         if (result.hasErrors()) {
             throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
@@ -104,12 +73,10 @@ public class ForumThreadService {
     }
 
     /**
-     * Updates a forum thread.
-     *
-     * @param id          the ID of the thread to be updated.
-     * @param forumThread Forum thread to be updated.
-     * @return The updated forum thread as {@link ForumThreadDTO}.
+     * Updates an existing forum thread with validation.
+     * Validates thread content and ensures thread exists before updating.
      */
+
     public ForumThreadDTO updateThread(long id, @RequestBody ForumThread forumThread, BindingResult result) throws EntityNotFoundException, IllegalArgumentException {
         if (result.hasErrors()) {
             throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
@@ -123,12 +90,10 @@ public class ForumThreadService {
     }
 
     /**
-     * Deletes a forum thread.
-     *
-     * @param id The ID of the thread to be deleted.
-     * @return List of all forum threads as {@link ForumThreadDTO}.
-     * @throws EntityNotFoundException If the thread is not found.
+     * Deletes a forum thread and returns updated thread list.
+     * Ensures thread exists before deletion.
      */
+
     public List<ForumThreadDTO> deleteThread(long id) throws EntityNotFoundException {
         ForumThread entityExists = forumThreadRepository.findById(id).orElse(null);
         if (entityExists == null) {

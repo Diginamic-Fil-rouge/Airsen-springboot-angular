@@ -25,93 +25,55 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class Notification {
 
-    /**
-     * Unique identifier for the notification.
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    /**
-     * User who sent this notification (can be system-generated).
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @NotNull(message = "Sender user is required for notification")
     private User user;
 
-    /**
-     * User who will receive this notification.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id_receiver", nullable = false)
     @NotNull(message = "Receiver user is required for notification")
     private User userReceiver;
 
-    /**
-     * Type of notification delivery method.
-     * Currently limited to email only per business requirement.
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false)
     @NotNull(message = "Notification type is required")
     private NotificationType notificationType;
 
-    /**
-     * Title of the notification.
-     */
     @Column(name = "title", nullable = false, length = 255)
     @NotBlank(message = "Notification title is required")
     @Size(max = 255, message = "Title cannot exceed 255 characters")
     private String title;
 
-    /**
-     * Content message of the notification.
-     */
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     @NotBlank(message = "Notification message is required")
     @Size(max = 5000, message = "Message cannot exceed 5000 characters")
     private String message;
 
-    /**
-     * Delivery success status of the notification.
-     */
     @Column(name = "send_status", nullable = false)
     private Boolean sendStatus = false;
 
-    /**
-     * Channel used for notification delivery.
-     * Currently limited to email only per business requirement.
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "send_channel", nullable = false)
     @NotNull(message = "Send channel is required")
     private NotificationChannel sendChannel;
 
-    /**
-     * Date and time when this notification was created.
-     */
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    /**
-     * Date and time when this notification was sent (if successful).
-     */
     @Column(name = "sent_date")
     private LocalDateTime sentDate;
 
-    /**
-     * Error message if delivery failed.
-     */
     @Column(name = "error_message", columnDefinition = "TEXT")
     @Size(max = 1000, message = "Error message cannot exceed 1000 characters")
     private String errorMessage;
 
-    /**
-     * Default constructor.
-     */
     public Notification() {
         this.sendStatus = false;
         this.notificationType = NotificationType.EMAIL;
@@ -293,11 +255,6 @@ public class Notification {
                 notificationType == NotificationType.EMAIL_AND_PUSH);
     }
 
-    /**
-     * Gets the recipient's email address for delivery.
-     * 
-     * @return recipient email address or null if not available
-     */
     public String getRecipientEmail() {
         return userReceiver != null ? userReceiver.getEmail() : null;
     }

@@ -24,20 +24,10 @@ public enum NotificationType {
 
     private final String displayName;
 
-    /**
-     * Constructor for NotificationType enum.
-     * 
-     * @param displayName human-readable name of the notification type
-     */
     NotificationType(String displayName) {
         this.displayName = displayName;
     }
 
-    /**
-     * Gets the human-readable display name of the notification type.
-     * 
-     * @return display name
-     */
     public String getDisplayName() {
         return displayName;
     }

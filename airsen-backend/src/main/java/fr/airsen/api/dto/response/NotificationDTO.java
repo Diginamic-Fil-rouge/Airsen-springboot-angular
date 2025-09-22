@@ -15,18 +15,12 @@ public class NotificationDTO {
 
     private Long id;
 
-    /**
-     * Sender user identifier.
-     */
     private Long senderId;
 
     private String senderEmail;
 
     private Long recipientId;
 
-    /**
-     * Recipient email for display purposes.
-     */
     private String recipientEmail;
 
     private NotificationType notificationType;
@@ -35,39 +29,18 @@ public class NotificationDTO {
 
     private String title;
 
-    /**
-     * Notification content message.
-     */
     private String message;
 
-    /**
-     * Delivery success status.
-     */
     private Boolean sendStatus;
 
-    /**
-     * Channel used for notification delivery.
-     */
     private NotificationChannel sendChannel;
 
-    /**
-     * Channel display name.
-     */
     private String sendChannelDisplayName;
 
-    /**
-     * Date and time when the notification was created.
-     */
     private LocalDateTime createdDate;
 
-    /**
-     * Date and time when the notification was sent (if successful).
-     */
     private LocalDateTime sentDate;
 
-    /**
-     * Error message if delivery failed.
-     */
     private String errorMessage;
 
     public NotificationDTO() {}

@@ -1,7 +1,8 @@
 package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -25,18 +26,22 @@ public class WeatherData {
     private LocalDate measurementDate;
 
     @Column(name = "temperature")
-    @Size(min = -50, max = 60, message = "The temperature must be between -50 and 60")
+    @DecimalMin(value = "-50.0", message = "The temperature must be at least -50°C")
+    @DecimalMax(value = "60.0", message = "The temperature must be at most 60°C")
     private double temperature;
 
     @Column(name = "humidity")
-    @Size(min = 0, max = 100, message = "The humidity must be between 0 and 100")
+    @DecimalMin(value = "0.0", message = "The humidity must be at least 0%")
+    @DecimalMax(value = "100.0", message = "The humidity must be at most 100%")
     private double humidity;
 
     @Column(name = "wind_speed")
+    @DecimalMin(value = "0.0", message = "Wind speed cannot be negative")
     private double windSpeed;
 
     @Column(name = "wind_direction")
-    @Size(min = 0, max = 360, message = "The wind direction must be between 0 and 360")
+    @DecimalMin(value = "0.0", message = "Wind direction must be at least 0°")
+    @DecimalMax(value = "360.0", message = "Wind direction must be at most 360°")
     private double windDirection;
 
     @Column(name = "weather_code")
@@ -133,9 +138,106 @@ public class WeatherData {
 
 
 
+    // External API integration methods (aliases for compatibility)
+    public Double getCurrentTemperature() {
+        return temperature;
+    }
+
+    public void setCurrentTemperature(Double temp) {
+        this.temperature = temp != null ? temp : 0.0;
+    }
+
+    public Double getRelativeHumidity() {
+        return humidity;
+    }
+
+    public void setRelativeHumidity(Double humidity) {
+        this.humidity = humidity != null ? humidity : 0.0;
+    }
+
+    public Double getWindSpeed10m() {
+        return windSpeed;
+    }
+
+    public void setWindSpeed10m(Double windSpeed) {
+        this.windSpeed = windSpeed != null ? windSpeed : 0.0;
+    }
+
+    public Double getWindDirection10m() {
+        return windDirection;
+    }
+
+    public void setWindDirection10m(Double windDirection) {
+        this.windDirection = windDirection != null ? windDirection : 0.0;
+    }
+
+    public Integer getWeatherCodeValue() {
+        return weatherCode;
+    }
+
+    public void setWeatherCodeValue(Integer weatherCode) {
+        this.weatherCode = weatherCode;
+    }
+
+    public Double getApparentTemperature() {
+        return temperature;
+    }
+
+    public void setApparentTemperature(Double temp) {
+        this.temperature = temp != null ? temp : 0.0;
+    }
+
+    public Double getPrecipitation() {
+        return 0.0;
+    }
+
+    public void setPrecipitation(Double precipitation) {
+        // Store precipitation data if needed in future
+    }
+
+    public Double getCloudCover() {
+        return 0.0;
+    }
+
+    public void setCloudCover(Double cloudCover) {
+        // Store cloud cover data if needed in future
+    }
+
+    public void setPressure(Double pressure) {
+        // Store pressure data if needed in future
+    }
+
+    public Double getPressure() {
+        return 0.0;
+    }
+
+    public void setVisibility(Double visibility) {
+        // Store visibility data if needed in future
+    }
+
+    public Double getVisibility() {
+        return 0.0;
+    }
+
+    public void setMaxTemperature(Double maxTemperature) {
+        this.temperature = maxTemperature != null ? maxTemperature : 0.0;
+    }
+
+    public Double getMaxTemperature() {
+        return temperature;
+    }
+
+    public void setMinTemperature(Double minTemperature) {
+        this.temperature = minTemperature != null ? minTemperature : 0.0;
+    }
+
+    public Double getMinTemperature() {
+        return temperature;
+    }
+
     @Override
     public String toString() {
-        return "AirQuality{" +
+        return "WeatherData{" +
                 "id=" + id +
                 ", commune=" + commune +
                 ", measurementDate=" + measurementDate +

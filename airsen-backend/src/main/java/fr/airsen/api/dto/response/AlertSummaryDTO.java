@@ -48,8 +48,6 @@ public class AlertSummaryDTO {
         this.createdDate = createdDate;
     }
 
-    // Getters and Setters
-
     public Long getId() {
         return id;
     }

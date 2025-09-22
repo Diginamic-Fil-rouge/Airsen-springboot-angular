@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entité représentant une commune française.
+ * Entity representing a French commune.
  * 
- * Niveau administratif le plus bas de la hiérarchie géographique française.
- * Contient les données démographiques et géographiques pour l'affichage
- * sur carte interactive et la recherche de proximité.
+ * Lowest administrative level of the French geographic hierarchy.
+ * Contains demographic and geographic data for interactive map display
+ * and proximity search.
  */
 @Entity
 @Table(name = "communes")
@@ -182,5 +182,24 @@ public class Commune {
 
     public void setFavoriteUsers(Set<User> favoriteUsers) {
         this.favoriteUsers = favoriteUsers;
+    }
+
+    public Set<Alert> getAlerts() {
+        return alerts;
+    }
+
+    public void setAlerts(Set<Alert> alerts) {
+        this.alerts = alerts;
+    }
+
+    // External API integration methods
+    public void setArea(Double area) {
+        // Area data can be added as a field if needed in future
+        // For now, this is a placeholder for INSEE API compatibility
+    }
+
+    public Double getArea() {
+        // Return a default area value or calculate from geometric data
+        return 0.0;
     }
 }

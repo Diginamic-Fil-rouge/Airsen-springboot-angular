@@ -180,7 +180,78 @@ public class AirQuality {
         this.createdAt = createdAt;
     }
 
+    public java.util.List<AlertHistory> getAlertHistories() {
+        return alertHistories;
+    }
 
+    public void setAlertHistories(java.util.List<AlertHistory> alertHistories) {
+        this.alertHistories = alertHistories;
+    }
+
+    // External API integration methods (aliases for compatibility)
+    public Integer getAtmoIndex() {
+        return atmIndex;
+    }
+
+    public void setAtmoIndex(Integer atmoIndex) {
+        this.atmIndex = atmoIndex;
+    }
+
+    public String getQualifier() {
+        return atmoQual;
+    }
+
+    public void setQualifier(String qualifier) {
+        this.atmoQual = qualifier;
+    }
+
+    public String getColor() {
+        return atmoColor;
+    }
+
+    public void setColor(String color) {
+        this.atmoColor = color;
+    }
+
+    public Double getNo2Concentration() {
+        return NO2;
+    }
+
+    public void setNo2Concentration(Double no2) {
+        this.NO2 = no2 != null ? no2 : 0.0;
+    }
+
+    public Double getO3Concentration() {
+        return O3;
+    }
+
+    public void setO3Concentration(Double o3) {
+        this.O3 = o3 != null ? o3 : 0.0;
+    }
+
+    public Double getPm10Concentration() {
+        return (double) Pm10;
+    }
+
+    public void setPm10Concentration(Double pm10) {
+        this.Pm10 = pm10 != null ? pm10 : 0.0;
+    }
+
+    public Double getPm25Concentration() {
+        return Pm25 != null ? Pm25.doubleValue() : 0.0;
+    }
+
+    public void setPm25Concentration(Double pm25) {
+        this.Pm25 = pm25 != null ? pm25.intValue() : 0;
+    }
+
+    public Double getSo2Concentration() {
+        return SO2;
+    }
+
+    public void setSo2Concentration(Double so2) {
+        this.SO2 = so2 != null ? so2 : 0.0;
+    }
 
     @Override
     public String toString() {

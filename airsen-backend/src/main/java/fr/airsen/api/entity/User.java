@@ -11,13 +11,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Entité représentant un utilisateur de l'application Airsen.
- * 
- * Cette entité gère les informations personnelles des utilisateurs,
- * leur authentification et leur rôle dans l'application de surveillance
- * de la qualité de l'air en France.
- */
+
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_user_email", columnList = "email", unique = true)
@@ -25,71 +19,43 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 public class User {
 
-    /**
-     * Identifiant unique de l'utilisateur.
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    /**
-     * Adresse email de l'utilisateur, utilisée pour l'authentification et les notifications.
-     */
     @Column(name = "email", nullable = false, unique = true, length = 200)
-    @NotBlank(message = "L'adresse email est obligatoire")
-    @Email(message = "L'adresse email doit être valide")
-    @Size(max = 200, message = "L'adresse email ne peut pas dépasser 200 caractères")
+    @NotBlank(message = "Email address is required")
+    @Email(message = "Email address must be valid")
+    @Size(max = 200, message = "Email address cannot exceed 200 characters")
     private String email;
 
-    /**
-     * Mot de passe crypté de l'utilisateur.
-     */
     @Column(name = "password", nullable = false, length = 255)
-    @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(max = 255, message = "Le mot de passe crypté ne peut pas dépasser 255 caractères")
+    @NotBlank(message = "Password is required")
+    @Size(max = 255, message = "Encrypted password cannot exceed 255 characters")
     private String password;
 
-    /**
-     * Prénom de l'utilisateur.
-     */
     @Column(name = "first_name", length = 100)
-    @Size(max = 100, message = "Le prénom ne peut pas dépasser 100 caractères")
+    @Size(max = 100, message = "First name cannot exceed 100 characters")
     private String firstName;
 
-    /**
-     * Nom de famille de l'utilisateur.
-     */
     @Column(name = "last_name", length = 100)
-    @Size(max = 100, message = "Le nom ne peut pas dépasser 100 caractères")
+    @Size(max = 100, message = "Last name cannot exceed 100 characters")
     private String lastName;
 
-    /**
-     * Adresse physique de l'utilisateur.
-     */
     @Column(name = "address", length = 255)
-    @Size(max = 255, message = "L'adresse ne peut pas dépasser 255 caractères")
+    @Size(max = 255, message = "Address cannot exceed 255 characters")
     private String address;
 
-    /**
-     * Rôle de l'utilisateur dans l'application.
-     * Valeurs possibles: visitor, user, admin
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    @NotNull(message = "Le rôle utilisateur est obligatoire")
+    @NotNull(message = "User role is required")
     private UserRole role;
 
-    /**
-     * Date de création du compte utilisateur.
-     */
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    /**
-     * Indique si l'adresse email a été vérifiée.
-     */
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 
@@ -107,40 +73,20 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ForumVote> votes;
 
-    /**
-     * Air quality alerts created by this user.
-     */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Alert> alerts;
 
-    /**
-     * Notifications sent by this user.
-     */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Notification> sentNotifications;
 
-    /**
-     * Notifications received by this user.
-     */
     @OneToMany(mappedBy = "userReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Notification> receivedNotifications;
 
-    /**
-     * Constructeur par défaut.
-     */
     public User() {
         this.role = UserRole.getDefaultRole();
         this.emailVerified = false;
     }
 
-    /**
-     * Constructeur avec paramètres principaux.
-     * 
-     * @param email adresse email
-     * @param password mot de passe crypté
-     * @param firstName prénom
-     * @param lastName nom de famille
-     */
     public User(String email, String password, String firstName, String lastName) {
         this();
         this.email = email;
@@ -223,30 +169,22 @@ public class User {
         this.emailVerified = emailVerified;
     }
 
-    /**
-     * Vérifie si l'utilisateur a un rôle spécifique.
-     * 
-     * @param role rôle à vérifier
-     * @return true si l'utilisateur a le rôle
-     */
     public boolean hasRole(UserRole role) {
         return this.role == role;
     }
 
 
-    /**
-     * Marque l'adresse email comme vérifiée.
-     */
     public void verifyEmail() {
         this.emailVerified = true;
     }
 
     /**
-     * Met à jour le profil utilisateur.
+     * Updates user profile with new information.
+     * Only updates non-null and non-empty values.
      * 
-     * @param firstName nouveau prénom (peut être null)
-     * @param lastName nouveau nom de famille (peut être null)
-     * @param address nouvelle adresse (peut être null)
+     * @param firstName new first name (can be null)
+     * @param lastName new last name (can be null) 
+     * @param address new address (can be null)
      */
     public void updateProfile(String firstName, String lastName, String address) {
         if (firstName != null && !firstName.trim().isEmpty()) {
@@ -260,33 +198,18 @@ public class User {
         }
     }
 
-    /**
-     * Met à jour uniquement le prénom de l'utilisateur.
-     * 
-     * @param firstName nouveau prénom
-     */
     public void updateFirstName(String firstName) {
         if (firstName != null && !firstName.trim().isEmpty()) {
             this.firstName = firstName.trim();
         }
     }
 
-    /**
-     * Met à jour uniquement le nom de famille de l'utilisateur.
-     * 
-     * @param lastName nouveau nom de famille
-     */
     public void updateLastName(String lastName) {
         if (lastName != null && !lastName.trim().isEmpty()) {
             this.lastName = lastName.trim();
         }
     }
 
-    /**
-     * Met à jour uniquement l'adresse de l'utilisateur.
-     * 
-     * @param address nouvelle adresse
-     */
     public void updateAddress(String address) {
         if (address != null && !address.trim().isEmpty()) {
             this.address = address.trim();
@@ -294,10 +217,10 @@ public class User {
     }
 
     /**
-     * Met à jour le mot de passe de l'utilisateur.
-     * Note: Le mot de passe doit être déjà crypté avant d'appeler cette méthode.
+     * Updates user password.
+     * Note: Password must be already encrypted before calling this method.
      * 
-     * @param encryptedPassword nouveau mot de passe crypté
+     * @param encryptedPassword new encrypted password
      */
     public void updatePassword(String encryptedPassword) {
         if (encryptedPassword != null && !encryptedPassword.trim().isEmpty()) {
@@ -306,41 +229,36 @@ public class User {
     }
 
     /**
-     * Met à jour l'email de l'utilisateur et réinitialise le statut de vérification.
+     * Updates user email and resets verification status.
      * 
-     * @param newEmail nouvelle adresse email
+     * @param newEmail new email address
      */
     public void updateEmail(String newEmail) {
         if (newEmail != null && !newEmail.trim().isEmpty()) {
             this.email = newEmail.trim().toLowerCase();
-            this.emailVerified = false; // Réinitialiser la vérification lors du changement d'email
+            this.emailVerified = false; // Reset verification when email changes
         }
     }
 
     /**
-     * Vérifie si le profil utilisateur est complet.
-     * Un profil est considéré comme complet si le prénom et le nom sont renseignés.
+     * Checks if user profile is complete.
+     * A profile is considered complete if both first name and last name are provided.
      * 
-     * @return true si le profil est complet
+     * @return true if profile is complete
      */
     public boolean isProfileComplete() {
         return firstName != null && !firstName.trim().isEmpty() 
             && lastName != null && !lastName.trim().isEmpty();
     }
 
-    /**
-     * Vérifie si l'utilisateur a fourni une adresse.
-     * 
-     * @return true si l'adresse est renseignée
-     */
     public boolean hasAddress() {
         return address != null && !address.trim().isEmpty();
     }
 
     /**
-     * Récupère le nom complet de l'utilisateur.
+     * Gets user's full name.
      * 
-     * @return nom complet (prénom + nom) ou email si les noms ne sont pas renseignés
+     * @return full name (first + last) or email if names are not provided
      */
     public String getFullName() {
         if (firstName != null && lastName != null) {

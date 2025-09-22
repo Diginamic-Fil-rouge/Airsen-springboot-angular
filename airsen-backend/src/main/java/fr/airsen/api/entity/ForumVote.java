@@ -9,6 +9,9 @@ import java.util.Objects;
  * This entity represents a vote in the forum. It is linked to a {@link User } entity and a {@link ForumThread } entity.
  */
 @Entity
+@Table(name = "forum_votes", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "thread_id"})
+})
 public class ForumVote {
 
     @Id

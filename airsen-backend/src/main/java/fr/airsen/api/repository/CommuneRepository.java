@@ -30,7 +30,19 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
     Optional<Commune> findByInseeCode(String inseeCode);
 
     /**
-     * Finds communes by name (case insensitive).
+     * Finds commune by INSEE code with eager loading of department and region.
+     * 
+     * @param inseeCode INSEE code of the commune
+     * @return optional commune with department and region loaded
+     */
+    @Query("SELECT c FROM Commune c " +
+           "LEFT JOIN FETCH c.department d " +
+           "LEFT JOIN FETCH d.region r " +
+           "WHERE c.inseeCode = :inseeCode")
+    Optional<Commune> findByInseeCodeWithEagerLoading(@Param("inseeCode") String inseeCode);
+
+    /**
+     * Finds communes by name (case-insensitive).
      * 
      * @param name commune name
      * @param pageable pagination parameters
@@ -72,7 +84,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      * Finds communes by department with name filter.
      * 
      * @param departmentId department identifier
-     * @param nameFilter name filter (case insensitive)
+     * @param nameFilter name filter (case-insensitive)
      * @param pageable pagination parameters
      * @return page of matching communes in the department
      */
@@ -84,7 +96,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
 
     /**
      * @param departmentId department identifier
-     * @param name name filter (case insensitive)
+     * @param name name filter (case-insensitive)
      * @param pageable pagination parameters
      * @return list of matching communes in the department
      */
@@ -161,4 +173,67 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      */
     @Query("SELECT c FROM Commune c WHERE c.latitude IS NOT NULL AND c.longitude IS NOT NULL")
     List<Commune> findCommunesWithCoordinates();
+
+    /**
+     * Finds communes by department ID (for external API integration).
+     * 
+     * @param departmentId department identifier
+     * @return list of communes in the department
+     */
+    @Query("SELECT c FROM Commune c WHERE c.department.id = :departmentId")
+    List<Commune> findByDepartmentId(@Param("departmentId") Long departmentId);
+
+    /**
+     * Finds commune by name for INSEE API integration.
+     * 
+     * @param name exact commune name
+     * @return optional commune
+     */
+    Optional<Commune> findByName(String name);
+
+    /**
+     * Gets coordinates for a commune by INSEE code.
+     * 
+     * @param inseeCode INSEE code of the commune
+     * @return optional commune with coordinates
+     */
+    @Query("SELECT c FROM Commune c WHERE c.inseeCode = :inseeCode AND c.latitude IS NOT NULL AND c.longitude IS NOT NULL")
+    Optional<Commune> findCommuneCoordinatesByInseeCode(@Param("inseeCode") String inseeCode);
+
+    /**
+     * Finds all communes for data synchronization.
+     * 
+     * @return list of all communes
+     */
+    @Query("SELECT c FROM Commune c ORDER BY c.name")
+    List<Commune> findAllOrderByName();
+
+    /**
+     * Finds communes by department code for INSEE integration.
+     * 
+     * Uses Commune.departmentCode field directly for better performance.
+     * 
+     * @param departmentCode department code
+     * @return list of communes in the department
+     */
+    List<Commune> findByDepartmentCode(String departmentCode);
+
+    /**
+     * Finds communes by department using department entity relationship.
+     * 
+     * @param departmentCode department code as integer
+     * @return list of communes in the department
+     */
+    @Query("SELECT c FROM Commune c WHERE c.department.departmentCode = :departmentCode")
+    List<Commune> findByDepartmentEntityCode(@Param("departmentCode") int departmentCode);
+
+    /**
+     * Finds communes by region using region code property access.
+     * 
+     * Uses Commune.regionCode field directly for better performance.
+     * 
+     * @param regionCode region code
+     * @return list of communes in the region
+     */
+    List<Commune> findByRegionCode(String regionCode);
 }

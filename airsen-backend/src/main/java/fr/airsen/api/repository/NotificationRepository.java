@@ -14,23 +14,10 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Repository for managing Notification entities.
- * 
- * Provides data access methods for user notification system
- * with custom queries for notification delivery and status tracking
- * according to Airsens data model specifications.
- */
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    /**
-     * Finds notifications received by a specific user.
-     * 
-     * @param userId recipient user identifier
-     * @param pageable pagination parameters
-     * @return page of notifications for the user
-     */
+
     @Query("SELECT n FROM Notification n WHERE n.userReceiver.id = :userId ORDER BY n.createdDate DESC")
     Page<Notification> findByRecipientId(@Param("userId") Long userId, Pageable pageable);
 

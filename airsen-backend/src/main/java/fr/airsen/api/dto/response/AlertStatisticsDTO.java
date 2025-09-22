@@ -1,41 +1,17 @@
 package fr.airsen.api.dto.response;
 
-/**
- * Data Transfer Object for alert statistics and metrics.
- * 
- * This DTO provides summary information about user alert usage
- * and system-wide alert metrics for reporting and dashboard purposes.
- */
 public class AlertStatisticsDTO {
 
-    /**
-     * Number of active alerts for the user.
-     */
     private Long activeAlerts;
 
-    /**
-     * Total number of alerts (active and inactive) for the user.
-     */
     private Long totalAlerts;
 
-    /**
-     * Maximum allowed alerts per user.
-     */
     private Integer maxAllowedAlerts;
 
-    /**
-     * Whether the user has reached the alert limit.
-     */
     private Boolean atLimit;
 
-    /**
-     * Number of remaining alerts the user can create.
-     */
     private Integer remainingAlerts;
 
-    /**
-     * Percentage of alert quota used.
-     */
     private Double quotaUsagePercentage;
 
 
@@ -50,8 +26,6 @@ public class AlertStatisticsDTO {
         this.quotaUsagePercentage = maxAllowedAlerts > 0 ? 
             (activeAlerts.doubleValue() / maxAllowedAlerts) * 100 : 0.0;
     }
-
-    // Getters and Setters
 
     public Long getActiveAlerts() {
         return activeAlerts;

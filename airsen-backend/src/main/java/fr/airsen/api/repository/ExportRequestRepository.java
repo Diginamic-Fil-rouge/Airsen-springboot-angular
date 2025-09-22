@@ -16,90 +16,66 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Repository pour la gestion des entités ExportRequest.
+ * Repository for managing ExportRequest entities.
  * 
- * Fournit les méthodes d'accès aux données pour les demandes d'export
- * avec validation des limites par utilisateur et gestion des statuts
- * selon les spécifications du système d'export Airsen.
+ * Provides data access methods for export requests with user limit validation
+ * and status management according to Airsen export system specifications.
  */
 @Repository
 public interface ExportRequestRepository extends JpaRepository<ExportRequest, Long> {
 
     // ==================== BASIC QUERIES ====================
 
-    /**
-     * Recherche toutes les demandes d'export d'un utilisateur.
-     *
-     * @param user     utilisateur
-     * @param pageable paramètres de pagination
-     * @return page des demandes d'export de l'utilisateur
-     */
     Page<ExportRequest> findByUser(User user, Pageable pageable);
 
-    /**
-     * Recherche les demandes d'export d'un utilisateur par statut.
-     *
-     * @param user     utilisateur
-     * @param status   statut de l'export
-     * @param pageable paramètres de pagination
-     * @return page des demandes d'export filtrées par statut
-     */
     Page<ExportRequest> findByUserAndStatus(User user, ExportStatus status, Pageable pageable);
 
-    /**
-     * Recherche les demandes d'export par type et format.
-     *
-     * @param exportType type d'export
-     * @param fileFormat format de fichier
-     * @param pageable   paramètres de pagination
-     * @return page des demandes d'export filtrées
-     */
     Page<ExportRequest> findByExportTypeAndFileFormat(ExportType exportType, FileFormat fileFormat, Pageable pageable);
 
     // ==================== EXPORT LIMITS VALIDATION ====================
 
     /**
-     * Compte les demandes d'export d'un utilisateur créées dans les dernières 24 heures.
-     * Limite: 5 demandes par jour.
+     * Counts user export requests created in the last 24 hours.
+     * Limit: 5 requests per day.
      *
-     * @param user  utilisateur
-     * @param since date limite (24h en arrière)
-     * @return nombre de demandes dans les dernières 24h
+     * @param user  user
+     * @param since cutoff date (24h ago)
+     * @return number of requests in the last 24h
      */
     @Query("SELECT COUNT(er) FROM ExportRequest er WHERE er.user = :user AND er.createdDate >= :since")
     long countByUserAndCreatedDateAfter(@Param("user") User user, @Param("since") LocalDateTime since);
 
     /**
-     * Compte les demandes d'export d'un utilisateur créées dans le mois en cours.
-     * Limite: 10 demandes par mois.
+     * Counts user export requests created in the current month.
+     * Limit: 10 requests per month.
      *
-     * @param user       utilisateur
-     * @param monthStart début du mois en cours
-     * @return nombre de demandes dans le mois en cours
+     * @param user       user
+     * @param monthStart start of current month
+     * @return number of requests in current month
      */
     @Query("SELECT COUNT(er) FROM ExportRequest er WHERE er.user = :user AND er.createdDate >= :monthStart")
     long countByUserAndCreatedDateInCurrentMonth(@Param("user") User user, @Param("monthStart") LocalDateTime monthStart);
 
     /**
-     * Compte les demandes d'export d'un utilisateur créées dans l'année en cours.
-     * Limite: 15 demandes par an.
+     * Counts user export requests created in the current year.
+     * Limit: 15 requests per year.
      *
-     * @param user      utilisateur
-     * @param yearStart début de l'année en cours
-     * @return nombre de demandes dans l'année en cours
+     * @param user      user
+     * @param yearStart start of current year
+     * @return number of requests in current year
      */
     @Query("SELECT COUNT(er) FROM ExportRequest er WHERE er.user = :user AND er.createdDate >= :yearStart")
     long countByUserAndCreatedDateInCurrentYear(@Param("user") User user, @Param("yearStart") LocalDateTime yearStart);
 
     /**
-     * Vérifie si un utilisateur peut créer une nouvelle demande d'export.
-     * Contrôle toutes les limites: jour, mois, année.
+     * Checks if a user can create a new export request.
+     * Validates all limits: daily, monthly, yearly.
      *
-     * @param userId     identifiant de l'utilisateur
-     * @param dayLimit   début de la journée (pour limite quotidienne)
-     * @param monthLimit début du mois (pour limite mensuelle)
-     * @param yearLimit  début de l'année (pour limite annuelle)
-     * @return true si l'utilisateur peut créer une demande
+     * @param userId     user identifier
+     * @param dayLimit   start of day (for daily limit)
+     * @param monthLimit start of month (for monthly limit)
+     * @param yearLimit  start of year (for yearly limit)
+     * @return true if user can create a request
      */
     @Query("""
 
@@ -117,24 +93,9 @@ public interface ExportRequestRepository extends JpaRepository<ExportRequest, Lo
 
     // ==================== STATUS AND FILTERING QUERIES ====================
 
-    /**
-     * Recherche les demandes d'export terminées avec succès d'un utilisateur.
-     *
-     * @param user     utilisateur
-     * @param pageable paramètres de pagination
-     * @return page des exports réussis de l'utilisateur
-     */
     @Query("SELECT er FROM ExportRequest er WHERE er.user = :user AND er.status = 'COMPLETED' AND er.generatedFile IS NOT NULL")
     Page<ExportRequest> findSuccessfulExportsByUser(@Param("user") User user, Pageable pageable);
 
-    /**
-     * Recherche les demandes d'export dans une plage de dates.
-     *
-     * @param startDate date de début
-     * @param endDate   date de fin
-     * @param pageable  paramètres de pagination
-     * @return page des demandes d'export dans la plage
-     */
     @Query("SELECT er FROM ExportRequest er WHERE er.startDate >= :startDate AND er.endDate <= :endDate")
     Page<ExportRequest> findByDateRange(@Param("startDate") LocalDate startDate, 
                                        @Param("endDate") LocalDate endDate, 
