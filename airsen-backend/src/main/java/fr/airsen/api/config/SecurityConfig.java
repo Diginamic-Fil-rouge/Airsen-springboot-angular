@@ -64,6 +64,8 @@ public class SecurityConfig {
                 .requestMatchers("/air-quality/**", "/weather/**").permitAll()
                 // Endpoints forum publics en lecture
                 .requestMatchers("/forum/categories", "/forum/categories/**", "/forum/threads/**").permitAll()
+                    // Endpoints pour user managements
+                    .requestMatchers("/users", "users/**", "/users/password/**", "/users/profile/", "/users/profile/**").permitAll()
                 // Tous les autres endpoints nécessitent une authentification
                 .anyRequest().authenticated()
             )

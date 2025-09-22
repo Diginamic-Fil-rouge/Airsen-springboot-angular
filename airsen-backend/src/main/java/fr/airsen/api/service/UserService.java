@@ -5,7 +5,9 @@ import fr.airsen.api.entity.User;
 import fr.airsen.api.mapper.UserMapper;
 import fr.airsen.api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -20,6 +22,9 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public List<UserDTO> findAll() {
         return userMapper.toDTOs(userRepository.findAll());
     }
@@ -32,6 +37,7 @@ public class UserService {
         return userMapper.toDTO(user);
     }
 
+    @Transactional
     public UserDTO updateUser(long id, @RequestBody User data) throws EntityNotFoundException {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
@@ -45,12 +51,14 @@ public class UserService {
         return userMapper.toDTO(userRepository.save(user));
     }
 
+    @Transactional
     public UserDTO updatePassword(long id, String password) {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
             throw new EntityNotFoundException("User not found");
         }
-        user.updatePassword(password);
+
+        user.updatePassword(passwordEncoder.encode(password));
         return userMapper.toDTO(userRepository.save(user));
     }
 

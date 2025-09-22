@@ -3,6 +3,7 @@ package fr.airsen.api.controller;
 import fr.airsen.api.dto.auth.UserDTO;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Tag(name = "User Controller", description = "User management endpoints")
 public class UserController {
 
     @Autowired
