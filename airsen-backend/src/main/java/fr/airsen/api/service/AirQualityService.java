@@ -154,6 +154,28 @@ public class AirQualityService {
     }
 
     /**
+     * Get daily air quality measurements for current date.
+     * 
+     * Business logic concept from air_quality_service (commit 6be37b8),
+     * implemented with reactive patterns and proper error handling.
+     * 
+     * @return Flux of current day air quality data
+     */
+    public Flux<AirQuality> getAllDailyAirQualities() {
+        LocalDate today = LocalDate.now();
+        log.info("Fetching daily air quality data for date: {}", today);
+        
+        return Flux.fromIterable(airQualityRepository.findByMeasurementDate(today))
+            .doOnNext(airQuality -> log.debug("Found air quality data for commune: {}", 
+                                             airQuality.getCommune().getInseeCode()))
+            .doOnComplete(() -> log.info("Completed daily air quality data fetch"))
+            .onErrorResume(error -> {
+                log.error("Error fetching daily air quality data", error);
+                return Flux.empty();
+            });
+    }
+
+    /**
      * Maps ATMO API response to AirQuality entity.
      * 
      * @param response ATMO API response
