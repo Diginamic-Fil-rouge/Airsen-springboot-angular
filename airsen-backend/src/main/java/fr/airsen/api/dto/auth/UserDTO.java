@@ -41,6 +41,11 @@ public class UserDTO {
     private String lastName;
 
     /**
+     * User's address for display purposes.
+     */
+    private String address;
+
+    /**
      * User's role in the system for authorization.
      */
     private UserRole role;
@@ -92,7 +97,7 @@ public class UserDTO {
      * @param lastName user's last name
      * @param role user's role
      */
-    public UserDTO(Long id, String email, String firstName, String lastName, UserRole role) {
+    public UserDTO(Long id, String email, String firstName, String lastName, String address, UserRole role) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
@@ -115,13 +120,15 @@ public class UserDTO {
      * @param lastLogin when user last logged in
      * @param isEmailVerified whether email is verified
      */
-    public UserDTO(Long id, String email, String firstName, String lastName, 
+    public UserDTO(Long id, String email, String firstName, String lastName,
+                   String address,
                    UserRole role, Boolean isActive, LocalDateTime createdAt, 
                    LocalDateTime lastLogin, Boolean isEmailVerified) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.address = address;
         this.role = role;
         this.isActive = isActive;
         this.createdAt = createdAt;
@@ -291,6 +298,14 @@ public class UserDTO {
      */
     public void setIsEmailVerified(Boolean isEmailVerified) {
         this.isEmailVerified = isEmailVerified;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     /**

@@ -354,6 +354,62 @@ public class User {
         }
     }
 
+    public Set<Commune> getFavoris() {
+        return favoris;
+    }
+
+    public void setFavoris(Set<Commune> favoris) {
+        this.favoris = favoris;
+    }
+
+    public List<ForumThread> getThreads() {
+        return threads;
+    }
+
+    public void setThreads(List<ForumThread> threads) {
+        this.threads = threads;
+    }
+
+    public List<ForumMessage> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<ForumMessage> messages) {
+        this.messages = messages;
+    }
+
+    public List<ForumVote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(List<ForumVote> votes) {
+        this.votes = votes;
+    }
+
+    public List<Alert> getAlerts() {
+        return alerts;
+    }
+
+    public void setAlerts(List<Alert> alerts) {
+        this.alerts = alerts;
+    }
+
+    public List<Notification> getSentNotifications() {
+        return sentNotifications;
+    }
+
+    public void setSentNotifications(List<Notification> sentNotifications) {
+        this.sentNotifications = sentNotifications;
+    }
+
+    public List<Notification> getReceivedNotifications() {
+        return receivedNotifications;
+    }
+
+    public void setReceivedNotifications(List<Notification> receivedNotifications) {
+        this.receivedNotifications = receivedNotifications;
+    }
+
     @Override
     public String toString() {
         return "User{" +
