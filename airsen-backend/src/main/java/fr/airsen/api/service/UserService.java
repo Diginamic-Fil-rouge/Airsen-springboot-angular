@@ -41,6 +41,7 @@ public class UserService {
         user.updateFirstName(data.getFirstName());
         user.updateLastName(data.getLastName());
         user.updateAddress(data.getAddress());
+        user.setRole(data.getRole());
         return userMapper.toDTO(userRepository.save(user));
     }
 
