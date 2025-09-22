@@ -94,12 +94,12 @@ management:
 # External APIs Configuration
 external:
   atmo-api:
-    base-url: ${ATMO_API_URL:https://admindata.atmo-france.org}
-    jwt-token: ${ATMO_JWT_TOKEN:}
+    baseUrl: ${ATMO_API_URL:https://admindata.atmo-france.org}
+    jwtToken: ${ATMO_JWT_TOKEN:}
     username: ${ATMO_USERNAME:}
     password: ${ATMO_PASSWORD:}
-    timeout-ms: 10000
-    retry-attempts: 3
+    timeoutMs: 10000
+    retryAttempts: 3
   
   open-meteo:
     base-url: ${OPEN_METEO_URL}

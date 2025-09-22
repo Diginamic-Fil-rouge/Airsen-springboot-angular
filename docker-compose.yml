@@ -94,6 +94,7 @@ services:
       # External APIs
       INSEE_API_URL: ${INSEE_API_URL}
       ATMO_API_URL: ${ATMO_API_URL}
+      ATMO_JWT_TOKEN: ${ATMO_JWT_TOKEN}
       OPEN_METEO_URL: ${OPEN_METEO_URL}
       # JVM options for development
       MAVEN_OPTS: -Xmx512m -XX:MaxMetaspaceSize=128m

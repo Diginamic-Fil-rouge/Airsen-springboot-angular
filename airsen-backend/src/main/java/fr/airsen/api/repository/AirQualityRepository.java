@@ -96,6 +96,14 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
     long countByCommuneId(@Param("communeId") Long communeId);
 
     /**
+     * Finds air quality data entries for a specific measurement date.
+     * 
+     * @param measurementDate the measurement date
+     * @return list of air quality data entries for the date
+     */
+    List<AirQuality> findByMeasurementDate(LocalDate measurementDate);
+
+    /**
      * Counts air quality data entries for a specific measurement date.
      * 
      * @param measurementDate the measurement date

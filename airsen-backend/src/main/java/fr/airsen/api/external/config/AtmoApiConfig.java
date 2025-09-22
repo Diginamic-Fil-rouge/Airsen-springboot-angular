@@ -5,7 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 /**
  * Configuration for ATMO France API integration.
@@ -28,16 +30,26 @@ public class AtmoApiConfig {
     /**
      * Creates a configured WebClient for ATMO France API.
      * 
+     * Configures increased buffer size to handle large ATMO API responses
+     * that can exceed the default 1MB limit.
+     * 
      * @param builder base WebClient builder
      * @return configured WebClient for ATMO API
      */
     @Bean
     @Qualifier("atmoWebClient")
     public WebClient atmoWebClient(WebClient.Builder builder) {
+        // Create HttpClient with increased buffer size for large ATMO API responses
+        HttpClient httpClient = HttpClient.create()
+            .responseTimeout(java.time.Duration.ofMillis(timeoutMs));
+        
         WebClient.Builder clientBuilder = builder
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
             .baseUrl(baseUrl)
             .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            // Increase buffer size to 25MB to handle large ATMO API responses (typical size ~18MB)
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(25 * 1024 * 1024));
             
         // Add JWT token header if configured
         if (jwtToken != null && !jwtToken.isEmpty()) {
