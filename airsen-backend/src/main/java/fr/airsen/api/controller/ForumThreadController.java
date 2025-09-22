@@ -84,23 +84,23 @@ public class ForumThreadController {
         return forumThreadService.deleteThread(id);
     }
 
-//    /**
-//     * Add a vote to a thread
-//     * @param id the Id of the thread to vote for.
-//     * @return The thread with the added vote as a {@link ForumThreadDTO}.
-//     */
-//    @PostMapping("/{id}/vote")
-//    public ForumThreadDTO voteThread(long id, int likeValue){
-//        return forumVoteService.voteThread(id, likeValue);
-//    }
-//
-//    /**
-//     * Remove a vote from a thread.
-//     * @param id the Id of the thread to unvote.
-//     */
-//    @DeleteMapping("/{id}/vote")
-//    public void unvoteThread(long id){
-//        forumVoteService.unvoteThread(id);
-//    }
+    /**
+     * Add a vote to a thread
+     * @param id the Id of the thread to vote for.
+     * @return The thread with the added vote as a {@link ForumThreadDTO}.
+     */
+    @PostMapping("/{id}/vote")
+    public ForumThreadDTO voteThread(long id, int likeValue){
+        return forumVoteService.voteThread(id, likeValue);
+    }
+
+    /**
+     * Remove a vote from a thread.
+     * @param id the Id of the thread to unvote.
+     */
+    @DeleteMapping("/{id}/vote")
+    public void unvoteThread(long id){
+        forumVoteService.unvoteThread(id);
+    }
 
 }
