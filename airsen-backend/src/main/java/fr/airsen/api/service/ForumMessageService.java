@@ -10,6 +10,7 @@ import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -97,8 +98,10 @@ public class ForumMessageService {
         ForumThread thread = forumThreadRepository.findById(id).orElse(null);
         if (thread == null)
         {
-            throw new EntityNotFoundException("Message not found");
+            throw new EntityNotFoundException("Thread not found - Cannot add message");
         }
+        User user = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        forumMessage.setAuthor(user);
         forumMessage.setThread(thread);
         return forumMessageMapper.toDTO(forumMessageRepository.save(forumMessage));
     }
