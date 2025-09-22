@@ -68,6 +68,12 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         
+        <!-- Spring Retry for External API calls -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+        
         <!-- Database -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>

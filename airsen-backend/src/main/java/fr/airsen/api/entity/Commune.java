@@ -183,4 +183,23 @@ public class Commune {
     public void setFavoriteUsers(Set<User> favoriteUsers) {
         this.favoriteUsers = favoriteUsers;
     }
+
+    public Set<Alert> getAlerts() {
+        return alerts;
+    }
+
+    public void setAlerts(Set<Alert> alerts) {
+        this.alerts = alerts;
+    }
+
+    // External API integration methods
+    public void setArea(Double area) {
+        // Area data can be added as a field if needed in future
+        // For now, this is a placeholder for INSEE API compatibility
+    }
+
+    public Double getArea() {
+        // Return a default area value or calculate from geometric data
+        return 0.0;
+    }
 }

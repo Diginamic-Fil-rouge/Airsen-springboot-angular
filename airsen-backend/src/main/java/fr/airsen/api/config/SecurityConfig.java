@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -58,12 +59,18 @@ public class SecurityConfig {
                 ).permitAll()
                 // Public authentication endpoints
                 .requestMatchers("/auth/**").permitAll()
-                // Public geographic data endpoints
-                .requestMatchers("/regions/**", "/departments/**", "/communes/**").permitAll()
-                // Public environmental data endpoints
-                .requestMatchers("/air-quality/**", "/weather/**").permitAll()
-                // Public read-only forum endpoints
-                .requestMatchers("/forum/categories", "/forum/categories/**", "/forum/threads/**").permitAll()
+                // Public read-only forum endpoints for VISITOR role (read categories, threads, messages)
+                .requestMatchers(HttpMethod.GET, "/forum/categories", "/forum/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/forum/threads/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/forum/messages/**").permitAll()
+                // Geographic data requires authentication (USER or ADMIN role)
+                .requestMatchers("/regions/**", "/departments/**", "/communes/**").hasAnyRole("USER", "ADMIN")
+                // Environmental data requires authentication (USER or ADMIN role)
+                .requestMatchers("/air-quality/**", "/weather/**", "/atmo/**").hasAnyRole("USER", "ADMIN")
+                // Alerts and notifications require authentication (USER or ADMIN role)
+                .requestMatchers("/alerts/**", "/notifications/**").hasAnyRole("USER", "ADMIN")
+                // Forum write operations require authentication (USER or ADMIN role)
+                .requestMatchers("/forum/**").hasAnyRole("USER", "ADMIN")
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )

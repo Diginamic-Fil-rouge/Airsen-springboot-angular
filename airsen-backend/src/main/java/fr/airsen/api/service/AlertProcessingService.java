@@ -52,6 +52,16 @@ public class AlertProcessingService {
     }
 
     /**
+     * Processes new air quality data update for alerts (alias for external integration).
+     * 
+     * @param airQuality new air quality measurement
+     * @return number of alerts triggered
+     */
+    public int processAirQualityUpdate(AirQuality airQuality) {
+        return processAirQualityForAlerts(airQuality);
+    }
+
+    /**
      * Processes new air quality data to check for alert thresholds.
      * 
      * @param airQuality new air quality measurement
