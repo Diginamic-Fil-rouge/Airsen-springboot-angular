@@ -10,6 +10,7 @@ import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -94,12 +95,20 @@ public class ForumThreadService {
             throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
         }
         ForumCategory category = forumCategoryRepository.findById(categoryId).orElse(null);
+        System.out.println("Category found");
         if (category == null)
         {
-            throw new EntityNotFoundException("Category not found");
+            throw new EntityNotFoundException("Category not found - Cannot add thread");
         }
+        // MEGA TODO fix getting current user. Finish testing forum endpoints (Category : done, threads, messages and votes : not done)
+        User user = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        System.out.println("User found");
+        forumThread.setAuthor(user);
+        System.out.println("Author set");
         forumThread.setCategory(category);
+        System.out.println("Category set");
         forumThreadRepository.save(forumThread);
+        System.out.println("Thread saved");
         return mapper.toDTOs(forumThreadRepository.findAll());
     }
 
