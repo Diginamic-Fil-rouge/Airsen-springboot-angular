@@ -85,8 +85,8 @@ public class ForumVoteService {
             throw new EntityNotFoundException("Thread not found");
         }
 
-        // TODO fix getting current user
-        User user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // TODO check if working
+        User user = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
         ForumVote existingVote = forumVoteRepository.findByUserAndThread(user, thread);
         if (existingVote != null){
@@ -112,8 +112,8 @@ public class ForumVoteService {
             throw new EntityNotFoundException("Thread not found");
         }
 
-        // TODO fix getting current user
-        User user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // TODO check if working
+        User user = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
         ForumVote vote = forumVoteRepository.findByUserAndThread(user, thread);
         if (vote == null){
