@@ -139,4 +139,33 @@ public class InseeApiClient {
             .doOnSuccess(coords -> log.debug("Retrieved coordinates for commune {}: [{}, {}]", 
                                            inseeCode, coords[0], coords[1]));
     }
+
+    /**
+     * Gets major French communes with population over a threshold.
+     * 
+     * @param populationThreshold minimum population
+     * @param limit maximum number of results
+     * @return Flux containing major communes with complete data
+     */
+    public Flux<InseeCommuneResponse> getMajorCommunes(int populationThreshold, int limit) {
+        log.info("Fetching major communes with population > {} (limit: {})", populationThreshold, limit);
+        
+        return webClient
+            .get()
+            .uri("/communes", builder -> builder
+                .queryParam("fields", "code,nom,population,centre,codeDepartement,departement,codeRegion,region")
+                .queryParam("format", "json")
+                .queryParam("boost", "population")
+                .build())
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, response -> 
+                Mono.error(new InseeApiException("INSEE API error: " + response.statusCode())))
+            .bodyToFlux(InseeCommuneResponse.class)
+            .filter(commune -> commune.population() != null && commune.population() >= populationThreshold)
+            .take(limit)
+            .doOnNext(commune -> log.debug("Found major commune: {} ({}) - pop: {}", 
+                                          commune.name(), commune.inseeCode(), commune.population()))
+            .doOnError(error -> log.error("Failed to fetch major communes", error))
+            .timeout(Duration.ofMillis(config.getTimeoutMs() * 2));
+    }
 }

@@ -74,11 +74,16 @@ public class AtmoController {
                     return ResponseEntity.status(404).body(response);
                 }
             })
-            .onErrorReturn(ResponseEntity.status(500).body(Map.of(
-                "status", "error",
-                "message", "Failed to retrieve air quality data",
-                "inseeCode", inseeCode
-            )));
+            .onErrorResume(error -> {
+                log.error("Error retrieving air quality data for commune: {}", inseeCode, error);
+                Map<String, Object> errorResponse = Map.of(
+                    "status", "error",
+                    "message", "Failed to retrieve air quality data",
+                    "inseeCode", inseeCode,
+                    "error", error.getMessage()
+                );
+                return Mono.just(ResponseEntity.status(500).body(errorResponse));
+            });
     }
 
     /**

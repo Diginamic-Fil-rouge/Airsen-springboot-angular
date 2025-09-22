@@ -21,6 +21,10 @@ public record AtmoAirQualityResponse(
     @JsonProperty("code_o3") Integer o3Code,
     @JsonProperty("code_pm10") Integer pm10Code,
     @JsonProperty("code_pm25") Integer pm25Code,
-    @JsonProperty("code_so2") Integer so2Code
+    @JsonProperty("code_so2") Integer so2Code,
+    @JsonProperty("lib_zone") String zoneName,
+    @JsonProperty("source") String source,
+    @JsonProperty("aasqa") String aasqa,
+    @JsonProperty("date_maj") String updateDate
 ) {
 }

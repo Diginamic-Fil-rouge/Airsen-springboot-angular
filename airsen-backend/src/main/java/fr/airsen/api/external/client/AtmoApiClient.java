@@ -104,10 +104,15 @@ public class AtmoApiClient {
         
         // Check cache first
         if (redisTemplate != null) {
-            AtmoAirQualityResponse cached = (AtmoAirQualityResponse) redisTemplate.opsForValue().get(cacheKey);
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
             if (cached != null) {
                 log.debug("Returning cached air quality data for commune: {}", communeInseeCode);
-                return Mono.just(cached);
+                // Handle potential LinkedHashMap from Redis deserialization
+                if (cached instanceof AtmoAirQualityResponse response) {
+                    return Mono.just(response);
+                }
+                // If it's a LinkedHashMap, need to convert it
+                log.debug("Cached object is not the expected type, skipping cache");
             }
         }
 
@@ -117,7 +122,7 @@ public class AtmoApiClient {
         return getCurrentAirQualityIndices()
             .filter(response -> communeInseeCode.equals(response.communeInsee()))
             .next()
-            .switchIfEmpty(Mono.error(new AtmoApiException("No air quality data found for commune: " + communeInseeCode)));
+            .switchIfEmpty(Mono.empty());
     }
 
     /**

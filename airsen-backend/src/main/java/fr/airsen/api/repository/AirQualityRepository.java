@@ -51,12 +51,23 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
     Optional<AirQuality> findLatestByCommuneId(@Param("communeId") Long communeId);
 
     /**
-     * Finds latest air quality data by commune INSEE code property access.
+     * Finds latest air quality data by commune INSEE code with eager loading.
      * 
      * @param inseeCode commune INSEE code
-     * @return optional latest air quality data
+     * @return optional latest air quality data with commune, department, and region loaded
      */
-    Optional<AirQuality> findLatestByCommune_InseeCode(String inseeCode);
+    @Query("SELECT aq FROM AirQuality aq " +
+           "LEFT JOIN FETCH aq.commune c " +
+           "LEFT JOIN FETCH c.department d " +
+           "LEFT JOIN FETCH d.region r " +
+           "WHERE c.inseeCode = :inseeCode " +
+           "ORDER BY aq.measurementDate DESC")
+    List<AirQuality> findByCommune_InseeCodeWithEagerLoading(@Param("inseeCode") String inseeCode, Pageable pageable);
+
+    default Optional<AirQuality> findLatestByCommune_InseeCode(String inseeCode) {
+        List<AirQuality> results = findByCommune_InseeCodeWithEagerLoading(inseeCode, Pageable.ofSize(1));
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
 
     /**
      * Finds air quality data by commune ID and date range.

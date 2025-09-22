@@ -94,13 +94,13 @@ public class AtmoIntegrationService {
      * @param inseeCode INSEE code of the commune
      * @return Mono containing the stored AirQuality entity
      */
-    @Cacheable(value = "airQuality", key = "#inseeCode + '_' + T(java.time.LocalDate).now()")
     public Mono<Optional<AirQuality>> getAirQualityForCommune(String inseeCode) {
         log.debug("Fetching air quality data for commune: {}", inseeCode);
         
         return atmoApiClient.getCurrentAirQuality(inseeCode)
             .flatMap(this::convertToAirQuality)
             .map(Optional::of)
+            .switchIfEmpty(Mono.just(Optional.empty()))
             .onErrorReturn(Optional.empty())
             .doOnNext(result -> {
                 if (result.isPresent()) {
@@ -180,8 +180,8 @@ public class AtmoIntegrationService {
      */
     private Mono<AirQuality> convertToAirQuality(AtmoAirQualityResponse atmoResponse) {
         return Mono.fromCallable(() -> {
-            // Find the commune by INSEE code
-            Optional<Commune> communeOpt = communeRepository.findByInseeCode(atmoResponse.communeInsee());
+            // Find the commune by INSEE code with eager loading
+            Optional<Commune> communeOpt = communeRepository.findByInseeCodeWithEagerLoading(atmoResponse.communeInsee());
             if (communeOpt.isEmpty()) {
                 throw new IllegalArgumentException("Commune not found for INSEE code: " + atmoResponse.communeInsee());
             }

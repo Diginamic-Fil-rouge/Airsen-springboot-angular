@@ -30,6 +30,18 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
     Optional<Commune> findByInseeCode(String inseeCode);
 
     /**
+     * Finds commune by INSEE code with eager loading of department and region.
+     * 
+     * @param inseeCode INSEE code of the commune
+     * @return optional commune with department and region loaded
+     */
+    @Query("SELECT c FROM Commune c " +
+           "LEFT JOIN FETCH c.department d " +
+           "LEFT JOIN FETCH d.region r " +
+           "WHERE c.inseeCode = :inseeCode")
+    Optional<Commune> findByInseeCodeWithEagerLoading(@Param("inseeCode") String inseeCode);
+
+    /**
      * Finds communes by name (case-insensitive).
      * 
      * @param name commune name

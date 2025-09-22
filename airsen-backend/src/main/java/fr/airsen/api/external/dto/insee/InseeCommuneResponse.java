@@ -17,7 +17,9 @@ public record InseeCommuneResponse(
     @JsonProperty("codesPostaux") List<String> postalCodes,
     @JsonProperty("population") Integer population,
     @JsonProperty("surface") Double surface,
-    @JsonProperty("centre") GeographicCenter centre
+    @JsonProperty("centre") GeographicCenter centre,
+    @JsonProperty("departement") DepartmentInfo departement,
+    @JsonProperty("region") RegionInfo region
 ) {
     
     /**
@@ -44,4 +46,20 @@ public record InseeCommuneResponse(
             return coordinates != null && coordinates.size() >= 2 ? coordinates.get(1) : null;
         }
     }
+    
+    /**
+     * Nested record for department information.
+     */
+    public record DepartmentInfo(
+        @JsonProperty("code") String code,
+        @JsonProperty("nom") String nom
+    ) {}
+    
+    /**
+     * Nested record for region information.
+     */
+    public record RegionInfo(
+        @JsonProperty("code") String code,
+        @JsonProperty("nom") String nom
+    ) {}
 }
