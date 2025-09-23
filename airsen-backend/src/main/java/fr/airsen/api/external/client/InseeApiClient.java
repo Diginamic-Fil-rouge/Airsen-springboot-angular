@@ -107,7 +107,7 @@ public class InseeApiClient {
             .get()
             .uri("/communes", builder -> builder
                 .queryParam("nom", name)
-                .queryParam("fields", "code,nom,codeDepartement,codeRegion,region,departement,centre,population")
+                .queryParam("fields", "code,nom,codeDepartement,codeRegion,centre,population,departement,region")
                 .queryParam("format", "json")
                 .queryParam("boost", "population")
                 .build())
@@ -153,7 +153,7 @@ public class InseeApiClient {
         return webClient
             .get()
             .uri("/communes", builder -> builder
-                .queryParam("fields", "code,nom,population,centre,codeDepartement,departement,codeRegion,region")
+                .queryParam("fields", "code,nom,codeDepartement,codeRegion,centre,population,departement,region")
                 .queryParam("format", "json")
                 .queryParam("boost", "population")
                 .build())

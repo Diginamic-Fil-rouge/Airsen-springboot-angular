@@ -216,9 +216,21 @@ public class CommuneService {
                     log.info("Creating new region with code: {}", inseeResponse.regionCode());
                     Region newRegion = new Region();
                     newRegion.setRegionCode(inseeResponse.regionCode());
-                    newRegion.setName("Region " + inseeResponse.regionCode()); // Default name
+                    // Use actual region name from INSEE API
+                    String regionName = inseeResponse.region() != null && inseeResponse.region().nom() != null 
+                        ? inseeResponse.region().nom() 
+                        : "Region " + inseeResponse.regionCode();
+                    newRegion.setName(regionName);
                     return regionRepository.save(newRegion);
                 });
+
+            // Update region name if it has changed
+            if (inseeResponse.region() != null && inseeResponse.region().nom() != null) {
+                if (!inseeResponse.region().nom().equals(region.getName())) {
+                    region.setName(inseeResponse.region().nom());
+                    regionRepository.save(region);
+                }
+            }
 
             // Find or create Department
             Department department = departmentRepository.findAll().stream()
@@ -228,11 +240,23 @@ public class CommuneService {
                     log.info("Creating new department with code: {}", inseeResponse.departmentCode());
                     Department newDepartment = new Department();
                     newDepartment.setDepartmentCode(Integer.parseInt(inseeResponse.departmentCode()));
-                    newDepartment.setName("Department " + inseeResponse.departmentCode()); // Default name
+                    // Use actual department name from INSEE API
+                    String departmentName = inseeResponse.departement() != null && inseeResponse.departement().nom() != null 
+                        ? inseeResponse.departement().nom() 
+                        : "Department " + inseeResponse.departmentCode();
+                    newDepartment.setName(departmentName);
                     newDepartment.setRegionCode(inseeResponse.regionCode());
                     newDepartment.setRegion(region);
                     return departmentRepository.save(newDepartment);
                 });
+
+            // Update department name if it has changed
+            if (inseeResponse.departement() != null && inseeResponse.departement().nom() != null) {
+                if (!inseeResponse.departement().nom().equals(department.getName())) {
+                    department.setName(inseeResponse.departement().nom());
+                    departmentRepository.save(department);
+                }
+            }
 
             // Check if commune already exists
             Commune commune = communeRepository.findByInseeCode(inseeResponse.inseeCode())

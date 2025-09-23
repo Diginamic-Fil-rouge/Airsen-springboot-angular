@@ -3,6 +3,8 @@ package fr.airsen.api.mapper;
 
 import fr.airsen.api.dto.ForumMessageDTO;
 import fr.airsen.api.entity.ForumMessage;
+import fr.airsen.api.entity.User;
+import fr.airsen.api.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,6 +12,12 @@ import java.util.List;
 
 @Component
 public class ForumMessageMapper {
+
+    private final UserRepository userRepository;
+
+    public ForumMessageMapper(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Map entity to DTO
@@ -30,7 +38,14 @@ public class ForumMessageMapper {
         forumMessage.setId(forumMessageDTO.getId());
         forumMessage.setContent(forumMessageDTO.getContent());
         forumMessage.setCreatedDate(forumMessageDTO.getCreatedDate());
-        forumMessage.setAuthor(forumMessageDTO.getAuthor());
+        
+        // Convert UserDTO to User entity
+        if (forumMessageDTO.getAuthor() != null && forumMessageDTO.getAuthor().getId() != null) {
+            User author = userRepository.findById(forumMessageDTO.getAuthor().getId())
+                    .orElse(null);
+            forumMessage.setAuthor(author);
+        }
+        
         return forumMessage;
     }
 
