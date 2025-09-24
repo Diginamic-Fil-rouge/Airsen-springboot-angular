@@ -1,6 +1,6 @@
 package fr.airsen.api.controller;
 
-import fr.airsen.api.entity.AirQuality;
+import fr.airsen.api.dto.AirQualityResponseDTO;
 import fr.airsen.api.service.AtmoIntegrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -46,6 +47,7 @@ public class AtmoController {
      * @return ResponseEntity with air quality data
      */
     @GetMapping("/air-quality/{inseeCode}")
+    @Transactional(readOnly = true)
     @Operation(summary = "Get air quality for commune", 
                description = "Retrieves current air quality data for a commune by INSEE code")
     @ApiResponses(value = {
@@ -57,12 +59,12 @@ public class AtmoController {
             @Parameter(description = "INSEE code of the commune", example = "75056")
             @PathVariable String inseeCode) {
         
-        log.info("Retrieving air quality data for commune: {}", inseeCode);
+        log.error(">>> CLAUDE DEBUG: AtmoController.getAirQuality called for: {}", inseeCode);
         
         return atmoIntegrationService.getAirQualityForCommune(inseeCode)
             .map(airQualityOpt -> {
                 if (airQualityOpt.isPresent()) {
-                    AirQuality airQuality = airQualityOpt.get();
+                    AirQualityResponseDTO airQuality = airQualityOpt.get();
                     Map<String, Object> response = createAirQualityResponse(airQuality);
                     return ResponseEntity.ok(response);
                 } else {
@@ -95,6 +97,7 @@ public class AtmoController {
      * @return ResponseEntity with latest stored air quality data
      */
     @GetMapping("/air-quality/{inseeCode}/latest")
+    @Transactional(readOnly = true)
     @Operation(summary = "Get latest stored air quality", 
                description = "Retrieves the most recent stored air quality data for a commune")
     public ResponseEntity<Map<String, Object>> getLatestAirQuality(
@@ -103,10 +106,10 @@ public class AtmoController {
         
         log.debug("Retrieving latest stored air quality for commune: {}", inseeCode);
         
-        Optional<AirQuality> airQualityOpt = atmoIntegrationService.getLatestStoredAirQuality(inseeCode);
+        Optional<AirQualityResponseDTO> airQualityOpt = atmoIntegrationService.getLatestStoredAirQuality(inseeCode);
         
         if (airQualityOpt.isPresent()) {
-            AirQuality airQuality = airQualityOpt.get();
+            AirQualityResponseDTO airQuality = airQualityOpt.get();
             Map<String, Object> response = createAirQualityResponse(airQuality);
             response.put("source", "database");
             return ResponseEntity.ok(response);
@@ -226,37 +229,37 @@ public class AtmoController {
     }
 
     /**
-     * Creates a standardized air quality response map.
+     * Creates a standardized air quality response map from DTO.
      * 
-     * @param airQuality the air quality entity
+     * @param airQuality the air quality DTO
      * @return formatted response map
      */
-    private Map<String, Object> createAirQualityResponse(AirQuality airQuality) {
+    private Map<String, Object> createAirQualityResponse(AirQualityResponseDTO airQuality) {
         Map<String, Object> response = new HashMap<>();
         
         response.put("status", "success");
         response.put("commune", Map.of(
-            "inseeCode", airQuality.getCommune().getInseeCode(),
-            "name", airQuality.getCommune().getName(),
-            "department", airQuality.getCommune().getDepartment().getName(),
-            "region", airQuality.getCommune().getDepartment().getRegion().getName()
+            "inseeCode", airQuality.communeInseeCode(),
+            "name", airQuality.communeName(),
+            "department", airQuality.departmentName(),
+            "region", airQuality.regionName()
         ));
         
         response.put("airQuality", Map.of(
-            "measurementDate", airQuality.getMeasurementDate(),
-            "atmoIndex", airQuality.getAtmoIndex(),
-            "qualifier", airQuality.getQualifier(),
-            "color", airQuality.getColor(),
+            "measurementDate", airQuality.measurementDate(),
+            "atmoIndex", airQuality.atmoIndex(),
+            "qualifier", airQuality.qualifier(),
+            "color", airQuality.color(),
             "pollutants", Map.of(
-                "NO2", airQuality.getNo2Concentration(),
-                "O3", airQuality.getO3Concentration(),
-                "PM10", airQuality.getPm10Concentration(),
-                "PM2.5", airQuality.getPm25Concentration(),
-                "SO2", airQuality.getSo2Concentration()
+                "NO2", airQuality.no2Concentration(),
+                "O3", airQuality.o3Concentration(),
+                "PM10", airQuality.pm10Concentration(),
+                "PM2.5", airQuality.pm25Concentration(),
+                "SO2", airQuality.so2Concentration()
             )
         ));
         
-        response.put("lastUpdated", airQuality.getCreatedAt());
+        response.put("lastUpdated", airQuality.createdAt());
         
         return response;
     }
