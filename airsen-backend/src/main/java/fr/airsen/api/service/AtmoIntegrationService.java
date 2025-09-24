@@ -5,12 +5,10 @@ import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.external.client.AtmoApiClient;
 import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
-import fr.airsen.api.external.exception.AtmoApiException;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -19,10 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Production service for ATMO France API integration.
@@ -97,7 +92,7 @@ public class AtmoIntegrationService {
      * @return Mono containing the air quality data as DTO
      */
     public Mono<Optional<AirQualityResponseDTO>> getAirQualityForCommune(String inseeCode) {
-        log.error(">>> CLAUDE DEBUG: Starting getAirQualityForCommune for: {}", inseeCode);
+        log.error(">>> DEBUG: Starting getAirQualityForCommune for: {}", inseeCode);
         
         return atmoApiClient.getCurrentAirQuality(inseeCode)
             .flatMap(this::convertToAirQuality)

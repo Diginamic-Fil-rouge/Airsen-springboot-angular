@@ -1,6 +1,5 @@
 package fr.airsen.api.external.dto.atmo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
@@ -24,7 +23,6 @@ public record AtmoAirQualityResponse(
     @JsonProperty("code_so2") Integer so2Code,
     @JsonProperty("lib_zone") String zoneName,
     @JsonProperty("source") String source,
-    @JsonProperty("aasqa") String aasqa,
     @JsonProperty("date_maj") String updateDate
 ) {
 }

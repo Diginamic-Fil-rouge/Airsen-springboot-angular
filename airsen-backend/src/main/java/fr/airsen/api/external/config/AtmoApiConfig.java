@@ -7,12 +7,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.util.StringUtils;
 import reactor.netty.http.client.HttpClient;
+import java.util.Base64;
 
 /**
  * Configuration for ATMO France API integration.
  * 
- * Handles air quality data retrieval with proper authentication
+ * Handles air quality data retrieval with username/password authentication
  * and rate limiting compliance.
  */
 @Configuration
@@ -20,7 +22,6 @@ import reactor.netty.http.client.HttpClient;
 public class AtmoApiConfig {
     
     private String baseUrl = "https://admindata.atmo-france.org";
-    private String jwtToken;
     private String username;
     private String password;
     private int timeoutMs = 10000;
@@ -51,9 +52,12 @@ public class AtmoApiConfig {
             // Increase buffer size to 25MB to handle large ATMO API responses (typical size ~18MB)
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(25 * 1024 * 1024));
             
-        // Add JWT token header if configured
-        if (jwtToken != null && !jwtToken.isEmpty()) {
-            clientBuilder.defaultHeader("Authorization", "Bearer " + jwtToken);
+        // JWT token will be handled dynamically by the AtmoApiClient
+        System.out.println("ATMO DEBUG: ATMO WebClient configured for JWT authentication");
+        if (StringUtils.hasText(username) && StringUtils.hasText(password)) {
+            System.out.println("ATMO DEBUG: Credentials available - username: " + username + ", password: [PRESENT]");
+        } else {
+            System.out.println("ATMO DEBUG: No credentials available - username: " + username + ", password: " + (password != null ? "[PRESENT]" : "[MISSING]"));
         }
         
         return clientBuilder.build();
@@ -68,13 +72,6 @@ public class AtmoApiConfig {
         this.baseUrl = baseUrl;
     }
 
-    public String getJwtToken() {
-        return jwtToken;
-    }
-
-    public void setJwtToken(String jwtToken) {
-        this.jwtToken = jwtToken;
-    }
 
     public String getUsername() {
         return username;

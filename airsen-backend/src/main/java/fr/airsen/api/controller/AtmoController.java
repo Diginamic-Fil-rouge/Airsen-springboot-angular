@@ -59,7 +59,7 @@ public class AtmoController {
             @Parameter(description = "INSEE code of the commune", example = "75056")
             @PathVariable String inseeCode) {
         
-        log.error(">>> CLAUDE DEBUG: AtmoController.getAirQuality called for: {}", inseeCode);
+        log.error(">>> DEBUG: AtmoController.getAirQuality called for: {}", inseeCode);
         
         return atmoIntegrationService.getAirQualityForCommune(inseeCode)
             .map(airQualityOpt -> {
