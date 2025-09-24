@@ -299,9 +299,6 @@ public class WeatherController {
             weatherData.getWindSpeed(),
             weatherData.getWindDirection(),
             weatherData.getWeatherCode(),
-            weatherData.getPrecipitation(),
-            weatherData.getPressure(),
-            weatherData.getVisibility(),
             weatherData.getCreatedAt()
         );
     }

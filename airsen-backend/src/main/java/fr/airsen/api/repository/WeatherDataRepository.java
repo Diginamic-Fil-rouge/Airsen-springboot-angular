@@ -3,6 +3,7 @@ package fr.airsen.api.repository;
 import fr.airsen.api.entity.WeatherData;
 import fr.airsen.api.entity.Commune;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -140,12 +141,17 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
     void deleteOldWeatherData(@Param("cutoffDate") LocalDate cutoffDate);
 
     /**
-     * Finds latest weather data by commune INSEE code property access.
+     * Finds the most recent weather data entry for a commune by INSEE code.
      * 
      * @param inseeCode commune INSEE code
      * @return optional latest weather data
      */
-    Optional<WeatherData> findLatestByCommune_InseeCode(String inseeCode);
+    @Query(value = "SELECT w.id, w.commune_id, w.measurement_date, w.temperature, w.humidity, " +
+           "w.wind_speed, w.wind_direction, w.weather_code, w.created_at " +
+           "FROM weather_data w JOIN communes c ON w.commune_id = c.id " +
+           "WHERE c.insee_code = :inseeCode ORDER BY w.measurement_date DESC, w.created_at DESC LIMIT 1", 
+           nativeQuery = true)
+    Optional<WeatherData> getMostRecentWeatherByInseeCode(@Param("inseeCode") String inseeCode);
 
     /**
      * Finds weather data by commune INSEE code and date range property access.

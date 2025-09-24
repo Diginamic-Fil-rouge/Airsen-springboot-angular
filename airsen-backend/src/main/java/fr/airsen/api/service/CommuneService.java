@@ -156,7 +156,6 @@ public class CommuneService {
                 
                 // Update demographic data
                 commune.setPopulation(demographicData.population());
-                commune.setArea(demographicData.area());
                 
                 // Save updated commune
                 Commune savedCommune = communeRepository.save(commune);
@@ -178,10 +177,7 @@ public class CommuneService {
 
     /**
      * Fetches commune data from INSEE API and saves to database.
-     * 
-     * Uses the INSEE API with the structure: 
-     * https://geo.api.gouv.fr/communes?nom=Versailles&fields=code,nom,codeDepartement,codeRegion,region,departement,centre,population
-     * 
+     *
      * @param communeName name of the commune to search for
      * @return Mono containing the saved commune DTO
      */
