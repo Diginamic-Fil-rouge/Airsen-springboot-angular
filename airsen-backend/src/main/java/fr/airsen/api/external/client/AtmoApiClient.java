@@ -19,6 +19,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Client for ATMO France API integration.
@@ -34,6 +36,9 @@ public class AtmoApiClient {
     private final WebClient webClient;
     private final AtmoApiConfig config;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
+    
+    private static final String JWT_TOKEN_CACHE_KEY = "atmo:jwt:token";
 
     @Autowired
     public AtmoApiClient(@Qualifier("atmoWebClient") WebClient webClient,
@@ -42,6 +47,50 @@ public class AtmoApiClient {
         this.webClient = webClient;
         this.config = config;
         this.redisTemplate = redisTemplate;
+        this.objectMapper = new ObjectMapper();
+    }
+
+    /**
+     * Gets JWT token from ATMO API using username/password authentication.
+     * 
+     * @return Mono containing the JWT token
+     */
+    private Mono<String> getJwtToken() {
+        log.info("Authenticating with ATMO API to get JWT token");
+        String loginPayload = "{\"username\": \"" + config.getUsername() + 
+                             "\", \"password\": \"" + config.getPassword() + "\"}";
+        
+        return webClient.post()
+            .uri("/api/login")
+            .header("Content-Type", "application/json")
+            .bodyValue(loginPayload)
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, response -> 
+                Mono.error(new AtmoApiException("JWT Authentication failed: " + response.statusCode())))
+            .bodyToMono(String.class)
+            .map(this::extractTokenFromResponse)
+            .doOnError(error -> log.error("Failed to get JWT token", error))
+            .timeout(Duration.ofMillis(config.getTimeoutMs()));
+    }
+    
+    /**
+     * Extracts JWT token from login response.
+     * 
+     * @param responseJson JSON response from login endpoint
+     * @return JWT token string
+     */
+    private String extractTokenFromResponse(String responseJson) {
+        try {
+            JsonNode jsonNode = objectMapper.readTree(responseJson);
+            String token = jsonNode.get("token").asText();
+            if (token == null || token.isEmpty()) {
+                throw new AtmoApiException("No token found in authentication response");
+            }
+            log.debug("Successfully extracted JWT token");
+            return token;
+        } catch (Exception e) {
+            throw new AtmoApiException("Failed to parse JWT token from response: " + e.getMessage());
+        }
     }
 
     /**
@@ -52,42 +101,26 @@ public class AtmoApiClient {
      */
     @Retryable(value = {AtmoApiException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public Flux<AtmoAirQualityResponse> getCurrentAirQualityIndices() {
-        String cacheKey = "atmo:current:all";
+        log.info("Fetching current air quality indices from ATMO API with JWT authentication");
         
-        // Check cache first
-        if (redisTemplate != null) {
-            String cached = (String) redisTemplate.opsForValue().get(cacheKey);
-            if (cached != null) {
-                log.debug("Returning cached air quality indices");
-                // Parse cached response and return as Flux
-                // For now, proceed with API call
-            }
-        }
-
-        log.info("Fetching current air quality indices from ATMO API");
-        
-        return webClient
-            .get()
-            .uri(uriBuilder -> uriBuilder
-                .path("/api/v2/data/indices/atmo")
-                .queryParam("date", LocalDate.now().toString())
-                .build())
-            .retrieve()
-            .onStatus(HttpStatusCode::is4xxClientError, response -> 
-                Mono.error(new AtmoApiException("Client error: " + response.statusCode())))
-            .onStatus(HttpStatusCode::is5xxServerError, response -> 
-                Mono.error(new AtmoApiException("Server error: " + response.statusCode())))
-            .bodyToMono(AtmoGeoJsonResponse.class)
-            .flatMapMany(geoJson -> Flux.fromIterable(geoJson.features()))
-            .map(feature -> feature.properties())
-            .doOnNext(response -> {
-                if (redisTemplate != null) {
-                    // Cache individual commune data for 1 hour
-                    String individualCacheKey = "atmo:current:" + response.communeInsee();
-                    redisTemplate.opsForValue().set(individualCacheKey, response, Duration.ofHours(1));
-                }
-            })
-            .doOnError(error -> log.error("Failed to fetch air quality indices", error))
+        return getJwtToken()
+            .flatMapMany(token -> webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/api/v2/data/indices/atmo")
+                    .queryParam("format", "geojson")
+                    .queryParam("date", LocalDate.now().minusDays(1).toString())
+                    .build())
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> 
+                    Mono.error(new AtmoApiException("Client error: " + response.statusCode())))
+                .onStatus(HttpStatusCode::is5xxServerError, response -> 
+                    Mono.error(new AtmoApiException("Server error: " + response.statusCode())))
+                .bodyToMono(AtmoGeoJsonResponse.class)
+                .flatMapMany(geoJson -> Flux.fromIterable(geoJson.features()))
+                .map(feature -> feature.properties())
+                .doOnError(error -> log.error("Failed to fetch air quality indices", error)))
             .timeout(Duration.ofMillis(config.getTimeoutMs()));
     }
 
@@ -100,22 +133,6 @@ public class AtmoApiClient {
      */
     @Retryable(value = {AtmoApiException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public Mono<AtmoAirQualityResponse> getCurrentAirQuality(String communeInseeCode) {
-        String cacheKey = "atmo:current:" + communeInseeCode;
-        
-        // Check cache first
-        if (redisTemplate != null) {
-            Object cached = redisTemplate.opsForValue().get(cacheKey);
-            if (cached != null) {
-                log.debug("Returning cached air quality data for commune: {}", communeInseeCode);
-                // Handle potential LinkedHashMap from Redis deserialization
-                if (cached instanceof AtmoAirQualityResponse response) {
-                    return Mono.just(response);
-                }
-                // If it's a LinkedHashMap, need to convert it
-                log.debug("Cached object is not the expected type, skipping cache");
-            }
-        }
-
         log.info("Fetching current air quality data for commune: {}", communeInseeCode);
         
         // Get all indices and filter for specific commune

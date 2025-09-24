@@ -27,14 +27,14 @@ public class AirQuality {
     private LocalDate measurementDate;
 
     @Column(name = "atm_index")
-    @Size(min = 1, max = 6, message = "The ATM index must be between 1 and 6")
+    @Min(value = 1, message = "The ATM index must be at least 1")
     private Integer atmIndex;
 
     @Column(name = "atmo_qual")
     private String atmoQual;
 
     @Column(name = "atmo_color")
-    @Size(min = 6, max = 6, message = "The ATM color must be a valid hex code")
+    @Size(min = 7, max = 7, message = "The ATM color must be a valid hex code (e.g., #50ccaa)")
     private String atmoColor;
 
     @Column(name = "no2")

@@ -32,6 +32,20 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
     Optional<AirQuality> findByCommuneAndMeasurementDate(Commune commune, LocalDate measurementDate);
 
     /**
+     * Finds air quality data by commune and measurement date with eager loading.
+     * 
+     * @param commune the commune
+     * @param measurementDate the measurement date
+     * @return optional air quality data with relationships loaded
+     */
+    @Query("SELECT aq FROM AirQuality aq " +
+           "LEFT JOIN FETCH aq.commune c " +
+           "LEFT JOIN FETCH c.department d " +
+           "LEFT JOIN FETCH d.region r " +
+           "WHERE c = :commune AND aq.measurementDate = :measurementDate")
+    Optional<AirQuality> findByCommuneAndMeasurementDateWithEagerLoading(@Param("commune") Commune commune, @Param("measurementDate") LocalDate measurementDate);
+
+    /**
      * Finds air quality data by commune ID.
      * 
      * @param communeId commune identifier

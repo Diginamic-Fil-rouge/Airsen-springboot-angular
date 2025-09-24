@@ -123,7 +123,7 @@ public class WeatherService {
      */
     public Mono<WeatherData> getCurrentWeatherForCommune(String communeInseeCode) {
         // Try to get recent data from database first
-        Optional<WeatherData> existingOpt = weatherDataRepository.findLatestByCommune_InseeCode(communeInseeCode);
+        Optional<WeatherData> existingOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(communeInseeCode);
         
         if (existingOpt.isPresent()) {
             WeatherData existing = existingOpt.get();
@@ -318,11 +318,6 @@ public class WeatherService {
             weatherData.setWindSpeed(response.current().windSpeed() != null ? response.current().windSpeed() : 0.0);
             weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection().doubleValue() : 0.0);
             weatherData.setWeatherCode(response.current().weatherCode() != null ? response.current().weatherCode() : 0);
-            
-            // Set additional fields using the new setter methods
-            weatherData.setPrecipitation(response.current().precipitation() != null ? response.current().precipitation() : 0.0);
-            weatherData.setPressure(response.current().pressure() != null ? response.current().pressure() : 0.0);
-            weatherData.setVisibility(response.current().visibility() != null ? response.current().visibility() : 0.0);
         }
         
         return weatherData;

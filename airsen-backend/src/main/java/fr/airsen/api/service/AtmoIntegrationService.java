@@ -1,15 +1,14 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.dto.AirQualityResponseDTO;
 import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.external.client.AtmoApiClient;
 import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
-import fr.airsen.api.external.exception.AtmoApiException;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,10 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Production service for ATMO France API integration.
@@ -90,21 +86,72 @@ public class AtmoIntegrationService {
 
     /**
      * Fetches air quality data for a specific commune by INSEE code.
+     * Also saves/updates the data in the database.
      * 
      * @param inseeCode INSEE code of the commune
-     * @return Mono containing the stored AirQuality entity
+     * @return Mono containing the air quality data as DTO
      */
-    public Mono<Optional<AirQuality>> getAirQualityForCommune(String inseeCode) {
-        log.debug("Fetching air quality data for commune: {}", inseeCode);
+    public Mono<Optional<AirQualityResponseDTO>> getAirQualityForCommune(String inseeCode) {
+        log.error(">>> DEBUG: Starting getAirQualityForCommune for: {}", inseeCode);
         
         return atmoApiClient.getCurrentAirQuality(inseeCode)
             .flatMap(this::convertToAirQuality)
-            .map(Optional::of)
+            .map(airQuality -> {
+                try {
+                    log.info("Attempting to save air quality data for commune: {} with measurement date: {}", 
+                            inseeCode, airQuality.getMeasurementDate());
+                    log.info("Air quality data: index={}, qualifier={}, color={}", 
+                            airQuality.getAtmoIndex(), airQuality.getQualifier(), airQuality.getColor());
+                    
+                    // Check if data already exists for today
+                    LocalDate measurementDate = airQuality.getMeasurementDate();
+                    Optional<AirQuality> existing = airQualityRepository
+                        .findByCommuneAndMeasurementDateWithEagerLoading(airQuality.getCommune(), measurementDate);
+                    
+                    AirQuality savedEntity;
+                    if (existing.isPresent()) {
+                        // Update existing record
+                        AirQuality existingRecord = existing.get();
+                        log.info("Found existing record with ID: {}, updating...", existingRecord.getId());
+                        updateAirQualityRecord(existingRecord, airQuality);
+                        savedEntity = airQualityRepository.save(existingRecord);
+                        log.info("Successfully updated air quality record with ID: {} for commune: {}", savedEntity.getId(), inseeCode);
+                    } else {
+                        // Create new record
+                        log.info("No existing record found, creating new record...");
+                        savedEntity = airQualityRepository.save(airQuality);
+                        log.info("Successfully created new air quality record with ID: {} for commune: {}", savedEntity.getId(), inseeCode);
+                    }
+                    
+                    // Convert to DTO within transactional context to avoid lazy loading issues
+                    log.info("Converting saved entity to DTO for commune: {}", inseeCode);
+                    try {
+                        AirQualityResponseDTO dto = AirQualityResponseDTO.fromEntity(savedEntity);
+                        log.info("Successfully converted to DTO");
+                        return Optional.of(dto);
+                    } catch (Exception dtoException) {
+                        log.error("Failed to convert entity to DTO: {}", dtoException.getMessage(), dtoException);
+                        throw dtoException;
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to store air quality data for commune: {} - Error: {}", inseeCode, e.getMessage(), e);
+                    // Convert to DTO even if save failed
+                    try {
+                        log.info("Converting unsaved entity to DTO for commune: {}", inseeCode);
+                        AirQualityResponseDTO dto = AirQualityResponseDTO.fromEntity(airQuality);
+                        log.info("Successfully converted unsaved entity to DTO");
+                        return Optional.of(dto);
+                    } catch (Exception dtoException) {
+                        log.error("Failed to convert unsaved entity to DTO: {}", dtoException.getMessage(), dtoException);
+                        throw new RuntimeException("Failed to convert air quality data to response format", dtoException);
+                    }
+                }
+            })
             .switchIfEmpty(Mono.just(Optional.empty()))
             .onErrorReturn(Optional.empty())
             .doOnNext(result -> {
                 if (result.isPresent()) {
-                    log.debug("Successfully retrieved air quality for commune: {}", inseeCode);
+                    log.debug("Successfully retrieved and stored air quality for commune: {}", inseeCode);
                 } else {
                     log.warn("No air quality data available for commune: {}", inseeCode);
                 }
@@ -112,13 +159,14 @@ public class AtmoIntegrationService {
     }
 
     /**
-     * Gets the latest stored air quality data for a commune.
+     * Gets the latest stored air quality data for a commune as DTO.
      * 
      * @param inseeCode INSEE code of the commune
-     * @return Optional containing the latest AirQuality entity
+     * @return Optional containing the latest air quality data as DTO
      */
-    public Optional<AirQuality> getLatestStoredAirQuality(String inseeCode) {
-        return airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
+    public Optional<AirQualityResponseDTO> getLatestStoredAirQuality(String inseeCode) {
+        Optional<AirQuality> airQuality = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
+        return airQuality.map(AirQualityResponseDTO::fromEntity);
     }
 
     /**
@@ -180,13 +228,20 @@ public class AtmoIntegrationService {
      */
     private Mono<AirQuality> convertToAirQuality(AtmoAirQualityResponse atmoResponse) {
         return Mono.fromCallable(() -> {
+            log.info("Converting ATMO response for commune: {}", atmoResponse.communeInsee());
+            log.info("ATMO response details: measurementDate={}, atmoIndex={}, qualifier={}, color={}", 
+                    atmoResponse.measurementDate(), atmoResponse.atmoIndex(), atmoResponse.qualifier(), atmoResponse.color());
+            
             // Find the commune by INSEE code with eager loading
             Optional<Commune> communeOpt = communeRepository.findByInseeCodeWithEagerLoading(atmoResponse.communeInsee());
             if (communeOpt.isEmpty()) {
+                log.error("Commune not found for INSEE code: {}", atmoResponse.communeInsee());
                 throw new IllegalArgumentException("Commune not found for INSEE code: " + atmoResponse.communeInsee());
             }
 
             Commune commune = communeOpt.get();
+            log.info("Found commune: {} (ID: {})", commune.getName(), commune.getId());
+            
             AirQuality airQuality = new AirQuality();
             
             // Set basic properties
@@ -197,26 +252,39 @@ public class AtmoIntegrationService {
             airQuality.setAtmoColor(atmoResponse.color());
             airQuality.setCreatedAt(LocalDate.now());
 
+            log.info("Set basic air quality properties: measurementDate={}, atmoIndex={}, qualifier={}, color={}", 
+                    airQuality.getMeasurementDate(), airQuality.getAtmIndex(), airQuality.getAtmoQual(), airQuality.getAtmoColor());
+
             // Map pollutant codes directly from the ATMO API response
             if (atmoResponse.no2Code() != null) {
-                airQuality.setNO2(convertCodeToConcentration("NO2", atmoResponse.no2Code()));
+                Double no2Conc = convertCodeToConcentration("NO2", atmoResponse.no2Code());
+                airQuality.setNO2(no2Conc);
+                log.info("Set NO2 concentration: {}", no2Conc);
             }
             if (atmoResponse.o3Code() != null) {
-                airQuality.setO3(convertCodeToConcentration("O3", atmoResponse.o3Code()));
+                Double o3Conc = convertCodeToConcentration("O3", atmoResponse.o3Code());
+                airQuality.setO3(o3Conc);
+                log.info("Set O3 concentration: {}", o3Conc);
             }
             if (atmoResponse.pm10Code() != null) {
-                airQuality.setPm10(convertCodeToConcentration("PM10", atmoResponse.pm10Code()));
+                Double pm10Conc = convertCodeToConcentration("PM10", atmoResponse.pm10Code());
+                airQuality.setPm10(pm10Conc);
+                log.info("Set PM10 concentration: {}", pm10Conc);
             }
             if (atmoResponse.pm25Code() != null) {
                 Double pm25Concentration = convertCodeToConcentration("PM25", atmoResponse.pm25Code());
                 if (pm25Concentration != null) {
                     airQuality.setPm25(pm25Concentration.intValue());
+                    log.info("Set PM25 concentration: {}", pm25Concentration.intValue());
                 }
             }
             if (atmoResponse.so2Code() != null) {
-                airQuality.setSO2(convertCodeToConcentration("SO2", atmoResponse.so2Code()));
+                Double so2Conc = convertCodeToConcentration("SO2", atmoResponse.so2Code());
+                airQuality.setSO2(so2Conc);
+                log.info("Set SO2 concentration: {}", so2Conc);
             }
 
+            log.info("Successfully converted ATMO response to AirQuality entity for commune: {}", atmoResponse.communeInsee());
             return airQuality;
         }).subscribeOn(Schedulers.boundedElastic());
     }

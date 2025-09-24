@@ -187,37 +187,6 @@ public class WeatherData {
         this.temperature = temp != null ? temp : 0.0;
     }
 
-    public Double getPrecipitation() {
-        return 0.0;
-    }
-
-    public void setPrecipitation(Double precipitation) {
-        // Store precipitation data if needed in future
-    }
-
-    public Double getCloudCover() {
-        return 0.0;
-    }
-
-    public void setCloudCover(Double cloudCover) {
-        // Store cloud cover data if needed in future
-    }
-
-    public void setPressure(Double pressure) {
-        // Store pressure data if needed in future
-    }
-
-    public Double getPressure() {
-        return 0.0;
-    }
-
-    public void setVisibility(Double visibility) {
-        // Store visibility data if needed in future
-    }
-
-    public Double getVisibility() {
-        return 0.0;
-    }
 
     public void setMaxTemperature(Double maxTemperature) {
         this.temperature = maxTemperature != null ? maxTemperature : 0.0;

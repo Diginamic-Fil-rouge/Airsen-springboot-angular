@@ -44,15 +44,6 @@ public record WeatherDataDTO(
     
     Integer weatherCode,
     
-    @DecimalMin(value = "0.0", message = "Precipitation cannot be negative")
-    Double precipitation,
-    
-    @DecimalMin(value = "0.0", message = "Pressure cannot be negative")
-    Double pressure,
-    
-    @DecimalMin(value = "0.0", message = "Visibility cannot be negative")
-    Double visibility,
-    
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate createdAt
 ) {}
