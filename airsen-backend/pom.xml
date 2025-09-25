@@ -74,6 +74,12 @@
             <artifactId>spring-retry</artifactId>
         </dependency>
         
+        <!-- Jackson Parameter Names Module for Record support -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-parameter-names</artifactId>
+        </dependency>
+        
         <!-- Database -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
@@ -189,6 +195,7 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                    <parameters>true</parameters>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.mapstruct</groupId>

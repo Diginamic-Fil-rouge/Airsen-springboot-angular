@@ -18,8 +18,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import reactor.core.publisher.Hooks;
 
 import java.util.Arrays;
+import jakarta.annotation.PostConstruct;
 
 @Configuration
 @EnableWebSecurity
@@ -32,10 +34,13 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     /**
-     * Configures the security filter chain.
+     * Configures the security filter chain with role-based authorization.
      * 
-     * Defines public and private endpoints with appropriate authentication rules
-     * for development.
+     * Endpoint access rules:
+     * - Public: /auth/**, /test/**, /actuator/**, Swagger docs
+     * - VISITOR: Read-only forum access
+     * - USER/ADMIN: Full data access, forum participation, alerts
+     * - ADMIN: User management and moderation features
      * 
      * @param http HttpSecurity object for configuration
      * @return configured SecurityFilterChain
@@ -48,9 +53,29 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // TEMPORARY: All endpoints are public for testing
-                // TODO: Re-enable authentication after testing external APIs and database integration
-                .anyRequest().permitAll()
+                // Public endpoints - Authentication not required
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/test/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html").permitAll()
+                
+                // Forum endpoints - VISITOR can read, USER/ADMIN can write
+                .requestMatchers(HttpMethod.GET, "/forum/**").hasAnyRole("VISITOR", "USER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/forum/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/forum/**").hasAnyRole("USER", "ADMIN") 
+                .requestMatchers(HttpMethod.DELETE, "/forum/**").hasAnyRole("USER", "ADMIN")
+                
+                // Data endpoints - USER and ADMIN access required
+                .requestMatchers("/regions/**", "/departments/**", "/communes/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/weather/**", "/atmo/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/alerts/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/notifications/**").hasAnyRole("USER", "ADMIN")
+                
+                // Admin-only endpoints (if any in future)
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                
+                // All other endpoints require authentication
+                .anyRequest().authenticated()
             )
             // Authentication exception handling configuration
             .exceptionHandling(exceptions -> exceptions
@@ -136,5 +161,24 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         
         return source;
+    }
+
+    /**
+     * Enables automatic propagation of SecurityContext to reactive threads.
+     * 
+     * This is crucial for reactive endpoints to maintain authentication
+     * across async operations and thread boundaries in servlet-based applications.
+     */
+    @PostConstruct
+    public void enableReactiveSecurityContextPropagation() {
+        // Enable automatic security context propagation for reactive streams
+        // This ensures SecurityContext from servlet threads is available in reactive streams
+        Hooks.enableAutomaticContextPropagation();
+        
+        // Configure SecurityContextHolder for async thread propagation
+        // MODE_INHERITABLETHREADLOCAL ensures JWT authentication context is preserved
+        // when reactive operators execute on different threads
+        org.springframework.security.core.context.SecurityContextHolder
+            .setStrategyName(org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
 }

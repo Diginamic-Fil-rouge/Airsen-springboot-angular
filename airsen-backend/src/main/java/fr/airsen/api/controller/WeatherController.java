@@ -64,7 +64,7 @@ public class WeatherController {
         @ApiResponse(responseCode = "404", description = "Commune not found"),
         @ApiResponse(responseCode = "500", description = "External API error or server error")
     })
-    public Mono<ResponseEntity<WeatherDataDTO>> getCurrentWeather(
+    public ResponseEntity<WeatherDataDTO> getCurrentWeather(
             @Parameter(description = "INSEE code of the commune", example = "75101")
             @PathVariable 
             @NotBlank(message = "Commune INSEE code cannot be blank")
@@ -73,13 +73,20 @@ public class WeatherController {
         
         log.info("Fetching current weather for commune: {}", communeInseeCode);
         
-        return weatherService.getCurrentWeatherForCommune(communeInseeCode)
-            .map(this::mapToDTO)
-            .map(ResponseEntity::ok)
-            .onErrorResume(error -> {
-                log.error("Failed to fetch current weather for commune: {}", communeInseeCode, error);
-                return Mono.just(ResponseEntity.internalServerError().build());
-            });
+        try {
+            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(communeInseeCode).block();
+            if (weatherData != null) {
+                WeatherDataDTO dto = mapToDTO(weatherData);
+                log.info("Successfully fetched current weather for commune: {}", communeInseeCode);
+                return ResponseEntity.ok(dto);
+            } else {
+                log.warn("No weather data found for commune: {}", communeInseeCode);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception error) {
+            log.error("Failed to fetch current weather for commune: {}", communeInseeCode, error);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**

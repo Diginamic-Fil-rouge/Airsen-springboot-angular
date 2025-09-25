@@ -14,6 +14,8 @@ import jakarta.validation.constraints.NotBlank;
  * - Input sanitization through Bean Validation
  * - Secure toString implementation without token exposure
  * - Token cleanup utilities
+ * 
+ * @param refreshToken the JWT refresh token for authentication renewal
  */
 public record RefreshTokenRequest(
     @NotBlank(message = "Refresh token is required")
@@ -29,11 +31,11 @@ public record RefreshTokenRequest(
      * @return cleaned refresh token
      */
     public String getCleanRefreshToken() {
-        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+        if (this.refreshToken == null || this.refreshToken.trim().isEmpty()) {
             return null;
         }
         
-        String cleaned = refreshToken.trim();
+        String cleaned = this.refreshToken.trim();
         
         // Remove "Bearer " prefix if present (case-insensitive)
         if (cleaned.toLowerCase().startsWith("bearer ")) {
@@ -54,6 +56,15 @@ public record RefreshTokenRequest(
     }
     
     /**
+     * Alternative getter method for backwards compatibility.
+     * 
+     * @return the refresh token value
+     */
+    public String getToken() {
+        return refreshToken;
+    }
+    
+    /**
      * Secure toString implementation that excludes the actual token.
      * 
      * Shows only the token length for debugging purposes while maintaining security.
@@ -62,7 +73,7 @@ public record RefreshTokenRequest(
      */
     @Override
     public String toString() {
-        if (refreshToken == null) {
+        if (this.refreshToken == null) {
             return "RefreshTokenRequest[refreshToken=null]";
         }
         

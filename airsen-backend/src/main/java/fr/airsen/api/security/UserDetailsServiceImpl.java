@@ -79,7 +79,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         try {
             // Find user by email address
-            User user = userRepository.findByEmail(normalizedEmail)
+            User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> {
                     logger.warn("User not found for email: {}", normalizedEmail);
                     return new UsernameNotFoundException("User not found with email: " + normalizedEmail);
@@ -195,7 +195,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         String normalizedEmail = email.trim().toLowerCase();
         
         try {
-            boolean exists = userRepository.existsByEmail(normalizedEmail);
+            boolean exists = userRepository.existsByEmailIgnoreCase(normalizedEmail);
             logger.debug("User existence check for {}: {}", normalizedEmail, exists);
             return exists;
         } catch (Exception e) {

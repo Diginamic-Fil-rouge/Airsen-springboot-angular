@@ -4,11 +4,13 @@ import fr.airsen.api.dto.auth.AuthResponse;
 import fr.airsen.api.dto.auth.LoginRequest;
 import fr.airsen.api.dto.auth.RegisterRequest;
 import fr.airsen.api.dto.auth.RefreshTokenRequest;
+import fr.airsen.api.entity.User;
+import fr.airsen.api.repository.UserRepository;
 import fr.airsen.api.service.AuthService;
+import org.springframework.security.core.Authentication;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,6 +57,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Authenticates user credentials and returns JWT tokens.
@@ -89,11 +94,6 @@ public class AuthController {
         )
     })
     public ResponseEntity<?> login(
-            @RequestBody(
-                description = "User login credentials",
-                required = true,
-                content = @Content(schema = @Schema(implementation = LoginRequest.class))
-            )
             @Valid @org.springframework.web.bind.annotation.RequestBody LoginRequest loginRequest) {
         try {
             logger.info("Login attempt for user: {}", loginRequest.getNormalizedEmail());
@@ -155,11 +155,6 @@ public class AuthController {
         )
     })
     public ResponseEntity<?> register(
-            @RequestBody(
-                description = "User registration data",
-                required = true,
-                content = @Content(schema = @Schema(implementation = RegisterRequest.class))
-            )
             @Valid @org.springframework.web.bind.annotation.RequestBody RegisterRequest registerRequest) {
         try {
             logger.info("Registration attempt for user: {}", registerRequest.getNormalizedEmail());
@@ -234,6 +229,10 @@ public class AuthController {
     public ResponseEntity<?> refresh(@Valid @RequestBody RefreshTokenRequest refreshRequest) {
         try {
             logger.debug("Token refresh attempt");
+            logger.debug("Received RefreshTokenRequest: {}", refreshRequest);
+            logger.debug("Raw refreshToken value: '{}'", refreshRequest.refreshToken());
+            logger.debug("Raw token value: '{}'", refreshRequest.getToken());
+            logger.debug("Clean refreshToken value: '{}'", refreshRequest.getCleanRefreshToken());
             
             AuthResponse authResponse = authService.refreshAccessToken(refreshRequest);
             
@@ -330,15 +329,40 @@ public class AuthController {
             content = @Content(schema = @Schema(implementation = Map.class))
         )
     })
-    public ResponseEntity<?> getCurrentUser() {
-        // This endpoint will be implemented when we add security context extraction
-        // For now, return a placeholder response
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "User information endpoint - requires authentication");
-        response.put("status", "NOT_IMPLEMENTED");
-        response.put("timestamp", LocalDateTime.now());
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "User not authenticated");
+            errorResponse.put("status", "UNAUTHORIZED");
+            errorResponse.put("timestamp", LocalDateTime.now());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        }
         
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response);
+        try {
+            // Extract user information from JWT token
+            String email = authentication.getName();
+            User user = userRepository.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", user.getId());
+            userInfo.put("email", user.getEmail());
+            userInfo.put("firstName", user.getFirstName());
+            userInfo.put("lastName", user.getLastName());
+            userInfo.put("role", user.getRole().name());
+            userInfo.put("createdAt", user.getCreatedAt());
+            
+            return ResponseEntity.ok(userInfo);
+        } catch (Exception e) {
+            logger.error("Error retrieving current user information: {}", e.getMessage());
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error retrieving user information");
+            errorResponse.put("status", "INTERNAL_SERVER_ERROR");
+            errorResponse.put("timestamp", LocalDateTime.now());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     /**
@@ -397,4 +421,5 @@ public class AuthController {
         successResponse.put("timestamp", LocalDateTime.now());
         return successResponse;
     }
+    
 }

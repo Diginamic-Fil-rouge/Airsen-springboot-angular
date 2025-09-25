@@ -118,6 +118,9 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+    config-url: /api/v1/api-docs/swagger-config
+    url: /api/v1/api-docs
+    disable-swagger-default-url: true
 
 # Custom application email settings
 airsen:

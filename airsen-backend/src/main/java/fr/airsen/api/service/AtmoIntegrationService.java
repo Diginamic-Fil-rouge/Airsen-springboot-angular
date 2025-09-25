@@ -159,6 +159,32 @@ public class AtmoIntegrationService {
     }
 
     /**
+     * Gets air quality data for a commune synchronously.
+     * This method is designed for Redis cache integration later.
+     * 
+     * @param inseeCode INSEE code of the commune
+     * @return Optional containing the air quality data as DTO
+     */
+    public Optional<AirQualityResponseDTO> getAirQualityForCommuneSync(String inseeCode) {
+        log.info("Synchronous air quality request for commune: {}", inseeCode);
+        
+        try {
+            // Convert reactive call to synchronous using block()
+            // This is where we'll add Redis cache logic later
+            Optional<AirQualityResponseDTO> result = getAirQualityForCommune(inseeCode)
+                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
+            
+            log.info("Successfully retrieved air quality data for commune: {}", inseeCode);
+            return result != null ? result : Optional.empty();
+            
+        } catch (Exception e) {
+            log.error("Error in synchronous air quality request for commune: {}", inseeCode, e);
+            // Fallback to database data if external API fails
+            return getLatestStoredAirQuality(inseeCode);
+        }
+    }
+
+    /**
      * Gets the latest stored air quality data for a commune as DTO.
      * 
      * @param inseeCode INSEE code of the commune

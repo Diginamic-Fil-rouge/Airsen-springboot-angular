@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -55,37 +54,40 @@ public class AtmoController {
         @ApiResponse(responseCode = "404", description = "Commune not found or no data available"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public Mono<ResponseEntity<Map<String, Object>>> getAirQuality(
+    public ResponseEntity<Map<String, Object>> getAirQuality(
             @Parameter(description = "INSEE code of the commune", example = "75056")
             @PathVariable String inseeCode) {
         
-        log.error(">>> DEBUG: AtmoController.getAirQuality called for: {}", inseeCode);
+        log.info("Getting air quality data for commune: {}", inseeCode);
         
-        return atmoIntegrationService.getAirQualityForCommune(inseeCode)
-            .map(airQualityOpt -> {
-                if (airQualityOpt.isPresent()) {
-                    AirQualityResponseDTO airQuality = airQualityOpt.get();
-                    Map<String, Object> response = createAirQualityResponse(airQuality);
-                    return ResponseEntity.ok(response);
-                } else {
-                    Map<String, Object> response = Map.of(
-                        "status", "not_found",
-                        "message", "No air quality data available for commune " + inseeCode,
-                        "inseeCode", inseeCode
-                    );
-                    return ResponseEntity.status(404).body(response);
-                }
-            })
-            .onErrorResume(error -> {
-                log.error("Error retrieving air quality data for commune: {}", inseeCode, error);
-                Map<String, Object> errorResponse = Map.of(
-                    "status", "error",
-                    "message", "Failed to retrieve air quality data",
-                    "inseeCode", inseeCode,
-                    "error", error.getMessage()
+        try {
+            // Use synchronous service method - perfect for future Redis integration
+            Optional<AirQualityResponseDTO> airQualityOpt = atmoIntegrationService.getAirQualityForCommuneSync(inseeCode);
+            
+            if (airQualityOpt.isPresent()) {
+                AirQualityResponseDTO airQuality = airQualityOpt.get();
+                Map<String, Object> response = createAirQualityResponse(airQuality);
+                response.put("source", "live_api");
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> response = Map.of(
+                    "status", "not_found",
+                    "message", "No air quality data available for commune " + inseeCode,
+                    "inseeCode", inseeCode
                 );
-                return Mono.just(ResponseEntity.status(500).body(errorResponse));
-            });
+                return ResponseEntity.status(404).body(response);
+            }
+            
+        } catch (Exception error) {
+            log.error("Error retrieving air quality data for commune: {}", inseeCode, error);
+            Map<String, Object> errorResponse = Map.of(
+                "status", "error",
+                "message", "Failed to retrieve air quality data",
+                "inseeCode", inseeCode,
+                "error", error.getMessage()
+            );
+            return ResponseEntity.status(500).body(errorResponse);
+        }
     }
 
     /**
@@ -137,31 +139,38 @@ public class AtmoController {
         @ApiResponse(responseCode = "200", description = "Synchronization completed successfully"),
         @ApiResponse(responseCode = "500", description = "Synchronization failed")
     })
-    public Mono<ResponseEntity<Map<String, Object>>> triggerSync() {
+    public ResponseEntity<Map<String, Object>> triggerSync() {
         log.info("Manual ATMO data synchronization triggered");
         
-        return atmoIntegrationService.syncCurrentAirQualityData()
-            .map(count -> {
-                Map<String, Object> response = new HashMap<>();
-                response.put("status", "success");
-                response.put("message", "ATMO data synchronization completed");
-                response.put("recordsProcessed", count);
-                response.put("timestamp", LocalDateTime.now());
-                
-                AtmoIntegrationService.AirQualityStats stats = atmoIntegrationService.getTodayStats();
-                response.put("stats", Map.of(
-                    "recordsToday", stats.recordsToday(),
-                    "totalCommunes", stats.totalCommunes(),
-                    "coverage", String.format("%.1f%%", stats.coveragePercentage())
-                ));
-                
-                return ResponseEntity.ok(response);
-            })
-            .onErrorReturn(ResponseEntity.status(500).body(Map.of(
+        try {
+            // Convert to synchronous operation
+            Integer count = atmoIntegrationService.syncCurrentAirQualityData()
+                .block(java.time.Duration.ofMinutes(2)); // 2 minute timeout for sync
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "ATMO data synchronization completed");
+            response.put("recordsProcessed", count != null ? count : 0);
+            response.put("timestamp", LocalDateTime.now());
+            
+            AtmoIntegrationService.AirQualityStats stats = atmoIntegrationService.getTodayStats();
+            response.put("stats", Map.of(
+                "recordsToday", stats.recordsToday(),
+                "totalCommunes", stats.totalCommunes(),
+                "coverage", String.format("%.1f%%", stats.coveragePercentage())
+            ));
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("ATMO data synchronization failed", e);
+            return ResponseEntity.status(500).body(Map.of(
                 "status", "error",
                 "message", "ATMO data synchronization failed",
-                "timestamp", LocalDateTime.now()
-            )));
+                "timestamp", LocalDateTime.now(),
+                "error", e.getMessage()
+            ));
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -266,7 +267,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     /**
      * Determines whether this filter should process the given request.
      * 
-     * Currently processes all requests, but can be customized to skip
+     * Currently, processes all requests, but can be customized to skip
      * certain paths or request types for performance optimization.
      * 
      * @param request HTTP request to evaluate
