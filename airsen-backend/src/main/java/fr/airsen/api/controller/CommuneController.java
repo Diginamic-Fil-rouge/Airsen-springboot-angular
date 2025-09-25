@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -27,6 +28,7 @@ import java.util.List;
  */
 @RestController
 @Tag(name = "Communes", description = "French administrative communes management")
+@SecurityRequirement(name = "bearerAuth")
 public class CommuneController {
 
     private static final Logger log = LoggerFactory.getLogger(CommuneController.class);

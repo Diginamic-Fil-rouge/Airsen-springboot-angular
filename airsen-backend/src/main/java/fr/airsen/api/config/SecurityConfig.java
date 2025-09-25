@@ -123,9 +123,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allowed origins - Angular frontend
+        // Allowed origins - Angular frontend and Swagger UI
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:4200",     // Angular dev server
+            "http://localhost:8080",     // Swagger UI
             "https://*.airsen.fr",       // Production domain pattern
             "https://airsen.fr"          // Production domain
         ));

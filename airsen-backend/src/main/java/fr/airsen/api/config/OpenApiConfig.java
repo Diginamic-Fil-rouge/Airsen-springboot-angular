@@ -1,12 +1,12 @@
 package fr.airsen.api.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.servers.Server;
-import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,14 +15,6 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    /**
-     * Custom OpenAPI configuration for the Airsen API.
-     * 
-     * Defines API information, available servers and
-     * JWT security schemes.
-     * 
-     * @return Custom OpenAPI configuration
-     */
     @Bean
     public OpenAPI airsenOpenAPI() {
         return new OpenAPI()
@@ -71,7 +63,7 @@ public class OpenApiConfig {
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
                         .bearerFormat("JWT")
-                        .description("JWT Authentication. Format: 'Bearer {token}'")
+                        .description("JWT Authentication")
                 )
             );
     }

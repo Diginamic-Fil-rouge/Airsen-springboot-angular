@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Enumeration;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Authentication controller for user login, registration, and token management.
@@ -303,6 +306,7 @@ public class AuthController {
                 .body(createErrorResponse("Logout service error", "LOGOUT_SERVICE_ERROR"));
         }
     }
+
 
     /**
      * Gets current user information from JWT token.
