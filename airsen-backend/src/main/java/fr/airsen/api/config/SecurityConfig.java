@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,10 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import reactor.core.publisher.Hooks;
 
 import java.util.Arrays;
-import jakarta.annotation.PostConstruct;
 
 @Configuration
 @EnableWebSecurity
@@ -34,17 +31,14 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     /**
-     * Configures the security filter chain with role-based authorization.
+     * Configuration de la chaîne de filtres de sécurité.
      * 
-     * Endpoint access rules:
-     * - Public: /auth/**, /test/**, /actuator/**, Swagger docs
-     * - VISITOR: Read-only forum access
-     * - USER/ADMIN: Full data access, forum participation, alerts
-     * - ADMIN: User management and moderation features
+     * Définit les endpoints publics et privés avec les règles d'authentification
+     * appropriées pour le développement.
      * 
-     * @param http HttpSecurity object for configuration
-     * @return configured SecurityFilterChain
-     * @throws Exception if configuration error occurs
+     * @param http objet HttpSecurity pour la configuration
+     * @return SecurityFilterChain configurée
+     * @throws Exception si une erreur de configuration survient
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -53,46 +47,42 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints - Authentication not required
+                // Endpoints publics (pas d'authentification requise)
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/swagger-ui.html", 
+                    "/api-docs/**",
+                    "/v3/api-docs/**",
+                    "/actuator/health",
+                    "/test/**"
+                ).permitAll()
+                // Endpoints d'authentification publics
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/test/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html").permitAll()
-                
-                // Forum endpoints - VISITOR can read, USER/ADMIN can write
-                .requestMatchers(HttpMethod.GET, "/forum/**").hasAnyRole("VISITOR", "USER", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/forum/**").hasAnyRole("USER", "ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/forum/**").hasAnyRole("USER", "ADMIN") 
-                .requestMatchers(HttpMethod.DELETE, "/forum/**").hasAnyRole("USER", "ADMIN")
-                
-                // Data endpoints - USER and ADMIN access required
-                .requestMatchers("/regions/**", "/departments/**", "/communes/**").hasAnyRole("USER", "ADMIN")
-                .requestMatchers("/weather/**", "/atmo/**").hasAnyRole("USER", "ADMIN")
-                .requestMatchers("/alerts/**").hasAnyRole("USER", "ADMIN")
-                .requestMatchers("/notifications/**").hasAnyRole("USER", "ADMIN")
-                
-                // Admin-only endpoints (if any in future)
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                
-                // All other endpoints require authentication
+                // Endpoints de données géographiques publics
+                .requestMatchers("/regions/**", "/departments/**", "/communes/**").permitAll()
+                // Endpoints de données environnementales publics
+                .requestMatchers("/air-quality/**", "/weather/**").permitAll()
+                // Endpoints forum publics en lecture
+                .requestMatchers("/forum/categories", "/forum/categories/**", "/forum/threads/**").permitAll()
+                // Tous les autres endpoints nécessitent une authentification
                 .anyRequest().authenticated()
             )
-            // Authentication exception handling configuration
+            // Configuration de la gestion des exceptions d'authentification
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             )
-            // Add JWT filter before form authentication
+            // Ajouter le filtre JWT avant l'authentification par formulaire
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }
 
     /**
-     * Configures PasswordEncoder for secure password hashing.
+     * Configuration du PasswordEncoder pour le hachage sécurisé des mots de passe.
      * 
-     * Uses BCrypt with strength 8 for good balance between security
-     * and performance.
+     * Utilise BCrypt avec une force de 8 pour un bon équilibre entre sécurité
+     * et performance.
      * 
-     * @return configured BCryptPasswordEncoder
+     * @return BCryptPasswordEncoder configuré
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -100,11 +90,11 @@ public class SecurityConfig {
     }
 
     /**
-     * Configures AuthenticationManager for user authentication.
+     * Configuration de l'AuthenticationManager pour l'authentification des utilisateurs.
      * 
-     * @param authConfig Spring Security authentication configuration
-     * @return configured AuthenticationManager
-     * @throws Exception if configuration error occurs
+     * @param authConfig configuration d'authentification Spring Security
+     * @return AuthenticationManager configuré
+     * @throws Exception si une erreur de configuration survient
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
@@ -112,31 +102,30 @@ public class SecurityConfig {
     }
 
     /**
-     * CORS configuration to allow cross-origin requests from Angular frontend.
+     * Configuration CORS pour permettre les requêtes cross-origin depuis le frontend Angular.
      * 
-     * Configures allowed origins, accepted HTTP methods, and headers
-     * necessary for JWT authentication.
+     * Configure les origines autorisées, les méthodes HTTP acceptées, et les en-têtes
+     * nécessaires pour l'authentification JWT.
      * 
-     * @return CorsConfigurationSource configured for development and production
+     * @return CorsConfigurationSource configurée pour le développement et la production
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allowed origins - Angular frontend and Swagger UI
+        // Origines autorisées - frontend Angular
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:4200",     // Angular dev server
-            "http://localhost:8080",     // Swagger UI
             "https://*.airsen.fr",       // Production domain pattern
             "https://airsen.fr"          // Production domain
         ));
         
-        // Allowed HTTP methods
+        // Méthodes HTTP autorisées
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE"
         ));
         
-        // Allowed headers (includes Authorization for JWT)
+        // En-têtes autorisés (inclut Authorization pour JWT)
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization", 
             "Content-Type", 
@@ -145,41 +134,22 @@ public class SecurityConfig {
             "Cache-Control"
         ));
         
-        // Headers exposed to client
+        // En-têtes exposés au client
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
             "Content-Length",
             "X-Total-Count"
         ));
         
-        // Allow sending cookies/credentials
+        // Permettre l'envoi de cookies/credentials
         configuration.setAllowCredentials(true);
         
-        // Cache duration for preflight requests
+        // Durée de cache pour les requêtes preflight
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         
         return source;
-    }
-
-    /**
-     * Enables automatic propagation of SecurityContext to reactive threads.
-     * 
-     * This is crucial for reactive endpoints to maintain authentication
-     * across async operations and thread boundaries in servlet-based applications.
-     */
-    @PostConstruct
-    public void enableReactiveSecurityContextPropagation() {
-        // Enable automatic security context propagation for reactive streams
-        // This ensures SecurityContext from servlet threads is available in reactive streams
-        Hooks.enableAutomaticContextPropagation();
-        
-        // Configure SecurityContextHolder for async thread propagation
-        // MODE_INHERITABLETHREADLOCAL ensures JWT authentication context is preserved
-        // when reactive operators execute on different threads
-        org.springframework.security.core.context.SecurityContextHolder
-            .setStrategyName(org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
 }

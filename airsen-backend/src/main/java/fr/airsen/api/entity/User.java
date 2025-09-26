@@ -47,6 +47,14 @@ public class User {
     @Size(max = 255, message = "Address cannot exceed 255 characters")
     private String address;
 
+    @Column(name = "telephone", length = 20)
+    @Size(max = 20, message = "Telephone cannot exceed 20 characters")
+    private String telephone;
+
+    @Column(name = "bio", length = 500)
+    @Size(max = 500, message = "Bio cannot exceed 500 characters")
+    private String bio;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     @NotNull(message = "User role is required")
@@ -58,6 +66,15 @@ public class User {
 
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
+
+    /**
+     * Whether the user account is active.
+     * 
+     * Inactive accounts cannot authenticate or access protected resources.
+     * Administrators can suspend accounts by setting this value to false.
+     */
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
     @ManyToMany
     @JoinTable(name = "user_favorite", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "commune_id"))
@@ -145,6 +162,22 @@ public class User {
         this.address = address;
     }
 
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
     public UserRole getRole() {
         return role;
     }
@@ -169,10 +202,17 @@ public class User {
         this.emailVerified = emailVerified;
     }
 
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
     public boolean hasRole(UserRole role) {
         return this.role == role;
     }
-
 
     public void verifyEmail() {
         this.emailVerified = true;
@@ -213,6 +253,18 @@ public class User {
     public void updateAddress(String address) {
         if (address != null && !address.trim().isEmpty()) {
             this.address = address.trim();
+        }
+    }
+
+    public void updateTelephone(String telephone) {
+        if (telephone != null && !telephone.trim().isEmpty()) {
+            this.telephone = telephone.trim();
+        }
+    }
+
+    public void updateBio(String bio) {
+        if (bio != null && !bio.trim().isEmpty()) {
+            this.bio = bio.trim();
         }
     }
 
@@ -272,6 +324,62 @@ public class User {
         }
     }
 
+    public Set<Commune> getFavoris() {
+        return favoris;
+    }
+
+    public void setFavoris(Set<Commune> favoris) {
+        this.favoris = favoris;
+    }
+
+    public List<ForumThread> getThreads() {
+        return threads;
+    }
+
+    public void setThreads(List<ForumThread> threads) {
+        this.threads = threads;
+    }
+
+    public List<ForumMessage> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<ForumMessage> messages) {
+        this.messages = messages;
+    }
+
+    public List<ForumVote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(List<ForumVote> votes) {
+        this.votes = votes;
+    }
+
+    public List<Alert> getAlerts() {
+        return alerts;
+    }
+
+    public void setAlerts(List<Alert> alerts) {
+        this.alerts = alerts;
+    }
+
+    public List<Notification> getSentNotifications() {
+        return sentNotifications;
+    }
+
+    public void setSentNotifications(List<Notification> sentNotifications) {
+        this.sentNotifications = sentNotifications;
+    }
+
+    public List<Notification> getReceivedNotifications() {
+        return receivedNotifications;
+    }
+
+    public void setReceivedNotifications(List<Notification> receivedNotifications) {
+        this.receivedNotifications = receivedNotifications;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -279,8 +387,12 @@ public class User {
                 ", email='" + email + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
+                ", address='" + address + '\'' +
+                ", telephone='" + telephone + '\'' +
+                ", bio='" + bio + '\'' +
                 ", role=" + role +
                 ", emailVerified=" + emailVerified +
+                ", isActive=" + isActive +
                 ", createdAt=" + createdAt +
                 '}';
     }

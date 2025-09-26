@@ -102,6 +102,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 throw new UsernameNotFoundException("User account is missing authentication credentials");
             }
 
+            // Check if user account is active (not suspended)
+            if (user.getIsActive() == null || !user.getIsActive()) {
+                logger.warn("User {} attempted to login but account is suspended", user.getEmail());
+                throw new UsernameNotFoundException("User account is suspended");
+            }
+
             // Create UserPrincipal from User entity
             UserPrincipal userPrincipal = UserPrincipal.create(user);
 
@@ -157,6 +163,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
                 logger.error("User {} has null or empty password hash", user.getEmail());
                 throw new UsernameNotFoundException("User account is missing authentication credentials");
+            }
+
+            // Check if user account is active (not suspended)
+            if (user.getIsActive() == null || !user.getIsActive()) {
+                logger.warn("User {} (ID: {}) attempted authentication but account is suspended", user.getEmail(), userId);
+                throw new UsernameNotFoundException("User account is suspended");
             }
 
             // Create UserPrincipal from User entity

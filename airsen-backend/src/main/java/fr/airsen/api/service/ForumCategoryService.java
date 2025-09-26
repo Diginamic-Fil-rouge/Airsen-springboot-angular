@@ -6,6 +6,7 @@ import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.repository.ForumCategoryRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -57,6 +58,7 @@ public class ForumCategoryService {
      * @return List of all forum categories.
      * @throws EntityExistsException If forum category with the same id already exists.
      */
+    @Transactional
     public List<ForumCategoryDTO> addForumCategory(@RequestBody ForumCategory forumCategory, BindingResult result) throws EntityExistsException, IllegalArgumentException {
         if (result.hasErrors()){
             throw new IllegalArgumentException("Invalid category : " + result.getAllErrors().get(0).getDefaultMessage());

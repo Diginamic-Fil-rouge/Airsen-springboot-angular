@@ -20,7 +20,7 @@ public class ForumCategory {
     private long id;
 
     @Column(name = "name", nullable = false, length = 50)
-    @Min(value = 3, message = "Name must be at least 3 characters long")
+    @Size(min = 3, message = "Name must be at least 3 characters long")
     private String name;
 
     @Column(name = "description", nullable = false, length = 65535)
@@ -30,16 +30,17 @@ public class ForumCategory {
     @Size(min = 7, max = 7, message = "Color must be a valid hex code")
     private String color;
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
     private List<ForumThread> threads;
 
     public ForumCategory() {
     }
 
-    public ForumCategory(String name, String description, String color) {
+    public ForumCategory(String name, String description, String color, List<ForumThread> threads) {
         this.name = name;
         this.description = description;
         this.color = color;
+        this.threads = threads;
     }
 
     public long getId() {

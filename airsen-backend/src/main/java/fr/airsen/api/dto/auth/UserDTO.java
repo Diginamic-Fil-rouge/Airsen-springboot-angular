@@ -28,6 +28,12 @@ public class UserDTO {
 
     private String lastName;
 
+    private String address;
+
+    private String telephone;
+
+    private String bio;
+
     private UserRole role;
 
     /**
@@ -55,33 +61,35 @@ public class UserDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime lastLogin;
 
-    /**
-     * Whether the user's email address has been verified.
-     * 
-     * Used for email verification workflows and security features.
-     */
     private Boolean isEmailVerified;
 
     public UserDTO() {
     }
 
-    public UserDTO(Long id, String email, String firstName, String lastName, UserRole role) {
+    public UserDTO(Long id, String email, String firstName, String lastName, String address, String telephone, String bio, UserRole role) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.address = address;
+        this.telephone = telephone;
+        this.bio = bio;
         this.role = role;
         this.isActive = true; // Default to active
         this.isEmailVerified = false; // Default to unverified
     }
 
-    public UserDTO(Long id, String email, String firstName, String lastName, 
+    public UserDTO(Long id, String email, String firstName, String lastName,
+                   String address, String telephone, String bio,
                    UserRole role, Boolean isActive, LocalDateTime createdAt, 
                    LocalDateTime lastLogin, Boolean isEmailVerified) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.address = address;
+        this.telephone = telephone;
+        this.bio = bio;
         this.role = role;
         this.isActive = isActive;
         this.createdAt = createdAt;
@@ -163,13 +171,30 @@ public class UserDTO {
         this.isEmailVerified = isEmailVerified;
     }
 
-    /**
-     * Gets the user's full display name.
-     * 
-     * Combines first and last name for display purposes.
-     * 
-     * @return full display name
-     */
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
     public String getFullName() {
         if (firstName == null && lastName == null) {
             return email; // Fallback to email if no names
@@ -189,13 +214,6 @@ public class UserDTO {
         return fullName.toString();
     }
 
-    /**
-     * Gets the user's display initials.
-     * 
-     * Uses first letters of first and last name, falling back to email.
-     * 
-     * @return user initials (e.g., "JD" for John Doe)
-     */
     public String getInitials() {
         StringBuilder initials = new StringBuilder();
         
@@ -229,6 +247,9 @@ public class UserDTO {
                 ", email='" + email + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
+                ", address='" + address + '\'' +
+                ", telephone='" + telephone + '\'' +
+                ", bio='" + bio + '\'' +
                 ", role=" + role +
                 ", isActive=" + isActive +
                 ", createdAt=" + createdAt +
