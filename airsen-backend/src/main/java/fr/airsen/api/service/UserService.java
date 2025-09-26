@@ -1,6 +1,8 @@
 package fr.airsen.api.service;
 
 import fr.airsen.api.dto.auth.UserDTO;
+import fr.airsen.api.dto.request.UpdatePasswordRequest;
+import fr.airsen.api.dto.request.UpdateUserProfileRequest;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.mapper.UserMapper;
 import fr.airsen.api.repository.UserRepository;
@@ -13,9 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-/**
- * Service for handling user operations.
- */
 @Service
 public class UserService {
 
@@ -28,22 +27,11 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    /**
-     * Find all users.
-     *
-     * @return List of UserDTO
-     */
+
     public List<UserDTO> findAll() {
         return userMapper.toDTOs(userRepository.findAll());
     }
 
-    /**
-     * Find user by id.
-     *
-     * @param id User id
-     * @return UserDTO
-     * @throws EntityNotFoundException if user with given ID is not found.
-     */
     public UserDTO findById(long id) throws EntityNotFoundException {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
@@ -105,5 +93,115 @@ public class UserService {
             throw new EntityNotFoundException("User not found");
         }
         userRepository.delete(user);
+    }
+
+    /**
+     * Update current user's profile.
+     * 
+     * Updates only the profile information (firstName and lastName) for the authenticated user.
+     * This method is designed to work with the /users/profile endpoint.
+     *
+     * @param userId ID of the authenticated user
+     * @param request Request containing profile updates
+     * @return Updated UserDTO
+     * @throws EntityNotFoundException if user with given ID is not found
+     */
+    @Transactional
+    public UserDTO updateCurrentUserProfile(Long userId, UpdateUserProfileRequest request) throws EntityNotFoundException {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+        
+        user.updateFirstName(request.getFirstName());
+        user.updateLastName(request.getLastName());
+        if (request.getAddress() != null) {
+            user.updateAddress(request.getAddress());
+        }
+        if (request.getTelephone() != null) {
+            user.updateTelephone(request.getTelephone());
+        }
+        if (request.getBio() != null) {
+            user.updateBio(request.getBio());
+        }
+        
+        return userMapper.toDTO(userRepository.save(user));
+    }
+
+    /**
+     * Update current user's password.
+     * 
+     * Verifies the current password before updating to the new password.
+     * This method is designed to work with the /users/password endpoint.
+     *
+     * @param userId ID of the authenticated user
+     * @param request Request containing current and new passwords
+     * @return Updated UserDTO
+     * @throws EntityNotFoundException if user with given ID is not found
+     * @throws IllegalArgumentException if current password is incorrect
+     */
+    @Transactional
+    public UserDTO updateCurrentUserPassword(Long userId, UpdatePasswordRequest request) 
+            throws EntityNotFoundException, IllegalArgumentException {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+        
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+        
+        // Update to new password
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+        
+        return userMapper.toDTO(userRepository.save(user));
+    }
+
+    /**
+     * Get current user's profile.
+     * 
+     * Retrieves the profile information for the authenticated user.
+     * This method is designed to work with the /users/profile endpoint.
+     *
+     * @param userId ID of the authenticated user
+     * @return UserDTO containing user profile information
+     * @throws EntityNotFoundException if user with given ID is not found
+     */
+    public UserDTO getCurrentUserProfile(Long userId) throws EntityNotFoundException {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+        return userMapper.toDTO(user);
+    }
+
+    /**
+     * Suspend a user account (admin only).
+     * 
+     * Sets the user's isActive flag to false and logs the suspension reason.
+     * This method is designed for the /admin/users/{userId}/suspend endpoint.
+     *
+     * @param userId ID of the user to suspend
+     * @param reason Reason for suspension (for audit logging)
+     * @throws EntityNotFoundException if user with given ID is not found
+     */
+    @Transactional
+    public void suspendUser(Long userId, String reason) throws EntityNotFoundException {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+        
+        // Suspend the user account
+        user.setIsActive(false);
+        userRepository.save(user);
+        
+        // TODO: Add audit logging for suspension
+        // Example: auditService.logUserSuspension(userId, reason, getCurrentAdminId());
+        
+        // TODO: Consider sending notification email to user about suspension
+        // Example: emailService.sendSuspensionNotification(user.getEmail(), reason);
     }
 }

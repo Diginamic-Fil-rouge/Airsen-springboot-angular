@@ -17,7 +17,10 @@ public class UserMapper {
         userDTO.setLastName(user.getLastName());
         userDTO.setEmail(user.getEmail());
         userDTO.setAddress(user.getAddress());
+        userDTO.setTelephone(user.getTelephone());
+        userDTO.setBio(user.getBio());
         userDTO.setRole(user.getRole());
+        userDTO.setIsActive(user.getIsActive());
         userDTO.setCreatedAt(user.getCreatedAt());
         userDTO.setIsEmailVerified(user.getEmailVerified());
         return userDTO;
@@ -30,9 +33,12 @@ public class UserMapper {
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
         user.setAddress(userDTO.getAddress());
+        user.setTelephone(userDTO.getTelephone());
+        user.setBio(userDTO.getBio());
         user.setRole(userDTO.getRole());
         user.setCreatedAt(userDTO.getCreatedAt());
         user.setEmailVerified(userDTO.getIsEmailVerified());
+        user.setIsActive(userDTO.getIsActive());
         return user;
     }
 
