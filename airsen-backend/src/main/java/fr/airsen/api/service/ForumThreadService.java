@@ -13,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -37,12 +38,14 @@ public class ForumThreadService {
         return mapper.toDTOs(forumThreadRepository.findAll());
     }
 
+    @Transactional(readOnly = true)
     public List<ForumThreadDTO> findByCategory(long id) throws EntityNotFoundException {
         ForumCategory category = forumCategoryRepository.findById(id).orElse(null);
         if (category == null){
             throw new EntityNotFoundException("Category not found");
         }
-        return mapper.toDTOs(forumThreadRepository.findByCategory(category));
+        // Use custom query with JOIN FETCH to eagerly load messages
+        return mapper.toDTOs(forumThreadRepository.findByCategoryWithMessages(category));
     }
 
     public List<ForumThreadDTO> findByAuthor(Long id) throws EntityNotFoundException {
@@ -51,8 +54,10 @@ public class ForumThreadService {
         return mapper.toDTOs(forumThreadRepository.findByAuthor(author));
     }
 
+    @Transactional(readOnly = true)
     public ForumThreadDTO findById(long id) {
-        return mapper.toDTO(forumThreadRepository.findById(id).orElse(null));
+        // Use custom query with JOIN FETCH to eagerly load messages
+        return mapper.toDTO(forumThreadRepository.findByIdWithMessages(id).orElse(null));
     }
 
     /**

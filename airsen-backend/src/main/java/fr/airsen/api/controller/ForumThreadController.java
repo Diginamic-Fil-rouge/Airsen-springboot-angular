@@ -49,7 +49,7 @@ public class ForumThreadController {
      * @return The thread with the given ID as a {@link ForumThreadDTO}.
      */
     @GetMapping("/{id}")
-    public ForumThreadDTO getForumThread(long id){
+    public ForumThreadDTO getForumThread(@PathVariable long id){
         return forumThreadService.findById(id);
     }
 
@@ -59,7 +59,7 @@ public class ForumThreadController {
      * @return List of messages of the thread as a {@link List<ForumThreadDTO>}.
      */
     @GetMapping("/{id}/messages")
-    public List<ForumMessageDTO> getMessagesByThread(long id){
+    public List<ForumMessageDTO> getMessagesByThread(@PathVariable long id){
         return forumMessageService.getMessagesByThread(id);
     }
 
@@ -70,7 +70,7 @@ public class ForumThreadController {
      * @return The thread with the added message as a {@link ForumThreadDTO}.
      */
     @PostMapping("/{id}/messages")
-    public ForumMessageDTO addMessageToThread(long id, @RequestBody ForumMessage forumMessage, BindingResult result){
+    public ForumMessageDTO addMessageToThread(@PathVariable long id, @RequestBody ForumMessage forumMessage, BindingResult result){
         return forumMessageService.addMessageToThread(id, forumMessage, result);
     }
 
@@ -81,7 +81,7 @@ public class ForumThreadController {
      * @return The updated thread as a {@link ForumThreadDTO}.
      */
     @PutMapping("/{id}")
-    public ForumThreadDTO updateForumThread(long id, @RequestBody ForumThread forumThread, BindingResult result){
+    public ForumThreadDTO updateForumThread(@PathVariable long id, @RequestBody ForumThread forumThread, BindingResult result){
         return forumThreadService.updateThread(id, forumThread, result);
     }
 
@@ -91,7 +91,7 @@ public class ForumThreadController {
      * @return List of threads as a {@link List<ForumThreadDTO>}.
      */
     @DeleteMapping("/{id}")
-    public List<ForumThreadDTO> deleteForumThread(long id){
+    public List<ForumThreadDTO> deleteForumThread(@PathVariable long id){
         return forumThreadService.deleteThread(id);
     }
 
@@ -101,7 +101,7 @@ public class ForumThreadController {
      * @return The thread with the added vote as a {@link ForumThreadDTO}.
      */
     @PostMapping("/{id}/vote")
-    public ForumThreadDTO voteThread(long id, int likeValue){
+    public ForumThreadDTO voteThread(@PathVariable long id, @RequestParam int likeValue){
         return forumVoteService.voteThread(id, likeValue);
     }
 
@@ -110,7 +110,7 @@ public class ForumThreadController {
      * @param id the Id of the thread to unvote.
      */
     @DeleteMapping("/{id}/vote")
-    public void unvoteThread(long id){
+    public void unvoteThread(@PathVariable long id){
         forumVoteService.unvoteThread(id);
     }
 

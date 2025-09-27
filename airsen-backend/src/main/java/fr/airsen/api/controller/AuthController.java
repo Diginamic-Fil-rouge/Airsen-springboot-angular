@@ -317,7 +317,6 @@ public class AuthController {
      * @return ResponseEntity with current user information
      */
     @GetMapping("/me")
-    @SecurityRequirement(name = "bearerAuth")
     @Operation(
         summary = "Get current user", 
         description = "Retrieve current authenticated user information"
