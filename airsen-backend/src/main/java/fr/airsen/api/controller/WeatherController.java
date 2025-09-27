@@ -107,7 +107,7 @@ public class WeatherController {
         @ApiResponse(responseCode = "404", description = "Commune not found"),
         @ApiResponse(responseCode = "500", description = "External API error or server error")
     })
-    public Mono<ResponseEntity<WeatherUpdateResponse>> updateWeatherData(
+    public ResponseEntity<WeatherUpdateResponse> updateWeatherData(
             @Parameter(description = "INSEE code of the commune", example = "75101")
             @PathVariable 
             @NotBlank(message = "Commune INSEE code cannot be blank")
@@ -116,21 +116,33 @@ public class WeatherController {
         
         log.info("Updating weather data for commune: {}", communeInseeCode);
         
-        return weatherService.forceUpdateWeatherForCommune(communeInseeCode)
-            .map(weatherData -> {
+        try {
+            // Convert reactive to synchronous to fix authentication context issue
+            WeatherData weatherData = weatherService.forceUpdateWeatherForCommune(communeInseeCode)
+                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
+            
+            if (weatherData != null) {
                 WeatherDataDTO dto = mapToDTO(weatherData);
                 WeatherUpdateResponse response = WeatherUpdateResponse.success(communeInseeCode, dto);
                 log.info("Successfully updated weather data for commune: {}", communeInseeCode);
                 return ResponseEntity.ok(response);
-            })
-            .onErrorResume(error -> {
-                log.error("Failed to update weather data for commune: {}", communeInseeCode, error);
+            } else {
+                log.warn("No weather data returned for commune: {}", communeInseeCode);
                 WeatherUpdateResponse response = WeatherUpdateResponse.failure(
                     communeInseeCode, 
-                    "Failed to update weather data: " + error.getMessage()
+                    "No weather data returned from service"
                 );
-                return Mono.just(ResponseEntity.ok(response));
-            });
+                return ResponseEntity.ok(response);
+            }
+            
+        } catch (Exception error) {
+            log.error("Failed to update weather data for commune: {}", communeInseeCode, error);
+            WeatherUpdateResponse response = WeatherUpdateResponse.failure(
+                communeInseeCode, 
+                "Failed to update weather data: " + error.getMessage()
+            );
+            return ResponseEntity.ok(response);
+        }
     }
 
     /**
@@ -150,7 +162,7 @@ public class WeatherController {
         @ApiResponse(responseCode = "404", description = "Commune not found"),
         @ApiResponse(responseCode = "500", description = "External API error or server error")
     })
-    public Flux<WeatherDataDTO> getWeatherForecast(
+    public ResponseEntity<List<WeatherDataDTO>> getWeatherForecast(
             @Parameter(description = "INSEE code of the commune", example = "75101")
             @PathVariable 
             @NotBlank(message = "Commune INSEE code cannot be blank")
@@ -165,11 +177,20 @@ public class WeatherController {
         
         log.info("Fetching weather forecast for commune: {} for {} days", communeInseeCode, days);
         
-        return weatherService.getWeatherForecastForCommune(communeInseeCode, days)
-            .map(this::mapToDTO)
-            .doOnComplete(() -> log.info("Successfully retrieved forecast for commune: {}", communeInseeCode))
-            .onErrorContinue((error, item) -> 
-                log.error("Error in forecast for commune: {}", communeInseeCode, error));
+        try {
+            // Convert reactive to synchronous to fix authentication context issue
+            List<WeatherDataDTO> forecastData = weatherService.getWeatherForecastForCommune(communeInseeCode, days)
+                .map(this::mapToDTO)
+                .collectList()
+                .block(java.time.Duration.ofSeconds(15)); // 15 second timeout for forecast
+            
+            log.info("Successfully retrieved forecast for commune: {}", communeInseeCode);
+            return ResponseEntity.ok(forecastData != null ? forecastData : List.of());
+            
+        } catch (Exception error) {
+            log.error("Error in forecast for commune: {}", communeInseeCode, error);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -192,7 +213,7 @@ public class WeatherController {
         @ApiResponse(responseCode = "400", description = "Invalid date range"),
         @ApiResponse(responseCode = "404", description = "Commune not found")
     })
-    public Flux<WeatherDataDTO> getHistoricalWeather(
+    public ResponseEntity<List<WeatherDataDTO>> getHistoricalWeather(
             @Parameter(description = "INSEE code of the commune", example = "75101")
             @PathVariable 
             @NotBlank(message = "Commune INSEE code cannot be blank")
@@ -212,11 +233,20 @@ public class WeatherController {
         log.info("Fetching historical weather for commune: {} from {} to {}", 
                 communeInseeCode, startDate, endDate);
         
-        return weatherService.getHistoricalWeather(communeInseeCode, startDate, endDate)
-            .map(this::mapToDTO)
-            .doOnComplete(() -> log.info("Successfully retrieved historical data for commune: {}", communeInseeCode))
-            .onErrorContinue((error, item) -> 
-                log.error("Error in historical data for commune: {}", communeInseeCode, error));
+        try {
+            // Convert reactive to synchronous to fix authentication context issue
+            List<WeatherDataDTO> historicalData = weatherService.getHistoricalWeather(communeInseeCode, startDate, endDate)
+                .map(this::mapToDTO)
+                .collectList()
+                .block(java.time.Duration.ofSeconds(20)); // 20 second timeout for historical data
+            
+            log.info("Successfully retrieved historical data for commune: {}", communeInseeCode);
+            return ResponseEntity.ok(historicalData != null ? historicalData : List.of());
+            
+        } catch (Exception error) {
+            log.error("Error in historical data for commune: {}", communeInseeCode, error);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -274,7 +304,7 @@ public class WeatherController {
         @ApiResponse(responseCode = "200", description = "Region weather data retrieved successfully"),
         @ApiResponse(responseCode = "404", description = "Region not found")
     })
-    public Flux<WeatherDataDTO> getRegionWeatherData(
+    public ResponseEntity<List<WeatherDataDTO>> getRegionWeatherData(
             @Parameter(description = "INSEE region code", example = "11")
             @PathVariable 
             @NotBlank(message = "Region code cannot be blank")
@@ -283,11 +313,20 @@ public class WeatherController {
         
         log.info("Fetching weather data for region: {}", regionCode);
         
-        return weatherService.getRegionWeatherData(regionCode)
-            .map(this::mapToDTO)
-            .doOnComplete(() -> log.info("Successfully retrieved weather data for region: {}", regionCode))
-            .onErrorContinue((error, item) -> 
-                log.error("Error in region weather data for region: {}", regionCode, error));
+        try {
+            // Convert reactive to synchronous to fix authentication context issue
+            List<WeatherDataDTO> weatherData = weatherService.getRegionWeatherData(regionCode)
+                .map(this::mapToDTO)
+                .collectList()
+                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
+            
+            log.info("Successfully retrieved weather data for region: {}", regionCode);
+            return ResponseEntity.ok(weatherData != null ? weatherData : List.of());
+            
+        } catch (Exception error) {
+            log.error("Error in region weather data for region: {}", regionCode, error);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**

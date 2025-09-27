@@ -240,18 +240,13 @@ public class NotificationController {
 
     /**
      * Extracts user ID from UserDetails.
-     * In a real implementation, this would be based on your UserDetails implementation.
+     * Casts UserDetails to UserPrincipal to access the user ID.
      */
     private Long getUserIdFromUserDetails(UserDetails userDetails) {
-        // This is a placeholder - implement based on your UserDetails implementation
-        // For example, if you have a custom UserPrincipal:
-        // return ((UserPrincipal) userDetails).getUserId();
-        
-        // For now, we'll extract from username (assuming username is user ID)
-        try {
-            return Long.parseLong(userDetails.getUsername());
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid user ID in authentication");
+        if (userDetails instanceof fr.airsen.api.security.UserPrincipal) {
+            return ((fr.airsen.api.security.UserPrincipal) userDetails).getId();
+        } else {
+            throw new IllegalArgumentException("Invalid user details type in authentication");
         }
     }
 

@@ -24,8 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
+import fr.airsen.api.security.UserPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -74,12 +74,11 @@ public class AlertController {
         @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     public ResponseEntity<Page<AlertDTO>> getUserAlerts(
-            @AuthenticationPrincipal UserDetails userDetails,
             @PageableDefault(size = 20, sort = "createdDate") Pageable pageable,
             @Parameter(description = "Filter for active alerts only")
             @RequestParam(value = "activeOnly", defaultValue = "false") boolean activeOnly) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         Page<Alert> alerts = activeOnly ? 
             alertService.getActiveAlertsByUserId(userId, pageable) :
@@ -107,10 +106,9 @@ public class AlertController {
         @ApiResponse(responseCode = "422", description = "Validation failed")
     })
     public ResponseEntity<AlertDTO> createAlert(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody CreateAlertRequest createAlertRequest) {
+                        @Valid @RequestBody CreateAlertRequest createAlertRequest) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         try {
             Alert createdAlert = alertService.createAlert(
@@ -147,11 +145,10 @@ public class AlertController {
         @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
     })
     public ResponseEntity<String> updateAlert(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(description = "Alert identifier") @PathVariable Long alertId,
+                        @Parameter(description = "Alert identifier") @PathVariable Long alertId,
             @Valid @RequestBody UpdateAlertRequest updateAlertRequest) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         // Check if alert exists and belongs to user
         Optional<Alert> alertOpt = alertService.getAlertById(alertId);
@@ -213,11 +210,10 @@ public class AlertController {
         @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
     })
     public ResponseEntity<String> updateAlertThreshold(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(description = "Alert identifier") @PathVariable Long alertId,
+                        @Parameter(description = "Alert identifier") @PathVariable Long alertId,
             @Valid @RequestBody UpdateAlertThresholdRequest thresholdRequest) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         // Check ownership
         Optional<Alert> alertOpt = alertService.getAlertById(alertId);
@@ -249,10 +245,9 @@ public class AlertController {
     @PatchMapping("/{alertId}/activate")
     @Operation(summary = "Activate alert", description = "Activate an existing alert")
     public ResponseEntity<String> activateAlert(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(description = "Alert identifier") @PathVariable Long alertId) {
+                        @Parameter(description = "Alert identifier") @PathVariable Long alertId) {
         
-        return toggleAlertActivation(userDetails, alertId, true);
+        return toggleAlertActivation(alertId, true);
     }
 
     /**
@@ -265,10 +260,9 @@ public class AlertController {
     @PatchMapping("/{alertId}/deactivate")
     @Operation(summary = "Deactivate alert", description = "Deactivate an existing alert")
     public ResponseEntity<String> deactivateAlert(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(description = "Alert identifier") @PathVariable Long alertId) {
+                        @Parameter(description = "Alert identifier") @PathVariable Long alertId) {
         
-        return toggleAlertActivation(userDetails, alertId, false);
+        return toggleAlertActivation(alertId, false);
     }
 
     /**
@@ -287,10 +281,9 @@ public class AlertController {
         @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
     })
     public ResponseEntity<Void> deleteAlert(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(description = "Alert identifier") @PathVariable Long alertId) {
+                        @Parameter(description = "Alert identifier") @PathVariable Long alertId) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         // Check ownership
         Optional<Alert> alertOpt = alertService.getAlertById(alertId);
@@ -323,14 +316,13 @@ public class AlertController {
 //        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
 //    })
 //    public ResponseEntity<Page<AlertHistoryDTO>> getAlertHistory(
-//            @AuthenticationPrincipal UserDetails userDetails,
-//            @PageableDefault(size = 20, sort = "sendDate") Pageable pageable,
+//            //            @PageableDefault(size = 20, sort = "sendDate") Pageable pageable,
 //            @Parameter(description = "Start date filter (ISO format)")
 //            @RequestParam(value = "startDate", required = false) String startDate,
 //            @Parameter(description = "End date filter (ISO format)")
 //            @RequestParam(value = "endDate", required = false) String endDate) {
 //
-//        Long userId = getUserIdFromUserDetails(userDetails);
+//        Long userId = getCurrentUserId();
 //
 //        Page<AlertHistory> history;
 //        if (startDate != null && endDate != null) {
@@ -356,9 +348,9 @@ public class AlertController {
     @Operation(summary = "Get alert statistics", description = "Retrieve user's alert usage statistics")
     @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
     public ResponseEntity<AlertStatisticsDTO> getAlertStatistics(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            ) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         AlertService.AlertStatistics stats = alertService.getUserAlertStatistics(userId);
         
         AlertStatisticsDTO statsDTO = new AlertStatisticsDTO(
@@ -373,27 +365,18 @@ public class AlertController {
     // Helper methods
 
     /**
-     * Extracts user ID from UserDetails.
-     * In a real implementation, this would be based on your UserDetails implementation.
+     * Gets the current authenticated user ID from SecurityContext.
      */
-    private Long getUserIdFromUserDetails(UserDetails userDetails) {
-        // This is a placeholder - implement based on your UserDetails implementation
-        // For example, if you have a custom UserPrincipal:
-        // return ((UserPrincipal) userDetails).getUserId();
-        
-        // For now, we'll extract from username (assuming username is user ID)
-        try {
-            return Long.parseLong(userDetails.getUsername());
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid user ID in authentication");
-        }
+    private Long getCurrentUserId() {
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.getId();
     }
 
     /**
      * Helper method to toggle alert activation.
      */
-    private ResponseEntity<String> toggleAlertActivation(UserDetails userDetails, Long alertId, boolean activate) {
-        Long userId = getUserIdFromUserDetails(userDetails);
+    private ResponseEntity<String> toggleAlertActivation(Long alertId, boolean activate) {
+        Long userId = getCurrentUserId();
         
         // Check ownership
         Optional<Alert> alertOpt = alertService.getAlertById(alertId);

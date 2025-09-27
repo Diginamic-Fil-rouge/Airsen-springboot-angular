@@ -35,6 +35,15 @@ public class ForumThreadController {
     private ForumVoteService forumVoteService;
 
     /**
+     * Get all forum threads.
+     * @return List of all threads as a {@link List<ForumThreadDTO>}.
+     */
+    @GetMapping
+    public List<ForumThreadDTO> getAllForumThreads(){
+        return forumThreadService.findAll();
+    }
+
+    /**
      * Get a forum thread by its ID.
      * @param id Id of the thread.
      * @return The thread with the given ID as a {@link ForumThreadDTO}.
