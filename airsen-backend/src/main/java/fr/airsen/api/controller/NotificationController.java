@@ -2,6 +2,7 @@ package fr.airsen.api.controller;
 
 import fr.airsen.api.dto.response.NotificationDTO;
 import fr.airsen.api.entity.Notification;
+import fr.airsen.api.security.UserPrincipal;
 import fr.airsen.api.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,16 +14,19 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for managing user notifications.
@@ -52,10 +56,10 @@ public class NotificationController {
     /**
      * GET /notifications - List user's notifications.
      * 
-     * @param userDetails authenticated user details
-     * @param pageable pagination parameters
      * @param unreadOnly filter for unread notifications only
-     * @return paginated notifications with unread count
+     * @param page page number (0-based)
+     * @param size page size
+     * @return notifications with unread count
      */
     @GetMapping
     @Operation(summary = "List user notifications", 
@@ -65,24 +69,33 @@ public class NotificationController {
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
         @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
-    public ResponseEntity<NotificationListResponse> getUserNotifications(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @PageableDefault(size = 20, sort = "createdDate") Pageable pageable,
+    public ResponseEntity<Map<String, Object>> getUserNotifications(
             @Parameter(description = "Filter for unread notifications only")
-            @RequestParam(value = "unreadOnly", defaultValue = "false") boolean unreadOnly) {
+            @RequestParam(value = "unreadOnly", defaultValue = "false") boolean unreadOnly,
+            @Parameter(description = "Page number (0-based)")
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @Parameter(description = "Page size")
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
         
         Page<Notification> notifications = unreadOnly ? 
             notificationService.getUnreadNotificationsByRecipientId(userId, pageable) :
             notificationService.getNotificationsByRecipientId(userId, pageable);
         
-        Page<NotificationDTO> notificationDTOs = notifications.map(this::convertToNotificationDTO);
+        List<NotificationResponseDTO> content = notifications.getContent().stream()
+            .map(this::convertToNotificationResponseDTO)
+            .collect(Collectors.toList());
         
         // Get unread count
         long unreadCount = notificationService.getUserNotificationStatistics(userId).getUnreadNotifications();
         
-        NotificationListResponse response = new NotificationListResponse(notificationDTOs, unreadCount);
+        Map<String, Object> response = Map.of(
+            "content", content,
+            "unreadCount", unreadCount
+        );
         
         return ResponseEntity.ok(response);
     }
@@ -90,7 +103,6 @@ public class NotificationController {
     /**
      * PUT /notifications/{notificationId}/read - Mark notification as read.
      * 
-     * @param userDetails authenticated user details
      * @param notificationId notification identifier
      * @return success response
      */
@@ -104,10 +116,9 @@ public class NotificationController {
         @ApiResponse(responseCode = "404", description = "Notification not found", content = @Content)
     })
     public ResponseEntity<Map<String, String>> markNotificationAsRead(
-            @AuthenticationPrincipal UserDetails userDetails,
             @Parameter(description = "Notification identifier") @PathVariable Long notificationId) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         // Check if notification exists and belongs to user
         Optional<Notification> notificationOpt = notificationService.getNotificationById(notificationId);
@@ -129,7 +140,6 @@ public class NotificationController {
     /**
      * PUT /notifications/read-all - Mark all notifications as read.
      * 
-     * @param userDetails authenticated user details
      * @return success response
      */
     @PutMapping("/read-all")
@@ -139,10 +149,9 @@ public class NotificationController {
         @ApiResponse(responseCode = "200", description = "All notifications marked as read successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<Map<String, String>> markAllNotificationsAsRead(
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, String>> markAllNotificationsAsRead() {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         notificationService.markAllNotificationsAsReadForUser(userId);
         
@@ -152,7 +161,6 @@ public class NotificationController {
     /**
      * DELETE /notifications/{notificationId} - Delete notification.
      * 
-     * @param userDetails authenticated user details
      * @param notificationId notification identifier
      * @return success response
      */
@@ -166,10 +174,9 @@ public class NotificationController {
         @ApiResponse(responseCode = "404", description = "Notification not found", content = @Content)
     })
     public ResponseEntity<Void> deleteNotification(
-            @AuthenticationPrincipal UserDetails userDetails,
             @Parameter(description = "Notification identifier") @PathVariable Long notificationId) {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         // Check if notification exists and belongs to user
         Optional<Notification> notificationOpt = notificationService.getNotificationById(notificationId);
@@ -190,17 +197,15 @@ public class NotificationController {
     /**
      * GET /notifications/unread-count - Get unread notification count.
      * 
-     * @param userDetails authenticated user details
      * @return unread count
      */
     @GetMapping("/unread-count")
     @Operation(summary = "Get unread notification count", 
               description = "Get the count of unread notifications for the authenticated user")
     @ApiResponse(responseCode = "200", description = "Unread count retrieved successfully")
-    public ResponseEntity<Map<String, Long>> getUnreadNotificationCount(
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, Long>> getUnreadNotificationCount() {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         NotificationService.NotificationStatistics stats = notificationService.getUserNotificationStatistics(userId);
         
@@ -210,17 +215,15 @@ public class NotificationController {
     /**
      * GET /notifications/statistics - Get notification statistics.
      * 
-     * @param userDetails authenticated user details
      * @return notification statistics
      */
     @GetMapping("/statistics")
     @Operation(summary = "Get notification statistics", 
               description = "Retrieve user's notification statistics including total, unread, and delivery status")
     @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
-    public ResponseEntity<NotificationStatsResponse> getNotificationStatistics(
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<NotificationStatsResponse> getNotificationStatistics() {
         
-        Long userId = getUserIdFromUserDetails(userDetails);
+        Long userId = getCurrentUserId();
         
         NotificationService.NotificationStatistics stats = notificationService.getUserNotificationStatistics(userId);
         
@@ -239,63 +242,82 @@ public class NotificationController {
     // Helper methods
 
     /**
-     * Extracts user ID from UserDetails.
-     * Casts UserDetails to UserPrincipal to access the user ID.
+     * Gets the current authenticated user ID.
      */
-    private Long getUserIdFromUserDetails(UserDetails userDetails) {
-        if (userDetails instanceof fr.airsen.api.security.UserPrincipal) {
-            return ((fr.airsen.api.security.UserPrincipal) userDetails).getId();
-        } else {
-            throw new IllegalArgumentException("Invalid user details type in authentication");
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated() || 
+            !(authentication.getPrincipal() instanceof UserPrincipal)) {
+            throw new IllegalStateException("User not authenticated");
         }
+        
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return userPrincipal.getId();
     }
 
     /**
-     * Converts Notification entity to NotificationDTO.
+     * Converts Notification entity to NotificationResponseDTO for API responses.
      */
-    private NotificationDTO convertToNotificationDTO(Notification notification) {
-        return new NotificationDTO(
+    private NotificationResponseDTO convertToNotificationResponseDTO(Notification notification) {
+        return new NotificationResponseDTO(
             notification.getId(),
-            notification.getUser().getId(),
-            notification.getUser().getEmail(),
-            notification.getUserReceiver().getId(),
-            notification.getUserReceiver().getEmail(),
-            notification.getNotificationType(),
+            notification.getNotificationType().name(),
             notification.getTitle(),
             notification.getMessage(),
-            notification.getSendStatus(),
-            notification.getSendChannel(),
             notification.getCreatedDate(),
-            notification.getSentDate(),
-            notification.getErrorMessage()
+            !notification.getSendStatus(), // readStatus is inverse of sendStatus (false = unread, true = read)
+            notification.getSendChannel().name()
         );
     }
 
     // Response classes
 
     /**
-     * Response wrapper for notification list with unread count.
+     * Simplified notification response DTO for API responses.
      */
-    @Schema(description = "Paginated notification list with metadata")
-    public static class NotificationListResponse {
-        @Schema(description = "Paginated notification content")
-        private final Page<NotificationDTO> content;
+    @Schema(description = "Notification response for API")
+    public static class NotificationResponseDTO {
+        @Schema(description = "Notification identifier")
+        private final Long id;
         
-        @Schema(description = "Total count of unread notifications")
-        private final long unreadCount;
+        @Schema(description = "Notification type")
+        private final String type;
+        
+        @Schema(description = "Notification title")
+        private final String title;
+        
+        @Schema(description = "Notification message")
+        private final String message;
+        
+        @Schema(description = "Creation date")
+        private final java.time.LocalDateTime createdDate;
+        
+        @Schema(description = "Read status (false = unread, true = read)")
+        private final Boolean readStatus;
+        
+        @Schema(description = "Send channel")
+        private final String sendChannel;
 
-        public NotificationListResponse(Page<NotificationDTO> content, long unreadCount) {
-            this.content = content;
-            this.unreadCount = unreadCount;
+        public NotificationResponseDTO(Long id, String type, String title, String message, 
+                                     java.time.LocalDateTime createdDate, Boolean readStatus, String sendChannel) {
+            this.id = id;
+            this.type = type;
+            this.title = title;
+            this.message = message;
+            this.createdDate = createdDate;
+            this.readStatus = readStatus;
+            this.sendChannel = sendChannel;
         }
 
-        public Page<NotificationDTO> getContent() {
-            return content;
-        }
-
-        public long getUnreadCount() {
-            return unreadCount;
-        }
+        // Getters
+        public Long getId() { return id; }
+        public String getType() { return type; }
+        public String getTitle() { return title; }
+        public String getMessage() { return message; }
+        public java.time.LocalDateTime getCreatedDate() { return createdDate; }
+        public Boolean getReadStatus() { return readStatus; }
+        public String getSendChannel() { return sendChannel; }
     }
 
     /**
