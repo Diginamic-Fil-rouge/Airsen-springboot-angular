@@ -6,6 +6,7 @@ import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.service.ForumCategoryService;
 import fr.airsen.api.service.ForumThreadService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/forum/categories")
 @Tag(name = "Forum Category", description = "Forum Category endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class ForumCategoryController {
 
     @Autowired

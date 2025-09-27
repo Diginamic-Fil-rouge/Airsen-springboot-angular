@@ -8,6 +8,7 @@ import fr.airsen.api.entity.User;
 import fr.airsen.api.repository.ForumMessageRepository;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.UserRepository;
+import fr.airsen.api.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -70,7 +71,8 @@ public class ForumMessageService {
         {
             throw new EntityNotFoundException("Thread not found - Cannot add message");
         }
-        User user = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(principal.getId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         forumMessage.setAuthor(user);
         forumMessage.setThread(thread);
         return forumMessageMapper.toDTO(forumMessageRepository.save(forumMessage));

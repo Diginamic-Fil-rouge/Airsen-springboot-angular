@@ -43,7 +43,7 @@ public class ForumThreadDTO {
 
     public ForumThreadDTO(ForumThread forumThread, boolean withEntities) {
         this.id = forumThread.getId();
-        this.author = new UserDTO(forumThread.getAuthor().getId(), forumThread.getAuthor().getEmail(), forumThread.getAuthor().getFirstName(), forumThread.getAuthor().getLastName(), forumThread.getAuthor().getRole());
+        this.author = new UserDTO(forumThread.getAuthor().getId(), forumThread.getAuthor().getEmail(), forumThread.getAuthor().getFirstName(), forumThread.getAuthor().getLastName(), forumThread.getAuthor().getAddress(), forumThread.getAuthor().getTelephone(), forumThread.getAuthor().getBio(), forumThread.getAuthor().getRole());
         this.category = new ForumCategoryDTO(forumThread.getCategory(), false);
         this.title = forumThread.getTitle();
         this.content = forumThread.getContent();

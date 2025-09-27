@@ -25,7 +25,7 @@ public class ForumVoteDTO {
         this.id = forumVote.getId();
         this.voteType = forumVote.getVoteType();
         if (withEntities){
-            this.user = new UserDTO(forumVote.getUser().getId(), forumVote.getUser().getEmail(), forumVote.getUser().getFirstName(), forumVote.getUser().getLastName(), forumVote.getUser().getRole());
+            this.user = new UserDTO(forumVote.getUser().getId(), forumVote.getUser().getEmail(), forumVote.getUser().getFirstName(), forumVote.getUser().getLastName(), forumVote.getUser().getAddress(), forumVote.getUser().getTelephone(), forumVote.getUser().getBio(), forumVote.getUser().getRole());
             this.thread = new ForumThreadDTO(forumVote.getThread(), false);
         }
     }

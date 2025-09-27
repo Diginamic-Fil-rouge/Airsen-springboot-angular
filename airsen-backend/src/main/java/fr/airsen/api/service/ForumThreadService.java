@@ -8,6 +8,7 @@ import fr.airsen.api.entity.User;
 import fr.airsen.api.repository.ForumCategoryRepository;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.UserRepository;
+import fr.airsen.api.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -69,8 +70,8 @@ public class ForumThreadService {
         {
             throw new EntityNotFoundException("Category not found - Cannot add thread");
         }
-        // MEGA TODO fix getting current user. Finish testing forum endpoints (Category : done, threads, messages and votes : not done)
-        User user = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(principal.getId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         System.out.println("User found");
         forumThread.setAuthor(user);
         System.out.println("Author set");

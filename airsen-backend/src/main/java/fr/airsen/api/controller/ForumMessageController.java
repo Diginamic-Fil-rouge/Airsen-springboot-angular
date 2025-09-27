@@ -3,6 +3,7 @@ package fr.airsen.api.controller;
 import fr.airsen.api.dto.ForumMessageDTO;
 import fr.airsen.api.entity.ForumMessage;
 import fr.airsen.api.service.ForumMessageService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/forum/messages")
 @Tag(name = "Forum Messages", description = "Forum Messages endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class ForumMessageController {
     
     @Autowired

@@ -24,7 +24,7 @@ public class ForumMessageDTO {
 
     public ForumMessageDTO(ForumMessage forumMessage, boolean withThread){
         this.id = forumMessage.getId();
-        this.author = new UserDTO(forumMessage.getAuthor().getId(), forumMessage.getAuthor().getEmail(), forumMessage.getAuthor().getFirstName(), forumMessage.getAuthor().getLastName(), forumMessage.getAuthor().getRole());
+        this.author = new UserDTO(forumMessage.getAuthor().getId(), forumMessage.getAuthor().getEmail(), forumMessage.getAuthor().getFirstName(), forumMessage.getAuthor().getLastName(), forumMessage.getAuthor().getAddress(), forumMessage.getAuthor().getTelephone(), forumMessage.getAuthor().getBio(), forumMessage.getAuthor().getRole());
         this.content = forumMessage.getContent();
         this.createdDate = forumMessage.getCreatedDate();
         if(withThread){

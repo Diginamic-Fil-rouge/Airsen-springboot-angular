@@ -7,6 +7,7 @@ import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.service.ForumMessageService;
 import fr.airsen.api.service.ForumThreadService;
 import fr.airsen.api.service.ForumVoteService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/forum/threads")
 @Tag(name = "Forum Thread", description = "Forum Thread endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class ForumThreadController {
 
     @Autowired
