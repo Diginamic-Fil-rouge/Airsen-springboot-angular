@@ -42,7 +42,7 @@ public class ForumCategoryService {
      * @return Forum category with the specified id.
      * @throws EntityNotFoundException If there is no forum category with the specified id.
      */
-    public ForumCategoryDTO findById(long id) throws EntityNotFoundException {
+    public ForumCategoryDTO findById(Long id) throws EntityNotFoundException {
         ForumCategory category = forumCategoryRepository.findById(id).orElse(null);
         if (category == null)
         {
@@ -79,7 +79,7 @@ public class ForumCategoryService {
      * @return List of all forum categories.
      * @throws EntityExistsException If forum category with the same id already exists.
      */
-    public List<ForumCategoryDTO> editForumCategory(long id, @RequestBody ForumCategory forumCategory, BindingResult result) throws EntityExistsException, EntityNotFoundException, IllegalArgumentException {
+    public List<ForumCategoryDTO> editForumCategory(Long id, @RequestBody ForumCategory forumCategory, BindingResult result) throws EntityExistsException, EntityNotFoundException, IllegalArgumentException {
         if (result.hasErrors()){
             throw new IllegalArgumentException("Invalid category : " + result.getAllErrors().get(0).getDefaultMessage());
         }
@@ -101,7 +101,7 @@ public class ForumCategoryService {
      * @return List of all forum categories.
      * @throws EntityNotFoundException If there is no forum category with the specified id.
      */
-    public List<ForumCategoryDTO> deleteForumCategory(long id) throws EntityNotFoundException {
+    public List<ForumCategoryDTO> deleteForumCategory(Long id) throws EntityNotFoundException {
         ForumCategory entityExists = forumCategoryRepository.findById(id).orElse(null);
         if (entityExists == null){
             throw new EntityNotFoundException("Failed to delete category - Category not found");

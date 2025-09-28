@@ -46,8 +46,19 @@ public class ForumCategoryController {
      * @param id Category ID.
      * @return List of forum threads.
      */
+    /**
+     * Endpoint to get a single forum category by ID.
+     *
+     * @param id Category ID.
+     * @return Forum category.
+     */
+    @GetMapping("/{id}")
+    public ForumCategoryDTO getCategory(@PathVariable Long id) {
+        return service.findById(id);
+    }
+
     @GetMapping("/{id}/threads")
-    public List<ForumThreadDTO> listThreadsByCategory(@PathVariable long id) {
+    public List<ForumThreadDTO> listThreadsByCategory(@PathVariable Long id) {
         return forumThreadService.findByCategory(id);
     }
 
@@ -59,8 +70,7 @@ public class ForumCategoryController {
      * @return List of all forum threads.
      */
     @PostMapping("/{id}/threads")
-
-    public List<ForumThreadDTO> addThread(@PathVariable long id, @RequestBody ForumThread forumThread, BindingResult result) {
+    public List<ForumThreadDTO> addThread(@PathVariable Long id, @RequestBody ForumThread forumThread, BindingResult result) {
         return forumThreadService.addThreadToCategory(id, forumThread, result);
     }
 
@@ -83,7 +93,7 @@ public class ForumCategoryController {
      * @return List of all forum categories.
      */
     @PutMapping("/edit/{id}")
-    public List<ForumCategoryDTO> editCategory(@PathVariable long id, @RequestBody ForumCategory forumCategory, BindingResult result) {
+    public List<ForumCategoryDTO> editCategory(@PathVariable Long id, @RequestBody ForumCategory forumCategory, BindingResult result) {
         return service.editForumCategory(id, forumCategory, result);
     }
 
@@ -94,7 +104,7 @@ public class ForumCategoryController {
      * @return List of all forum categories.
      */
     @DeleteMapping("/delete/{id}")
-    public List<ForumCategoryDTO> deleteCategory(@PathVariable long id) {
+    public List<ForumCategoryDTO> deleteCategory(@PathVariable Long id) {
         return service.deleteForumCategory(id);
     }
 

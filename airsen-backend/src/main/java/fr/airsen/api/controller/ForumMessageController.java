@@ -29,7 +29,7 @@ public class ForumMessageController {
      * @return the forum message
      */
     @GetMapping("/{id}")
-    public ForumMessageDTO getMessage(@PathVariable long id){
+    public ForumMessageDTO getMessage(@PathVariable Long id){
         return forumMessageService.findById(id);
     }
     
@@ -41,7 +41,7 @@ public class ForumMessageController {
      * @return the updated forum message
      */
     @PutMapping("/{id}")
-    public ForumMessageDTO updateMessage(@PathVariable long id, @RequestBody ForumMessage forumMessage, BindingResult result){
+    public ForumMessageDTO updateMessage(@PathVariable Long id, @RequestBody ForumMessage forumMessage, BindingResult result){
         return forumMessageService.updateMessage(id, forumMessage, result);
     }
     
@@ -51,7 +51,7 @@ public class ForumMessageController {
      * @param id id of the forum message
      */
     @DeleteMapping("/{id}")
-    public void deleteMessage(@PathVariable long id){
+    public void deleteMessage(@PathVariable Long id){
         forumMessageService.deleteMessage(id);
     }
     

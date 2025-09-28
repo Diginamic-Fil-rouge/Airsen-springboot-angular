@@ -17,6 +17,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -38,7 +39,8 @@ public class ForumVoteService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<ForumVoteDTO> findAllVoteByThread(long id) throws EntityNotFoundException
+    @Transactional(readOnly = true)
+    public List<ForumVoteDTO> findAllVoteByThread(Long id) throws EntityNotFoundException
     {
         ForumThread thread = forumThreadRepository.findById(id).orElse(null);
         if (thread == null) {
@@ -48,7 +50,8 @@ public class ForumVoteService {
         return forumVoteMapper.toDTOs(forumVoteRepository.findByThread(thread));
     }
     
-    public ForumVoteDTO findById(long id) throws EntityNotFoundException
+    @Transactional(readOnly = true)
+    public ForumVoteDTO findById(Long id) throws EntityNotFoundException
     {
         ForumVote vote = forumVoteRepository.findById(id).orElse(null);
         if (vote == null) {
@@ -67,8 +70,9 @@ public class ForumVoteService {
      * @throws EntityNotFoundException if forum thread with given ID is not found.
      * @throws EntityExistsException   if user already voted.
      */
-    public ForumThreadDTO voteThread(long id, int likeValue) throws EntityNotFoundException, EntityExistsException {
-        ForumThread thread = forumThreadRepository.findById(id).orElse(null);
+    @Transactional
+    public ForumThreadDTO voteThread(Long id, int likeValue) throws EntityNotFoundException, EntityExistsException {
+        ForumThread thread = forumThreadRepository.findByIdWithMessages(id).orElse(null);
         if (thread == null){
             throw new EntityNotFoundException("Thread not found");
         }
@@ -84,7 +88,10 @@ public class ForumVoteService {
         VoteType voteType = likeValue > 0 ? VoteType.LIKE : VoteType.DISLIKE;
         ForumVote newVote = new ForumVote(user, thread, voteType);
         forumVoteRepository.save(newVote);
-        return forumThreadMapper.toDTO(thread);
+        
+        // Reload thread with updated data
+        ForumThread updatedThread = forumThreadRepository.findByIdWithMessages(id).orElse(thread);
+        return forumThreadMapper.toDTO(updatedThread);
     }
 
     /**
@@ -94,7 +101,8 @@ public class ForumVoteService {
      * @throws EntityNotFoundException if forum thread with given ID is not found.
      * @throws EntityNotFoundException if forum vote does not exist.
      */
-    public void unvoteThread(long id) {
+    @Transactional
+    public void unvoteThread(Long id) {
         ForumThread thread = forumThreadRepository.findById(id).orElse(null);
         if (thread == null){
             throw new EntityNotFoundException("Thread not found");

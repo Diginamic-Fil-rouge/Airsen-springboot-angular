@@ -1,7 +1,7 @@
 package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
@@ -35,11 +35,13 @@ public class ForumThread {
     private List<ForumVote> votes;
 
     @Column(name = "title", nullable = false)
-    @Size(min = 1, max = 255, message = "Title must not be empty and max 255 characters long")
+    @NotBlank(message = "Title is required")
+    @Size(max = 255, message = "Title must be less than 255 characters")
     private String title;
 
     @Column(name = "content", nullable = false, length = 65535)
-    @Min(value = 1, message = "Content must not be empty")
+    @NotBlank(message = "Content is required")
+    @Size(max = 10000, message = "Content must be less than 10000 characters")
     private String content;
 
     @Column(name = "created_date", nullable = false)

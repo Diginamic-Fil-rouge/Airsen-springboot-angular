@@ -22,6 +22,17 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> 
      */
     List<ForumThread> findAll();
 
+    /**
+     * Find all {@link ForumThread} entities with related data eagerly loaded.
+     *
+     * @return list of {@link ForumThread} entities with related data loaded
+     */
+    @Query("SELECT DISTINCT t FROM ForumThread t " +
+           "LEFT JOIN FETCH t.author " +
+           "LEFT JOIN FETCH t.category " +
+           "ORDER BY t.createdDate DESC")
+    List<ForumThread> findAllWithRelations();
+
 
     /**
      * Find {@link ForumThread} entities by {@link ForumCategory}.
