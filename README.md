@@ -1,17 +1,37 @@
-# Airsen - Air Quality Monitoring Application
+# Airsen - Environmental Information Exchange Platform
 
-**Airsen** is a French air quality monitoring web application that provides real-time environmental data through a Spring Boot REST API backend.
+**Airsen** is an environmental information platform designed to deliver French citizens with real-time environmental data. Built as a Spring Boot REST API, Airsen provides environmental information from official monitoring sources and comunity-drivent contributions. The goal is to make complex environmental data accessble, actinable and secure. 
 
-## Features
+## Mission Statement
 
-- Air Quality Monitoring (ATMO indices and pollutant concentrations)
-- Weather Data (current conditions and forecasts)
-- Geographic Data (French regions, departments, communes)
-- User Management (profiles, favorites, alerts)
-- Forum System (community discussions)
-- Export System (PDF and CSV reports)
-- JWT Authentication with role-based authorization
-- Interactive Swagger UI documentation
+Airsen connects official monitoring systems with user engagement. By combining verified environmental data with citizen input, it supports both short-term decision-making (daily activities) and long-term awareness (climate and health impact).
+
+## Key Features
+
+### Environmental Intelligence
+- **Air Quality Monitoring**: Real-time ATMO indices and pollutant concentrations from official French monitoring stations
+- **Weather Integration**: Current conditions and forecasts correlated with air quality data
+- **Geographic Coverage**: Complete French administrative hierarchy (regions, departments, communes)
+
+### Community Engagement
+- **Discussion Forums**: Category-based community discussions on environmental topics
+- **Citizen Reporting**: Share local environmental observations and experiences
+- **Voting System**: Community-driven content validation and engagement
+
+### Personalized Alerts
+- **Smart Notifications**: Customizable air quality and weather alerts based on user preferences
+- **Threshold Management**: Personal health-based alert configurations
+- **Multi-channel Delivery**: Email and in-app notification systems
+
+### Data & Insights
+- **Open Data Integration**: ATMO France, INSEE, and Open-Meteo APIs
+- **Export Capabilities**: PDF and CSV reports for personal tracking
+- **Real-time Dashboard**: Live environmental data visualization
+
+### Secure Platform
+- **JWT Authentication**: Secure user authentication with role-based authorization (Visitor/User/Admin)
+- **Privacy-First**: GDPR-compliant data handling and user privacy protection
+- **API Documentation**: Interactive Swagger UI for developers and integrators
 
 ## Prerequisites
 
