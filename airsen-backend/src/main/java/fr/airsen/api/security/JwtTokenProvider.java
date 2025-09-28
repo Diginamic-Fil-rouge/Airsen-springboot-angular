@@ -43,14 +43,14 @@ public class JwtTokenProvider {
      * JWT secret key from environment variables.
      * Should be at least 32 characters for HS256 algorithm security.
      */
-    @Value("${airsen.jwt.secret:default-secret-key-change-in-production-environment}")
+    @Value("${spring.security.jwt.secret}")
     private String jwtSecret;
 
     /**
      * JWT token expiration time in milliseconds.
      * Default: 24 hours (86400000 ms)
      */
-    @Value("${airsen.jwt.expiration:86400000}")
+    @Value("${spring.security.jwt.expiration:86400000}")
     private long jwtExpirationMs;
 
     /**

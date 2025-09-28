@@ -98,4 +98,54 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u.password FROM User u WHERE u.id = :userId")
     String findPasswordByUserId(@Param("userId") Long userId);
 
+    // ==================== BROADCAST NOTIFICATION METHODS ====================
+
+    /**
+     * Finds all active users with verified emails for broadcasting.
+     */
+    @Query("SELECT DISTINCT u FROM User u WHERE u.isActive = true AND u.emailVerified = true")
+    java.util.List<User> findAllActiveUsersWithVerifiedEmail();
+
+    /**
+     * Finds users by region code through their alerts.
+     */
+    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c JOIN c.department d JOIN d.region r " +
+           "WHERE u.isActive = true AND u.emailVerified = true AND r.regionCode = :regionCode")
+    java.util.List<User> findActiveUsersByRegionCode(@Param("regionCode") String regionCode);
+
+    /**
+     * Finds users by department code through their alerts.
+     */
+    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c JOIN c.department d " +
+           "WHERE u.isActive = true AND u.emailVerified = true AND d.departmentCode = :departmentCode")
+    java.util.List<User> findActiveUsersByDepartmentCode(@Param("departmentCode") String departmentCode);
+
+    /**
+     * Finds users by commune code through their alerts.
+     */
+    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c " +
+           "WHERE u.isActive = true AND u.emailVerified = true AND c.inseeCode = :communeCode")
+    java.util.List<User> findActiveUsersByCommuneCode(@Param("communeCode") String communeCode);
+
+    /**
+     * Finds users by region code through their favorite communes.
+     */
+    @Query("SELECT DISTINCT u FROM User u JOIN u.favoris c JOIN c.department d JOIN d.region r " +
+           "WHERE u.isActive = true AND u.emailVerified = true AND r.regionCode = :regionCode")
+    java.util.List<User> findActiveUsersByFavoriteRegionCode(@Param("regionCode") String regionCode);
+
+    /**
+     * Finds users by department code through their favorite communes.
+     */
+    @Query("SELECT DISTINCT u FROM User u JOIN u.favoris c JOIN c.department d " +
+           "WHERE u.isActive = true AND u.emailVerified = true AND d.departmentCode = :departmentCode")
+    java.util.List<User> findActiveUsersByFavoriteDepartmentCode(@Param("departmentCode") String departmentCode);
+
+    /**
+     * Finds users by commune code through their favorite communes.
+     */
+    @Query("SELECT DISTINCT u FROM User u JOIN u.favoris c " +
+           "WHERE u.isActive = true AND u.emailVerified = true AND c.inseeCode = :communeCode")
+    java.util.List<User> findActiveUsersByFavoriteCommuneCode(@Param("communeCode") String communeCode);
+
 }
