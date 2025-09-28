@@ -1,6 +1,5 @@
 package fr.airsen.api.controller;
 
-import fr.airsen.api.dto.response.NotificationDTO;
 import fr.airsen.api.entity.Notification;
 import fr.airsen.api.security.UserPrincipal;
 import fr.airsen.api.service.NotificationService;
@@ -85,9 +84,7 @@ public class NotificationController {
             notificationService.getUnreadNotificationsByRecipientId(userId, pageable) :
             notificationService.getNotificationsByRecipientId(userId, pageable);
         
-        List<NotificationResponseDTO> content = notifications.getContent().stream()
-            .map(this::convertToNotificationResponseDTO)
-            .collect(Collectors.toList());
+        List<Notification> content = notifications.getContent();
         
         // Get unread count
         long unreadCount = notificationService.getUserNotificationStatistics(userId).getUnreadNotifications();
@@ -256,69 +253,8 @@ public class NotificationController {
         return userPrincipal.getId();
     }
 
-    /**
-     * Converts Notification entity to NotificationResponseDTO for API responses.
-     */
-    private NotificationResponseDTO convertToNotificationResponseDTO(Notification notification) {
-        return new NotificationResponseDTO(
-            notification.getId(),
-            notification.getNotificationType().name(),
-            notification.getTitle(),
-            notification.getMessage(),
-            notification.getCreatedDate(),
-            !notification.getSendStatus(), // readStatus is inverse of sendStatus (false = unread, true = read)
-            notification.getSendChannel().name()
-        );
-    }
 
     // Response classes
-
-    /**
-     * Simplified notification response DTO for API responses.
-     */
-    @Schema(description = "Notification response for API")
-    public static class NotificationResponseDTO {
-        @Schema(description = "Notification identifier")
-        private final Long id;
-        
-        @Schema(description = "Notification type")
-        private final String type;
-        
-        @Schema(description = "Notification title")
-        private final String title;
-        
-        @Schema(description = "Notification message")
-        private final String message;
-        
-        @Schema(description = "Creation date")
-        private final java.time.LocalDateTime createdDate;
-        
-        @Schema(description = "Read status (false = unread, true = read)")
-        private final Boolean readStatus;
-        
-        @Schema(description = "Send channel")
-        private final String sendChannel;
-
-        public NotificationResponseDTO(Long id, String type, String title, String message, 
-                                     java.time.LocalDateTime createdDate, Boolean readStatus, String sendChannel) {
-            this.id = id;
-            this.type = type;
-            this.title = title;
-            this.message = message;
-            this.createdDate = createdDate;
-            this.readStatus = readStatus;
-            this.sendChannel = sendChannel;
-        }
-
-        // Getters
-        public Long getId() { return id; }
-        public String getType() { return type; }
-        public String getTitle() { return title; }
-        public String getMessage() { return message; }
-        public java.time.LocalDateTime getCreatedDate() { return createdDate; }
-        public Boolean getReadStatus() { return readStatus; }
-        public String getSendChannel() { return sendChannel; }
-    }
 
     /**
      * Response for notification statistics.

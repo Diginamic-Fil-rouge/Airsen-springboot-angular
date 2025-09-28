@@ -56,7 +56,7 @@ public class Notification {
     private String message;
 
     @Column(name = "send_status", nullable = false)
-    private Boolean sendStatus = false;
+    private Boolean readStatus = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "send_channel", nullable = false)
@@ -75,7 +75,7 @@ public class Notification {
     private String errorMessage;
 
     public Notification() {
-        this.sendStatus = false;
+        this.readStatus = false;
         this.notificationType = NotificationType.EMAIL;
         this.sendChannel = NotificationChannel.EMAIL;
     }
@@ -161,12 +161,12 @@ public class Notification {
         this.message = message;
     }
 
-    public Boolean getSendStatus() {
-        return sendStatus;
+    public Boolean getReadStatus() {
+        return readStatus;
     }
 
-    public void setSendStatus(Boolean sendStatus) {
-        this.sendStatus = sendStatus;
+    public void setReadStatus(Boolean readStatus) {
+        this.readStatus = readStatus;
     }
 
     public NotificationChannel getSendChannel() {
@@ -207,7 +207,7 @@ public class Notification {
      * Marks this notification as successfully sent.
      */
     public void markAsSent() {
-        this.sendStatus = true;
+        this.readStatus = true;
         this.sentDate = LocalDateTime.now();
         this.errorMessage = null;
     }
@@ -218,7 +218,7 @@ public class Notification {
      * @param errorMessage description of the delivery failure
      */
     public void markAsFailed(String errorMessage) {
-        this.sendStatus = false;
+        this.readStatus = false;
         this.errorMessage = errorMessage;
         this.sentDate = null;
     }
@@ -229,7 +229,7 @@ public class Notification {
      * @return true if the notification failed to send
      */
     public boolean hasFailed() {
-        return !sendStatus && errorMessage != null && !errorMessage.trim().isEmpty();
+        return !readStatus && errorMessage != null && !errorMessage.trim().isEmpty();
     }
 
     /**
@@ -238,7 +238,7 @@ public class Notification {
      * @return true if the notification is pending
      */
     public boolean isPending() {
-        return !sendStatus && (errorMessage == null || errorMessage.trim().isEmpty());
+        return !readStatus && (errorMessage == null || errorMessage.trim().isEmpty());
     }
 
     /**
@@ -266,7 +266,7 @@ public class Notification {
      */
     public String getSummary() {
         String recipientInfo = userReceiver != null ? userReceiver.getEmail() : "Unknown recipient";
-        String statusInfo = sendStatus ? "Sent" : "Pending/Failed";
+        String statusInfo = readStatus ? "Read" : "Unread";
         
         return String.format("Notification[%d]: '%s' to %s (%s)", 
                            id, title, recipientInfo, statusInfo);
@@ -278,7 +278,7 @@ public class Notification {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", notificationType=" + notificationType +
-                ", sendStatus=" + sendStatus +
+                ", readStatus=" + readStatus +
                 ", sendChannel=" + sendChannel +
                 ", createdDate=" + createdDate +
                 '}';

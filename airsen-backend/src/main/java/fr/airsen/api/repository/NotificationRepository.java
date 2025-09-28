@@ -33,40 +33,40 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds unread notifications for a user.
-     * Unread notifications are those with sendStatus = false.
+     * Unread notifications are those with readStatus = false.
      * 
      * @param userId recipient user identifier
      * @param pageable pagination parameters
      * @return page of unread notifications
      */
-    @Query("SELECT n FROM Notification n WHERE n.userReceiver.id = :userId AND n.sendStatus = false ORDER BY n.createdDate DESC")
+    @Query("SELECT n FROM Notification n WHERE n.userReceiver.id = :userId AND n.readStatus = false ORDER BY n.createdDate DESC")
     Page<Notification> findUnreadByRecipientId(@Param("userId") Long userId, Pageable pageable);
 
     /**
-     * Finds notifications by delivery status.
+     * Finds notifications by read status.
      * 
-     * @param sendStatus delivery success status
+     * @param readStatus read/unread status
      * @param pageable pagination parameters
      * @return page of notifications with the specified status
      */
-    Page<Notification> findBySendStatus(Boolean sendStatus, Pageable pageable);
+    Page<Notification> findByReadStatus(Boolean readStatus, Pageable pageable);
 
     /**
      * Finds pending notifications for processing.
-     * Pending notifications have sendStatus = false and no error message.
+     * Pending notifications have readStatus = false and no error message.
      * 
      * @return list of pending notifications
      */
-    @Query("SELECT n FROM Notification n WHERE n.sendStatus = false AND (n.errorMessage IS NULL OR n.errorMessage = '') ORDER BY n.createdDate ASC")
+    @Query("SELECT n FROM Notification n WHERE n.readStatus = false AND (n.errorMessage IS NULL OR n.errorMessage = '') ORDER BY n.createdDate ASC")
     List<Notification> findPendingNotifications();
 
     /**
      * Finds failed notifications for retry processing.
-     * Failed notifications have sendStatus = false and an error message.
+     * Failed notifications have readStatus = false and an error message.
      * 
      * @return list of failed notifications
      */
-    @Query("SELECT n FROM Notification n WHERE n.sendStatus = false AND n.errorMessage IS NOT NULL AND n.errorMessage != '' ORDER BY n.createdDate DESC")
+    @Query("SELECT n FROM Notification n WHERE n.readStatus = false AND n.errorMessage IS NOT NULL AND n.errorMessage != '' ORDER BY n.createdDate DESC")
     List<Notification> findFailedNotifications();
 
     /**
@@ -131,7 +131,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param userId recipient user identifier
      * @return count of unread notifications
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userReceiver.id = :userId AND n.sendStatus = false")
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userReceiver.id = :userId AND n.readStatus = false")
     long countUnreadByRecipientId(@Param("userId") Long userId);
 
     /**
@@ -140,7 +140,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param userId recipient user identifier
      * @return count of successful notifications
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userReceiver.id = :userId AND n.sendStatus = true")
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userReceiver.id = :userId AND n.readStatus = true")
     long countSuccessfulByRecipientId(@Param("userId") Long userId);
 
     /**
@@ -149,16 +149,16 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param userId recipient user identifier
      * @return count of failed notifications
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userReceiver.id = :userId AND n.sendStatus = false AND n.errorMessage IS NOT NULL AND n.errorMessage != ''")
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userReceiver.id = :userId AND n.readStatus = false AND n.errorMessage IS NOT NULL AND n.errorMessage != ''")
     long countFailedByRecipientId(@Param("userId") Long userId);
 
     /**
-     * Counts notifications by delivery status.
+     * Counts notifications by read status.
      * 
-     * @param sendStatus delivery success status
+     * @param readStatus read/unread status
      * @return count of notifications with the specified status
      */
-    long countBySendStatus(Boolean sendStatus);
+    long countByReadStatus(Boolean readStatus);
 
     /**
      * Marks a notification as successfully sent.
@@ -167,7 +167,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param sentDate date when notification was sent
      */
     @Modifying
-    @Query("UPDATE Notification n SET n.sendStatus = true, n.sentDate = :sentDate, n.errorMessage = null WHERE n.id = :notificationId")
+    @Query("UPDATE Notification n SET n.readStatus = true, n.sentDate = :sentDate, n.errorMessage = null WHERE n.id = :notificationId")
     void markAsSent(@Param("notificationId") Long notificationId, @Param("sentDate") LocalDateTime sentDate);
 
     /**
@@ -177,18 +177,18 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param errorMessage error description
      */
     @Modifying
-    @Query("UPDATE Notification n SET n.sendStatus = false, n.errorMessage = :errorMessage, n.sentDate = null WHERE n.id = :notificationId")
+    @Query("UPDATE Notification n SET n.readStatus = false, n.errorMessage = :errorMessage, n.sentDate = null WHERE n.id = :notificationId")
     void markAsFailed(@Param("notificationId") Long notificationId, @Param("errorMessage") String errorMessage);
 
     /**
      * Updates notification delivery status.
      * 
      * @param notificationId notification identifier
-     * @param sendStatus new delivery status
+     * @param readStatus new read status
      */
     @Modifying
-    @Query("UPDATE Notification n SET n.sendStatus = :sendStatus WHERE n.id = :notificationId")
-    void updateSendStatus(@Param("notificationId") Long notificationId, @Param("sendStatus") Boolean sendStatus);
+    @Query("UPDATE Notification n SET n.readStatus = :readStatus WHERE n.id = :notificationId")
+    void updateReadStatus(@Param("notificationId") Long notificationId, @Param("readStatus") Boolean readStatus);
 
     /**
      * Marks all notifications for a user as read.
@@ -197,7 +197,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param userId recipient user identifier
      */
     @Modifying
-    @Query("UPDATE Notification n SET n.sendStatus = true WHERE n.userReceiver.id = :userId AND n.sendStatus = false")
+    @Query("UPDATE Notification n SET n.readStatus = true WHERE n.userReceiver.id = :userId AND n.readStatus = false")
     void markAllAsReadForUser(@Param("userId") Long userId);
 
     /**
@@ -228,9 +228,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * 
      * @param startDate start of date range
      * @param endDate end of date range
-     * @return list of statistics [sendStatus, count]
+     * @return list of statistics [readStatus, count]
      */
-    @Query("SELECT n.sendStatus, COUNT(n) FROM Notification n WHERE n.createdDate BETWEEN :startDate AND :endDate GROUP BY n.sendStatus")
+    @Query("SELECT n.readStatus, COUNT(n) FROM Notification n WHERE n.createdDate BETWEEN :startDate AND :endDate GROUP BY n.readStatus")
     List<Object[]> findDeliveryStats(@Param("startDate") LocalDateTime startDate,
                                     @Param("endDate") LocalDateTime endDate);
 
@@ -251,7 +251,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * 
      * @return list of notifications requiring email delivery
      */
-    @Query("SELECT n FROM Notification n WHERE n.sendStatus = false AND n.sendChannel = 'EMAIL' AND (n.errorMessage IS NULL OR n.errorMessage = '') ORDER BY n.createdDate ASC")
+    @Query("SELECT n FROM Notification n WHERE n.readStatus = false AND n.sendChannel = 'EMAIL' AND (n.errorMessage IS NULL OR n.errorMessage = '') ORDER BY n.createdDate ASC")
     List<Notification> findPendingEmailNotifications();
 
     /**

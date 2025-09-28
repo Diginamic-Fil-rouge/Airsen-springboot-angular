@@ -272,7 +272,7 @@ public class NotificationService {
         for (Notification notification : failedNotifications) {
             try {
                 // Reset status to pending before retry
-                notification.setSendStatus(false);
+                notification.setReadStatus(false);
                 notification.setErrorMessage(null);
                 notificationRepository.save(notification);
                 
@@ -312,8 +312,8 @@ public class NotificationService {
      */
     @Transactional(readOnly = true)
     public NotificationStatistics getSystemNotificationStatistics() {
-        long successfulCount = notificationRepository.countBySendStatus(true);
-        long failedCount = notificationRepository.countBySendStatus(false);
+        long successfulCount = notificationRepository.countByReadStatus(true);
+        long failedCount = notificationRepository.countByReadStatus(false);
         long totalCount = successfulCount + failedCount;
         
         return new NotificationStatistics(totalCount, 0, successfulCount, failedCount);

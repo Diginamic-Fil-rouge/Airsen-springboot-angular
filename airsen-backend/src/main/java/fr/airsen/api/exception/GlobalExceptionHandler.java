@@ -10,6 +10,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.beans.TypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -81,6 +83,110 @@ public class GlobalExceptionHandler {
         errorResponse.put("code", "VALIDATION_ERROR");
         errorResponse.put("timestamp", LocalDateTime.now());
         errorResponse.put("details", fieldErrors);
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
+     * Handles parameter type mismatch errors from @PathVariable and @RequestParam.
+     * 
+     * This method is triggered when URL path variables or request parameters cannot
+     * be converted to the expected type (e.g., "abc" cannot be converted to Long).
+     * It returns a 400 Bad Request response with a clear parameter error message.
+     * 
+     * Common scenarios:
+     * - /api/v1/notifications/abc/read (abc cannot be converted to Long)
+     * - /api/v1/categories/invalid-id (invalid-id cannot be converted to Long)
+     * 
+     * @param ex MethodArgumentTypeMismatchException containing parameter conversion error
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 400 status and parameter error message
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatchException(
+            MethodArgumentTypeMismatchException ex, WebRequest request) {
+        
+        logger.debug("Parameter type mismatch for request {}: {}", 
+                    request.getDescription(false), ex.getMessage());
+
+        // Extract parameter details
+        String parameterName = ex.getName();
+        Object parameterValue = ex.getValue();
+        String requiredType = ex.getRequiredType() != null ? 
+                             ex.getRequiredType().getSimpleName() : "unknown";
+
+        // Create descriptive error message
+        String errorMessage = String.format(
+            "Invalid value '%s' for parameter '%s'. Expected type: %s",
+            parameterValue != null ? parameterValue.toString() : "null",
+            parameterName,
+            requiredType
+        );
+
+        // Create error response
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", errorMessage);
+        errorResponse.put("code", "INVALID_PARAMETER_TYPE");
+        errorResponse.put("timestamp", LocalDateTime.now());
+        
+        // Add additional details for debugging
+        Map<String, String> details = new HashMap<>();
+        details.put("parameter", parameterName);
+        details.put("value", parameterValue != null ? parameterValue.toString() : "null");
+        details.put("expectedType", requiredType);
+        errorResponse.put("details", details);
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
+     * Handles general type mismatch errors as fallback for parameter conversion issues.
+     * 
+     * This method catches TypeMismatchException instances that aren't caught by the more
+     * specific MethodArgumentTypeMismatchException handler. It provides a fallback for
+     * various parameter conversion errors.
+     * 
+     * @param ex TypeMismatchException containing parameter conversion error
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 400 status and parameter error message
+     */
+    @ExceptionHandler(TypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleGeneralTypeMismatchException(
+            TypeMismatchException ex, WebRequest request) {
+        
+        logger.debug("General type mismatch for request {}: {}", 
+                    request.getDescription(false), ex.getMessage());
+
+        // Extract error information
+        String errorMessage = "Invalid parameter format";
+        Object value = ex.getValue();
+        Class<?> requiredType = ex.getRequiredType();
+        
+        if (value != null && requiredType != null) {
+            errorMessage = String.format(
+                "Cannot convert value '%s' to required type %s",
+                value.toString(),
+                requiredType.getSimpleName()
+            );
+        }
+
+        // Create error response
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", errorMessage);
+        errorResponse.put("code", "PARAMETER_TYPE_MISMATCH");
+        errorResponse.put("timestamp", LocalDateTime.now());
+        
+        // Add additional details
+        Map<String, String> details = new HashMap<>();
+        if (value != null) {
+            details.put("providedValue", value.toString());
+        }
+        if (requiredType != null) {
+            details.put("expectedType", requiredType.getSimpleName());
+        }
+        errorResponse.put("details", details);
 
         return ResponseEntity.badRequest().body(errorResponse);
     }
