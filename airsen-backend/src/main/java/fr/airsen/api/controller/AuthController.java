@@ -4,10 +4,7 @@ import fr.airsen.api.dto.auth.AuthResponse;
 import fr.airsen.api.dto.auth.LoginRequest;
 import fr.airsen.api.dto.auth.RegisterRequest;
 import fr.airsen.api.dto.auth.RefreshTokenRequest;
-import fr.airsen.api.entity.User;
-import fr.airsen.api.repository.UserRepository;
 import fr.airsen.api.service.AuthService;
-import org.springframework.security.core.Authentication;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -49,7 +46,6 @@ import jakarta.servlet.http.HttpServletRequest;
  * - POST /auth/register - User registration
  * - POST /auth/refresh - Token refresh
  * - POST /auth/logout - User logout
- * - GET /auth/me - Current user information
  */
 @RestController
 @RequestMapping("/auth")
@@ -60,9 +56,6 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
-    
-    @Autowired
-    private UserRepository userRepository;
 
     /**
      * Authenticates user credentials and returns JWT tokens.
@@ -308,66 +301,6 @@ public class AuthController {
     }
 
 
-    /**
-     * Gets current user information from JWT token.
-     * 
-     * This endpoint extracts user information from the JWT token
-     * and returns current user details. Requires valid authentication.
-     * 
-     * @return ResponseEntity with current user information
-     */
-    @GetMapping("/me")
-    @Operation(
-        summary = "Get current user", 
-        description = "Retrieve current authenticated user information"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200", 
-            description = "User information retrieved successfully",
-            content = @Content(schema = @Schema(implementation = Map.class))
-        ),
-        @ApiResponse(
-            responseCode = "401", 
-            description = "Authentication required",
-            content = @Content(schema = @Schema(implementation = Map.class))
-        )
-    })
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "User not authenticated");
-            errorResponse.put("status", "UNAUTHORIZED");
-            errorResponse.put("timestamp", LocalDateTime.now());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-        }
-        
-        try {
-            // Extract user information from JWT token
-            String email = authentication.getName();
-            User user = userRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            
-            Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("id", user.getId());
-            userInfo.put("email", user.getEmail());
-            userInfo.put("firstName", user.getFirstName());
-            userInfo.put("lastName", user.getLastName());
-            userInfo.put("role", user.getRole().name());
-            userInfo.put("createdAt", user.getCreatedAt());
-            
-            return ResponseEntity.ok(userInfo);
-        } catch (Exception e) {
-            logger.error("Error retrieving current user information: {}", e.getMessage());
-            
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Error retrieving user information");
-            errorResponse.put("status", "INTERNAL_SERVER_ERROR");
-            errorResponse.put("timestamp", LocalDateTime.now());
-            
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
 
     /**
      * Health check endpoint for authentication service.
