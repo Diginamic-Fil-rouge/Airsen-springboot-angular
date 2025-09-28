@@ -1,7 +1,10 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.dto.request.AdminAlertBroadcastRequest;
+import fr.airsen.api.dto.response.BroadcastResultDTO;
 import fr.airsen.api.entity.Notification;
 import fr.airsen.api.entity.User;
+import fr.airsen.api.entity.enums.BroadcastScope;
 import fr.airsen.api.entity.enums.NotificationType;
 import fr.airsen.api.repository.NotificationRepository;
 import fr.airsen.api.repository.UserRepository;
@@ -18,9 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing Notification entities and email delivery.
@@ -350,6 +353,127 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public List<Notification> getRecentNotificationsByRecipientId(Long userId, LocalDateTime since) {
         return notificationRepository.findRecentByRecipientId(userId, since);
+    }
+
+    // ==================== ADMIN BROADCAST METHODS ====================
+
+    /**
+     * Broadcasts an admin alert notification to users based on geographic scope.
+     * 
+     * @param adminUserId admin user identifier
+     * @param request broadcast request with scope and message
+     * @return broadcast result with statistics
+     */
+    public BroadcastResultDTO broadcastAdminAlert(Long adminUserId, AdminAlertBroadcastRequest request) {
+        String broadcastId = UUID.randomUUID().toString();
+        LocalDateTime broadcastTime = LocalDateTime.now();
+        
+        try {
+            // Validate admin user exists
+            User adminUser = userRepository.findById(adminUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin user not found with id: " + adminUserId));
+
+            // Validate scope-specific parameters
+            if (!request.isValidForScope()) {
+                return new BroadcastResultDTO(
+                    broadcastId, request.scope(), request.getTargetCode(), 0, 0, 0,
+                    broadcastTime, BroadcastResultDTO.BroadcastStatus.FAILED,
+                    "Invalid geographic code for scope: " + request.scope().getExpectedParameterName() + " is required"
+                );
+            }
+
+            // Find target users based on scope
+            List<User> targetUsers = findUsersByScope(request.scope(), request.getTargetCode());
+            
+            if (targetUsers.isEmpty()) {
+                return new BroadcastResultDTO(
+                    broadcastId, request.scope(), request.getTargetCode(), 0, 0, 0,
+                    broadcastTime, BroadcastResultDTO.BroadcastStatus.COMPLETED,
+                    "No users found for the specified scope"
+                );
+            }
+
+            // Filter users with valid emails
+            List<User> validUsers = targetUsers.stream()
+                .filter(user -> user.getEmailVerified() && user.getEmail() != null && !user.getEmail().trim().isEmpty())
+                .collect(Collectors.toList());
+
+            long invalidEmails = targetUsers.size() - validUsers.size();
+
+            // Create notifications for valid users
+            List<Notification> notifications = new ArrayList<>();
+            for (User user : validUsers) {
+                Notification notification = new Notification(adminUser, user, request.title(), request.message(), NotificationType.EMAIL);
+                notifications.add(notification);
+            }
+
+            // Save notifications in batch
+            List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
+            
+            // Queue emails for async sending
+            long successfullyQueued = 0;
+            for (Notification notification : savedNotifications) {
+                try {
+                    sendEmailNotificationAsync(notification.getId());
+                    successfullyQueued++;
+                } catch (Exception e) {
+                    logger.error("Failed to queue notification {} for sending: {}", notification.getId(), e.getMessage());
+                }
+            }
+
+            BroadcastResultDTO result = new BroadcastResultDTO(
+                broadcastId,
+                request.scope(),
+                request.getTargetCode(),
+                targetUsers.size(),
+                successfullyQueued,
+                invalidEmails,
+                broadcastTime,
+                BroadcastResultDTO.BroadcastStatus.IN_PROGRESS,
+                null
+            );
+
+            logger.info("Admin broadcast {} initiated: {} notifications queued for {} users (scope: {})", 
+                       broadcastId, successfullyQueued, targetUsers.size(), request.scope());
+
+            return result;
+
+        } catch (Exception e) {
+            logger.error("Failed to process admin broadcast {}: {}", broadcastId, e.getMessage(), e);
+            
+            return new BroadcastResultDTO(
+                broadcastId, request.scope(), request.getTargetCode(), 0, 0, 0,
+                broadcastTime, BroadcastResultDTO.BroadcastStatus.FAILED,
+                "Broadcast failed: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Finds users based on broadcast scope and geographic code.
+     */
+    private List<User> findUsersByScope(BroadcastScope scope, String targetCode) {
+        Set<User> users = new HashSet<>();
+        
+        switch (scope) {
+            case FRANCE -> {
+                users.addAll(userRepository.findAllActiveUsersWithVerifiedEmail());
+            }
+            case REGION -> {
+                users.addAll(userRepository.findActiveUsersByRegionCode(targetCode));
+                users.addAll(userRepository.findActiveUsersByFavoriteRegionCode(targetCode));
+            }
+            case DEPARTMENT -> {
+                users.addAll(userRepository.findActiveUsersByDepartmentCode(targetCode));
+                users.addAll(userRepository.findActiveUsersByFavoriteDepartmentCode(targetCode));
+            }
+            case COMMUNE -> {
+                users.addAll(userRepository.findActiveUsersByCommuneCode(targetCode));
+                users.addAll(userRepository.findActiveUsersByFavoriteCommuneCode(targetCode));
+            }
+        }
+        
+        return new ArrayList<>(users);
     }
 
     /**

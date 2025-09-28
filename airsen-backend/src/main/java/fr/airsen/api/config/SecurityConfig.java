@@ -59,8 +59,6 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html").permitAll()
                 
-                // Protected auth endpoints - Authentication required
-                .requestMatchers("/auth/me").authenticated()
                 
                 // Forum endpoints - VISITOR can read, USER/ADMIN can write
                 .requestMatchers(HttpMethod.GET, "/forum/**").hasAnyRole("VISITOR", "USER", "ADMIN")
