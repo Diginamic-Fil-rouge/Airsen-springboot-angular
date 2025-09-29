@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -27,6 +28,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
     @Modifying
+    @Transactional
     @Query("UPDATE User u SET u.emailVerified = true WHERE u.id = :userId")
     void markEmailAsVerified(@Param("userId") Long userId);
 
@@ -85,6 +87,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param encryptedPassword new encrypted password
      */
     @Modifying
+    @Transactional
     @Query("UPDATE User u SET u.password = :encryptedPassword WHERE u.id = :userId")
     void updatePassword(@Param("userId") Long userId, @Param("encryptedPassword") String encryptedPassword);
 
