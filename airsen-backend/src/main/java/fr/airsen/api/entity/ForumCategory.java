@@ -30,7 +30,7 @@ public class ForumCategory {
     @Size(min = 7, max = 7, message = "Color must be a valid hex code")
     private String color;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER, cascade =  CascadeType.ALL )
     private List<ForumThread> threads;
 
     public ForumCategory() {

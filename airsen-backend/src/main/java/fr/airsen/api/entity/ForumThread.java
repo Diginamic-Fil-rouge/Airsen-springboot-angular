@@ -21,11 +21,11 @@ public class ForumThread {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id")
     private User author;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private ForumCategory category;
 
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -44,20 +44,20 @@ public class ForumThread {
     @Size(max = 10000, message = "Content must be less than 10000 characters")
     private String content;
 
-    @Column(name = "created_date", nullable = false)
+    @Column(name = "created_date")
     private LocalDateTime createdDate;
 
-    @Column(name = "last_message_date", nullable = false)
+    @Column(name = "last_message_date")
     private LocalDateTime lastMessageDate;
 
-    @Column(name = "view_count", nullable = false, length = 10)
+    @Column(name = "view_count", length = 10)
     private Integer viewCount;
 
     private boolean pinned;
 
     private boolean closed;
 
-    @Column(name = "like_count", nullable = false, length = 10)
+    @Column(name = "like_count", length = 10)
     private Integer likeCount;
 
     public ForumThread() {

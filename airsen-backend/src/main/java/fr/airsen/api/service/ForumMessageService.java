@@ -92,8 +92,6 @@ public class ForumMessageService {
         {
             throw new EntityNotFoundException("Message not found");
         }
-        message.setAuthor(forumMessage.getAuthor());
-        message.setThread(forumMessage.getThread());
         message.setContent(forumMessage.getContent());
         return forumMessageMapper.toDTO(forumMessageRepository.save(message));
     }

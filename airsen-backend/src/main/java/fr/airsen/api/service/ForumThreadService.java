@@ -124,12 +124,15 @@ public class ForumThreadService {
         if (result.hasErrors()) {
             throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
         }
-        ForumThread entityExists = forumThreadRepository.findById(id).orElse(null);
-        if (entityExists == null) {
+        ForumThread entity = forumThreadRepository.findById(id).orElse(null);
+        if (entity == null) {
             throw new EntityNotFoundException("Failed to update thread - Thread not found");
         }
-        forumThreadRepository.save(forumThread);
-        return mapper.toDTO(forumThread);
+        entity.setTitle(forumThread.getTitle());
+        entity.setContent(forumThread.getContent());
+        entity.setCategory(forumThread.getCategory());
+        forumThreadRepository.save(entity);
+        return mapper.toDTO(entity);
     }
 
     @Transactional

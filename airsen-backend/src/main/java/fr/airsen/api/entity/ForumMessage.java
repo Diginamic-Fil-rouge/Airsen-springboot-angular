@@ -2,6 +2,8 @@ package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -19,15 +21,15 @@ public class ForumMessage {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id")
     private User author;
 
     @ManyToOne
-    @JoinColumn(name = "thread_id", nullable = false)
+    @JoinColumn(name = "thread_id")
     private ForumThread thread;
 
     @Column(name = "content", nullable = false, length = 65535)
-    @Min(value = 1, message = "Content must not be empty")
+    @Size(min = 1, message = "Content must not be empty")
     private String content;
 
     @Column(name = "created_date", nullable = false)

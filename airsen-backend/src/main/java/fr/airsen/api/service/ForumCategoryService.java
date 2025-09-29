@@ -83,12 +83,13 @@ public class ForumCategoryService {
         if (result.hasErrors()){
             throw new IllegalArgumentException("Invalid category : " + result.getAllErrors().get(0).getDefaultMessage());
         }
+        ForumCategory categoryExists = forumCategoryRepository.findById(id).orElse(null);
+        if (categoryExists == null){
+            throw new EntityNotFoundException("Failed to update category - Category not found");
+        }
         ForumCategory entityExists = forumCategoryRepository.findByName(forumCategory.getName());
         if (entityExists != null && entityExists.getId() != id){
             throw new EntityExistsException("Failed to update category - Category with same name already exists");
-        }
-        else if (entityExists == null){
-            throw new EntityNotFoundException("Failed to update category - Category not found");
         }
         forumCategoryRepository.save(forumCategory);
         return mapper.toDTOs(forumCategoryRepository.findAll());
