@@ -230,12 +230,12 @@ public class CommuneService {
 
             // Find or create Department
             Department department = departmentRepository.findAll().stream()
-                .filter(d -> d.getDepartmentCode() == Integer.parseInt(inseeResponse.departmentCode()))
+                .filter(d -> d.getDepartmentCode().equals(inseeResponse.departmentCode()))
                 .findFirst()
                 .orElseGet(() -> {
                     log.info("Creating new department with code: {}", inseeResponse.departmentCode());
                     Department newDepartment = new Department();
-                    newDepartment.setDepartmentCode(Integer.parseInt(inseeResponse.departmentCode()));
+                    newDepartment.setDepartmentCode(inseeResponse.departmentCode());
                     // Use actual department name from INSEE API
                     String departmentName = inseeResponse.departement() != null && inseeResponse.departement().nom() != null 
                         ? inseeResponse.departement().nom() 

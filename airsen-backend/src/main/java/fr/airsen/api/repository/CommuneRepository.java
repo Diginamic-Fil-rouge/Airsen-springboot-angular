@@ -225,7 +225,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      * @return list of communes in the department
      */
     @Query("SELECT c FROM Commune c WHERE c.department.departmentCode = :departmentCode")
-    List<Commune> findByDepartmentEntityCode(@Param("departmentCode") int departmentCode);
+    List<Commune> findByDepartmentEntityCode(@Param("departmentCode") String departmentCode);
 
     /**
      * Finds communes by region using region code property access.

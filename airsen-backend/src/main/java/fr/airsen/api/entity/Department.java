@@ -3,7 +3,6 @@ package fr.airsen.api.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
@@ -26,10 +25,10 @@ public class Department {
     @Size(max = 100, message = "Department name must not exceed 100 characters")
     private String name;
 
-    @Column(name = "department_code", nullable = false, unique = true)
-    @NotNull(message = "Department code must not be null")
-    @Positive(message = "Department code must be positive")
-    private int departmentCode;
+    @Column(name = "department_code", nullable = false, unique = true, length = 3)
+    @NotBlank(message = "Department code must not be empty")
+    @Size(min = 1, max = 3, message = "Department code must be 1-3 characters")
+    private String departmentCode;
 
     @Column(name = "region_code", length = 10)
     @Size(max = 10, message = "Region code must not exceed 10 characters")
@@ -45,7 +44,7 @@ public class Department {
 
     public Department() {}
 
-    public Department(String name, int departmentCode, String regionCode, Region region) {
+    public Department(String name, String departmentCode, String regionCode, Region region) {
         this.name = name;
         this.departmentCode = departmentCode;
         this.regionCode = regionCode;
@@ -69,11 +68,11 @@ public class Department {
         this.name = name; 
     }
 
-    public int getDepartmentCode() { 
+    public String getDepartmentCode() {
         return departmentCode; 
     }
 
-    public void setDepartmentCode(int departmentCode) { 
+    public void setDepartmentCode(String departmentCode) {
         this.departmentCode = departmentCode; 
     }
 
