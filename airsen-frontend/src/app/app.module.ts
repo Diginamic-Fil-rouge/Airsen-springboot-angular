@@ -1,0 +1,146 @@
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
+// Angular Material Modules
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatBadgeModule } from '@angular/material/badge';
+
+// Third-party modules
+import { NgChartsModule } from 'ng2-charts';
+import { NgxPaginationModule } from 'ngx-pagination';
+
+// App Components
+import { AppComponent } from './app.component';
+import { AppRoutingModule } from './app-routing.module';
+
+// Auth Components
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+
+// Feature Components
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { HomeComponent } from './features/home/home.component';
+
+// TODO: Uncomment these imports when components are implemented
+// Layout Components
+// import { HeaderComponent } from './components/layout/header/header.component';
+// import { FooterComponent } from './components/layout/footer/footer.component';
+// import { SidenavComponent } from './components/layout/sidenav/sidenav.component';
+
+// Page Components
+// import { HomeComponent } from './components/pages/home/home.component';
+// import { MapComponent } from './components/pages/map/map.component';
+// import { ProfileComponent } from './components/pages/profile/profile.component';
+// import { FavoritesComponent } from './components/pages/favorites/favorites.component';
+// import { HistoryComponent } from './components/pages/history/history.component';
+// import { ForumComponent } from './components/pages/forum/forum.component';
+// import { NotificationsComponent } from './components/pages/notifications/notifications.component';
+
+// Shared Components
+// import { AirQualityCardComponent } from './components/shared/air-quality-card/air-quality-card.component';
+// import { WeatherCardComponent } from './components/shared/weather-card/weather-card.component';
+// import { ChartComponent } from './components/shared/chart/chart.component';
+// import { LoadingSpinnerComponent } from './components/shared/loading-spinner/loading-spinner.component';
+// import { SearchBarComponent } from './components/shared/search-bar/search-bar.component';
+
+// Services & Interceptors
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    // Auth Components
+    LoginComponent,
+    RegisterComponent,
+    // Feature Components
+    DashboardComponent,
+    HomeComponent
+    // TODO: Add components here when they are implemented
+    // Layout Components
+    // HeaderComponent,
+    // FooterComponent,
+    // SidenavComponent,
+    // Page Components
+    // HomeComponent,
+    // MapComponent,
+    // ProfileComponent,
+    // FavoritesComponent,
+    // HistoryComponent,
+    // ForumComponent,
+    // NotificationsComponent,
+    // Shared Components
+    // AirQualityCardComponent,
+    // WeatherCardComponent,
+    // ChartComponent,
+    // LoadingSpinnerComponent,
+    // SearchBarComponent
+  ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    HttpClientModule,
+    ReactiveFormsModule,
+    FormsModule,
+    AppRoutingModule,
+    // Angular Material Modules
+    MatToolbarModule,
+    MatButtonModule,
+    MatCardModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatIconModule,
+    MatMenuModule,
+    MatSidenavModule,
+    MatListModule,
+    MatGridListModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    MatDialogModule,
+    MatTabsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSlideToggleModule,
+    MatBadgeModule,
+    // Third-party modules
+    NgChartsModule,
+    NgxPaginationModule
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }

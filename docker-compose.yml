@@ -144,13 +144,9 @@ services:
       - ./airsen-frontend/src:/app/src
       - ./airsen-frontend/angular.json:/app/angular.json
       - ./airsen-frontend/package.json:/app/package.json
-      - ./airsen-frontend/package-lock.json:/app/package-lock.json
       - ./airsen-frontend/tsconfig.json:/app/tsconfig.json
       # Node modules cache
       - frontend_node_modules:/app/node_modules
-    depends_on:
-      airsen-backend:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - airsen-network
