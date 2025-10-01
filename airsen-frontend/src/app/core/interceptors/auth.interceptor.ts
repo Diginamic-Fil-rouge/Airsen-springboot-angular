@@ -9,7 +9,7 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, filter, take, switchMap, finalize } from 'rxjs/operators';
-import { AuthService } from '@/auth/auth.service';
+import { AuthService } from '@/services/auth.service';
 import { TokenService } from '@/services/token.service';
 import { Router } from '@angular/router';
 

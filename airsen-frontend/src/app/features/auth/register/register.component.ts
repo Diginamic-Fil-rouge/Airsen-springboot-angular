@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors }
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from '@/auth/auth.service';
+import { AuthService } from '@/services/auth.service';
 import { RegisterRequest } from '@/models/auth.model';
 
 /**
