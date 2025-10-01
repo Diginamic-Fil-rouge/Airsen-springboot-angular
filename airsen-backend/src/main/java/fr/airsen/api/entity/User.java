@@ -59,6 +59,9 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
     @ManyToMany
     @JoinTable(name = "user_favorite", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "commune_id"))
     private Set<Commune> favoris = new HashSet<>();
@@ -85,6 +88,7 @@ public class User {
     public User() {
         this.role = UserRole.getDefaultRole();
         this.emailVerified = false;
+        this.isActive = true;
     }
 
     public User(String email, String password, String firstName, String lastName) {
@@ -167,6 +171,14 @@ public class User {
 
     public void setEmailVerified(Boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public boolean hasRole(UserRole role) {

@@ -37,6 +37,14 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 
+// Auth Components
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+
+// Feature Components
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { HomeComponent } from './features/home/home.component';
+
 // TODO: Uncomment these imports when components are implemented
 // Layout Components
 // import { HeaderComponent } from './components/layout/header/header.component';
@@ -45,9 +53,6 @@ import { AppRoutingModule } from './app-routing.module';
 
 // Page Components
 // import { HomeComponent } from './components/pages/home/home.component';
-// import { LoginComponent } from './components/auth/login/login.component';
-// import { RegisterComponent } from './components/auth/register/register.component';
-// import { DashboardComponent } from './components/pages/dashboard/dashboard.component';
 // import { MapComponent } from './components/pages/map/map.component';
 // import { ProfileComponent } from './components/pages/profile/profile.component';
 // import { FavoritesComponent } from './components/pages/favorites/favorites.component';
@@ -62,14 +67,18 @@ import { AppRoutingModule } from './app-routing.module';
 // import { LoadingSpinnerComponent } from './components/shared/loading-spinner/loading-spinner.component';
 // import { SearchBarComponent } from './components/shared/search-bar/search-bar.component';
 
-// TODO: Uncomment these imports when interceptors are implemented
 // Services & Interceptors
-// import { AuthInterceptor } from './interceptors/auth.interceptor';
-// import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    // Auth Components
+    LoginComponent,
+    RegisterComponent,
+    // Feature Components
+    DashboardComponent,
+    HomeComponent
     // TODO: Add components here when they are implemented
     // Layout Components
     // HeaderComponent,
@@ -77,9 +86,6 @@ import { AppRoutingModule } from './app-routing.module';
     // SidenavComponent,
     // Page Components
     // HomeComponent,
-    // LoginComponent,
-    // RegisterComponent,
-    // DashboardComponent,
     // MapComponent,
     // ProfileComponent,
     // FavoritesComponent,
@@ -129,17 +135,11 @@ import { AppRoutingModule } from './app-routing.module';
     NgxPaginationModule
   ],
   providers: [
-    // TODO: Add interceptors when they are implemented
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: AuthInterceptor,
-    //   multi: true
-    // },
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: ErrorInterceptor,
-    //   multi: true
-    // }
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })

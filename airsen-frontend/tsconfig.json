@@ -24,10 +24,18 @@
     ],
     "paths": {
       "@/*": ["src/*"],
-      "@/components/*": ["src/app/components/*"],
-      "@/services/*": ["src/app/services/*"],
-      "@/models/*": ["src/app/models/*"],
-      "@/utils/*": ["src/app/utils/*"]
+      "@/app/*": ["src/app/*"],
+      "@/core/*": ["src/app/core/*"],
+      "@/shared/*": ["src/app/shared/*"],
+      "@/features/*": ["src/app/features/*"],
+      "@/layouts/*": ["src/app/layouts/*"],
+      "@/models/*": ["src/app/core/models/*"],
+      "@/services/*": ["src/app/core/services/*"],
+      "@/auth/*": ["src/app/core/auth/*"],
+      "@/guards/*": ["src/app/core/guards/*"],
+      "@/interceptors/*": ["src/app/core/interceptors/*"],
+      "@/environments/*": ["src/environments/*"],
+      "@/assets/*": ["src/assets/*"]
     }
   },
   "angularCompilerOptions": {

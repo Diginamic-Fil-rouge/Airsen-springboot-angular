@@ -1,0 +1,123 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <!-- Logo with Home Link -->
+    <div class="logo-section">
+      <a routerLink="/home" class="logo-link">
+        <img src="assets/images/airsen-logo.png" alt="Airsen Logo" class="logo" />
+      </a>
+      <a routerLink="/home" class="back-to-home">
+        <mat-icon>arrow_back</mat-icon>
+        Retour à l'accueil
+      </a>
+    </div>
+
+    <!-- Welcome Title -->
+    <h1 class="auth-title">Bienvenue</h1>
+    <p class="auth-subtitle">Connectez-vous pour accéder à votre tableau de bord environnemental</p>
+
+    <!-- Session Expiration Alert -->
+    <div *ngIf="sessionExpired" class="alert-message session-expired">
+      <mat-icon>info</mat-icon>
+      <span>Votre session a expiré. Veuillez vous reconnecter.</span>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error$ | async as error" class="alert-message error-message">
+      <mat-icon>error</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label class="form-label">Adresse e-mail</label>
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">email</mat-icon>
+          <input
+            type="email"
+            class="form-input"
+            formControlName="email"
+            placeholder="votre.email@exemple.fr"
+            autocomplete="email"
+          />
+        </div>
+        <div *ngIf="hasError('email')" class="field-error">
+          {{ getErrorMessage('email') }}
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">lock</mat-icon>
+          <input
+            [type]="hidePassword ? 'password' : 'text'"
+            class="form-input"
+            formControlName="password"
+            placeholder="Entrez votre mot de passe"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="hidePassword = !hidePassword"
+            [attr.aria-label]="'Afficher/masquer le mot de passe'"
+          >
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </div>
+        <div *ngIf="hasError('password')" class="field-error">
+          {{ getErrorMessage('password') }}
+        </div>
+      </div>
+
+      <!-- Forgot Password Link -->
+      <div class="forgot-password-wrapper">
+        <a routerLink="/auth/forgot-password" class="forgot-password-link">
+          Mot de passe oublié ?
+        </a>
+      </div>
+
+      <!-- Remember Me Checkbox -->
+      <div class="checkbox-wrapper">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            formControlName="rememberMe"
+            class="checkbox-input"
+          />
+          <span class="checkbox-text">Rester connecté</span>
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="submit-button"
+        [disabled]="(isLoading$ | async) || loginForm.invalid"
+      >
+        <span *ngIf="!(isLoading$ | async)">Se connecter</span>
+        <mat-spinner *ngIf="isLoading$ | async" diameter="20" class="button-spinner"></mat-spinner>
+      </button>
+
+      <!-- Register Link -->
+      <div class="alternate-action">
+        <p class="alternate-text">
+          Vous n'avez pas de compte ?
+          <a routerLink="/auth/register" class="alternate-link">S'inscrire ici</a>
+        </p>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <p class="footer-text">
+        En vous connectant, vous acceptez nos
+        <a href="/terms" target="_blank">Conditions d'utilisation</a> et notre
+        <a href="/privacy" target="_blank">Politique de confidentialité</a>
+      </p>
+    </div>
+  </div>
+</div>
