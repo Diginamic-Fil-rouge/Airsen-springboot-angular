@@ -8,8 +8,8 @@
         </div>
         <nav class="nav-links">
           <a routerLink="/home" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
-          <a (click)="goToMap()" class="nav-link" style="cursor: pointer;">Carte</a>
-          <a (click)="goToForum()" class="nav-link" style="cursor: pointer;">Forum</a>
+          <a routerLink="/carte" class="nav-link" routerLinkActive="active">Carte</a>
+          <a routerLink="/forum" class="nav-link" routerLinkActive="active">Forum</a>
         </nav>
         <button class="btn-login" (click)="goToLogin()">Login</button>
       </div>

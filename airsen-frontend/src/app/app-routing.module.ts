@@ -8,6 +8,9 @@ import { RegisterComponent } from './features/auth/register/register.component';
 // Feature Components
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { HomeComponent } from './features/home/home.component';
+import { NotFoundComponent } from './features/not-found/not-found.component';
+import { CarteComponent } from './features/carte/carte.component';
+import { ForumComponent } from './features/forum/forum.component';
 
 // Guards - commented out until they are properly implemented
 // import { AuthGuard } from './core/guards/auth.guard';
@@ -38,9 +41,14 @@ const routes: Routes = [
 
   // Feature Routes (no guards for now to avoid compilation errors)
   { path: 'dashboard', component: DashboardComponent },
+  { path: 'carte', component: CarteComponent },
+  { path: 'forum', component: ForumComponent },
+
+  // 404 Not Found Route
+  { path: '404', component: NotFoundComponent },
 
   // Wildcard route - must be last
-  { path: '**', redirectTo: '/home' },
+  { path: '**', component: NotFoundComponent },
 
   // TODO: Implement these components and uncomment
   // { path: 'map', component: MapComponent, canActivate: [AuthGuard] },

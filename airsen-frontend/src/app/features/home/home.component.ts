@@ -30,20 +30,4 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/auth/login']);
   }
 
-  /**
-   * Navigate to map page
-   */
-  goToMap(): void {
-    // TODO: Navigate to map when implemented
-    console.log('Navigate to map');
-  }
-
-  /**
-   * Navigate to forum page
-   */
-  goToForum(): void {
-    // TODO: Navigate to forum when implemented
-    console.log('Navigate to forum');
-  }
-
 }

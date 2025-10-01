@@ -24,127 +24,112 @@
     <!-- Registration Form -->
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
       <!-- First Name Field -->
-      <div class="form-group">
-        <label class="form-label">Prénom</label>
-        <div class="input-wrapper">
-          <mat-icon class="input-icon">person</mat-icon>
-          <input
-            type="text"
-            class="form-input"
-            formControlName="firstName"
-            placeholder="Entrez votre prénom"
-            autocomplete="given-name"
-          />
-        </div>
-        <div *ngIf="hasError('firstName')" class="field-error">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Prénom</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="firstName"
+          placeholder="Entrez votre prénom"
+          autocomplete="given-name"
+        />
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-error *ngIf="hasError('firstName')">
           {{ getErrorMessage('firstName') }}
-        </div>
-      </div>
+        </mat-error>
+      </mat-form-field>
 
       <!-- Last Name Field -->
-      <div class="form-group">
-        <label class="form-label">Nom</label>
-        <div class="input-wrapper">
-          <mat-icon class="input-icon">person_outline</mat-icon>
-          <input
-            type="text"
-            class="form-input"
-            formControlName="lastName"
-            placeholder="Entrez votre nom"
-            autocomplete="family-name"
-          />
-        </div>
-        <div *ngIf="hasError('lastName')" class="field-error">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nom</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="lastName"
+          placeholder="Entrez votre nom"
+          autocomplete="family-name"
+        />
+        <mat-icon matPrefix>person_outline</mat-icon>
+        <mat-error *ngIf="hasError('lastName')">
           {{ getErrorMessage('lastName') }}
-        </div>
-      </div>
+        </mat-error>
+      </mat-form-field>
 
       <!-- Email Field -->
-      <div class="form-group">
-        <label class="form-label">Adresse e-mail</label>
-        <div class="input-wrapper">
-          <mat-icon class="input-icon">email</mat-icon>
-          <input
-            type="email"
-            class="form-input"
-            formControlName="email"
-            placeholder="votre.email@exemple.fr"
-            autocomplete="email"
-          />
-        </div>
-        <div *ngIf="hasError('email')" class="field-error">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Adresse e-mail</mat-label>
+        <input
+          matInput
+          type="email"
+          formControlName="email"
+          placeholder="votre.email@exemple.fr"
+          autocomplete="email"
+        />
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-error *ngIf="hasError('email')">
           {{ getErrorMessage('email') }}
-        </div>
-      </div>
+        </mat-error>
+      </mat-form-field>
 
       <!-- Password Field -->
-      <div class="form-group">
-        <label class="form-label">Mot de passe</label>
-        <div class="input-wrapper">
-          <mat-icon class="input-icon">lock</mat-icon>
-          <input
-            [type]="hidePassword ? 'password' : 'text'"
-            class="form-input"
-            formControlName="password"
-            placeholder="Créez un mot de passe sécurisé"
-            autocomplete="new-password"
-          />
-          <button
-            type="button"
-            class="toggle-password"
-            (click)="hidePassword = !hidePassword"
-            [attr.aria-label]="'Afficher/masquer le mot de passe'"
-          >
-            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-        </div>
-        <div *ngIf="hasError('password')" class="field-error">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Mot de passe</mat-label>
+        <input
+          matInput
+          [type]="hidePassword ? 'password' : 'text'"
+          formControlName="password"
+          placeholder="Créez un mot de passe sécurisé"
+          autocomplete="new-password"
+        />
+        <mat-icon matPrefix>lock</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword = !hidePassword"
+          [attr.aria-label]="'Afficher/masquer le mot de passe'"
+        >
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-hint>Au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial</mat-hint>
+        <mat-error *ngIf="hasError('password')">
           {{ getErrorMessage('password') }}
-        </div>
-        <div class="field-hint">
-          Au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial
-        </div>
-      </div>
+        </mat-error>
+      </mat-form-field>
 
       <!-- Confirm Password Field -->
-      <div class="form-group">
-        <label class="form-label">Confirmer le mot de passe</label>
-        <div class="input-wrapper">
-          <mat-icon class="input-icon">lock_outline</mat-icon>
-          <input
-            [type]="hideConfirmPassword ? 'password' : 'text'"
-            class="form-input"
-            formControlName="confirmPassword"
-            placeholder="Ressaisissez votre mot de passe"
-            autocomplete="new-password"
-          />
-          <button
-            type="button"
-            class="toggle-password"
-            (click)="hideConfirmPassword = !hideConfirmPassword"
-            [attr.aria-label]="'Afficher/masquer le mot de passe de confirmation'"
-          >
-            <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-        </div>
-        <div *ngIf="hasConfirmPasswordError()" class="field-error">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Confirmer le mot de passe</mat-label>
+        <input
+          matInput
+          [type]="hideConfirmPassword ? 'password' : 'text'"
+          formControlName="confirmPassword"
+          placeholder="Ressaisissez votre mot de passe"
+          autocomplete="new-password"
+        />
+        <mat-icon matPrefix>lock_outline</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hideConfirmPassword = !hideConfirmPassword"
+          [attr.aria-label]="'Afficher/masquer le mot de passe de confirmation'"
+        >
+          <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="hasConfirmPasswordError()">
           {{ getConfirmPasswordError() }}
-        </div>
-      </div>
+        </mat-error>
+      </mat-form-field>
 
       <!-- Terms and Conditions -->
       <div class="checkbox-wrapper">
-        <label class="checkbox-label">
-          <input
-            type="checkbox"
-            formControlName="acceptTerms"
-            class="checkbox-input"
-          />
+        <mat-checkbox formControlName="acceptTerms" color="primary">
           <span class="checkbox-text">
             J'accepte les <a href="/terms" target="_blank">Conditions d'utilisation</a> et la
             <a href="/privacy" target="_blank">Politique de confidentialité</a>
           </span>
-        </label>
+        </mat-checkbox>
         <div *ngIf="registerForm.get('acceptTerms')?.touched && registerForm.get('acceptTerms')?.invalid" class="field-error checkbox-error">
           Vous devez accepter les conditions d'utilisation
         </div>
@@ -152,8 +137,10 @@
 
       <!-- Submit Button -->
       <button
+        mat-raised-button
+        color="primary"
         type="submit"
-        class="submit-button"
+        class="submit-button full-width"
         [disabled]="(isLoading$ | async) || registerForm.invalid"
       >
         <span *ngIf="!(isLoading$ | async)">Créer un compte</span>

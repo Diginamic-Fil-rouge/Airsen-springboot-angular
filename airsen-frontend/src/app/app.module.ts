@@ -28,6 +28,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 // Third-party modules
 import { NgChartsModule } from 'ng2-charts';
@@ -44,6 +45,9 @@ import { RegisterComponent } from './features/auth/register/register.component';
 // Feature Components
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { HomeComponent } from './features/home/home.component';
+import { NotFoundComponent } from './features/not-found/not-found.component';
+import { CarteComponent } from './features/carte/carte.component';
+import { ForumComponent } from './features/forum/forum.component';
 
 // TODO: Uncomment these imports when components are implemented
 // Layout Components
@@ -78,7 +82,10 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     RegisterComponent,
     // Feature Components
     DashboardComponent,
-    HomeComponent
+    HomeComponent,
+    NotFoundComponent,
+    CarteComponent,
+    ForumComponent
     // TODO: Add components here when they are implemented
     // Layout Components
     // HeaderComponent,
@@ -130,6 +137,7 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     MatNativeDateModule,
     MatSlideToggleModule,
     MatBadgeModule,
+    MatCheckboxModule,
     // Third-party modules
     NgChartsModule,
     NgxPaginationModule

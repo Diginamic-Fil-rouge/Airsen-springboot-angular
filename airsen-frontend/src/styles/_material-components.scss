@@ -1,0 +1,288 @@
+/**
+ * Angular Material Component Customization
+ *
+ * This file contains global customizations for Angular Material components.
+ * These styles are applied across the entire application.
+ *
+ * IMPORTANT: This file is for Material components only.
+ * Do NOT add custom component styles here.
+ */
+
+// ============================================================================
+// Form Fields
+// ============================================================================
+
+.mat-mdc-form-field {
+  width: 100%;
+
+  // Outlined appearance customization
+  &.mat-form-field-appearance-outline {
+    .mat-mdc-text-field-wrapper {
+      background-color: #f9fafb;
+      border-radius: 8px;
+    }
+
+    .mdc-text-field--outlined {
+      // Default border color
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: #e5e7eb;
+        border-width: 1.5px;
+      }
+
+      // Hover state
+      &:hover:not(.mdc-text-field--focused):not(.mdc-text-field--disabled) {
+        .mdc-notched-outline {
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__notch,
+          .mdc-notched-outline__trailing {
+            border-color: #4CAF50;
+          }
+        }
+      }
+
+      // Focused state
+      &.mdc-text-field--focused {
+        .mdc-notched-outline {
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__notch,
+          .mdc-notched-outline__trailing {
+            border-color: #4CAF50;
+            border-width: 2px;
+          }
+        }
+      }
+
+      // Error state
+      &.mdc-text-field--invalid {
+        .mdc-notched-outline {
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__notch,
+          .mdc-notched-outline__trailing {
+            border-color: #dc2626;
+          }
+        }
+      }
+    }
+  }
+
+  // Prefix icon styling
+  .mat-mdc-form-field-icon-prefix {
+    color: #9ca3af;
+    padding-right: 8px;
+  }
+
+  // Suffix icon styling
+  .mat-mdc-form-field-icon-suffix {
+    color: #9ca3af;
+  }
+
+  // Error message styling
+  .mat-mdc-form-field-error {
+    font-size: 0.75rem;
+    color: #dc2626;
+    margin-top: 0.25rem;
+  }
+
+  // Hint message styling
+  .mat-mdc-form-field-hint {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  // Label styling
+  .mdc-floating-label {
+    color: #374151;
+  }
+}
+
+// ============================================================================
+// Buttons
+// ============================================================================
+
+.mat-mdc-raised-button {
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.875rem 1.5rem;
+  min-height: 48px;
+
+  &.mat-primary {
+    background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.25);
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #45a049 0%, #5cb860 100%);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.25);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      background: #9ca3af;
+      box-shadow: none;
+    }
+
+    .mdc-button__label {
+      color: white;
+    }
+  }
+}
+
+.mat-mdc-icon-button {
+  &:hover:not(:disabled) {
+    background-color: rgba(76, 175, 80, 0.08);
+  }
+}
+
+// ============================================================================
+// Checkboxes
+// ============================================================================
+
+.mat-mdc-checkbox {
+  .mdc-checkbox {
+    // Default border
+    .mdc-checkbox__background {
+      border-color: #e5e7eb;
+      border-width: 2px;
+    }
+
+    // Checked state
+    .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background,
+    .mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
+      background-color: #4CAF50;
+      border-color: #4CAF50;
+    }
+
+    // Checkmark color
+    .mdc-checkbox__native-control:enabled ~ .mdc-checkbox__background .mdc-checkbox__checkmark {
+      color: white;
+    }
+
+    // Hover state
+    .mdc-checkbox__native-control:enabled:not(:checked):not(:indeterminate):hover ~ .mdc-checkbox__background {
+      border-color: #4CAF50;
+    }
+  }
+
+  // Label styling
+  .mdc-label {
+    font-size: 0.875rem;
+    color: #374151;
+  }
+
+  // Checkbox with links in label
+  .mdc-label a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// ============================================================================
+// Progress Spinner
+// ============================================================================
+
+.mat-mdc-progress-spinner {
+  circle {
+    stroke: #4CAF50;
+  }
+
+  &.button-spinner {
+    margin-left: 0.5rem;
+
+    circle {
+      stroke: white;
+    }
+  }
+}
+
+// ============================================================================
+// Icons
+// ============================================================================
+
+.mat-icon {
+  &.input-icon {
+    color: #9ca3af;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// ============================================================================
+// Snackbar (Toast notifications)
+// ============================================================================
+
+.mat-mdc-snack-bar-container {
+  &.success-snackbar {
+    .mdc-snackbar__surface {
+      background-color: #4CAF50;
+    }
+    .mat-mdc-snack-bar-label {
+      color: white;
+    }
+  }
+
+  &.error-snackbar {
+    .mdc-snackbar__surface {
+      background-color: #dc2626;
+    }
+    .mat-mdc-snack-bar-label {
+      color: white;
+    }
+  }
+
+  &.warning-snackbar {
+    .mdc-snackbar__surface {
+      background-color: #f59e0b;
+    }
+    .mat-mdc-snack-bar-label {
+      color: white;
+    }
+  }
+}
+
+// ============================================================================
+// Dialog
+// ============================================================================
+
+.mat-mdc-dialog-container {
+  .mdc-dialog__surface {
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .mat-mdc-dialog-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .mat-mdc-dialog-content {
+    color: #374151;
+    font-size: 0.938rem;
+    line-height: 1.6;
+  }
+}
+
+// ============================================================================
+// Utility Classes
+// ============================================================================
+
+.full-width {
+  width: 100%;
+}
+
+.mat-elevation-z0 { box-shadow: none; }
+.mat-elevation-z1 { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+.mat-elevation-z2 { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
+.mat-elevation-z3 { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
+.mat-elevation-z4 { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); }

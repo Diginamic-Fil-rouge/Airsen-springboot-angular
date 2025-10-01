@@ -1,27 +1,14 @@
 /* Global Styles for Airsen - Air Quality Monitoring Platform */
 
-/* Angular Material Typography - Updated for Angular 17 */
-@use '@angular/material' as mat;
+/* ============================================================================
+   Angular Material Theme & Components
+   ============================================================================ */
 
-@include mat.core();
+// Import custom Material theme (replaces default theme above)
+@import 'styles/material-theme';
 
-/* Custom Color Palette */
-$airsen-primary: mat.define-palette(mat.$blue-palette, 700);
-$airsen-accent: mat.define-palette(mat.$green-palette, A200);
-$airsen-warn: mat.define-palette(mat.$red-palette);
-
-/* Create the theme */
-$airsen-theme: mat.define-light-theme((
-  color: (
-    primary: $airsen-primary,
-    accent: $airsen-accent,
-    warn: $airsen-warn,
-  ),
-  typography: mat.define-typography-config(),
-  density: 0,
-));
-
-@include mat.all-component-themes($airsen-theme);
+// Import Material component customizations
+@import 'styles/material-components';
 
 /* Global Styles */
 * {
