@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from '@/services/auth.service';
-import { AuthUser } from '@/models/auth.model';
+import { AuthService } from '@/auth/services/auth.service';
+import { AuthUser } from '@/auth/models/auth.model';
 
 /**
  * DashboardComponent - Main landing page after authentication

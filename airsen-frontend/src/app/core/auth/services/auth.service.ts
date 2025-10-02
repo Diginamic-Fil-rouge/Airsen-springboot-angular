@@ -12,10 +12,10 @@ import {
   RefreshTokenResponse,
   AuthUser,
   JwtPayload 
-} from '@/models/auth.model';
+} from '@/auth/models/auth.model';
 import { environment } from '@/environments/environment';
-import { TokenService } from '@/services/token.service';
-import { StorageService } from '@/services/storage.service';
+import { TokenService } from '@/auth/services/token.service';
+import { StorageService } from '@/auth/services/storage.service';
 
 @Injectable({
   providedIn: 'root'

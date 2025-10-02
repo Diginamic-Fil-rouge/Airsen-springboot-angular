@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors }
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from '@/services/auth.service';
-import { RegisterRequest } from '@/models/auth.model';
+import { AuthService } from '@/auth/services/auth.service';
+import { RegisterRequest } from '@/auth/models/auth.model';
 
 /**
  * RegisterComponent - User registration interface

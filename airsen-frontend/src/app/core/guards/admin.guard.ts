@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { AuthService } from '@/services/auth.service';
-import { UserRole } from '@/models/user.model';
+import { AuthService } from '@/auth/services/auth.service';
+import { UserRole } from '@/auth/models/user.model';
 
 /**
  * AdminGuard - Protects admin-only routes

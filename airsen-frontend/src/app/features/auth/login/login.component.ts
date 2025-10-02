@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from '@/services/auth.service';
-import { StorageService } from '@/services/storage.service';
+import { AuthService } from '@/auth/services/auth.service';
+import { StorageService } from '@/auth/services/storage.service';
 
 /**
  * LoginComponent - User authentication interface

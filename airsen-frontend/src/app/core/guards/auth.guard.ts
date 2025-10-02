@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { AuthService } from '@/services/auth.service';
-import { StorageService } from '@/services/storage.service';
+import { AuthService } from '@/auth/services/auth.service';
+import { StorageService } from '@/auth/services/storage.service';
 
 /**
  * AuthGuard - Protects routes requiring authentication
