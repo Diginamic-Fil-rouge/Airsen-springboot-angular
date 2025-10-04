@@ -80,14 +80,19 @@ public class CommuneController {
     @GetMapping("/communes/search")
     @Operation(
         summary = "Search communes globally",
-        description = "Search for communes across all French departments using name or INSEE code"
+        description = "Search for communes across all French departments using name or INSEE code. " +
+                     "Supports partial matching for both fields (case-insensitive for names). " +
+                     "Examples: 'Paris' (by name), '75056' (exact INSEE code), '750' (partial code - all Paris arrondissements), 'Mar' (finds Marseille, Marignane, etc.)"
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Communes found successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid search parameters")
     })
     public ResponseEntity<List<CommuneDTO>> searchCommunes(
-            @Parameter(description = "Search query (commune name or INSEE code)", example = "Paris")
+            @Parameter(
+                description = "Search query - supports commune name (partial, case-insensitive) or INSEE code (partial match)",
+                example = "Paris"
+            )
             @RequestParam("q") @Valid @Size(min = 2, max = 50) String query,
             @Parameter(description = "Maximum number of results", example = "10")
             @RequestParam(defaultValue = "10") @Positive int limit) {

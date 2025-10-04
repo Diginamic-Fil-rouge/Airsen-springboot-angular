@@ -68,27 +68,37 @@ public class CommuneService {
 
     @Transactional(readOnly = true)
     public List<CommuneDTO> searchCommunes(String query, int limit) {
-        log.info("Searching communes by name: {}", query);
-        
+        log.info("Searching communes by name or INSEE code: {}", query);
+
         // First, search in local database
-        Page<Commune> communePage = communeRepository.findByNameContainingIgnoreCase(query, PageRequest.of(0, limit));
+        Page<Commune> communePage = communeRepository.searchByNameOrInseeCode(query, PageRequest.of(0, limit));
         List<Commune> communes = communePage.getContent();
-        
+
         // If no results found in database, try to fetch from INSEE API
         if (communes.isEmpty()) {
             log.info("No communes found in database for query: {}. Fetching from INSEE API...", query);
             try {
-                // Fetch from INSEE API and save to database
-                CommuneDTO fetchedCommune = fetchAndSaveCommuneFromInsee(query).block();
+                CommuneDTO fetchedCommune = null;
+
+                // Check if query looks like an INSEE code (5 digits)
+                if (query.matches("\\d{5}")) {
+                    log.info("Query '{}' matches INSEE code pattern (5 digits), using exact code lookup", query);
+                    fetchedCommune = fetchCommuneByInseeCode(query).block();
+                } else {
+                    log.info("Query '{}' is a name search, using name-based lookup", query);
+                    fetchedCommune = fetchAndSaveCommuneFromInsee(query).block();
+                }
+
                 if (fetchedCommune != null) {
-                    log.info("Successfully fetched commune from INSEE API: {}", fetchedCommune.getName());
+                    log.info("Successfully fetched commune from INSEE API: {} ({})",
+                            fetchedCommune.getName(), fetchedCommune.getInseeCode());
                     return List.of(fetchedCommune);
                 }
             } catch (Exception e) {
-                log.warn("Failed to fetch commune from INSEE API: {}", query, e);
+                log.warn("Failed to fetch commune from INSEE API for query: {}", query, e);
             }
         }
-        
+
         return communes.stream()
                 .map(c -> new CommuneDTO(
                         c.getId(),
@@ -176,20 +186,36 @@ public class CommuneService {
     }
 
     /**
-     * Fetches commune data from INSEE API and saves to database.
+     * Fetches commune data from INSEE API by exact INSEE code and saves to database.
+     *
+     * @param inseeCode exact 5-digit INSEE code
+     * @return Mono containing the saved commune DTO
+     */
+    @Transactional
+    public Mono<CommuneDTO> fetchCommuneByInseeCode(String inseeCode) {
+        log.info("Fetching commune data from INSEE API by code: {}", inseeCode);
+
+        return inseeApiClient.getCommuneData(inseeCode)
+            .flatMap(this::saveInseeDataToDatabase)
+            .doOnSuccess(communeDTO -> log.info("Successfully fetched and saved commune from INSEE API by code: {}", communeDTO))
+            .doOnError(error -> log.error("Failed to fetch and save commune from INSEE API by code: {}", inseeCode, error));
+    }
+
+    /**
+     * Fetches commune data from INSEE API by name and saves to database.
      *
      * @param communeName name of the commune to search for
      * @return Mono containing the saved commune DTO
      */
     @Transactional
     public Mono<CommuneDTO> fetchAndSaveCommuneFromInsee(String communeName) {
-        log.info("Fetching commune data from INSEE API for: {}", communeName);
-        
+        log.info("Fetching commune data from INSEE API by name: {}", communeName);
+
         return inseeApiClient.searchCommunesByName(communeName, 1)
             .next()
             .flatMap(this::saveInseeDataToDatabase)
-            .doOnSuccess(communeDTO -> log.info("Successfully fetched and saved commune from INSEE API: {}", communeDTO))
-            .doOnError(error -> log.error("Failed to fetch and save commune from INSEE API: {}", communeName, error));
+            .doOnSuccess(communeDTO -> log.info("Successfully fetched and saved commune from INSEE API by name: {}", communeDTO))
+            .doOnError(error -> log.error("Failed to fetch and save commune from INSEE API by name: {}", communeName, error));
     }
 
     /**

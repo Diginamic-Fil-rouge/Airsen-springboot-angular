@@ -61,7 +61,7 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
     Page<Commune> findByDepartmentId(@Param("departmentId") Long departmentId, Pageable pageable);
 
     /**
-     * Robincassan's method: List communes by department ID (returning List instead of Page).
+     *  List communes by department ID (returning List instead of Page).
      * 
      * @param departmentId department identifier
      * @param pageable pagination parameters
