@@ -1,7 +1,7 @@
 package fr.airsen.api.controller;
 
 import fr.airsen.api.dto.ForumMessageDTO;
-import fr.airsen.api.entity.ForumMessage;
+import fr.airsen.api.dto.request.ForumMessageUpdateRequest;
 import fr.airsen.api.service.ForumMessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -85,26 +85,29 @@ public class ForumMessageController {
     
     /**
      * PUT /forum/messages/{id} - Update message.
-     * 
+     *
      * @param id message identifier
-     * @param forumMessage updated message data
+     * @param request updated message content
      * @return updated message
      */
     @PutMapping("/{id}")
-    @Operation(summary = "Update forum message", 
-              description = "Update an existing forum message")
+    @Operation(
+        summary = "Update forum message",
+        description = "Update an existing forum message content. " +
+                     "Only the message author or an admin can update a message."
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Message updated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid message data", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request data - validation failed", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - authentication required", content = @Content),
         @ApiResponse(responseCode = "403", description = "Forbidden - Only author or admin can update", content = @Content),
         @ApiResponse(responseCode = "404", description = "Message not found", content = @Content)
     })
     public ResponseEntity<ForumMessageDTO> updateMessage(
-            @Parameter(description = "Message identifier") @PathVariable Long id, 
-            @Valid @RequestBody ForumMessage forumMessage, BindingResult result){
-        
-        ForumMessageDTO updatedMessage = forumMessageService.updateMessage(id, forumMessage, result);
+            @Parameter(description = "Message identifier") @PathVariable Long id,
+            @Valid @RequestBody ForumMessageUpdateRequest request) {
+
+        ForumMessageDTO updatedMessage = forumMessageService.updateMessage(id, request);
         return ResponseEntity.ok(updatedMessage);
     }
     

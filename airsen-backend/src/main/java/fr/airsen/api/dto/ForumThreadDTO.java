@@ -1,7 +1,7 @@
 package fr.airsen.api.dto;
 
-import fr.airsen.api.dto.auth.UserDTO;
 import fr.airsen.api.entity.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,39 +11,56 @@ import java.util.List;
 /**
  * DTO for a forum thread.
  */
+@Schema(description = "Forum thread with author and category information")
 public class ForumThreadDTO {
+    @Schema(description = "Thread ID", example = "1")
     private long id;
 
-    private UserDTO author;
+    @Schema(description = "Thread author (lightweight)")
+    private ForumAuthorDTO author;
 
+    @Schema(description = "Thread category")
     private ForumCategoryDTO category;
 
+    @Schema(description = "Thread messages (only included when withEntities=true)")
     private List<ForumMessageDTO> messages;
 
+    @Schema(description = "Thread votes (only included when withEntities=true)")
     private List<ForumVoteDTO> votes;
 
+    @Schema(description = "Thread title", example = "Air Quality Discussion")
     private String title;
 
+    @Schema(description = "Thread content")
     private String content;
 
+    @Schema(description = "Creation date", example = "2025-01-04T10:00:00")
     private LocalDateTime createdDate;
 
+    @Schema(description = "Last message date", example = "2025-01-05T14:30:00")
     private LocalDateTime lastMessageDate;
 
+    @Schema(description = "View count", example = "42")
     private Integer viewCount;
 
+    @Schema(description = "Whether thread is pinned", example = "false")
     private boolean pinned;
 
+    @Schema(description = "Whether thread is closed", example = "false")
     private boolean closed;
 
+    @Schema(description = "Like count", example = "15")
     private Integer likeCount;
+
+    @Schema(description = "Number of messages in thread", example = "8")
+    private Integer messageCount;
 
     public ForumThreadDTO() {
     }
 
     public ForumThreadDTO(ForumThread forumThread, boolean withEntities) {
         this.id = forumThread.getId();
-        this.author = new UserDTO(forumThread.getAuthor().getId(), forumThread.getAuthor().getEmail(), forumThread.getAuthor().getFirstName(), forumThread.getAuthor().getLastName(), forumThread.getAuthor().getAddress(), forumThread.getAuthor().getTelephone(), forumThread.getAuthor().getBio(), forumThread.getAuthor().getRole());
+        this.author = new ForumAuthorDTO(forumThread.getAuthor());
         this.category = new ForumCategoryDTO(forumThread.getCategory(), false);
         this.title = forumThread.getTitle();
         this.content = forumThread.getContent();
@@ -53,6 +70,8 @@ public class ForumThreadDTO {
         this.pinned = forumThread.isPinned();
         this.closed = forumThread.isClosed();
         this.likeCount = forumThread.getLikeCount();
+        this.messageCount = (forumThread.getMessages() != null) ? forumThread.getMessages().size() : 0;
+
         if (withEntities) {
             this.messages = new ArrayList<>();
             this.votes = new ArrayList<>();
@@ -77,11 +96,11 @@ public class ForumThreadDTO {
         this.id = id;
     }
 
-    public UserDTO getAuthor() {
+    public ForumAuthorDTO getAuthor() {
         return author;
     }
 
-    public void setAuthor(UserDTO author) {
+    public void setAuthor(ForumAuthorDTO author) {
         this.author = author;
     }
 
@@ -171,5 +190,13 @@ public class ForumThreadDTO {
 
     public void setLikeCount(Integer likeCount) {
         this.likeCount = likeCount;
+    }
+
+    public Integer getMessageCount() {
+        return messageCount;
+    }
+
+    public void setMessageCount(Integer messageCount) {
+        this.messageCount = messageCount;
     }
 }

@@ -1,22 +1,32 @@
 package fr.airsen.api.dto.request;
 
+import fr.airsen.api.entity.enums.VoteType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 /**
- * Request DTO for voting operations.
- * 
- * This record represents a vote request for forum threads and messages.
- * The like value indicates the type of vote: 1 for like, -1 for dislike.
+ * Request DTO for voting on forum content (threads/messages).
+ *
+ * This record provides a clean, self-documenting API for voting operations
+ * using an enum instead of integer values.
  */
-@Schema(description = "Vote request for forum content")
+@Schema(description = "Request to vote on forum content")
 public record VoteRequest(
-    @Schema(description = "Vote value: 1 for like, -1 for dislike", example = "1")
-    @NotNull(message = "Like value is required")
-    @Min(value = -1, message = "Like value must be -1 or 1")
-    @Max(value = 1, message = "Like value must be -1 or 1")
-    Integer likeValue
+    @NotNull(message = "Vote type is required")
+    @Schema(
+        description = "Type of vote (LIKE or DISLIKE)",
+        example = "LIKE",
+        required = true,
+        allowableValues = {"LIKE", "DISLIKE"}
+    )
+    VoteType voteType
 ) {
+    /**
+     * Convert vote type to integer value for legacy compatibility.
+     *
+     * @return 1 for LIKE, -1 for DISLIKE
+     */
+    public int getVoteValue() {
+        return voteType != null ? voteType.toInt() : 0;
+    }
 }

@@ -2,8 +2,9 @@ package fr.airsen.api.controller;
 
 import fr.airsen.api.dto.ForumCategoryDTO;
 import fr.airsen.api.dto.ForumThreadDTO;
-import fr.airsen.api.entity.ForumCategory;
-import fr.airsen.api.entity.ForumThread;
+import fr.airsen.api.dto.request.ForumCategoryCreateRequest;
+import fr.airsen.api.dto.request.ForumCategoryUpdateRequest;
+import fr.airsen.api.dto.request.ForumThreadCreateRequest;
 import fr.airsen.api.service.ForumCategoryService;
 import fr.airsen.api.service.ForumThreadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,13 +17,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -131,22 +127,22 @@ public class ForumCategoryController {
         @ApiResponse(responseCode = "404", description = "Category not found", content = @Content)
     })
     public ResponseEntity<List<ForumThreadDTO>> addThread(
-            @Parameter(description = "Category identifier") @PathVariable Long id, 
-            @Valid @RequestBody ForumThread forumThread, BindingResult result) {
-        
-        List<ForumThreadDTO> threads = forumThreadService.addThreadToCategory(id, forumThread, result);
+            @Parameter(description = "Category identifier") @PathVariable Long id,
+            @Valid @RequestBody ForumThreadCreateRequest request) {
+
+        List<ForumThreadDTO> threads = forumThreadService.addThreadToCategory(id, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(threads);
     }
 
     /**
      * POST /forum/categories - Create new category.
-     * 
-     * @param forumCategory category data
+     *
+     * @param request category creation request with minimal fields
      * @return created category
      */
     @PostMapping
-    @Operation(summary = "Create forum category", 
-              description = "Create a new forum category")
+    @Operation(summary = "Create forum category",
+              description = "Create a new forum category with minimal fields (name, description, color)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Category created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid category data", content = @Content),
@@ -154,22 +150,22 @@ public class ForumCategoryController {
         @ApiResponse(responseCode = "403", description = "Forbidden - Admin access required", content = @Content)
     })
     public ResponseEntity<List<ForumCategoryDTO>> addCategory(
-            @Valid @RequestBody ForumCategory forumCategory, BindingResult result) {
-        
-        List<ForumCategoryDTO> categories = service.addForumCategory(forumCategory, result);
+            @Valid @RequestBody ForumCategoryCreateRequest request) {
+
+        List<ForumCategoryDTO> categories = service.addForumCategory(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(categories);
     }
 
     /**
      * PUT /forum/categories/{id} - Update category.
-     * 
+     *
      * @param id category identifier
-     * @param forumCategory updated category data
+     * @param request updated category data (all fields optional for partial update)
      * @return updated category
      */
     @PutMapping("/{id}")
-    @Operation(summary = "Update forum category", 
-              description = "Update an existing forum category")
+    @Operation(summary = "Update forum category",
+              description = "Update an existing forum category. All fields are optional - only provided fields will be updated.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Category updated successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid category data", content = @Content),
@@ -178,21 +174,21 @@ public class ForumCategoryController {
         @ApiResponse(responseCode = "404", description = "Category not found", content = @Content)
     })
     public ResponseEntity<List<ForumCategoryDTO>> editCategory(
-            @Parameter(description = "Category identifier") @PathVariable Long id, 
-            @Valid @RequestBody ForumCategory forumCategory, BindingResult result) {
-        
-        List<ForumCategoryDTO> categories = service.editForumCategory(id, forumCategory, result);
+            @Parameter(description = "Category identifier") @PathVariable Long id,
+            @Valid @RequestBody ForumCategoryUpdateRequest request) {
+
+        List<ForumCategoryDTO> categories = service.editForumCategory(id, request);
         return ResponseEntity.ok(categories);
     }
 
     /**
      * DELETE /forum/categories/{id} - Delete category.
-     * 
+     *
      * @param id category identifier
-     * @return confirmation response
+     * @return no content response (204)
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete forum category", 
+    @Operation(summary = "Delete forum category",
               description = "Delete a forum category and all associated threads")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Category deleted successfully"),
@@ -200,11 +196,11 @@ public class ForumCategoryController {
         @ApiResponse(responseCode = "403", description = "Forbidden - Admin access required", content = @Content),
         @ApiResponse(responseCode = "404", description = "Category not found", content = @Content)
     })
-    public ResponseEntity<List<ForumCategoryDTO>> deleteCategory(
+    public ResponseEntity<Void> deleteCategory(
             @Parameter(description = "Category identifier") @PathVariable Long id) {
-        
-        List<ForumCategoryDTO> categories = service.deleteForumCategory(id);
-        return ResponseEntity.ok(categories);
+
+        service.deleteForumCategory(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

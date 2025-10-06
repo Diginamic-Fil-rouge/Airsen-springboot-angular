@@ -1,6 +1,8 @@
 package fr.airsen.api.service;
 
 import fr.airsen.api.dto.ForumThreadDTO;
+import fr.airsen.api.dto.request.ForumThreadCreateRequest;
+import fr.airsen.api.dto.request.ForumThreadUpdateRequest;
 import fr.airsen.api.mapper.ForumThreadMapper;
 import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
@@ -11,12 +13,13 @@ import fr.airsen.api.repository.UserRepository;
 import fr.airsen.api.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -37,6 +40,39 @@ public class ForumThreadService {
     @Transactional(readOnly = true)
     public List<ForumThreadDTO> findAll() {
         return mapper.toDTOs(forumThreadRepository.findAllWithRelations());
+    }
+
+    /**
+     * Find all threads with pagination, filtering, and sorting.
+     *
+     * @param categoryId optional category filter
+     * @param search optional text search in title/content
+     * @param pageable pagination and sorting parameters
+     * @return page of forum threads
+     */
+    @Transactional(readOnly = true)
+    public Page<ForumThreadDTO> findAll(Long categoryId, String search, Pageable pageable) {
+        Page<ForumThread> threadsPage;
+
+        if (categoryId != null && search != null && !search.trim().isEmpty()) {
+            // Filter by category AND search
+            threadsPage = forumThreadRepository
+                .findByCategoryIdAndTitleContainingOrContentContaining(
+                    categoryId, search, search, pageable);
+        } else if (categoryId != null) {
+            // Filter by category only
+            threadsPage = forumThreadRepository.findByCategoryId(categoryId, pageable);
+        } else if (search != null && !search.trim().isEmpty()) {
+            // Search only
+            threadsPage = forumThreadRepository
+                .findByTitleContainingOrContentContaining(search, search, pageable);
+        } else {
+            // No filters
+            threadsPage = forumThreadRepository.findAll(pageable);
+        }
+
+        // Convert to DTOs
+        return threadsPage.map(thread -> new ForumThreadDTO(thread, false));
     }
 
     @Transactional(readOnly = true)
@@ -61,87 +97,118 @@ public class ForumThreadService {
         return mapper.toDTO(forumThreadRepository.findByIdWithMessages(id).orElse(null));
     }
 
+    /**
+     * Create a new forum thread from a request DTO.
+     *
+     * @param request the thread creation request containing title, content, and categoryId
+     * @return the created thread DTO
+     * @throws EntityNotFoundException if user or category not found
+     */
     @Transactional
-    public ForumThreadDTO createThread(@RequestBody ForumThread forumThread, BindingResult result) throws EntityNotFoundException, IllegalArgumentException {
-        if (result.hasErrors()) {
-            throw new IllegalArgumentException("Invalid thread: " + result.getAllErrors().get(0).getDefaultMessage());
-        }
-        
+    public ForumThreadDTO createThread(ForumThreadCreateRequest request) throws EntityNotFoundException {
+        // Get authenticated user from security context
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder
+            .getContext()
+            .getAuthentication()
+            .getPrincipal();
+
+        User author = userRepository.findById(principal.getId())
+            .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + principal.getId()));
+
+        // Get category by ID from request
+        ForumCategory category = forumCategoryRepository.findById(request.getCategoryId())
+            .orElseThrow(() -> new EntityNotFoundException(
+                "Category not found with ID: " + request.getCategoryId()));
+
+        // Create new thread entity
+        ForumThread thread = new ForumThread();
+        thread.setTitle(request.getTitle());
+        thread.setContent(request.getContent());
+        thread.setAuthor(author);
+        thread.setCategory(category);
+
+        // Set default values for system fields
+        LocalDateTime now = LocalDateTime.now();
+        thread.setCreatedDate(now);
+        thread.setLastMessageDate(now);
+        thread.setViewCount(0);
+        thread.setLikeCount(0);
+        thread.setPinned(false);
+        thread.setClosed(false);
+
+        // Save to database
+        ForumThread savedThread = forumThreadRepository.save(thread);
+
+        // Return DTO
+        return new ForumThreadDTO(savedThread, false);
+    }
+
+    @Transactional
+    public List<ForumThreadDTO> addThreadToCategory(Long categoryId, ForumThreadCreateRequest request) throws EntityNotFoundException {
+        ForumCategory category = forumCategoryRepository.findById(categoryId)
+            .orElseThrow(() -> new EntityNotFoundException("Category not found - Cannot add thread"));
+
         UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findById(principal.getId())
             .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        
-        ForumCategory category = forumCategoryRepository.findById(forumThread.getCategory().getId())
-            .orElseThrow(() -> new EntityNotFoundException("Category not found"));
-        
-        forumThread.setAuthor(user);
-        forumThread.setCategory(category);
-        
-        // Set default values for required fields
-        if (forumThread.getCreatedDate() == null) {
-            forumThread.setCreatedDate(java.time.LocalDateTime.now());
-        }
-        if (forumThread.getLastMessageDate() == null) {
-            forumThread.setLastMessageDate(forumThread.getCreatedDate());
-        }
-        if (forumThread.getViewCount() == null) {
-            forumThread.setViewCount(0);
-        }
-        if (forumThread.getLikeCount() == null) {
-            forumThread.setLikeCount(0);
-        }
-        
-        ForumThread savedThread = forumThreadRepository.save(forumThread);
-        
-        return mapper.toDTO(savedThread);
-    }
 
-    @Transactional
-    public List<ForumThreadDTO> addThreadToCategory(Long categoryId, @RequestBody ForumThread forumThread, BindingResult result) throws EntityNotFoundException, IllegalArgumentException {
-        if (result.hasErrors()) {
-            throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
-        }
-        ForumCategory category = forumCategoryRepository.findById(categoryId).orElse(null);
-        System.out.println("Category found");
-        if (category == null)
-        {
-            throw new EntityNotFoundException("Category not found - Cannot add thread");
-        }
-        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findById(principal.getId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        System.out.println("User found");
-        forumThread.setAuthor(user);
-        System.out.println("Author set");
-        forumThread.setCategory(category);
-        System.out.println("Category set");
-        forumThreadRepository.save(forumThread);
-        System.out.println("Thread saved");
+        ForumThread thread = new ForumThread();
+        thread.setTitle(request.getTitle());
+        thread.setContent(request.getContent());
+        thread.setAuthor(user);
+        thread.setCategory(category);
+
+        LocalDateTime now = LocalDateTime.now();
+        thread.setCreatedDate(now);
+        thread.setLastMessageDate(now);
+        thread.setViewCount(0);
+        thread.setLikeCount(0);
+        thread.setPinned(false);
+        thread.setClosed(false);
+
+        forumThreadRepository.save(thread);
         return mapper.toDTOs(forumThreadRepository.findAll());
     }
 
+    /**
+     * Update an existing forum thread from a request DTO.
+     *
+     * @param id the thread ID to update
+     * @param request the thread update request containing title, content, and optional categoryId
+     * @return the updated thread DTO
+     * @throws EntityNotFoundException if thread or category not found
+     */
     @Transactional
-    public ForumThreadDTO updateThread(Long id, @RequestBody ForumThread forumThread, BindingResult result) throws EntityNotFoundException, IllegalArgumentException {
-        if (result.hasErrors()) {
-            throw new IllegalArgumentException("Invalid thread : " + result.getAllErrors().get(0).getDefaultMessage());
+    public ForumThreadDTO updateThread(Long id, ForumThreadUpdateRequest request) throws EntityNotFoundException {
+        // Find existing thread
+        ForumThread thread = forumThreadRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Thread not found with ID: " + id));
+
+        // Update title and content
+        thread.setTitle(request.getTitle());
+        thread.setContent(request.getContent());
+
+        // Update category if provided
+        if (request.getCategoryId() != null) {
+            ForumCategory newCategory = forumCategoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                    "Category not found with ID: " + request.getCategoryId()));
+            thread.setCategory(newCategory);
         }
-        ForumThread entity = forumThreadRepository.findById(id).orElse(null);
-        if (entity == null) {
-            throw new EntityNotFoundException("Failed to update thread - Thread not found");
-        }
-        entity.setTitle(forumThread.getTitle());
-        entity.setContent(forumThread.getContent());
-        entity.setCategory(forumThread.getCategory());
-        forumThreadRepository.save(entity);
-        return mapper.toDTO(entity);
+
+        // Save updated thread
+        ForumThread updatedThread = forumThreadRepository.save(thread);
+
+        // Return DTO
+        return new ForumThreadDTO(updatedThread, false);
     }
 
     @Transactional
-    public List<ForumThreadDTO> deleteThread(Long id) throws EntityNotFoundException {
+    public void deleteThread(Long id) throws EntityNotFoundException {
         ForumThread entityExists = forumThreadRepository.findById(id).orElse(null);
         if (entityExists == null) {
             throw new EntityNotFoundException("Failed to delete thread - Thread not found");
         }
         forumThreadRepository.deleteById(id);
-        return mapper.toDTOs(forumThreadRepository.findAll());
     }
 }

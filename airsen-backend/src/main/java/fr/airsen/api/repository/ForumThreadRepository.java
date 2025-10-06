@@ -3,6 +3,8 @@ package fr.airsen.api.repository;
 import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -81,4 +83,49 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> 
      * @param id id of the thread to delete
      */
     void deleteById(Long id);
+
+    /**
+     * Find threads by category with pagination.
+     *
+     * @param categoryId category ID
+     * @param pageable pagination parameters
+     * @return page of threads
+     */
+    Page<ForumThread> findByCategoryId(Long categoryId, Pageable pageable);
+
+    /**
+     * Search threads by title or content with pagination.
+     *
+     * @param search1 search term for title
+     * @param search2 search term for content (same as search1)
+     * @param pageable pagination parameters
+     * @return page of threads
+     */
+    @Query("SELECT t FROM ForumThread t WHERE " +
+           "LOWER(t.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(t.content) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<ForumThread> findByTitleContainingOrContentContaining(
+        @Param("search") String search1,
+        @Param("search") String search2,
+        Pageable pageable
+    );
+
+    /**
+     * Find threads by category and search with pagination.
+     *
+     * @param categoryId category ID
+     * @param search1 search term for title
+     * @param search2 search term for content (same as search1)
+     * @param pageable pagination parameters
+     * @return page of threads
+     */
+    @Query("SELECT t FROM ForumThread t WHERE t.category.id = :categoryId AND " +
+           "(LOWER(t.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(t.content) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<ForumThread> findByCategoryIdAndTitleContainingOrContentContaining(
+        @Param("categoryId") Long categoryId,
+        @Param("search") String search1,
+        @Param("search") String search2,
+        Pageable pageable
+    );
 }

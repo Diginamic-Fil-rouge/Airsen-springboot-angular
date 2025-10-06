@@ -1,6 +1,8 @@
 package fr.airsen.api.service;
 
 import fr.airsen.api.dto.ForumCategoryDTO;
+import fr.airsen.api.dto.request.ForumCategoryCreateRequest;
+import fr.airsen.api.dto.request.ForumCategoryUpdateRequest;
 import fr.airsen.api.mapper.ForumCategoryMapper;
 import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.repository.ForumCategoryRepository;
@@ -9,14 +11,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-/**
- * Service for handling forum categories.
- */
 @Service
 public class ForumCategoryService {
 
@@ -26,11 +23,7 @@ public class ForumCategoryService {
     @Autowired
     private ForumCategoryMapper mapper;
 
-    /**
-     * Get all forum categories.
-     *
-     * @return List of forum categories.
-     */
+    @Transactional
     public List<ForumCategoryDTO> findAll() {
         return mapper.toDTOs(forumCategoryRepository.findAll());
     }
@@ -42,6 +35,7 @@ public class ForumCategoryService {
      * @return Forum category with the specified id.
      * @throws EntityNotFoundException If there is no forum category with the specified id.
      */
+    @Transactional
     public ForumCategoryDTO findById(Long id) throws EntityNotFoundException {
         ForumCategory category = forumCategoryRepository.findById(id).orElse(null);
         if (category == null)
@@ -54,19 +48,22 @@ public class ForumCategoryService {
     /**
      * Add new forum category.
      *
-     * @param forumCategory Forum category to be added.
+     * @param request Forum category creation request with minimal fields.
      * @return List of all forum categories.
-     * @throws EntityExistsException If forum category with the same id already exists.
+     * @throws EntityExistsException If forum category with the same name already exists.
      */
     @Transactional
-    public List<ForumCategoryDTO> addForumCategory(@RequestBody ForumCategory forumCategory, BindingResult result) throws EntityExistsException, IllegalArgumentException {
-        if (result.hasErrors()){
-            throw new IllegalArgumentException("Invalid category : " + result.getAllErrors().get(0).getDefaultMessage());
-        }
-        ForumCategory entity = forumCategoryRepository.findByName(forumCategory.getName());
-        if (entity != null){
+    public List<ForumCategoryDTO> addForumCategory(ForumCategoryCreateRequest request) throws EntityExistsException {
+        ForumCategory existingCategory = forumCategoryRepository.findByName(request.getName());
+        if (existingCategory != null){
             throw new EntityExistsException("Failed to add category - Category with same name already exists");
         }
+
+        ForumCategory forumCategory = new ForumCategory();
+        forumCategory.setName(request.getName());
+        forumCategory.setDescription(request.getDescription());
+        forumCategory.setColor(request.getColor());
+
         forumCategoryRepository.save(forumCategory);
         return mapper.toDTOs(forumCategoryRepository.findAll());
     }
@@ -74,24 +71,36 @@ public class ForumCategoryService {
     /**
      * Edit forum category.
      *
-     * @param id             Id of the forum category to be edited.
-     * @param forumCategory Forum category with new values.
+     * @param id      Id of the forum category to be edited.
+     * @param request Forum category update request with optional fields.
      * @return List of all forum categories.
-     * @throws EntityExistsException If forum category with the same id already exists.
+     * @throws EntityExistsException   If forum category with the same name already exists.
+     * @throws EntityNotFoundException If category with given id does not exist.
      */
-    public List<ForumCategoryDTO> editForumCategory(Long id, @RequestBody ForumCategory forumCategory, BindingResult result) throws EntityExistsException, EntityNotFoundException, IllegalArgumentException {
-        if (result.hasErrors()){
-            throw new IllegalArgumentException("Invalid category : " + result.getAllErrors().get(0).getDefaultMessage());
+    @Transactional
+    public List<ForumCategoryDTO> editForumCategory(Long id, ForumCategoryUpdateRequest request) throws EntityExistsException, EntityNotFoundException {
+        ForumCategory categoryExists = forumCategoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Failed to update category - Category not found"));
+
+        // Check if new name conflicts with existing category
+        if (request.getName() != null) {
+            ForumCategory entityWithSameName = forumCategoryRepository.findByName(request.getName());
+            if (entityWithSameName != null && entityWithSameName.getId() != id){
+                throw new EntityExistsException("Failed to update category - Category with same name already exists");
+            }
+            categoryExists.setName(request.getName());
         }
-        ForumCategory categoryExists = forumCategoryRepository.findById(id).orElse(null);
-        if (categoryExists == null){
-            throw new EntityNotFoundException("Failed to update category - Category not found");
+
+        // Update only non-null fields (partial update)
+        if (request.getDescription() != null) {
+            categoryExists.setDescription(request.getDescription());
         }
-        ForumCategory entityExists = forumCategoryRepository.findByName(forumCategory.getName());
-        if (entityExists != null && entityExists.getId() != id){
-            throw new EntityExistsException("Failed to update category - Category with same name already exists");
+
+        if (request.getColor() != null) {
+            categoryExists.setColor(request.getColor());
         }
-        forumCategoryRepository.save(forumCategory);
+
+        forumCategoryRepository.save(categoryExists);
         return mapper.toDTOs(forumCategoryRepository.findAll());
     }
 
@@ -99,15 +108,14 @@ public class ForumCategoryService {
      * Delete forum category.
      *
      * @param id Id of the forum category to be deleted.
-     * @return List of all forum categories.
      * @throws EntityNotFoundException If there is no forum category with the specified id.
      */
-    public List<ForumCategoryDTO> deleteForumCategory(Long id) throws EntityNotFoundException {
+    @Transactional
+    public void deleteForumCategory(Long id) throws EntityNotFoundException {
         ForumCategory entityExists = forumCategoryRepository.findById(id).orElse(null);
         if (entityExists == null){
             throw new EntityNotFoundException("Failed to delete category - Category not found");
         }
         forumCategoryRepository.deleteById(id);
-        return mapper.toDTOs(forumCategoryRepository.findAll());
     }
 }
