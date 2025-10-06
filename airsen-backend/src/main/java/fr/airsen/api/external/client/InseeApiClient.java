@@ -92,17 +92,14 @@ public class InseeApiClient {
 
     /**
      * Searches communes by name with partial matching.
-     * 
-     * Uses the INSEE API structure:
-     * https://geo.api.gouv.fr/communes?nom={name}&fields=code,nom,codeDepartement,codeRegion,region,departement,centre,population
-     * 
+     * Returns ALL matching results from INSEE API without client-side limiting.
+     *
      * @param name partial or complete commune name
-     * @param limit maximum number of results to return
-     * @return Flux containing matching communes
+     * @return Flux containing ALL matching communes
      */
-    public Flux<InseeCommuneResponse> searchCommunesByName(String name, int limit) {
-        log.info("Searching communes by name: {} (limit: {}) using INSEE API", name, limit);
-        
+    public Flux<InseeCommuneResponse> searchCommunesByName(String name) {
+        log.info("Searching communes by name: {} (fetching ALL results)", name);
+
         return webClient
             .get()
             .uri("/communes", builder -> builder
@@ -112,11 +109,12 @@ public class InseeApiClient {
                 .queryParam("boost", "population")
                 .build())
             .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> 
+            .onStatus(HttpStatusCode::isError, response ->
                 Mono.error(new InseeApiException("INSEE API search error: " + response.statusCode())))
             .bodyToFlux(InseeCommuneResponse.class)
-            .take(limit)
-            .doOnNext(commune -> log.debug("Found commune: {} ({})", commune.name(), commune.inseeCode()))
+            .doOnNext(commune -> log.debug("Found commune: {} ({}) - pop: {}",
+                commune.name(), commune.inseeCode(), commune.population()))
+            .doOnComplete(() -> log.info("Completed fetching communes for: {}", name))
             .doOnError(error -> log.error("Failed to search communes by name: {}", name, error))
             .timeout(Duration.ofMillis(config.getTimeoutMs()));
     }

@@ -1,5 +1,7 @@
 package fr.airsen.api.dto;
 
+import java.math.BigDecimal;
+
 public class CommuneDTO {
     private Long id;
     private String inseeCode;
@@ -7,6 +9,8 @@ public class CommuneDTO {
     private String departmentCode;
     private String regionCode;
     private Long population;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
 
     public CommuneDTO() {}
 
@@ -17,6 +21,18 @@ public class CommuneDTO {
         this.departmentCode = departmentCode;
         this.regionCode = regionCode;
         this.population = population;
+    }
+
+    public CommuneDTO(Long id, String inseeCode, String name, String departmentCode, String regionCode, Long population,
+                     BigDecimal latitude, BigDecimal longitude) {
+        this.id = id;
+        this.inseeCode = inseeCode;
+        this.name = name;
+        this.departmentCode = departmentCode;
+        this.regionCode = regionCode;
+        this.population = population;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public Long getId() { return id; }
@@ -36,4 +52,10 @@ public class CommuneDTO {
 
     public Long getPopulation() { return population; }
     public void setPopulation(Long population) { this.population = population; }
+
+    public BigDecimal getLatitude() { return latitude; }
+    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; }
+
+    public BigDecimal getLongitude() { return longitude; }
+    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
 }

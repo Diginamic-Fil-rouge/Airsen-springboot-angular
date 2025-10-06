@@ -71,13 +71,27 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
     List<Commune> findByDepartmentIdAsList(@Param("departmentId") Long departmentId, Pageable pageable);
 
     /**
-     * Searches communes by name or INSEE code.
-     * 
+     * Searches communes by name or INSEE code with relevance-based ordering.
+     *
+     * Ordering priority:
+     * 1. Exact matches (case-insensitive)
+     * 2. Starts with search term
+     * 3. Contains search term
+     * 4. Alphabetically by name
+     *
      * @param searchTerm search term to match against name or INSEE code
      * @param pageable pagination parameters
-     * @return page of matching communes
+     * @return page of matching communes ordered by relevance
      */
-    @Query("SELECT c FROM Commune c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR c.inseeCode LIKE CONCAT('%', :searchTerm, '%')")
+    @Query("SELECT c FROM Commune c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR c.inseeCode LIKE CONCAT('%', :searchTerm, '%') " +
+           "ORDER BY " +
+           "CASE " +
+           "  WHEN LOWER(c.name) = LOWER(:searchTerm) THEN 1 " +
+           "  WHEN LOWER(c.name) LIKE LOWER(CONCAT(:searchTerm, '%')) THEN 2 " +
+           "  WHEN c.inseeCode = :searchTerm THEN 3 " +
+           "  ELSE 4 " +
+           "END, " +
+           "c.name ASC")
     Page<Commune> searchByNameOrInseeCode(@Param("searchTerm") String searchTerm, Pageable pageable);
 
     /**
@@ -94,12 +108,6 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
             @Param("nameFilter") String nameFilter, 
             Pageable pageable);
 
-    /**
-     * @param departmentId department identifier
-     * @param name name filter (case-insensitive)
-     * @param pageable pagination parameters
-     * @return list of matching communes in the department
-     */
     List<Commune> findByDepartmentIdAndNameContainingIgnoreCase(Long departmentId, String name, Pageable pageable);
 
     /**

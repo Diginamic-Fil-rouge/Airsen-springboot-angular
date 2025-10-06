@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,54 +62,76 @@ public class CommuneService {
                         c.getName(),
                         String.valueOf(c.getDepartment().getDepartmentCode()),
                         c.getRegionCode(),
-                        c.getPopulation()
+                        c.getPopulation(),
+                        c.getLatitude(),
+                        c.getLongitude()
                 ))
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<CommuneDTO> searchCommunes(String query, int limit) {
-        log.info("Searching communes by name or INSEE code: {}", query);
+        log.info("Searching communes by name or INSEE code: {} (limit: {})", query, limit);
 
         // First, search in local database
         Page<Commune> communePage = communeRepository.searchByNameOrInseeCode(query, PageRequest.of(0, limit));
         List<Commune> communes = communePage.getContent();
 
-        // If no results found in database, try to fetch from INSEE API
+        // If no results found in database, fetch ALL from INSEE API and insert
         if (communes.isEmpty()) {
-            log.info("No communes found in database for query: {}. Fetching from INSEE API...", query);
+            log.info("No communes in database. Fetching from INSEE API...");
             try {
-                CommuneDTO fetchedCommune = null;
-
                 // Check if query looks like an INSEE code (5 digits)
                 if (query.matches("\\d{5}")) {
                     log.info("Query '{}' matches INSEE code pattern (5 digits), using exact code lookup", query);
-                    fetchedCommune = fetchCommuneByInseeCode(query).block();
+                    CommuneDTO fetchedCommune = fetchCommuneByInseeCode(query).block();
+                    if (fetchedCommune != null) {
+                        log.info("✓ Successfully fetched commune from INSEE API: {} ({})",
+                                fetchedCommune.getName(), fetchedCommune.getInseeCode());
+                        return List.of(fetchedCommune);
+                    }
                 } else {
-                    log.info("Query '{}' is a name search, using name-based lookup", query);
-                    fetchedCommune = fetchAndSaveCommuneFromInsee(query).block();
-                }
+                    log.info("Query '{}' is a name search, fetching ALL matching communes", query);
+                    // Fetch and save ALL matching communes
+                    List<CommuneDTO> fetchedCommunes = fetchAndSaveAllCommunesFromInsee(query);
 
-                if (fetchedCommune != null) {
-                    log.info("Successfully fetched commune from INSEE API: {} ({})",
-                            fetchedCommune.getName(), fetchedCommune.getInseeCode());
-                    return List.of(fetchedCommune);
+                    if (!fetchedCommunes.isEmpty()) {
+                        log.info("✓ Successfully fetched {} communes from INSEE API", fetchedCommunes.size());
+
+                        // Apply limit AFTER insertion
+                        List<CommuneDTO> limitedResults = fetchedCommunes.stream()
+                            .limit(limit)
+                            .collect(Collectors.toList());
+
+                        // Enrich coordinates for the limited results
+                        return enrichCoordinatesIfMissing(limitedResults);
+                    } else {
+                        log.warn("No communes found in INSEE API for: {}", query);
+                    }
                 }
             } catch (Exception e) {
-                log.warn("Failed to fetch commune from INSEE API for query: {}", query, e);
+                log.error("Failed to fetch communes from INSEE API: {}", query, e);
             }
+
+            return List.of();  // Return empty if API fetch failed
         }
 
-        return communes.stream()
+        // Convert database results to DTOs
+        List<CommuneDTO> results = communes.stream()
                 .map(c -> new CommuneDTO(
                         c.getId(),
                         c.getInseeCode(),
                         c.getName(),
                         String.valueOf(c.getDepartment().getDepartmentCode()),
                         c.getRegionCode(),
-                        c.getPopulation()
+                        c.getPopulation(),
+                        c.getLatitude(),
+                        c.getLongitude()
                 ))
                 .collect(Collectors.toList());
+
+        // Enrich coordinates for results that are missing them
+        return enrichCoordinatesIfMissing(results);
     }
 
     /**
@@ -129,7 +152,9 @@ public class CommuneService {
                 c.getName(),
                 departmentCode,
                 c.getRegionCode(),
-                c.getPopulation()
+                c.getPopulation(),
+                c.getLatitude(),
+                c.getLongitude()
             ))
             .collect(Collectors.toList());
     }
@@ -211,11 +236,98 @@ public class CommuneService {
     public Mono<CommuneDTO> fetchAndSaveCommuneFromInsee(String communeName) {
         log.info("Fetching commune data from INSEE API by name: {}", communeName);
 
-        return inseeApiClient.searchCommunesByName(communeName, 1)
+        return inseeApiClient.searchCommunesByName(communeName)
             .next()
             .flatMap(this::saveInseeDataToDatabase)
             .doOnSuccess(communeDTO -> log.info("Successfully fetched and saved commune from INSEE API by name: {}", communeDTO))
             .doOnError(error -> log.error("Failed to fetch and save commune from INSEE API by name: {}", communeName, error));
+    }
+
+    /**
+     * Fetches ALL commune data from INSEE API and saves to database.
+     *
+     * @param communeName name to search for
+     * @return List of saved commune DTOs
+     */
+    @Transactional
+    public List<CommuneDTO> fetchAndSaveAllCommunesFromInsee(String communeName) {
+        log.info("Fetching ALL commune data from INSEE API for: {}", communeName);
+
+        try {
+            // Fetch ALL matching communes from INSEE API (no limit)
+            List<InseeCommuneResponse> inseeResponses = inseeApiClient
+                .searchCommunesByName(communeName)
+                .collectList()
+                .block();
+
+            if (inseeResponses == null || inseeResponses.isEmpty()) {
+                log.warn("No communes returned from INSEE API for: {}", communeName);
+                return List.of();
+            }
+
+            log.info("✓ Fetched {} communes from INSEE API for query: '{}'",
+                inseeResponses.size(), communeName);
+
+            // Save ALL communes to database (batch operation)
+            int savedCount = 0;
+            int skippedCount = 0;
+            int errorCount = 0;
+            List<CommuneDTO> savedCommunes = new ArrayList<>();
+
+            for (InseeCommuneResponse inseeResponse : inseeResponses) {
+                try {
+                    // Check if commune already exists (by INSEE code)
+                    if (communeRepository.findByInseeCode(inseeResponse.inseeCode()).isPresent()) {
+                        log.debug("Commune {} ({}) already exists, skipping",
+                            inseeResponse.name(), inseeResponse.inseeCode());
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Save to database
+                    CommuneDTO savedCommune = saveInseeDataToDatabase(inseeResponse).block();
+                    if (savedCommune != null) {
+                        savedCommunes.add(savedCommune);
+                        savedCount++;
+                    }
+                } catch (Exception e) {
+                    errorCount++;
+                    log.error("Failed to save commune {} ({}): {}",
+                        inseeResponse.name(), inseeResponse.inseeCode(), e.getMessage());
+                }
+            }
+
+            log.info("✓ INSEE API insertion complete for '{}': {} saved, {} skipped, {} errors",
+                communeName, savedCount, skippedCount, errorCount);
+
+            // Always query database to return ALL matching communes (saved + already existing)
+            // This ensures to return the complete result set matching the search query
+            log.info("Querying database for all communes matching: {}", communeName);
+            Page<Commune> communePage = communeRepository.searchByNameOrInseeCode(
+                communeName,
+                PageRequest.of(0, 100)  // Fetch all matching communes
+            );
+
+            List<CommuneDTO> allMatchingCommunes = communePage.getContent().stream()
+                .map(c -> new CommuneDTO(
+                    c.getId(),
+                    c.getInseeCode(),
+                    c.getName(),
+                    c.getDepartmentCode(),
+                    c.getRegionCode(),
+                    c.getPopulation(),
+                    c.getLatitude(),
+                    c.getLongitude()
+                ))
+                .collect(Collectors.toList());
+
+            log.info("✓ Returning {} total communes matching '{}'", allMatchingCommunes.size(), communeName);
+            return allMatchingCommunes;
+
+        } catch (Exception e) {
+            log.error("Error fetching/saving communes from INSEE API for: {}", communeName, e);
+            return List.of();
+        }
     }
 
     /**
@@ -306,8 +418,11 @@ public class CommuneService {
 
             // Save commune
             Commune savedCommune = communeRepository.save(commune);
-            log.info("Saved commune to database: {} (ID: {})", 
-                    savedCommune.getName(), savedCommune.getId());
+            log.info("✓ Saved commune: {} ({}) - ID: {}, Pop: {}",
+                    savedCommune.getName(),
+                    savedCommune.getInseeCode(),
+                    savedCommune.getId(),
+                    savedCommune.getPopulation());
 
             // Return DTO
             return new CommuneDTO(
@@ -316,8 +431,78 @@ public class CommuneService {
                 savedCommune.getName(),
                 savedCommune.getDepartmentCode(),
                 savedCommune.getRegionCode(),
-                savedCommune.getPopulation()
+                savedCommune.getPopulation(),
+                savedCommune.getLatitude(),
+                savedCommune.getLongitude()
             );
         });
+    }
+
+    /**
+     * Checks if a commune has valid coordinates.
+     *
+     * @param commune commune DTO to check
+     * @return true if both latitude and longitude are present
+     */
+    private boolean hasCoordinates(CommuneDTO commune) {
+        return commune.getLatitude() != null && commune.getLongitude() != null;
+    }
+
+    /**
+     * Enriches communes with missing coordinates by fetching from INSEE API.
+     * Only processes communes in the provided list (respects limit parameter).
+     * Updates database for future requests.
+     *
+     * @param communes list of communes to check and enrich
+     * @return enriched list with coordinates
+     */
+    @Transactional
+    private List<CommuneDTO> enrichCoordinatesIfMissing(List<CommuneDTO> communes) {
+        if (communes == null || communes.isEmpty()) {
+            return communes;
+        }
+
+        List<CommuneDTO> enrichedCommunes = new ArrayList<>();
+        int enrichedCount = 0;
+
+        for (CommuneDTO communeDTO : communes) {
+            if (!hasCoordinates(communeDTO)) {
+                // DEBUG - only in development
+                log.debug("Commune '{}' ({}) missing coordinates. Fetching from INSEE API...",
+                        communeDTO.getName(), communeDTO.getInseeCode());
+
+                try {
+                    CommuneDTO enriched = fetchCommuneByInseeCode(communeDTO.getInseeCode()).block();
+
+                    if (enriched != null && hasCoordinates(enriched)) {
+                        enrichedCommunes.add(enriched);
+                        enrichedCount++;
+
+                        // DEBUG - only in development
+                        log.debug("Enriched coordinates for '{}': lat={}, lng={}",
+                                enriched.getName(), enriched.getLatitude(), enriched.getLongitude());
+                    } else {
+                        // WARN - kept in production (unusual situation)
+                        log.warn("INSEE API did not provide coordinates for '{}' ({})",
+                                communeDTO.getName(), communeDTO.getInseeCode());
+                        enrichedCommunes.add(communeDTO);
+                    }
+                } catch (Exception e) {
+                    // ERROR - always kept in production
+                    log.error("Failed to fetch coordinates for '{}' ({}): {}",
+                            communeDTO.getName(), communeDTO.getInseeCode(), e.getMessage());
+                    enrichedCommunes.add(communeDTO);
+                }
+            } else {
+                enrichedCommunes.add(communeDTO);
+            }
+        }
+
+        // INFO - kept in production, but only if enrichment happened
+        if (enrichedCount > 0) {
+            log.info("Enriched {} commune(s) with coordinates", enrichedCount);
+        }
+
+        return enrichedCommunes;
     }
 }
