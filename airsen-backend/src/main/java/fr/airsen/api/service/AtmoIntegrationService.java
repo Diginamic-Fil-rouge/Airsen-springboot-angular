@@ -114,13 +114,23 @@ public class AtmoIntegrationService {
                         AirQuality existingRecord = existing.get();
                         log.info("Found existing record with ID: {}, updating...", existingRecord.getId());
                         updateAirQualityRecord(existingRecord, airQuality);
-                        savedEntity = airQualityRepository.save(existingRecord);
-                        log.info("Successfully updated air quality record with ID: {} for commune: {}", savedEntity.getId(), inseeCode);
+                        AirQuality updatedRecord = airQualityRepository.save(existingRecord);
+                        log.info("Successfully updated air quality record with ID: {} for commune: {}", updatedRecord.getId(), inseeCode);
+
+                        // Reload with eager loading to ensure relationships are initialized
+                        savedEntity = airQualityRepository
+                            .findByCommuneAndMeasurementDateWithEagerLoading(updatedRecord.getCommune(), updatedRecord.getMeasurementDate())
+                            .orElse(updatedRecord);
                     } else {
                         // Create new record
                         log.info("No existing record found, creating new record...");
-                        savedEntity = airQualityRepository.save(airQuality);
-                        log.info("Successfully created new air quality record with ID: {} for commune: {}", savedEntity.getId(), inseeCode);
+                        AirQuality newRecord = airQualityRepository.save(airQuality);
+                        log.info("Successfully created new air quality record with ID: {} for commune: {}", newRecord.getId(), inseeCode);
+
+                        // Reload with eager loading to avoid LazyInitializationException
+                        savedEntity = airQualityRepository
+                            .findByCommuneAndMeasurementDateWithEagerLoading(newRecord.getCommune(), newRecord.getMeasurementDate())
+                            .orElse(newRecord);
                     }
                     
                     // Convert to DTO within transactional context to avoid lazy loading issues

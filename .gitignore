@@ -333,10 +333,6 @@ CLAUDE.md
 claude.md
 .claude/
 
-# Specify framework files and specifications (DO NOT COMMIT)
-.specify/
-specifications/
-
 # Documentation directory (contains sensitive project info and design docs)
 /docs/
 docs/
@@ -349,30 +345,10 @@ docs/
 !CONTRIBUTING.md
 !LICENSE.md
 
-# Specification and planning artifacts
-
-quickstart.md
-*-template.md
-contracts/
-implementation-plan.md
 
 # Project structure documentation
-spring-boot-project-structure.md
-project-structure.md
-endpoints.md
-api-endpoints.md
-class-diagram.md
 dossier-conception-*.md
 
-# Implementation guides and installation docs
-installation-guide.md
-setup-guide.md
-deployment-guide.md
-
-# Architecture and design documents
-architecture/
-design/
-specifications/
 
 # OpenAPI specifications (until finalized)
 openapi-spec.yaml
