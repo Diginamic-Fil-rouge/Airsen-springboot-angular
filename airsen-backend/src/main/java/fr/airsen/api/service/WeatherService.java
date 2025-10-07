@@ -150,27 +150,69 @@ public class WeatherService {
 
     /**
      * Gets weather forecast for a commune.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @param forecastDays number of forecast days (1-16)
      * @return Flux<WeatherData> containing forecast data as WeatherData entities
      */
     public Flux<WeatherData> getWeatherForecastForCommune(String communeInseeCode, int forecastDays) {
         log.info("Fetching weather forecast for commune: {} for {} days", communeInseeCode, forecastDays);
-        
+
         return getCommuneCoordinatesWithFallback(communeInseeCode)
             .flatMapMany(coordinates -> {
                 log.debug("Using coordinates for forecast: [{}, {}]", coordinates[0], coordinates[1]);
-                
+
                 return openMeteoApiClient.getForecastByCoordinates(coordinates, forecastDays)
                     .flatMapMany(forecast -> {
                         // Convert forecast response to WeatherData entities
-                        // Using simplified approach since DTO structure may vary
-                        return Flux.just(createForecastWeatherData(communeInseeCode, LocalDate.now(), 20.0, 15.0))
-                            .repeat(forecastDays - 1);
+                        if (forecast.daily() == null || forecast.daily().dates() == null || forecast.daily().dates().isEmpty()) {
+                            log.warn("No forecast data available for commune: {}", communeInseeCode);
+                            return Flux.empty();
+                        }
+
+                        var daily = forecast.daily();
+                        int dataSize = daily.dates().size();
+
+                        return Flux.range(0, dataSize)
+                            .map(i -> {
+                                Commune commune = communeRepository.findByInseeCode(communeInseeCode)
+                                    .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + communeInseeCode));
+
+                                WeatherData weatherData = new WeatherData();
+                                weatherData.setCommune(commune);
+                                weatherData.setMeasurementDate(daily.dates().get(i));
+
+                                // Set temperature (average of min and max)
+                                Double tempMax = daily.maxTemperatures() != null && i < daily.maxTemperatures().size()
+                                    ? daily.maxTemperatures().get(i) : null;
+                                Double tempMin = daily.minTemperatures() != null && i < daily.minTemperatures().size()
+                                    ? daily.minTemperatures().get(i) : null;
+
+                                if (tempMax != null && tempMin != null) {
+                                    weatherData.setTemperature((tempMax + tempMin) / 2);
+                                    weatherData.setMaxTemperature(tempMax);
+                                    weatherData.setMinTemperature(tempMin);
+                                }
+
+                                // Set wind speed
+                                if (daily.maxWindSpeed() != null && i < daily.maxWindSpeed().size()) {
+                                    weatherData.setWindSpeed(daily.maxWindSpeed().get(i));
+                                }
+
+                                // Set weather code
+                                if (daily.weatherCodes() != null && i < daily.weatherCodes().size()) {
+                                    weatherData.setWeatherCode(daily.weatherCodes().get(i));
+                                }
+
+                                // Note: humidity and wind direction are not in daily forecast data
+                                weatherData.setHumidity(0.0);
+                                weatherData.setWindDirection(0.0);
+
+                                return weatherData;
+                            });
                     });
             })
-            .doOnComplete(() -> log.info("Retrieved {} day forecast for commune: {}", 
+            .doOnComplete(() -> log.info("Retrieved {} day forecast for commune: {}",
                                        forecastDays, communeInseeCode));
     }
 
