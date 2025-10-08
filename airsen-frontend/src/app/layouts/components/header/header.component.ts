@@ -53,11 +53,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   navigateToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/auth/login']);
   }
 
   navigateToRegister(): void {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/auth/register']);
   }
 
   get userDisplayName(): string {

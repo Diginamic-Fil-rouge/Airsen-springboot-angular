@@ -2,36 +2,32 @@
 <div class="app-container">
   <!-- Loading Overlay -->
   <div *ngIf="isLoading" class="loading-overlay">
-    <!-- TODO: Replace with app-loading-spinner when component is implemented -->
-    <div class="simple-spinner">Loading...</div>
-  </div>
-
-  <!-- TODO: Uncomment when components are implemented -->
-  <!-- Header Navigation -->
-  <!-- <app-header 
-    *ngIf="shouldShowNavigation"
-    [isAuthenticated]="isAuthenticated">
-  </app-header> -->
-
-  <!-- Main Content Area -->
-  <div class="main-content" [class.with-nav]="shouldShowNavigation">
-    <!-- TODO: Uncomment when components are implemented -->
-    <!-- Side Navigation (for authenticated users) -->
-    <!-- <app-sidenav 
-      *ngIf="shouldShowNavigation && isAuthenticated"
-      class="sidenav">
-    </app-sidenav> -->
-
-    <!-- Router Outlet -->
-    <div class="content-area" [class.with-sidenav]="isAuthenticated && shouldShowNavigation">
-      <router-outlet></router-outlet>
+    <div class="spinner-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Chargement...</p>
     </div>
   </div>
 
-  <!-- TODO: Uncomment when components are implemented -->
+  <!-- Header Navigation -->
+  <app-header
+    *ngIf="shouldShowNavigation"
+    [isAuthenticated]="isAuthenticated">
+  </app-header>
+
+  <!-- Main Content Area -->
+  <div class="main-content" [class.with-nav]="shouldShowNavigation">
+    <!-- Content Wrapper (Sidebar hidden for clean design) -->
+    <div class="content-wrapper">
+      <!-- Router Outlet -->
+      <div class="content-area">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
-  <!-- <app-footer 
+  <app-footer
     *ngIf="shouldShowNavigation"
     class="footer">
-  </app-footer> -->
+  </app-footer>
 </div>

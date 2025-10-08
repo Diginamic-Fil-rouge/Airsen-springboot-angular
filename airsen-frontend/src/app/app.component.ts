@@ -80,7 +80,12 @@ export class AppComponent implements OnInit, OnDestroy {
   // }
 
   get shouldShowNavigation(): boolean {
-    const noNavRoutes = ['/login', '/register'];
-    return !noNavRoutes.includes(this.currentRoute);
+    const noNavRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+    return !noNavRoutes.some(route => this.currentRoute.startsWith(route));
+  }
+
+  get shouldShowBreadcrumb(): boolean {
+    const noBreadcrumbRoutes = ['/', '/login', '/register', '/forgot-password'];
+    return !noBreadcrumbRoutes.includes(this.currentRoute);
   }
 }

@@ -1,69 +1,48 @@
-<!-- Main Header Navigation -->
-<mat-toolbar color="primary" class="header-toolbar">
-  <!-- Logo and Brand -->
-  <div class="logo-section" routerLink="/" [routerLinkActive]="''" style="cursor: pointer;">
-    <mat-icon class="logo-icon">air</mat-icon>
-    <span class="brand-name">Airsen</span>
-  </div>
+<!-- Main Header Navigation - Simplified Design -->
+<header class="header-toolbar">
+  <div class="header-container">
+    <!-- Logo and Brand -->
+    <div class="logo-section" routerLink="/" style="cursor: pointer;">
+      <mat-icon class="logo-icon">eco</mat-icon>
+    </div>
 
-  <!-- Navigation Menu (Desktop) -->
-  <nav class="nav-menu" *ngIf="isAuthenticated">
-    <a mat-button routerLink="/dashboard" routerLinkActive="active-link">
-      <mat-icon>dashboard</mat-icon>
-      Tableau de bord
-    </a>
-    <a mat-button routerLink="/map" routerLinkActive="active-link">
-      <mat-icon>map</mat-icon>
-      Carte
-    </a>
-    <a mat-button routerLink="/favorites" routerLinkActive="active-link">
-      <mat-icon>favorite</mat-icon>
-      Favoris
-    </a>
-    <a mat-button routerLink="/history" routerLinkActive="active-link">
-      <mat-icon>history</mat-icon>
-      Historique
-    </a>
-    <a mat-button routerLink="/forum" routerLinkActive="active-link">
-      <mat-icon>forum</mat-icon>
-      Forum
-    </a>
-  </nav>
+    <!-- Navigation Menu (Always visible - simplified) -->
+    <nav class="nav-menu">
+      <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+        Accueil
+      </a>
+      <a routerLink="/map" routerLinkActive="active-link">
+        Carte
+      </a>
+      <a routerLink="/forum" routerLinkActive="active-link">
+        Forum
+      </a>
+    </nav>
 
-  <!-- Spacer -->
-  <span class="spacer"></span>
+    <!-- Spacer -->
+    <span class="spacer"></span>
 
-  <!-- User Menu (Authenticated) -->
-  <div class="user-menu" *ngIf="isAuthenticated && currentUser">
-    <!-- Notifications -->
-    <button mat-icon-button [matMenuTriggerFor]="notificationMenu" class="notification-button">
-      <mat-icon matBadge="3" matBadgeColor="warn">notifications</mat-icon>
-    </button>
+    <!-- User Menu (Authenticated) - Simplified -->
+    <div class="user-section" *ngIf="isAuthenticated && currentUser">
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
+        <mat-icon>person</mat-icon>
+        <span class="user-name">{{ userDisplayName }}</span>
+      </button>
+    </div>
 
-    <!-- User Profile Menu -->
-    <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
-      <mat-icon>person</mat-icon>
-      <span class="user-name">{{ userDisplayName }}</span>
-      <mat-icon>expand_more</mat-icon>
+    <!-- Login Button (Not Authenticated) - Single Button -->
+    <div class="login-section" *ngIf="!isAuthenticated">
+      <button mat-button (click)="navigateToLogin()" class="login-button">
+        Se connecter
+      </button>
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button mat-icon-button class="mobile-menu-button" [matMenuTriggerFor]="mobileMenu">
+      <mat-icon>menu</mat-icon>
     </button>
   </div>
-
-  <!-- Guest Menu (Not Authenticated) -->
-  <div class="guest-menu" *ngIf="!isAuthenticated">
-    <button mat-button (click)="navigateToLogin()" class="login-button">
-      <mat-icon>login</mat-icon>
-      Se connecter
-    </button>
-    <button mat-raised-button color="accent" (click)="navigateToRegister()" class="register-button">
-      S'inscrire
-    </button>
-  </div>
-
-  <!-- Mobile Menu Button -->
-  <button mat-icon-button class="mobile-menu-button" [matMenuTriggerFor]="mobileMenu">
-    <mat-icon>menu</mat-icon>
-  </button>
-</mat-toolbar>
+</header>
 
 <!-- User Dropdown Menu -->
 <mat-menu #userMenu="matMenu" class="user-dropdown">
@@ -71,20 +50,17 @@
     <mat-icon>person</mat-icon>
     <span>Mon profil</span>
   </button>
-  <button mat-menu-item routerLink="/favorites">
-    <mat-icon>favorite</mat-icon>
-    <span>Mes favoris</span>
+
+  <button mat-menu-item routerLink="/dashboard">
+    <mat-icon>dashboard</mat-icon>
+    <span>Tableau de bord</span>
   </button>
-  <button mat-menu-item routerLink="/notifications">
-    <mat-icon>notifications</mat-icon>
-    <span>Notifications</span>
-  </button>
-  <mat-divider></mat-divider>
+
   <button mat-menu-item *ngIf="isAdmin" routerLink="/admin">
     <mat-icon>admin_panel_settings</mat-icon>
     <span>Administration</span>
   </button>
-  <mat-divider *ngIf="isAdmin"></mat-divider>
+
   <button mat-menu-item (click)="onLogout()">
     <mat-icon>logout</mat-icon>
     <span>Se déconnecter</span>

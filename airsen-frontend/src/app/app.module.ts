@@ -29,6 +29,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
 
 // Third-party modules
 import { NgChartsModule } from 'ng2-charts';
@@ -49,11 +51,13 @@ import { NotFoundComponent } from './features/not-found/not-found.component';
 import { CarteComponent } from './features/carte/carte.component';
 import { ForumComponent } from './features/forum/forum.component';
 
-// TODO: Uncomment these imports when components are implemented
 // Layout Components
-// import { HeaderComponent } from './components/layout/header/header.component';
-// import { FooterComponent } from './components/layout/footer/footer.component';
-// import { SidenavComponent } from './components/layout/sidenav/sidenav.component';
+import { HeaderComponent } from './layouts/components/header/header.component';
+import { FooterComponent } from './layouts/components/footer/footer.component';
+import { SidebarComponent } from './layouts/components/sidebar/sidebar.component';
+
+// Shared Components
+import { BreadcrumbComponent } from './shared/components/breadcrumb/breadcrumb.component';
 
 // Page Components
 // import { HomeComponent } from './components/pages/home/home.component';
@@ -77,6 +81,12 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 @NgModule({
   declarations: [
     AppComponent,
+    // Layout Components
+    HeaderComponent,
+    FooterComponent,
+    SidebarComponent,
+    // Shared Components
+    BreadcrumbComponent,
     // Auth Components
     LoginComponent,
     RegisterComponent,
@@ -86,11 +96,6 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     NotFoundComponent,
     CarteComponent,
     ForumComponent
-    // TODO: Add components here when they are implemented
-    // Layout Components
-    // HeaderComponent,
-    // FooterComponent,
-    // SidenavComponent,
     // Page Components
     // HomeComponent,
     // MapComponent,
@@ -138,6 +143,8 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     MatSlideToggleModule,
     MatBadgeModule,
     MatCheckboxModule,
+    MatTooltipModule,
+    MatDividerModule,
     // Third-party modules
     NgChartsModule,
     NgxPaginationModule

@@ -18,67 +18,6 @@ $light-purple-bg: #F3E8FF;
   padding: 0 24px;
 }
 
-// Header
-.header {
-  background: $white;
-  padding: 20px 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-
-  .header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo {
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: $light-green;
-      border-radius: 50%;
-    }
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 40px;
-    flex: 1;
-    justify-content: center;
-  }
-
-  .nav-link {
-    color: $text-primary;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 500;
-    transition: color 0.3s;
-
-    &:hover {
-      color: $primary-green;
-    }
-
-    &.active {
-      color: $primary-green;
-    }
-  }
-
-  .btn-login {
-    background: $primary-green;
-    color: $white;
-    border: none;
-    padding: 10px 28px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.3s;
-
-    &:hover {
-      background: darken($primary-green, 10%);
-    }
-  }
-}
-
 // Hero Section
 .hero {
   background: $background-gray;
@@ -398,142 +337,6 @@ $light-purple-bg: #F3E8FF;
   }
 }
 
-// Footer
-.footer {
-  background: $dark-navy;
-  color: $white;
-  padding: 60px 0 32px;
-
-  .footer-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1.5fr;
-    gap: 60px;
-    margin-bottom: 48px;
-  }
-
-  .footer-brand {
-    .footer-logo {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 0 0 16px;
-    }
-
-    .footer-tagline {
-      font-size: 15px;
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.6;
-      margin: 0 0 24px;
-    }
-
-    .social-links {
-      display: flex;
-      gap: 12px;
-    }
-
-    .social-link {
-      width: 40px;
-      height: 40px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: $white;
-      transition: background 0.3s;
-
-      &:hover {
-        background: $primary-green;
-      }
-    }
-  }
-
-  .footer-heading {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0 0 20px;
-  }
-
-  .footer-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-
-    li {
-      margin-bottom: 12px;
-    }
-
-    a {
-      color: rgba(255, 255, 255, 0.7);
-      text-decoration: none;
-      font-size: 15px;
-      transition: color 0.3s;
-
-      &:hover {
-        color: $white;
-      }
-    }
-  }
-
-  .contact-info {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .contact-item {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-
-    .contact-icon {
-      font-size: 20px;
-      margin-top: 2px;
-    }
-
-    .contact-label {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 4px;
-    }
-
-    div div:last-child {
-      font-size: 15px;
-      color: rgba(255, 255, 255, 0.9);
-    }
-  }
-
-  .footer-bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .copyright {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
-    margin: 0;
-  }
-
-  .footer-legal {
-    display: flex;
-    gap: 24px;
-
-    a {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.5);
-      text-decoration: none;
-      transition: color 0.3s;
-
-      &:hover {
-        color: $white;
-      }
-    }
-  }
-}
-
 // Responsive
 @media (max-width: 1024px) {
   .features-grid {
@@ -542,10 +345,6 @@ $light-purple-bg: #F3E8FF;
 
   .testimonials-content {
     grid-template-columns: 1fr !important;
-  }
-
-  .footer-content {
-    grid-template-columns: 1fr 1fr !important;
   }
 }
 
@@ -571,9 +370,4 @@ $light-purple-bg: #F3E8FF;
     grid-template-columns: 1fr !important;
   }
 
-  .footer-bottom {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-  }
 }

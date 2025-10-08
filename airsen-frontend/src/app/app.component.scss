@@ -1,10 +1,11 @@
-/* Main Application Layout Styles */
+// Main Application Layout Styles - Airsen Platform
+// Clean white background with minimal design
 
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #fafafa;
+  background-color: white;
 }
 
 .loading-overlay {
@@ -13,88 +14,151 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, hsl(123, 47%, 33%, 0.95), hsl(123, 47%, 38%, 0.95));
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
+
+  .spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+
+    p {
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    ::ng-deep .mat-progress-spinner circle {
+      stroke: white !important;
+    }
+  }
 }
 
 .main-content {
   display: flex;
   flex: 1;
-  
+  background-color: white;
+
   &.with-nav {
-    margin-top: 64px; // Height of header
+    padding-top: 0;
   }
 }
 
 .sidenav {
-  width: 250px;
-  background-color: #fff;
-  border-right: 1px solid #e0e0e0;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: white;
+
+  &.with-sidenav {
+    width: calc(100% - 280px);
+
+    @media (max-width: 1024px) {
+      width: 100%;
+    }
+  }
 }
 
 .content-area {
   flex: 1;
-  padding: 20px;
-  background-color: #fafafa;
-  min-height: calc(100vh - 64px - 60px); // 64px header, 60px footer
-  
-  &.with-sidenav {
-    margin-left: 0; // Sidenav is already positioned
+  padding: 2rem;
+  background-color: white;
+  min-height: calc(100vh - 200px);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
 }
 
 .footer {
-  height: 60px;
-  background-color: #fff;
-  border-top: 1px solid #e0e0e0;
+  margin-top: auto;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+// Responsive Design
+@media (max-width: 1024px) {
   .sidenav {
     position: fixed;
-    top: 64px;
-    left: -250px;
-    height: calc(100vh - 64px);
-    z-index: 999;
-    transition: left 0.3s ease;
-    
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
     &.mobile-open {
-      left: 0;
+      transform: translateX(0);
     }
   }
-  
-  .content-area {
-    padding: 15px;
-    
-    &.with-sidenav {
-      margin-left: 0;
-    }
-  }
-  
-  .main-content.with-nav {
-    margin-top: 56px; // Mobile header height
+
+  .content-wrapper {
+    width: 100% !important;
   }
 }
 
-/* Dark Mode Support (Future Enhancement) */
+@media (max-width: 768px) {
+  .content-area {
+    padding: 1rem;
+    min-height: calc(100vh - 150px);
+  }
+}
+
+// Dark mode support
 @media (prefers-color-scheme: dark) {
   .app-container {
-    background-color: #303030;
-    color: #fff;
+    background-color: hsl(0, 0%, 13%);
   }
-  
+
+  .main-content {
+    background-color: hsl(0, 0%, 13%);
+  }
+
+  .content-wrapper {
+    background-color: hsl(0, 0%, 13%);
+  }
+
   .content-area {
-    background-color: #424242;
+    background-color: hsl(0, 0%, 13%);
+    color: hsl(0, 0%, 96%);
   }
-  
-  .sidenav,
-  .footer {
-    background-color: #424242;
-    border-color: #616161;
+
+  .loading-overlay {
+    background: linear-gradient(135deg, hsl(123, 47%, 58%, 0.95), hsl(123, 47%, 68%, 0.95));
+  }
+}
+
+// Print styles
+@media print {
+  .loading-overlay,
+  app-header,
+  app-sidebar,
+  app-breadcrumb,
+  app-footer {
+    display: none !important;
+  }
+
+  .content-area {
+    padding: 0;
+    min-height: auto;
+  }
+}
+
+// Accessibility
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
