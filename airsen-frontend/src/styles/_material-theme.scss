@@ -79,19 +79,19 @@ $airsen-accent-palette: (
   )
 );
 
-// Define the palettes for the theme
-$airsen-primary: mat.define-palette($airsen-primary-palette, 500);
-$airsen-accent: mat.define-palette($airsen-accent-palette, 500);
-$airsen-warn: mat.define-palette(mat.$red-palette);
+// Define the palettes for the theme (Angular Material 18+ uses m2- prefix for legacy API)
+$airsen-primary: mat.m2-define-palette($airsen-primary-palette, 500);
+$airsen-accent: mat.m2-define-palette($airsen-accent-palette, 500);
+$airsen-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
 // Create the theme
-$airsen-theme: mat.define-light-theme((
+$airsen-theme: mat.m2-define-light-theme((
   color: (
     primary: $airsen-primary,
     accent: $airsen-accent,
     warn: $airsen-warn,
   ),
-  typography: mat.define-typography-config(
+  typography: mat.m2-define-typography-config(
     $font-family: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Helvetica Neue", Arial, sans-serif',
   ),
   density: 0,
