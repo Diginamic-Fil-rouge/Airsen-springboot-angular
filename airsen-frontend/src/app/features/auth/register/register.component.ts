@@ -19,6 +19,7 @@ import { RegisterRequest } from '@/auth/models/auth.model';
  * - Responsive Material Design UI
  */
 @Component({
+  standalone: false,
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']

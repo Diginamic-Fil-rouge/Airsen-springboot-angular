@@ -8,6 +8,7 @@ import { takeUntil, filter } from 'rxjs/operators';
 // import { NotificationService } from './services/notification.service';
 
 @Component({
+  standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']

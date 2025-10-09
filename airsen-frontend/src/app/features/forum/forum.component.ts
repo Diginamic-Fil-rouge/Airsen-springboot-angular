@@ -5,6 +5,7 @@ import { ForumService } from './services/forum.service';
 import { CategoryComponent } from "./categories/category.component";
 
 @Component({
+  standalone: false,
   selector: 'app-forum',
   templateUrl: './forum.component.html',
   styleUrls: ['./forum.component.scss'],

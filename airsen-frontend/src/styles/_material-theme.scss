@@ -79,7 +79,7 @@ $airsen-accent-palette: (
   )
 );
 
-// Define the palettes for the theme
+// Define the palettes for the theme (Angular Material 20+)
 $airsen-primary: mat.define-palette($airsen-primary-palette, 500);
 $airsen-accent: mat.define-palette($airsen-accent-palette, 500);
 $airsen-warn: mat.define-palette(mat.$red-palette);

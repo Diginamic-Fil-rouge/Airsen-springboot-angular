@@ -18,6 +18,7 @@ import { StorageService } from '@/auth/services/storage.service';
  * - Responsive Material Design UI
  */
 @Component({
+  standalone: false,
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']

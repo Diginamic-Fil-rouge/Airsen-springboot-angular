@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 // Angular Material Modules
@@ -113,8 +113,6 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
     ReactiveFormsModule,
     FormsModule,
     AppRoutingModule,
@@ -150,6 +148,8 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     NgxPaginationModule
   ],
   providers: [
+    provideAnimations(),
+    provideHttpClient(),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
