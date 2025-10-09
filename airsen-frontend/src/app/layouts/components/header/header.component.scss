@@ -167,8 +167,50 @@
   }
 }
 
-// Dropdown Menus
-.user-dropdown,
+// Dropdown Menus - Clean Design Matching Reference Photo
+.user-dropdown {
+  min-width: 220px;
+  max-width: 280px;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid hsl(0, 0%, 90%);
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+
+  button[mat-menu-item] {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
+    color: hsl(0, 0%, 20%);
+    transition: background-color 0.2s ease;
+    border: none;
+
+    mat-icon {
+      color: hsl(0, 0%, 40%);
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    span {
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    &:hover {
+      background-color: hsl(0, 0%, 97%);
+      color: hsl(0, 0%, 10%);
+    }
+
+    &:active {
+      background-color: hsl(0, 0%, 95%);
+    }
+  }
+}
+
 .notification-dropdown,
 .mobile-dropdown {
   min-width: 200px;
@@ -187,15 +229,14 @@
     transition: all 0.2s ease;
 
     mat-icon {
-      color: hsl(123, 47%, 33%);
+      color: hsl(0, 0%, 40%);
       font-size: 1.25rem;
       width: 1.25rem;
       height: 1.25rem;
     }
 
     &:hover {
-      background-color: hsl(123, 61%, 49%, 0.05);
-      color: hsl(123, 47%, 33%);
+      background-color: hsl(0, 0%, 97%);
     }
   }
 
