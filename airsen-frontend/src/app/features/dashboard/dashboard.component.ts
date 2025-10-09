@@ -16,6 +16,7 @@ import { AuthUser } from '@/auth/models/auth.model';
  * - Logout functionality
  */
 @Component({
+  standalone: false,
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']

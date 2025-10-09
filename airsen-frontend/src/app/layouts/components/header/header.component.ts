@@ -7,6 +7,7 @@ import { AuthService } from '@/auth/services/auth.service';
 import { AuthUser } from '@/auth/models/auth.model';
 
 @Component({
+  standalone: false,
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
