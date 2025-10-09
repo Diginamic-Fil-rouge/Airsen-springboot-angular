@@ -5,10 +5,10 @@
    ============================================================================ */
 
 // Import custom Material theme (replaces default theme above)
-@import 'styles/material-theme';
+@use 'styles/material-theme';
 
 // Import Material component customizations
-@import 'styles/material-components';
+@use 'styles/material-components';
 
 /* Global Styles */
 * {

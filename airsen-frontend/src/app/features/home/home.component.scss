@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Variables de couleurs basées sur l'image
 $primary-green: #2D6A4F;
 $light-green: #52B788;
@@ -98,7 +100,7 @@ $light-purple-bg: #F3E8FF;
     transition: background 0.3s;
 
     &:hover {
-      background: darken($primary-green, 10%);
+      background: color.adjust($primary-green, $lightness: -10%);
     }
 
     .search-icon {
@@ -118,7 +120,7 @@ $light-purple-bg: #F3E8FF;
     transition: background 0.3s;
 
     &:hover {
-      background: lighten($dark-navy, 10%);
+      background: color.adjust($dark-navy, $lightness: 10%);
     }
   }
 }
