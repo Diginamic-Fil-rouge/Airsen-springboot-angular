@@ -7,12 +7,13 @@ export interface Thread{
     id: number;
     title: string;
     content: string;
-    author: User;
-    category: Category;
+    author: User | null;
+    category: Category | null;
     messages: Message[];
     votes: Vote[];
     createdDate: Date;
     lastMessageDate: Date;
+    messageCount: number;
     viewCount: number;
     likeCount: number;
     closed: boolean;
