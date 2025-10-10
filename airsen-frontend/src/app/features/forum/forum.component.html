@@ -6,11 +6,29 @@
   <div class="page-content">
     <div class="categories-container">
       <h2>Categories</h2>
+      <button (click)="getAllThreads()">All</button>
       @for (category of categories$ | async ; track category.id){
-
-      <forum-category [category]="category"></forum-category>
+      <forum-category [category]="category" (click)="getThreads(category.id)"></forum-category>
       }
     </div>
-    <div class="threads-container"><h2>Threads</h2></div>
+    <hr class="separator">
+    <div class="threads-container"><h2>Threads</h2>
+      <div class="threads-header">
+        <div class="title">Topic</div>
+        <div class="replies-count">Replies</div>
+        <div class="view-count">Views</div>
+        <div class="activity">Activity</div>
+      </div>
+      @if ((allThreads$ | async)?.content) {
+        @for (thread of (allThreads$ | async)?.content ; track thread.id){
+          <forum-thread [thread]="thread"></forum-thread>
+        }
+      }
+      @else if (threads$ | async) {
+        @for (thread of threads$ | async ; track thread.id){
+          <forum-thread [thread]="thread"></forum-thread>
+        }  
+      }
+    </div>
   </div>
 </div>
