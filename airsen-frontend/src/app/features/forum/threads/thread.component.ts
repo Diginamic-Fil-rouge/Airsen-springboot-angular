@@ -1,13 +1,16 @@
 import { Component, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
 import { Thread } from '../models/thread.model';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { DatePipe } from '@angular/common';
+
 @Component({
     standalone: true,
     selector: 'forum-thread',
     templateUrl: './thread.component.html',
     styleUrls: ['./thread.component.scss'],
-    imports: [DatePipe]
+    imports: [CommonModule, DatePipe, RouterModule]
 })
 export class ThreadComponent {
 
@@ -28,7 +31,7 @@ export class ThreadComponent {
         messageCount: 0
     },);
     constructor(private router: Router) { }
-    goToThread(): void {
-        // this.router.navigate(['/forum']);
+    goToThread(id: number): void {
+        this.router.navigate([`/forum/thread/${id}`]);
     }
 }
