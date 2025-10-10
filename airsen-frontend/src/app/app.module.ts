@@ -33,7 +33,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 
 // Third-party modules
-import { NgChartsModule } from 'ng2-charts';
+// import { NgChartsModule } from 'ng2-charts';
 import { NgxPaginationModule } from 'ngx-pagination';
 
 // App Components
@@ -95,7 +95,6 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     HomeComponent,
     NotFoundComponent,
     CarteComponent,
-    ForumComponent
     // Page Components
     // HomeComponent,
     // MapComponent,
@@ -144,7 +143,7 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     MatTooltipModule,
     MatDividerModule,
     // Third-party modules
-    NgChartsModule,
+    // NgChartsModule,
     NgxPaginationModule
   ],
   providers: [
