@@ -1,6 +1,6 @@
 <div class="thread-container">
     <div class="thread-infos">
-        <div class="title">{{ thread().title }}</div>
+         <a routerLink="/forum/thread/{{ thread().id }}" class="title">{{ thread().title }}</a>
         <div class="thread-category" style="background-color: {{ thread().category?.color ?? '' }};">{{ thread().category?.name ?? '' }}</div>
     </div>
     <div class="replies-count">{{ thread().messageCount }}</div>
