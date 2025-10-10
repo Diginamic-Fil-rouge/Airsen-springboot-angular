@@ -25,4 +25,8 @@ export class ThreadService {
         this.threads = this.http.get<Thread[]>(`${environment.apiUrl}/api/v1/forum/categories/${id}/threads`);
         return this.threads;
     }
+
+    getThread(id: number): Observable<Thread> {
+        return this.http.get<Thread>(`${this.apiUrl}/${id}`);
+    }
 }
