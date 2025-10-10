@@ -6,7 +6,7 @@
   <div class="page-content">
     <div class="categories-container">
       <h2>Categories</h2>
-      <button (click)="getAllThreads()">All</button>
+      <div class="all-category" (click)="getAllThreads()"><div class="dot"></div>All</div>
       @for (category of categories$ | async ; track category.id){
       <forum-category [category]="category" (click)="getThreads(category.id)"></forum-category>
       }
