@@ -1,8 +1,6 @@
 <div class="category-container">
+  <div class="category-dot" style="background-color: {{ category().color}};" ></div>
   <button
-    mat-raised-button
-    color="primary"
-    class="home-button"
     (click)="applyCategory()"
   >
     {{ category().name }}</button>
