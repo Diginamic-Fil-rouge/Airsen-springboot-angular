@@ -5,17 +5,12 @@
 
   <div class="page-content">
     <div class="categories-container">
-      <ul>
-        <li *ngFor="let category of categories$ | async">{{ category.name }}</li>
-      </ul>
-      <!-- <forum-category
-        *ngFor="let category of categories$ | async"
-        [category]="category"
-      ></forum-category> -->
+      <h2>Categories</h2>
+      @for (category of categories$ | async ; track category.id){
+
+      <forum-category [category]="category"></forum-category>
+      }
     </div>
-    <div class="construction-message">
-      <mat-icon class="construction-icon">construction</mat-icon>
-     
-    </div>
+    <div class="threads-container"><h2>Threads</h2></div>
   </div>
 </div>
