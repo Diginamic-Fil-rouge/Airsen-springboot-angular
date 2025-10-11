@@ -49,7 +49,10 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 3600000 # 1 hour
+      time-to-live: 3600000 # 1 hour default
+      cache-null-values: false
+      use-key-prefix: true
+      key-prefix: "airsen:"
   
   # Security Configuration
   security:
@@ -89,10 +92,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,caches
   endpoint:
     health:
       show-details: when-authorized
+    caches:
+      enabled: true
+  metrics:
+    enable:
+      cache: true
+    cache:
+      instrument-cache: true
+  health:
+    redis:
+      enabled: true
 
 # External APIs Configuration
 external:
@@ -123,6 +136,15 @@ springdoc:
     operationsSorter: method
     disable-swagger-default-url: true
 
+# Scheduling Configuration
+scheduling:
+  atmo:
+    cron: ${ATMO_SCHEDULE_CRON:0 0 0 * * *}  # Default: midnight (00:00)
+    timezone: ${ATMO_SCHEDULE_TIMEZONE:Europe/Paris}
+  weather:
+    cron: ${WEATHER_SCHEDULE_CRON:0 30 0 * * *}  # Default: 00:30 (staggered 30 minutes after ATMO)
+    timezone: ${WEATHER_SCHEDULE_TIMEZONE:Europe/Paris}
+
 # Custom application email settings
 airsen:
   mail:
@@ -143,5 +165,11 @@ spring:
 
 logging:
   level:
+    root: INFO
+    fr.airsen.api: DEBUG
+    org.springframework.cache: DEBUG
+    org.springframework.data.redis: INFO
+    fr.airsen.api.config.RedisConfig: INFO
+    fr.airsen.api.scheduler.CacheRefreshScheduler: INFO
     org.springframework.mail: DEBUG
     fr.airsen.api.service.NotificationService: DEBUG

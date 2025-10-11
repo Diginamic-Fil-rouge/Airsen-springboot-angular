@@ -11,6 +11,8 @@ import fr.airsen.api.repository.WeatherDataRepository;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,15 +118,18 @@ public class WeatherService {
     }
 
     /**
-     * Gets current weather data for a commune.
-     * 
+     * Gets current weather data for a commune (cached for 30 minutes).
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<WeatherData> containing current weather data
      */
+    @Cacheable(value = "weather", key = "#communeInseeCode", unless = "#result == null")
     public Mono<WeatherData> getCurrentWeatherForCommune(String communeInseeCode) {
+        log.info("Cache miss - Fetching weather data from Open-Meteo API for INSEE code: {}", communeInseeCode);
+
         // Try to get recent data from database first
         Optional<WeatherData> existingOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(communeInseeCode);
-        
+
         if (existingOpt.isPresent()) {
             WeatherData existing = existingOpt.get();
             if (existing.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
@@ -132,10 +137,28 @@ public class WeatherService {
                 return Mono.just(existing);
             }
         }
-        
+
         // Fetch fresh data if no recent data exists
         log.info("Fetching fresh weather data for commune: {}", communeInseeCode);
         return updateWeatherForCommune(communeInseeCode);
+    }
+
+    /**
+     * Evicts weather cache for specific commune.
+     *
+     * @param communeInseeCode INSEE code of the commune
+     */
+    @CacheEvict(value = "weather", key = "#communeInseeCode")
+    public void evictWeatherCache(String communeInseeCode) {
+        log.info("Evicted weather cache for INSEE code: {}", communeInseeCode);
+    }
+
+    /**
+     * Clears all weather cache.
+     */
+    @CacheEvict(value = "weather", allEntries = true)
+    public void evictAllWeatherCache() {
+        log.info("Cleared all weather cache");
     }
 
     /**
