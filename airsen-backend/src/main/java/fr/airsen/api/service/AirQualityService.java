@@ -9,6 +9,8 @@ import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,15 +98,18 @@ public class AirQualityService {
     }
 
     /**
-     * Gets current air quality data for a commune.
-     * 
+     * Gets current air quality data for a commune (cached for 1 hour).
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<AirQuality> containing current data
      */
+    @Cacheable(value = "air-quality", key = "#communeInseeCode", unless = "#result == null")
     public Mono<AirQuality> getCurrentAirQuality(String communeInseeCode) {
+        log.info("Cache miss - Fetching air quality data from ATMO API for INSEE code: {}", communeInseeCode);
+
         // Try to get from database first
         Optional<AirQuality> existingOpt = airQualityRepository.findLatestByCommune_InseeCode(communeInseeCode);
-        
+
         if (existingOpt.isPresent()) {
             AirQuality existing = existingOpt.get();
             if (existing.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
@@ -112,10 +117,28 @@ public class AirQualityService {
                 return Mono.just(existing);
             }
         }
-        
+
         // Fetch fresh data if no recent data exists
         log.info("Fetching fresh air quality data for commune: {}", communeInseeCode);
         return updateAirQualityForCommune(communeInseeCode);
+    }
+
+    /**
+     * Evicts cache for specific commune.
+     *
+     * @param communeInseeCode INSEE code of the commune
+     */
+    @CacheEvict(value = "air-quality", key = "#communeInseeCode")
+    public void evictAirQualityCache(String communeInseeCode) {
+        log.info("Evicted air quality cache for INSEE code: {}", communeInseeCode);
+    }
+
+    /**
+     * Clears all air quality cache.
+     */
+    @CacheEvict(value = "air-quality", allEntries = true)
+    public void evictAllAirQualityCache() {
+        log.info("Cleared all air quality cache");
     }
 
     /**
