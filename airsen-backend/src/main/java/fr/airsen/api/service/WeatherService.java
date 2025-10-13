@@ -11,6 +11,8 @@ import fr.airsen.api.repository.WeatherDataRepository;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,28 +53,50 @@ public class WeatherService {
 
     /**
      * Updates weather data for all tracked communes.
-     * 
-     * This method is called by scheduled tasks to keep weather data current.
-     * Uses INSEE API to get coordinates, then fetches weather from Open-Meteo.
-     * 
+     *
+     * Runs daily at 00:30 (configurable via scheduling.weather.cron property).
+     * Default: 00:30 Europe/Paris timezone (staggered 30 minutes after ATMO sync).
+     *
+     * Configuration:
+     * - scheduling.weather.cron: Cron expression (default: 0 30 0 * * *)
+     * - scheduling.weather.timezone: Timezone (default: Europe/Paris)
+     *
      * @return Mono<Void> indicating completion
      */
-    @Scheduled(fixedRate = 1800000) // Every 30 minutes
+    @Scheduled(cron = "${scheduling.weather.cron}", zone = "${scheduling.weather.timezone}")
     public Mono<Void> updateAllWeatherData() {
-        log.info("Starting scheduled weather data update");
-        
+        LocalDateTime startTime = LocalDateTime.now();
+        log.info("========================================");
+        log.info("SCHEDULED WEATHER SYNC STARTED at {}", startTime);
+        log.info("========================================");
+
         List<Commune> communes = communeRepository.findAll();
         log.info("Found {} communes to update weather data", communes.size());
-        
+
         return Flux.fromIterable(communes)
-            .flatMap(commune -> 
+            .flatMap(commune ->
                 updateWeatherForCommune(commune.getInseeCode())
-                    .onErrorContinue((error, commune_obj) -> 
-                        log.warn("Failed to update weather for commune: {}", 
+                    .onErrorContinue((error, commune_obj) ->
+                        log.warn("Failed to update weather for commune: {}",
                                commune.getInseeCode(), error)))
             .then()
-            .doOnSuccess(v -> log.info("Completed scheduled weather data update"))
-            .doOnError(error -> log.error("Failed to complete weather data update", error));
+            .doOnSuccess(v -> {
+                LocalDateTime endTime = LocalDateTime.now();
+                java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+                log.info("========================================");
+                log.info("SCHEDULED WEATHER SYNC COMPLETED at {}", endTime);
+                log.info("Duration: {} seconds", duration.getSeconds());
+                log.info("========================================");
+            })
+            .doOnError(error -> {
+                LocalDateTime endTime = LocalDateTime.now();
+                java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+                log.error("========================================");
+                log.error("SCHEDULED WEATHER SYNC FAILED at {}", endTime);
+                log.error("Duration before failure: {} seconds", duration.getSeconds());
+                log.error("Error: {}", error.getMessage(), error);
+                log.error("========================================");
+            });
     }
 
     /**
@@ -116,15 +140,18 @@ public class WeatherService {
     }
 
     /**
-     * Gets current weather data for a commune.
-     * 
+     * Gets current weather data for a commune (cached for 30 minutes).
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<WeatherData> containing current weather data
      */
+    @Cacheable(value = "weather", key = "#communeInseeCode", unless = "#result == null")
     public Mono<WeatherData> getCurrentWeatherForCommune(String communeInseeCode) {
+        log.info("Cache miss - Fetching weather data from Open-Meteo API for INSEE code: {}", communeInseeCode);
+
         // Try to get recent data from database first
         Optional<WeatherData> existingOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(communeInseeCode);
-        
+
         if (existingOpt.isPresent()) {
             WeatherData existing = existingOpt.get();
             if (existing.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
@@ -132,10 +159,28 @@ public class WeatherService {
                 return Mono.just(existing);
             }
         }
-        
+
         // Fetch fresh data if no recent data exists
         log.info("Fetching fresh weather data for commune: {}", communeInseeCode);
         return updateWeatherForCommune(communeInseeCode);
+    }
+
+    /**
+     * Evicts weather cache for specific commune.
+     *
+     * @param communeInseeCode INSEE code of the commune
+     */
+    @CacheEvict(value = "weather", key = "#communeInseeCode")
+    public void evictWeatherCache(String communeInseeCode) {
+        log.info("Evicted weather cache for INSEE code: {}", communeInseeCode);
+    }
+
+    /**
+     * Clears all weather cache.
+     */
+    @CacheEvict(value = "weather", allEntries = true)
+    public void evictAllWeatherCache() {
+        log.info("Cleared all weather cache");
     }
 
     /**

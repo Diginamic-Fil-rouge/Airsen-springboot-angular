@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -47,16 +49,41 @@ public class AtmoIntegrationService {
 
     /**
      * Scheduled task to fetch and store current ATMO air quality data.
-     * Runs every hour during business hours (8 AM to 8 PM).
+     *
+     * Runs daily at midnight (configurable via scheduling.atmo.cron property).
+     * Default: 00:00 Europe/Paris timezone.
+     *
+     * Configuration:
+     * - scheduling.atmo.cron: Cron expression (default: 0 0 0 * * *)
+     * - scheduling.atmo.timezone: Timezone (default: Europe/Paris)
      */
-    @Scheduled(cron = "0 0 8-20 * * *") // Every hour from 8 AM to 8 PM
+    @Scheduled(cron = "${scheduling.atmo.cron}", zone = "${scheduling.atmo.timezone}")
     @Async
     public void scheduledDataSync() {
-        log.info("Starting scheduled ATMO data synchronization");
-        
+        LocalDateTime startTime = LocalDateTime.now();
+        log.info("========================================");
+        log.info("SCHEDULED ATMO SYNC STARTED at {}", startTime);
+        log.info("========================================");
+
         syncCurrentAirQualityData()
-            .doOnSuccess(count -> log.info("Scheduled sync completed successfully. {} records processed", count))
-            .doOnError(error -> log.error("Scheduled sync failed", error))
+            .doOnSuccess(count -> {
+                LocalDateTime endTime = LocalDateTime.now();
+                Duration duration = Duration.between(startTime, endTime);
+                log.info("========================================");
+                log.info("SCHEDULED ATMO SYNC COMPLETED at {}", endTime);
+                log.info("Records processed: {}", count);
+                log.info("Duration: {} seconds", duration.getSeconds());
+                log.info("========================================");
+            })
+            .doOnError(error -> {
+                LocalDateTime endTime = LocalDateTime.now();
+                Duration duration = Duration.between(startTime, endTime);
+                log.error("========================================");
+                log.error("SCHEDULED ATMO SYNC FAILED at {}", endTime);
+                log.error("Duration before failure: {} seconds", duration.getSeconds());
+                log.error("Error: {}", error.getMessage(), error);
+                log.error("========================================");
+            })
             .subscribe();
     }
 
