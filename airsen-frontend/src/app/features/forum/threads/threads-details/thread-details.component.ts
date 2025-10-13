@@ -1,18 +1,20 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Thread } from '../../models/thread.model';
-import { RouterModule,ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ThreadService } from '../../services/thread.service';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { MessageComponent } from '../../messages/message.component';
+import { LoaderComponent } from '@/app/shared/components/loader/loader.component';
+import { RouteButtonComponent } from '@/app/shared/routeButton/route-button.component';
 
 @Component({
     standalone: true,
     selector: 'forum-thread-details',
     templateUrl: './thread-details.component.html',
     styleUrls: ['./thread-details.component.scss'],
-    imports: [AsyncPipe, DatePipe, RouterModule, CommonModule, MessageComponent]
+    imports: [AsyncPipe, DatePipe, RouterModule, CommonModule, MessageComponent, LoaderComponent, RouteButtonComponent]
 })
 export class ThreadDetailsComponent {
     activatedRoute = inject(ActivatedRoute);
