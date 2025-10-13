@@ -12,6 +12,7 @@ import { NotFoundComponent } from './features/not-found/not-found.component';
 import { CarteComponent } from './features/carte/carte.component';
 import { ForumComponent } from './features/forum/forum.component';
 import { ThreadDetailsComponent } from './features/forum/threads/threads-details/thread-details.component';
+import { AddThreadComponent } from './features/forum/threads/add-thread/add-thread.component';
 
 // Guards - commented out until they are properly implemented
 // import { AuthGuard } from './core/guards/auth.guard';
@@ -45,7 +46,7 @@ const routes: Routes = [
   { path: 'carte', component: CarteComponent },
   { path: 'forum', component: ForumComponent },
   { path: 'forum/thread/:id', component: ThreadDetailsComponent },
-
+  { path: 'forum/add/thread', component: AddThreadComponent },
   // 404 Not Found Route
   { path: '404', component: NotFoundComponent },
 
