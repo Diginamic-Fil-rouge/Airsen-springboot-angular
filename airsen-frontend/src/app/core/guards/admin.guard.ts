@@ -11,7 +11,7 @@ import { UserRole } from '@/auth/models/user.model';
  * Purpose: Prevent non-admin users from accessing administrative routes
  * Redirects: Non-admin authenticated users → /dashboard
  *           Unauthenticated users → /auth/login
- * Access: Visitors ❌ | Users ❌ | Admins ✅
+ * Access: Visitors  | Users  | Admins
  *
  * Usage:
  * {

@@ -10,7 +10,7 @@ import { StorageService } from '@/auth/services/storage.service';
  *
  * Purpose: Prevent unauthenticated users from accessing protected routes
  * Redirects: Unauthenticated users → /auth/login (with return URL)
- * Access: Visitors ❌ | Users ✅ | Admins ✅
+ * Access: Visitors  | Users  | Admins
  *
  * Usage:
  * {
