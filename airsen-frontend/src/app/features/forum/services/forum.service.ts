@@ -16,4 +16,8 @@ export class ForumService {
     getCategories(): Observable<Category[]> {
       return this.categories;
     }
+
+    addThreadToCategory(thread: any): Observable<any> {
+      return this.http.post(`${environment.apiUrl}/api/v1/forum/categories/${thread.categoryId}/threads`, thread);
+    }
 }
