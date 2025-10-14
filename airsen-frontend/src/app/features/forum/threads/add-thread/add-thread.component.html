@@ -1,8 +1,10 @@
 <div class="page-container">
     <back-button route="/forum" textContent="Retour au forum"></back-button>
     <h2>Créer une nouvelle discussion</h2>
-    @if (error$ != '') {
-        <p class="error">{{ error$ }}</p>
+    @if (errors$ != []) {
+        @for (error of errors$ ; track $index) {
+            <p class="error">{{ error }}</p>
+        }
     }
     <form>
         <div class="form-group">
