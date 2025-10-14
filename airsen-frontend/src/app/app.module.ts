@@ -76,7 +76,7 @@ import { BreadcrumbComponent } from './shared/components/breadcrumb/breadcrumb.c
 // import { SearchBarComponent } from './components/shared/search-bar/search-bar.component';
 
 // Services & Interceptors
-import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { AuthInterceptor, authInterceptorFn } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -148,12 +148,7 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
   ],
   providers: [
     provideAnimations(),
-    provideHttpClient(),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true
-    }
+    provideHttpClient(withInterceptors([authInterceptorFn]))
   ],
   bootstrap: [AppComponent]
 })
