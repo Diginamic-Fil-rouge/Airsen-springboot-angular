@@ -11,6 +11,24 @@
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    a{
+      text-decoration: none;
+      padding: 10px 20px;
+      background-color: #428945;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    a:hover{
+      background-color: #52a156;
+    }
 
     .page-title {
       font-size: 2rem;
