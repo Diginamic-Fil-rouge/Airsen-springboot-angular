@@ -6,7 +6,7 @@ import { ForumService } from '../../services/forum.service';
 import { Thread } from '../../models/thread.model';
 import { FormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
-import { RouteButtonComponent } from '@/app/shared/routeButton/route-button.component';
+import { RouteButtonComponent } from '@/app/shared/components/backButton/back-button.component';
 import { AuthService } from '@/app/core/auth/services/auth.service';
 import { AuthUser } from '@/app/core/auth/models/auth.model';
 import { Subject, takeUntil } from 'rxjs';

@@ -7,7 +7,7 @@ import { ThreadService } from '../../services/thread.service';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { MessageComponent } from '../../messages/message.component';
 import { LoaderComponent } from '@/app/shared/components/loader/loader.component';
-import { RouteButtonComponent } from '@/app/shared/routeButton/route-button.component';
+import { RouteButtonComponent } from '@/app/shared/components/backButton/back-button.component';
 
 @Component({
     standalone: true,

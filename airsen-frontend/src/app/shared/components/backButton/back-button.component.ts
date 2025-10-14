@@ -4,9 +4,9 @@ import { Router, RouterModule } from '@angular/router';
 
 @Component({
   standalone: true,
-  selector: 'route-button',
-  templateUrl: './route-button.component.html',
-  styleUrls: ['./route-button.component.scss'],
+  selector: 'back-button',
+  templateUrl: './back-button.component.html',
+  styleUrls: ['./back-button.component.scss'],
   imports: [RouterModule, CommonModule]
 })
 
