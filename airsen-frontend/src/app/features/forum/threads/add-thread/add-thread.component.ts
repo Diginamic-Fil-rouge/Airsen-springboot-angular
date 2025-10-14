@@ -1,16 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { Category } from '../../models/category.model';
-import { User } from '@/app/core/auth/models/user.model';
-import { ThreadService } from '../../services/thread.service';
 import { ForumService } from '../../services/forum.service';
-import { Thread } from '../../models/thread.model';
 import { FormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
 import { RouteButtonComponent } from '@/app/shared/components/backButton/back-button.component';
 import { AuthService } from '@/app/core/auth/services/auth.service';
 import { AuthUser } from '@/app/core/auth/models/auth.model';
 import { Subject, takeUntil } from 'rxjs';
-
 @Component({
     standalone: true,
     selector: 'forum-add-thread',
@@ -55,14 +50,14 @@ export class AddThreadComponent {
     }
 
     createThread() {
-        if (this.title && this.content && this.categoryId){
+        if (this.title && this.content && this.categoryId) {
             this.forumService.addThreadToCategory({
                 title: this.title,
                 content: this.content,
                 categoryId: this.categoryId
             }).subscribe();
         }
-        else{
+        else {
             this.error$ = 'Veuillez remplir tous les champs';
         }
     }
