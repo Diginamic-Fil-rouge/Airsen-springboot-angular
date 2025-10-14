@@ -1,6 +1,7 @@
 <div class="page-container">
   <div class="page-header">
     <h1 class="page-title">Forum</h1>
+    <a routerLink="/forum/add/thread" >+ Nouveau sujet</a>
   </div>
 
   <div class="page-content">
@@ -28,6 +29,9 @@
         @for (thread of threads$ | async ; track thread.id){
           <forum-thread [thread]="thread"></forum-thread>
         }  
+      }
+      @else {
+        <app-loader> </app-loader>
       }
     </div>
   </div>
