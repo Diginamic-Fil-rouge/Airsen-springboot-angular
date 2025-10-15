@@ -5,6 +5,20 @@ spring:
   
   profiles:
     active: dev
+
+  devtools:
+    restart:
+      enabled: true                    # Enable automatic restart
+      poll-interval: 2000              # Check for file changes every 2 seconds
+      quiet-period: 1000               # Wait 1 second after last change before restart
+      additional-paths:
+        - src/main/java                # Monitor source directory
+      exclude: static/**,public/**     # Don't restart on static file changes
+    livereload:
+      enabled: false                   # Disable LiveReload in Docker (browser refresh)
+    remote:
+      restart:
+        enabled: false                 # Disable remote restart for security
   
   # Database Configuration - MariaDB
   datasource:
