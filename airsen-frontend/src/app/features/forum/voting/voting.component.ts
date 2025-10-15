@@ -8,11 +8,9 @@ import { AuthUser } from '@/app/core/auth/models/auth.model';
 import { Vote } from '../models/vote.model';
 
 @Component({
-    standalone: true,
     selector: 'thread-voting',
     templateUrl: './voting.component.html',
-    styleUrls: ['./voting.component.scss'],
-    imports: [CommonModule]
+    styleUrls: ['./voting.component.scss']
 })
 export class VotingComponent {
 
