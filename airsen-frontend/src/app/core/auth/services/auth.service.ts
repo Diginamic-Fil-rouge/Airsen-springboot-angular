@@ -218,7 +218,7 @@ export class AuthService {
 
     // Map backend response to AuthUser
     const user: AuthUser = {
-      id: this.tokenService.getUserIdFromToken() || 0,
+      id: response.userId,
       firstName: response.userFirstName,
       lastName: response.userLastName,
       email: response.userEmail,
