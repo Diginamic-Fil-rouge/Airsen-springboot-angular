@@ -76,6 +76,17 @@ import { BreadcrumbComponent } from './shared/components/breadcrumb/breadcrumb.c
 
 // Services & Interceptors
 import { authInterceptorFn } from './core/interceptors/auth.interceptor';
+import { CategoryComponent } from './features/forum/categories/category.component';
+import { MessageComponent } from './features/forum/messages/message.component';
+import { ThreadComponent } from './features/forum/threads/thread.component';
+import { AddThreadComponent } from './features/forum/threads/add-thread/add-thread.component';
+import { ThreadDetailsComponent } from './features/forum/threads/threads-details/thread-details.component';
+import { VotingComponent } from './features/forum/voting/voting.component';
+import { LoaderComponent } from './shared/components/loader/loader.component';
+import { BackButtonComponent } from './shared/components/backButton/back-button.component';
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -93,7 +104,16 @@ import { authInterceptorFn } from './core/interceptors/auth.interceptor';
     DashboardComponent,
     HomeComponent,
     NotFoundComponent,
-    CarteComponent
+    CarteComponent,
+    ForumComponent,
+    CategoryComponent,
+    MessageComponent,
+    ThreadComponent,
+    AddThreadComponent,
+    ThreadDetailsComponent,
+    VotingComponent,
+    LoaderComponent,
+    BackButtonComponent,
     // Page Components
     // HomeComponent,
     // MapComponent,
@@ -110,9 +130,13 @@ import { authInterceptorFn } from './core/interceptors/auth.interceptor';
     // SearchBarComponent
   ],
   imports: [
+    AsyncPipe,
     BrowserModule,
+    CommonModule,
+    DatePipe,
     ReactiveFormsModule,
     FormsModule,
+    RouterModule,
     AppRoutingModule,
     // Angular Material Modules
     MatToolbarModule,
