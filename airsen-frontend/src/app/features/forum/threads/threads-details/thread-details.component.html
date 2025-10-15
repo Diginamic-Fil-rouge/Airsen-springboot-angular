@@ -22,9 +22,7 @@
     <p class="content">{{ (thread$ | async)?.content }}</p>
     
     <div class="thread-data">
-      <div class="vote-container">
-        <div class="vote-count">{{ (thread$ | async)?.likeCount }} votes</div>
-      </div>
+      <thread-voting [thread]="(thread$ | async)" [voteCount]="(thread$ | async)?.likeCount"></thread-voting>
     </div>
     <h3 class="message-count">
       Réponses ({{ (thread$ | async)?.messageCount }})
