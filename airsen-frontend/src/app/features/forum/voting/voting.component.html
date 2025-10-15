@@ -1,0 +1,5 @@
+<div class="vote-container">
+    <button class="vote-button" (click)="voteSignal('LIKE')"><img src="assets/images/thumb-up.png" alt=""  class="thumb-up thumb-image" [ngClass]="{ 'checked' : thumbUpChecked}"></button>
+    <span class="vote-count">{{ counter }}</span>
+    <button class="vote-button" (click)="voteSignal('DISLIKE')"><img src="assets/images/thumb-down.png" alt="" class="thumb-down thumb-image" [ngClass]="{ 'checked' : thumbDownChecked }"></button>
+</div>
