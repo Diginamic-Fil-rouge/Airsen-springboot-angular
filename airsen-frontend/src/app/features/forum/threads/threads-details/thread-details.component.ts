@@ -8,13 +8,14 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { MessageComponent } from '../../messages/message.component';
 import { LoaderComponent } from '@/app/shared/components/loader/loader.component';
 import { RouteButtonComponent } from '@/app/shared/components/backButton/back-button.component';
+import { VotingComponent } from '../../voting/voting.component';
 
 @Component({
     standalone: true,
     selector: 'forum-thread-details',
     templateUrl: './thread-details.component.html',
     styleUrls: ['./thread-details.component.scss'],
-    imports: [AsyncPipe, DatePipe, RouterModule, CommonModule, MessageComponent, LoaderComponent, RouteButtonComponent]
+    imports: [AsyncPipe, DatePipe, RouterModule, CommonModule, MessageComponent, LoaderComponent, RouteButtonComponent, VotingComponent]
 })
 export class ThreadDetailsComponent {
     activatedRoute = inject(ActivatedRoute);
