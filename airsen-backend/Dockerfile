@@ -22,20 +22,21 @@ RUN addgroup -S airsen && adduser -S airsen -G airsen -h /home/airsen && \
     mkdir -p /app/target && \
     chown -R airsen:airsen /home/airsen /app
 
-# Copy source code (will be overridden by volume mount in docker-compose)
-COPY . .
+# Sets ownership during COPY
+COPY --chown=airsen:airsen . .
 
 # Download dependencies for faster startup
 RUN mvn dependency:go-offline -B
 
-# Change ownership after copying
-RUN chown -R airsen:airsen /app
+# Ensure target directory is writable by airsen user
+RUN mkdir -p /app/target/classes && \
+    chown -R airsen:airsen /app/target
 
 USER airsen
 
 # Development server with hot reload
 EXPOSE 8080
-CMD ["mvn","clean","spring-boot:run"]
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring.devtools.restart.poll-interval=2000'"]
 
 # Production stage
 FROM eclipse-temurin:21-jdk-alpine AS production

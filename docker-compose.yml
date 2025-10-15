@@ -107,7 +107,7 @@ services:
       - ./airsen-backend/pom.xml:/app/pom.xml
       # Maven cache to speed up builds (using host directory)
       - ./docker/maven-cache:/home/airsen/.m2
-      # DON'T mount target directory to avoid conflicts
+      - backend_target:/app/target  # Named volume: persist between restarts, faster hot reload
     depends_on:
       mariadb:
         condition: service_healthy
@@ -144,7 +144,7 @@ services:
       # Mount entire project for full workspace visibility
       - ./airsen-frontend:/app
       # Protect container's node_modules from host override
-      - /app/node_module
+      - /app/node_modules
     working_dir: /app
     command: npx ng serve --host 0.0.0.0 --port 4200 --poll 2000
     restart: unless-stopped
@@ -166,6 +166,8 @@ volumes:
   redis_data:
     driver: local
   frontend_node_modules:
+    driver: local
+  backend_target:
     driver: local
 
 networks:
