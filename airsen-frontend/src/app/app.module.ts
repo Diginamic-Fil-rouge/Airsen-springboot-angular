@@ -33,7 +33,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 
 // Third-party modules
-// import { NgChartsModule } from 'ng2-charts';
 import { NgxPaginationModule } from 'ngx-pagination';
 
 // App Components
@@ -76,7 +75,7 @@ import { BreadcrumbComponent } from './shared/components/breadcrumb/breadcrumb.c
 // import { SearchBarComponent } from './components/shared/search-bar/search-bar.component';
 
 // Services & Interceptors
-import { AuthInterceptor, authInterceptorFn } from './core/interceptors/auth.interceptor';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -95,6 +94,7 @@ import { AuthInterceptor, authInterceptorFn } from './core/interceptors/auth.int
     HomeComponent,
     NotFoundComponent,
     CarteComponent,
+    ForumComponent
     // Page Components
     // HomeComponent,
     // MapComponent,
@@ -143,12 +143,16 @@ import { AuthInterceptor, authInterceptorFn } from './core/interceptors/auth.int
     MatTooltipModule,
     MatDividerModule,
     // Third-party modules
-    // NgChartsModule,
     NgxPaginationModule
   ],
   providers: [
     provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptorFn]))
+    provideHttpClient(),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })
