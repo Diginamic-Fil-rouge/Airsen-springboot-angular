@@ -1,91 +1,52 @@
-# Multi-stage build for Angular with Node v22.19.0
-ARG NODE_IMAGE=node:22-alpine
-FROM ${NODE_IMAGE} AS builder
+ARG NODE_IMAGE=node:22.12-bullseye-slim
+ARG NGINX_IMAGE=nginx:1.27-alpine
 
-WORKDIR /app
+# DEVELOPMENT STAGE
+FROM ${NODE_IMAGE} AS development
+WORKDIR /usr/src/app
+EXPOSE 4200
+CMD ["bash","-lc","npm ci --no-audit --no-fund && npx ng serve --host 0.0.0.0 --port 4200 --poll 2000"]
 
-# Copy package files
-COPY package*.json ./
+# BUILD STAGE
+FROM ${NODE_IMAGE} AS build
+WORKDIR /usr/src/app
+
+# OOM protection for large Angular apps
+ENV NODE_OPTIONS=--max-old-space-size=4096
 
 # Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build Angular application for production
-RUN npm run build -- --configuration production
-
-# Development stage - for local development with hot reload
-FROM ${NODE_IMAGE} AS development
-
-WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
+RUN npm ci --no-audit --no-fund
 
-# Install all dependencies (including dev dependencies) deterministically
-RUN npm ci
-
-# Copy source code (will be overridden by volume mount in docker-compose)
+# Copy source and build
 COPY . .
+RUN npm run build:docker
 
-# Create non-root user
-RUN addgroup -S angular && adduser -S angular -G angular && \
-    chown -R angular:angular /app
+# Verify build output
+RUN test -d /usr/src/app/dist
 
-# Change ownership
-RUN chown -R angular:angular /app
-
-USER angular
-
-# Development server with hot reload
-EXPOSE 4200
-CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
-
-# Production stage with Nginx
-FROM nginx:alpine AS production
-
-# Generate nginx SPA configuration inline
-RUN echo 'server { \
-    listen 80; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-    \
-    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
-        expires 1y; \
-        add_header Cache-Control "public, immutable"; \
-    } \
-    \
-    gzip on; \
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
-    gzip_min_length 1000; \
-    \
-    add_header X-Frame-Options "SAMEORIGIN" always; \
-    add_header X-Content-Type-Options "nosniff" always; \
-    add_header X-XSS-Protection "1; mode=block" always; \
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always; \
-}' > /etc/nginx/conf.d/default.conf
+# PRODUCTION STAGE
+FROM ${NGINX_IMAGE} AS production
 
 # Copy built Angular app
-COPY --from=builder /app/dist/airsen-frontend /tmp/dist
+COPY --from=build /usr/src/app/dist/ /usr/share/nginx/html/
 
-# Intelligently copy based on Angular version (v17+ uses /browser subfolder)
-RUN if [ -d /tmp/dist/browser ]; then \
-        cp -r /tmp/dist/browser/* /usr/share/nginx/html/; \
-    else \
-        cp -r /tmp/dist/* /usr/share/nginx/html/; \
-    fi && \
-    rm -rf /tmp/dist
+# Create non-root user for nginx
+RUN addgroup -g 101 -S nginx-runtime && \
+    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx-runtime -g nginx-runtime nginx-runtime
 
-# Verify index.html exists (fail fast if build is broken)
-RUN test -f /usr/share/nginx/html/index.html || (echo "ERROR: index.html not found!" && exit 1)
+# Set proper permissions
+RUN chown -R nginx-runtime:nginx-runtime /usr/share/nginx/html && \
+    chown -R nginx-runtime:nginx-runtime /var/cache/nginx && \
+    chown -R nginx-runtime:nginx-runtime /var/log/nginx && \
+    touch /var/run/nginx.pid && \
+    chown -R nginx-runtime:nginx-runtime /var/run/nginx.pid
 
+USER nginx-runtime
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
 
 EXPOSE 80
 

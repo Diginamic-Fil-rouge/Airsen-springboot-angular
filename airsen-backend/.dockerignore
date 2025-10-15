@@ -1,0 +1,60 @@
+# Maven build outputs - Will be generated during Docker build
+target/
+.mvn/wrapper/maven-wrapper.jar
+mvnw
+mvnw.cmd
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache/
+.DS_Store
+Thumbs.db
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.backup
+*.orig
+logs/
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE*
+docs/
+
+# CI/CD files
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+.circleci/
+jenkinsfile
+
+# Test files (keep in src/ but exclude test resources)
+src/test/resources/application-test.properties
+
+# Environment files
+.env
+.env.*
+!.env.example

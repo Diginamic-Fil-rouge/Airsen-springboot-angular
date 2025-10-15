@@ -1,66 +1,52 @@
-# Multi-stage build for Java 21
-FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+ARG MAVEN_IMAGE=maven:3.9-eclipse-temurin-21
+ARG JRE_IMAGE=eclipse-temurin:21-jre-jammy
 
+# DEVELOPMENT STAGE
+FROM ${MAVEN_IMAGE} AS development
+RUN useradd -ms /bin/bash spring
+USER spring
+WORKDIR /app
+ENV HOME=/home/spring
+ENV MAVEN_CONFIG=/home/spring/.m2
+COPY --chown=spring:spring pom.xml .
+RUN mvn -q -DskipTests dependency:go-offline
+RUN mkdir -p /app/src
+EXPOSE 8080
+CMD ["mvn","spring-boot:run","-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m"]
+
+# BUILD STAGE
+FROM ${MAVEN_IMAGE} AS build
 WORKDIR /app
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+RUN mvn -q -DskipTests dependency:go-offline
+COPY src ./src
+RUN mvn -q -DskipTests package
+# Verify single JAR output
+RUN test $(ls -1 target/*.jar | wc -l) -eq 1
 
-COPY src src
-RUN mvn clean package -DskipTests
-
-# Development stage - for local development with hot reload
-FROM maven:3.9-eclipse-temurin-21-alpine AS development
-
+# PRODUCTION STAGE
+FROM ${JRE_IMAGE} AS production
 WORKDIR /app
-
-# Install curl for health checks
-RUN apk add --no-cache curl
-
-# Create non-root user with home directory and Maven cache directory
-RUN addgroup -S airsen && adduser -S airsen -G airsen -h /home/airsen && \
-    mkdir -p /home/airsen/.m2 && \
-    mkdir -p /app/target && \
-    chown -R airsen:airsen /home/airsen /app
-
-# Sets ownership during COPY
-COPY --chown=airsen:airsen . .
-
-# Download dependencies for faster startup
-RUN mvn dependency:go-offline -B
-
-# Ensure target directory is writable by airsen user
-RUN mkdir -p /app/target/classes && \
-    chown -R airsen:airsen /app/target
-
-USER airsen
-
-# Development server with hot reload
-EXPOSE 8080
-CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring.devtools.restart.poll-interval=2000'"]
-
-# Production stage
-FROM eclipse-temurin:21-jdk-alpine AS production
-
-WORKDIR /app
-
-# Install curl for health checks
-RUN apk add --no-cache curl
 
 # Create non-root user
-RUN addgroup -S airsen && adduser -S airsen -G airsen
+RUN useradd -ms /bin/bash spring
 
-# Copy jar from builder stage
-COPY --from=builder /app/target/*.jar app.jar
+# Copy JAR with explicit naming
+COPY --from=build --chown=spring:spring /app/target/*.jar /app/app.jar
 
-# Change ownership
-RUN chown airsen:airsen app.jar
+USER spring
 
-USER airsen
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+# Health check without curl (uses Java)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD java -cp /app/app.jar org.springframework.boot.loader.JarLauncher --spring.main.web-environment=false --management.health.defaults.enabled=false || exit 1
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Production JVM flags
+ENTRYPOINT ["java", \
+  "-XX:+UseG1GC", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-XX:+HeapDumpOnOutOfMemoryError", \
+  "-XX:HeapDumpPath=/app/heapdump.hprof", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-jar", "/app/app.jar"]
