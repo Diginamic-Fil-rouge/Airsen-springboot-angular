@@ -161,6 +161,9 @@ public class ForumThread {
     }
 
     public int getVotesValue(){
+        if (this.votes == null){
+            return 0;
+        }
         int votesValue = 0;
 
         for (ForumVote vote : this.votes){
