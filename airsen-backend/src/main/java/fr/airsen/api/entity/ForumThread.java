@@ -160,6 +160,16 @@ public class ForumThread {
         return likeCount;
     }
 
+    public int getVotesValue(){
+        int votesValue = 0;
+
+        for (ForumVote vote : this.votes){
+            votesValue += vote.getVoteType().toInt();
+        }
+
+        return votesValue;
+    }
+
     public void setLikeCount(Integer likeCount) {
         this.likeCount = likeCount;
     }
