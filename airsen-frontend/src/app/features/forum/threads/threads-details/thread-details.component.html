@@ -32,6 +32,7 @@
         <forum-message [message]="message"></forum-message>
       }
     </div>
+    <app-add-message [thread]="(thread$ | async)" (newMessageEvent)="refreshThread($event)"></app-add-message>
   }
   @else {
     <app-loader></app-loader>
