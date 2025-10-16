@@ -35,7 +35,6 @@ export class VotingComponent {
      * If the user has voted, sets the currentUserVote and hasVoted properties accordingly.
      */
     ngOnChanges() {
-        console.log(this.user);
         this.counter = this.voteCount();
         for (const vote of this.thread()?.votes ?? []) {
             if (vote?.user?.id === this.user?.id) {

@@ -16,15 +16,18 @@
             height: 15px;
         }
 
-        .thumb-image:hover{
-            transform: scale(1.2);
-            background-color:lightblue;
-            border-radius: 25%;
-        }
+    }
 
-        .checked{
-            background-color:lightblue;
-            border-radius: 25%;
-        }
+    .vote-button:hover{
+        transform: scale(1.2);
+        background-color:#00bdd6;
+        border-radius: 25%;
+        padding: 4px;
+    }
+
+    .checked{
+        background-color:#00bdd6;
+        border-radius: 25%;
+        padding: 2px;
     }
 }
