@@ -87,6 +87,7 @@ import { BackButtonComponent } from './shared/components/backButton/back-button.
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
 
 @NgModule({
   declarations: [
@@ -110,6 +111,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
     MessageComponent,
     ThreadComponent,
     AddThreadComponent,
+    AddMessageComponent,
     ThreadDetailsComponent,
     VotingComponent,
     LoaderComponent,
