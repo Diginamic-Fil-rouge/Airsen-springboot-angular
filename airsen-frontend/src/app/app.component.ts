@@ -3,8 +3,9 @@ import { Router, NavigationEnd } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 
+import { AuthService } from './core/auth/services/auth.service';
+
 // TODO: Uncomment when services are implemented
-// import { AuthService } from './services/auth.service';
 // import { NotificationService } from './services/notification.service';
 
 @Component({
@@ -23,7 +24,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     // TODO: Add services when they are implemented
-    // private authService: AuthService,
+    private authService: AuthService,
     // private notificationService: NotificationService,
     private router: Router
   ) {}
@@ -32,7 +33,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.initializeApp();
     this.setupRouterEvents();
     // TODO: Uncomment when AuthService is implemented
-    // this.setupAuthStateListener();
+    this.setupAuthStateListener();
   }
 
   ngOnDestroy(): void {
@@ -72,13 +73,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   // TODO: Uncomment when AuthService is implemented
-  // private setupAuthStateListener(): void {
-  //   this.authService.isAuthenticated$
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe(isAuth => {
-  //       this.isAuthenticated = isAuth;
-  //     });
-  // }
+  private setupAuthStateListener(): void {
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isAuth => {
+        this.isAuthenticated = isAuth;
+      });
+  }
 
   get shouldShowNavigation(): boolean {
     const noNavRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];

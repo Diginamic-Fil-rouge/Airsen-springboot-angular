@@ -3,6 +3,7 @@ import { Message } from '../models/message.model';
 import { MessageService } from '../services/message.service';
 
 @Component({
+    standalone : false,
     selector: 'forum-message',
     templateUrl: './message.component.html',
     styleUrls: ['./message.component.scss']
