@@ -1,0 +1,71 @@
+.thread-container{
+    background-color: #f5f5f5;
+    padding: 2rem;
+    color: #2c3e50;
+    
+    .back-button{
+        color: #2c3e50;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow: inset 1px -1px 1px 1px #e5e5e5;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: 200;
+        transition: all 0.2s ease;
+        display:flex;
+        align-items: center;
+        width: fit-content;
+        margin-bottom: 10px;
+    }
+
+    .back-button:hover{
+        background-color: #00bdd6;
+        color:#ffffff;
+        padding: 7px 12px;
+    }
+    
+    .thread-data{
+        display: flex;
+        justify-content: flex-start;
+        width: 40% !important;
+        padding: 5px;
+        color: #8c8c8c;
+        gap: 50px
+    }
+
+    .thread-content{
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 50px;
+        
+        .thread-infos{
+            width: 100%;
+        }
+        
+        .content{
+            width: 100%;
+        }
+        
+        .thread-data{
+            width: 100%;
+        }
+
+        .message-count{
+           font-weight: bold;
+        }
+        
+        .messages-container{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+    }
+}

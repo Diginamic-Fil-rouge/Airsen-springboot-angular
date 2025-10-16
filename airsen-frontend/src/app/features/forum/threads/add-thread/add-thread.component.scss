@@ -1,0 +1,72 @@
+.page-container{
+  height: 100%;
+  background-color: #ffffff;
+  padding: 2rem;
+  color: #2c3e50;
+
+  .error{
+    color: red;
+  }
+
+  form{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .form-group{
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      input{
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fafafa;
+      }
+
+      textarea{
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fafafa;
+        width: 100%;
+        min-height: 200px;
+      }
+
+      select{
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fafafa;
+      }
+
+      input:focus{
+        outline: 2px solid green;
+      }
+
+      textarea:focus{
+        outline: 2px solid green;
+      }
+
+      select:focus{
+        outline: 2px solid green;
+      }
+    }
+
+    button{
+      width: fit-content;
+      padding: 10px 20px;
+      background: linear-gradient(to right,#2d7c31, #61c566);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover{
+        font-size: 1em;
+    }
+  }
+}

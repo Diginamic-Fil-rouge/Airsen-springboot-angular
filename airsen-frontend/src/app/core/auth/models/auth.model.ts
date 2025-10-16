@@ -10,6 +10,7 @@ export interface LoginResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
+  userId: number;
   userEmail: string;
   userFirstName: string;
   userLastName: string;

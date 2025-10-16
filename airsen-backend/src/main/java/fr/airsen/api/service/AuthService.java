@@ -25,12 +25,12 @@ import java.util.Optional;
 
 /**
  * Authentication service for user login, registration, and token management.
- * 
+ * <p>
  * This service handles all authentication-related operations including user
  * registration, login authentication, JWT token generation and refresh,
  * and logout functionality. It integrates with Spring Security for secure
  * password handling and JWT token management.
- * 
+ * <p>
  * Security Features:
  * - BCrypt password hashing for secure storage
  * - JWT token generation and validation
@@ -38,7 +38,7 @@ import java.util.Optional;
  * - Comprehensive authentication logging
  * - Secure user registration with email uniqueness
  * - Refresh token management for seamless user experience
- * 
+ * <p>
  * Business Logic:
  * - User account creation with automatic role assignment
  * - Email normalization and validation
@@ -66,72 +66,73 @@ public class AuthService {
 
     /**
      * Authenticates user credentials and generates JWT tokens.
-     * 
+     * <p>
      * This method validates user credentials against the database using Spring Security
      * authentication manager. Upon successful authentication, it generates JWT access
      * and refresh tokens for API access.
-     * 
+     *
      * @param loginRequest validated login credentials
      * @return authentication response with JWT tokens and user information
-     * @throws BadCredentialsException if credentials are invalid
+     * @throws BadCredentialsException  if credentials are invalid
      * @throws IllegalArgumentException if request data is invalid
      */
     public AuthResponse authenticate(LoginRequest loginRequest) {
         try {
             logger.debug("Authenticating user: {}", loginRequest.getNormalizedEmail());
-            
+
             // Validate credentials using Spring Security
             Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getNormalizedEmail(),
-                    loginRequest.password()
-                )
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getNormalizedEmail(),
+                            loginRequest.password()
+                    )
             );
 
             // Load user details for token generation
             User user = userRepository.findByEmailIgnoreCase(loginRequest.getNormalizedEmail())
-                .orElseThrow(() -> new BadCredentialsException("User not found"));
+                    .orElseThrow(() -> new BadCredentialsException("User not found"));
 
             // Generate JWT tokens
             String accessToken = jwtTokenProvider.generateAccessToken(user.getEmail(), user.getRole());
             String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
-            logger.info("Authentication successful for user: {} with role: {}", 
-                       user.getEmail(), user.getRole());
+            logger.info("Authentication successful for user: {} with role: {}",
+                    user.getEmail(), user.getRole());
 
             return AuthResponse.of(
-                accessToken,
-                refreshToken,
-                jwtTokenProvider.getAccessTokenExpiration() / 1000, // Convert to seconds
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getRole()
+                    accessToken,
+                    refreshToken,
+                    jwtTokenProvider.getAccessTokenExpiration() / 1000, // Convert to seconds
+                    user.getId(),
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getRole()
             );
 
         } catch (AuthenticationException e) {
             logger.warn("Authentication failed for user: {} - {}", loginRequest.getNormalizedEmail(), e.getMessage());
             throw new BadCredentialsException("Invalid email or password");
-            
+
         } catch (Exception e) {
-            logger.error("Unexpected authentication error for user: {} - {}", 
-                        loginRequest.getNormalizedEmail(), e.getMessage(), e);
+            logger.error("Unexpected authentication error for user: {} - {}",
+                    loginRequest.getNormalizedEmail(), e.getMessage(), e);
             throw new RuntimeException("Authentication service error");
         }
     }
 
     /**
      * Registers a new user account and returns immediate authentication.
-     * 
+     * <p>
      * This method creates a new user account with secure password hashing
      * and role assignment. It prevents duplicate email registration and
      * restricts admin account self-registration. Upon successful registration,
      * it immediately authenticates the user and returns JWT tokens.
-     * 
+     *
      * @param registerRequest validated registration data
      * @return authentication response with JWT tokens and user information
      * @throws IllegalArgumentException if registration data is invalid
-     * @throws RuntimeException if email already exists or admin registration attempted
+     * @throws RuntimeException         if email already exists or admin registration attempted
      */
     public AuthResponse register(RegisterRequest registerRequest) {
         try {
@@ -152,49 +153,50 @@ public class AuthService {
             // Save user to database
             User savedUser = userRepository.save(newUser);
 
-            logger.info("User registration successful: {} with role: {}", 
-                       savedUser.getEmail(), savedUser.getRole());
+            logger.info("User registration successful: {} with role: {}",
+                    savedUser.getEmail(), savedUser.getRole());
 
             // Generate JWT tokens for immediate authentication
             String accessToken = jwtTokenProvider.generateAccessToken(savedUser.getEmail(), savedUser.getRole());
             String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser.getEmail());
 
             return AuthResponse.of(
-                accessToken,
-                refreshToken,
-                jwtTokenProvider.getAccessTokenExpiration() / 1000, // Convert to seconds
-                savedUser.getEmail(),
-                savedUser.getFirstName(),
-                savedUser.getLastName(),
-                savedUser.getRole()
+                    accessToken,
+                    refreshToken,
+                    jwtTokenProvider.getAccessTokenExpiration() / 1000, // Convert to seconds
+                    savedUser.getId(),
+                    savedUser.getEmail(),
+                    savedUser.getFirstName(),
+                    savedUser.getLastName(),
+                    savedUser.getRole()
             );
 
         } catch (RuntimeException e) {
             // Re-throw known business exceptions
             throw e;
-            
+
         } catch (Exception e) {
-            logger.error("Unexpected registration error for user: {} - {}", 
-                        registerRequest.getNormalizedEmail(), e.getMessage(), e);
+            logger.error("Unexpected registration error for user: {} - {}",
+                    registerRequest.getNormalizedEmail(), e.getMessage(), e);
             throw new RuntimeException("Registration service error");
         }
     }
 
     /**
      * Refreshes JWT access token using a valid refresh token.
-     * 
+     * <p>
      * This method validates the refresh token and generates a new access token
      * for continued API access without requiring user re-authentication.
-     * 
+     *
      * @param refreshRequest validated refresh token request
      * @return new authentication response with refreshed access token
-     * @throws BadCredentialsException if refresh token is invalid or expired
+     * @throws BadCredentialsException  if refresh token is invalid or expired
      * @throws IllegalArgumentException if request data is invalid
      */
     public AuthResponse refreshAccessToken(RefreshTokenRequest refreshRequest) {
         try {
             String refreshToken = refreshRequest.getCleanRefreshToken();
-            
+
             logger.debug("Refreshing access token");
 
             // Validate refresh token
@@ -205,7 +207,7 @@ public class AuthService {
 
             // Extract user email from refresh token
             String userEmail = jwtTokenProvider.getUsernameFromToken(refreshToken);
-            
+
             if (userEmail == null || userEmail.trim().isEmpty()) {
                 logger.warn("Token refresh failed - No email in token");
                 throw new BadCredentialsException("Invalid refresh token format");
@@ -213,7 +215,7 @@ public class AuthService {
 
             // Load user for new token generation
             User user = userRepository.findByEmailIgnoreCase(userEmail)
-                .orElseThrow(() -> new BadCredentialsException("User not found for token refresh"));
+                    .orElseThrow(() -> new BadCredentialsException("User not found for token refresh"));
 
             // Generate new access token
             String newAccessToken = jwtTokenProvider.generateAccessToken(user.getEmail(), user.getRole());
@@ -221,19 +223,20 @@ public class AuthService {
             logger.info("Token refresh successful for user: {}", user.getEmail());
 
             return AuthResponse.of(
-                newAccessToken,
-                refreshToken, // Keep the same refresh token
-                jwtTokenProvider.getAccessTokenExpiration() / 1000, // Convert to seconds
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getRole()
+                    newAccessToken,
+                    refreshToken, // Keep the same refresh token
+                    jwtTokenProvider.getAccessTokenExpiration() / 1000, // Convert to seconds
+                    user.getId(),
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getRole()
             );
 
         } catch (BadCredentialsException e) {
             // Re-throw authentication exceptions
             throw e;
-            
+
         } catch (Exception e) {
             logger.error("Unexpected token refresh error: {}", e.getMessage(), e);
             throw new RuntimeException("Token refresh service error");
@@ -242,10 +245,10 @@ public class AuthService {
 
     /**
      * Logs out user by invalidating refresh token.
-     * 
+     * <p>
      * This method handles user logout by invalidating the refresh token.
      * Note: JWT access tokens are stateless and handled client-side.
-     * 
+     *
      * @param refreshToken refresh token to invalidate
      * @return true if logout successful
      */
@@ -261,7 +264,7 @@ public class AuthService {
             // For JWT tokens, we would typically add to a blacklist
             // For now, we'll just validate the token exists and return success
             boolean tokenValid = jwtTokenProvider.validateToken(refreshToken);
-            
+
             if (tokenValid) {
                 // In a full implementation, add token to blacklist/revocation list
                 logger.info("Logout successful");
@@ -279,10 +282,10 @@ public class AuthService {
 
     /**
      * Validates registration request data and business rules.
-     * 
+     *
      * @param registerRequest registration request to validate
      * @throws IllegalArgumentException if validation fails
-     * @throws RuntimeException if admin registration attempted
+     * @throws RuntimeException         if admin registration attempted
      */
     private void validateRegistrationRequest(RegisterRequest registerRequest) {
         if (registerRequest == null) {
@@ -307,7 +310,7 @@ public class AuthService {
 
     /**
      * Creates a new User entity from registration request data.
-     * 
+     *
      * @param registerRequest validated registration request
      * @return new User entity ready for persistence
      */
@@ -319,9 +322,9 @@ public class AuthService {
         user.setLastName(registerRequest.getNormalizedLastName());
         user.setRole(registerRequest.getAssignedRole());
         user.setCreatedAt(LocalDateTime.now());
-        
+
         logger.debug("Created user entity for registration: {}", user.getEmail());
-        
+
         return user;
     }
 }

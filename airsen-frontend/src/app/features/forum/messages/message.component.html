@@ -1,0 +1,7 @@
+<div class="message-container">
+    <div class="message-infos">
+        <h2>{{ message()?.author?.firstName + ' ' + message()?.author?.lastName }}</h2>
+        <p class="date">{{ message()?.createdDate | date: 'short' }}</p>
+    </div>
+    <p class="content">{{ message()?.content }}</p>
+</div>

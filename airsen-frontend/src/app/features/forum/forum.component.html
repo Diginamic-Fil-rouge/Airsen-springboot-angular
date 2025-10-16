@@ -1,18 +1,38 @@
 <div class="page-container">
   <div class="page-header">
     <h1 class="page-title">Forum</h1>
+    <a routerLink="/forum/add/thread" >+ Nouveau sujet</a>
   </div>
 
   <div class="page-content">
-    <div class="construction-message">
-      <mat-icon class="construction-icon">construction</mat-icon>
-      <h2>Page en construction</h2>
-      <p>Cette page est actuellement en cours de développement.</p>
-
-      <button mat-raised-button color="primary" class="home-button" (click)="goToHome()">
-        <mat-icon>home</mat-icon>
-        Retourner à la page d'accueil
-      </button>
+    <div class="categories-container">
+      <h2>Categories</h2>
+      <div class="all-category" (click)="getAllThreads()"><div class="dot"></div>All</div>
+      @for (category of categories$ | async ; track category.id){
+      <forum-category [category]="category" (click)="getThreads(category.id)"></forum-category>
+      }
+    </div>
+    <hr class="separator">
+    <div class="threads-container"><h2>Threads</h2>
+      <div class="threads-header">
+        <div class="title">Topic</div>
+        <div class="replies-count">Replies</div>
+        <div class="view-count">Views</div>
+        <div class="activity">Activity</div>
+      </div>
+      @if ((allThreads$ | async)?.content) {
+        @for (thread of (allThreads$ | async)?.content ; track thread.id){
+          <forum-thread [thread]="thread"></forum-thread>
+        }
+      }
+      @else if (threads$ | async) {
+        @for (thread of threads$ | async ; track thread.id){
+          <forum-thread [thread]="thread"></forum-thread>
+        }  
+      }
+      @else {
+        <app-loader> </app-loader>
+      }
     </div>
   </div>
 </div>

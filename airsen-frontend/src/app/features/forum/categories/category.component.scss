@@ -1,0 +1,22 @@
+.category-container{
+display: flex;
+align-items: center;
+gap: 0.5rem;
+
+.category-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+button{
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    transition: color 0.2s ease;
+  }
+
+  button:hover{
+    color: green;
+  }
+}
