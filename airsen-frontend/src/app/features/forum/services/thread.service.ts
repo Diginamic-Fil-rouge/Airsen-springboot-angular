@@ -29,4 +29,8 @@ export class ThreadService {
     getThread(id: number): Observable<Thread> {
         return this.http.get<Thread>(`${this.apiUrl}/${id}`);
     }
+
+    editThread(thread: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/${thread.id}`, thread);
+    }
 }
