@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core';
 import { Thread } from '../models/thread.model';
 import { Router } from '@angular/router';
 @Component({
+    standalone : false,
     selector: 'forum-thread',
     templateUrl: './thread.component.html',
     styleUrls: ['./thread.component.scss']

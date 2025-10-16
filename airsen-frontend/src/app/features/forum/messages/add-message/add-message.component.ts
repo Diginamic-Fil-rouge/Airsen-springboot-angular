@@ -1,12 +1,10 @@
 import { Component, input, inject, Output, Input } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { Thread } from '../../models/thread.model';
-import { Message } from '../../models/message.model';
 import { MessageService } from '../../services/message.service'
 import { EventEmitter } from '@angular/core';
-import { Observable } from 'rxjs';
 
 @Component({
+    standalone : false,
     selector: 'app-add-message',
     templateUrl: './add-message.component.html',
     styleUrls: ['./add-message.component.scss']
