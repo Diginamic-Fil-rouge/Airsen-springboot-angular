@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 // Angular Material Modules
@@ -75,7 +75,7 @@ import { BreadcrumbComponent } from './shared/components/breadcrumb/breadcrumb.c
 // import { SearchBarComponent } from './components/shared/search-bar/search-bar.component';
 
 // Services & Interceptors
-import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { authInterceptorFn } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -93,8 +93,7 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     DashboardComponent,
     HomeComponent,
     NotFoundComponent,
-    CarteComponent,
-    ForumComponent
+    CarteComponent
     // Page Components
     // HomeComponent,
     // MapComponent,
@@ -147,12 +146,7 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
   ],
   providers: [
     provideAnimations(),
-    provideHttpClient(),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true
-    }
+    provideHttpClient(withInterceptors([authInterceptorFn])),
   ],
   bootstrap: [AppComponent]
 })

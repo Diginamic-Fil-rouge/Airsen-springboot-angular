@@ -1,0 +1,30 @@
+.vote-container{
+    display:flex;
+    align-items: center;
+    gap: 1rem;
+
+    .vote-button{
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .thumb-image{
+            width: 15px;
+            height: 15px;
+        }
+
+        .thumb-image:hover{
+            transform: scale(1.2);
+            background-color:lightblue;
+            border-radius: 25%;
+        }
+
+        .checked{
+            background-color:lightblue;
+            border-radius: 25%;
+        }
+    }
+}
