@@ -1,5 +1,6 @@
 package fr.airsen.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
@@ -8,7 +9,7 @@ import java.util.Set;
 
 /**
  * Entity representing a French commune.
- * 
+ *
  * Lowest administrative level of the French geographic hierarchy.
  * Contains demographic and geographic data for interactive map display
  * and proximity search.
@@ -54,23 +55,28 @@ public class Commune {
     private BigDecimal longitude;
 
     @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<WeatherData> weatherData = new HashSet<>();
 
     @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<AirQuality> airQuality = new HashSet<>();
 
     @ManyToMany(mappedBy = "favoris", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<User> favoriteUsers = new HashSet<>();
 
     /**
      * Air quality alerts monitoring this commune.
      */
     @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Alert> alerts = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     @NotNull(message = "Commune must belong to a valid department")
+    @JsonIgnore
     private Department department;
 
     public Commune() {}
