@@ -3,20 +3,15 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ForumService } from './services/forum.service';
 import { ThreadService } from './services/thread.service';
-import { CategoryComponent } from "./categories/category.component";
-import { ThreadComponent } from './threads/thread.component';
 import { Observable } from 'rxjs';
 import { Thread } from './models/thread.model';
 import { Page } from './models/page.model';
 import { LoaderComponent } from '@/app/shared/components/loader/loader.component';
-import { RouterModule } from '@angular/router';
 
 @Component({
-  standalone: true,
   selector: 'app-forum',
   templateUrl: './forum.component.html',
-  styleUrls: ['./forum.component.scss'],
-  imports: [CategoryComponent, ThreadComponent, CommonModule, LoaderComponent, RouterModule]
+  styleUrls: ['./forum.component.scss']
 })
 
 export class ForumComponent {

@@ -1,16 +1,10 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
 import { Thread } from '../models/thread.model';
-import { Router, RouterModule } from '@angular/router';
-import { DatePipe } from '@angular/common';
-
+import { Router } from '@angular/router';
 @Component({
-    standalone: true,
     selector: 'forum-thread',
     templateUrl: './thread.component.html',
-    styleUrls: ['./thread.component.scss'],
-    imports: [CommonModule, DatePipe, RouterModule]
+    styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent {
 
