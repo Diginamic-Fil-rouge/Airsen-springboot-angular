@@ -95,19 +95,27 @@ API_BASE_URL=http://localhost:8080/api/v1
 Choose the profile matching your needs:
 
 ```bash
-# Backend Only (MariaDB + Redis + API)
-docker-compose --env-file .env.local --profile backend up -d
+# Development Mode
+# Start all dev services with hot reload
+docker-compose --profile dev up
 
-# Full Stack (MariaDB + Redis + API + Frontend)
-docker-compose --env-file .env.local --profile full-stack up -d
+# Start specific services
+docker-compose --profile dev up api-dev web-dev mariadb redis
 
-# Database Only (MariaDB + Redis)
-docker-compose --env-file .env.local --profile database up -d
-
-# Frontend Only (Angular)
-docker-compose --env-file .env.local --profile frontend up -d
+# With dev tools (Adminer, Redis Commander)
+docker-compose --profile dev up
 ```
+```bash
+# Production Mode
+# Build and start production stack
+docker-compose --profile prod up --build -d
 
+# View logs
+docker-compose --profile prod logs -f
+
+# Scale services (if needed)
+docker-compose --profile prod up --scale api=3
+```
 ### 4. Verify Installation
 
 ```bash
@@ -127,7 +135,7 @@ open http://localhost:8080/api/v1/swagger-ui.html
 
 ```bash
 # Start services
-docker-compose --env-file .env.local --profile backend up -d
+docker-compose --profile dev backend up -d
 
 # Stop services (keeps data)
 docker-compose stop
@@ -145,32 +153,23 @@ docker-compose ps
 docker-compose logs -f
 
 # View logs for specific service
-docker-compose logs -f airsen-backend
-```
+docker-compose logs -f api-dev
 
-### Build & Rebuild
+# Check health status
+docker-compose --profile prod ps
 
-```bash
 # Rebuild specific service
-docker-compose --env-file .env.local build airsen-backend
+docker-compose --profile dev up --build api-dev
 
-# Rebuild without cache (clean build)
-docker-compose --env-file .env.local build --no-cache airsen-backend
-
-# Rebuild and restart
-docker-compose --env-file .env.local up -d --build airsen-backend
-
-# Clean rebuild (fresh start)
-docker-compose down -v && \
-docker-compose --env-file .env.local --profile backend build --no-cache && \
-docker-compose --env-file .env.local --profile backend up -d
+# Clean everything
+docker-compose down -v --remove-orphans
 ```
 
 ### Service Management
 
 ```bash
 # Restart specific service
-docker-compose restart airsen-backend
+docker-compose restart api-dev
 
 # Restart all services
 docker-compose restart
@@ -234,7 +233,7 @@ docker-compose exec redis redis-cli FLUSHALL
 ### Container Won't Start
 ```bash
 # View logs
-docker-compose logs airsen-backend
+docker-compose logs api-dev
 
 # Check status
 docker-compose ps
@@ -274,8 +273,8 @@ docker-compose config
 # Nuclear option: remove all containers and data
 docker-compose down -v
 docker system prune -a --volumes
-docker-compose --env-file .env.local --profile backend build --no-cache
-docker-compose --env-file .env.local --profile backend up -d
+docker-compose --profile backend build --no-cache
+docker-compose --profile backend up -d
 ```
 
 
