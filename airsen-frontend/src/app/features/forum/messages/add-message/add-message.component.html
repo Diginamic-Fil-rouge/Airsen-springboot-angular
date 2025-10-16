@@ -1,0 +1,11 @@
+<div class="add-message-container">
+    <h2>Ajouter une réponse</h2>
+    <form action="">
+        <div class="form-group">
+            <label for="content">Contenu *</label>
+            <textarea id="content" name="content" [(ngModel)]="content" placeholder="Entrez votre réponse..."></textarea>
+        </div>
+        <p>* Champs obligatoires</p>
+        <button type="submit" (click)="createMessage()">Publier le message</button>
+    </form>
+</div>
