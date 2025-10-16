@@ -18,33 +18,9 @@ export class AddThreadComponent {
     errors$: string[] = [];
 
     forumService: ForumService = inject(ForumService);
-    authService = inject(AuthService);
     router = inject(Router);
 
-    currentUser: AuthUser | null = null;
-    private destroy$ = new Subject<void>();
-    isLoading = true;
-
     categories$ = this.forumService.getCategories();
-
-    ngOnInit(): void {
-        this.loadUserData();
-    }
-
-    private loadUserData(): void {
-        this.authService.currentUser$
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (user) => {
-                    this.currentUser = user;
-                    this.isLoading = false;
-                },
-                error: (error) => {
-                    console.error('Error loading user data:', error);
-                    this.isLoading = false;
-                }
-            });
-    }
 
     createThread() {
         this.errors$ = [];
