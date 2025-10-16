@@ -11,12 +11,64 @@
 
     .message-infos{
         display: flex;
-        gap: 5px;;
+        justify-content: space-between;
         align-items: center;
+
+        .message-data{
+            display: flex;
+            gap: 5px;;
+            align-items: center;
+
+            .date{
+                font-size: 0.8rem;
+                color: #999999;
+            }
+        }
+
+        .edit-button{
+            border: none;
+            background-color: transparent;
+            color: #999999;
+            text-decoration: underline;
+        }
     }
 
-    .date{
-        font-size: 0.8rem;
-        color: #999999;
+    textarea{
+        height: 200px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fafafa;
+    }
+
+    .buttons-container{
+        display: flex;
+        gap: 5px;
+
+        .validate-button{
+            border: none;
+            background-color: #00bdd6;
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .cancel-button{
+            border: none;
+            background-color: #999999;
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        button:hover{
+            font-size: 1em;
+        }
+    }
+
+
+    button{
+        width: fit-content;
+        cursor: pointer;
     }
 }

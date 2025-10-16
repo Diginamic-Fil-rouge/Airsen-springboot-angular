@@ -3,8 +3,6 @@ import { HttpClient } from '@angular/common/http';
 
 import { environment } from '@/environments/environment';
 import { Observable } from 'rxjs';
-import { Thread } from '../models/thread.model';
-import { Page } from '../models/page.model';
 import { Message } from '../models/message.model';
 
 @Injectable({
@@ -22,5 +20,9 @@ export class MessageService {
 
     addMessageToThread(threadId: number | undefined, message: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/${threadId}/messages`, message);
+    }
+
+    editMessage(message: any): Observable<any> {
+      return this.http.put(`${environment.apiUrl}/api/v1/forum/messages/${message?.id}`, message);
     }
 }
