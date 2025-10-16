@@ -1,0 +1,168 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <!-- Logo with Home Link -->
+    <div class="logo-section">
+      <a routerLink="/home" class="logo-link">
+        <img src="assets/images/airsen-logo.png" alt="Airsen Logo" class="logo" />
+      </a>
+      <a routerLink="/home" class="back-to-home">
+        <mat-icon>arrow_back</mat-icon>
+        Retour à l'accueil
+      </a>
+    </div>
+
+    <!-- Welcome Title -->
+    <h1 class="auth-title">Créer votre compte</h1>
+    <p class="auth-subtitle">Rejoignez Airsen pour surveiller les données environnementales</p>
+
+    <!-- Error Message -->
+    <div *ngIf="error$ | async as error" class="alert-message error-message">
+      <mat-icon>error</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Registration Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <!-- First Name Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Prénom</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="firstName"
+          placeholder="Entrez votre prénom"
+          autocomplete="given-name"
+        />
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-error *ngIf="hasError('firstName')">
+          {{ getErrorMessage('firstName') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Last Name Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nom</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="lastName"
+          placeholder="Entrez votre nom"
+          autocomplete="family-name"
+        />
+        <mat-icon matPrefix>person_outline</mat-icon>
+        <mat-error *ngIf="hasError('lastName')">
+          {{ getErrorMessage('lastName') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Email Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Adresse e-mail</mat-label>
+        <input
+          matInput
+          type="email"
+          formControlName="email"
+          placeholder="votre.email@exemple.fr"
+          autocomplete="email"
+        />
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-error *ngIf="hasError('email')">
+          {{ getErrorMessage('email') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Password Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Mot de passe</mat-label>
+        <input
+          matInput
+          [type]="hidePassword ? 'password' : 'text'"
+          formControlName="password"
+          placeholder="Créez un mot de passe sécurisé"
+          autocomplete="new-password"
+        />
+        <mat-icon matPrefix>lock</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword = !hidePassword"
+          [attr.aria-label]="'Afficher/masquer le mot de passe'"
+        >
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-hint>Au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial</mat-hint>
+        <mat-error *ngIf="hasError('password')">
+          {{ getErrorMessage('password') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Confirm Password Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Confirmer le mot de passe</mat-label>
+        <input
+          matInput
+          [type]="hideConfirmPassword ? 'password' : 'text'"
+          formControlName="confirmPassword"
+          placeholder="Ressaisissez votre mot de passe"
+          autocomplete="new-password"
+        />
+        <mat-icon matPrefix>lock_outline</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hideConfirmPassword = !hideConfirmPassword"
+          [attr.aria-label]="'Afficher/masquer le mot de passe de confirmation'"
+        >
+          <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="hasConfirmPasswordError()">
+          {{ getConfirmPasswordError() }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Terms and Conditions -->
+      <div class="checkbox-wrapper">
+        <mat-checkbox formControlName="acceptTerms" color="primary">
+          <span class="checkbox-text">
+            J'accepte les <a href="/terms" target="_blank">Conditions d'utilisation</a> et la
+            <a href="/privacy" target="_blank">Politique de confidentialité</a>
+          </span>
+        </mat-checkbox>
+        <div *ngIf="registerForm.get('acceptTerms')?.touched && registerForm.get('acceptTerms')?.invalid" class="field-error checkbox-error">
+          Vous devez accepter les conditions d'utilisation
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="submit-button full-width"
+        [disabled]="(isLoading$ | async) || registerForm.invalid"
+      >
+        <span *ngIf="!(isLoading$ | async)">Créer un compte</span>
+        <mat-spinner *ngIf="isLoading$ | async" diameter="20" class="button-spinner"></mat-spinner>
+      </button>
+
+      <!-- Login Link -->
+      <div class="alternate-action">
+        <p class="alternate-text">
+          Vous avez déjà un compte ?
+          <a routerLink="/auth/login" class="alternate-link">Se connecter ici</a>
+        </p>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <p class="footer-text">
+        En créant un compte, vous acceptez nos
+        <a href="/terms" target="_blank">Conditions d'utilisation</a> et notre
+        <a href="/privacy" target="_blank">Politique de confidentialité</a>
+      </p>
+    </div>
+  </div>
+</div>

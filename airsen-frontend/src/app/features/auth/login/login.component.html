@@ -1,0 +1,117 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <!-- Logo with Home Link -->
+    <div class="logo-section">
+      <a routerLink="/home" class="logo-link">
+        <img src="assets/images/airsen-logo.png" alt="Airsen Logo" class="logo" />
+      </a>
+      <a routerLink="/home" class="back-to-home">
+        <mat-icon>arrow_back</mat-icon>
+        Retour à l'accueil
+      </a>
+    </div>
+
+    <!-- Welcome Title -->
+    <h1 class="auth-title">Bienvenue</h1>
+    <p class="auth-subtitle">Connectez-vous pour accéder à votre tableau de bord environnemental</p>
+
+    <!-- Session Expiration Alert -->
+    <div *ngIf="sessionExpired" class="alert-message session-expired">
+      <mat-icon>info</mat-icon>
+      <span>Votre session a expiré. Veuillez vous reconnecter.</span>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error$ | async as error" class="alert-message error-message">
+      <mat-icon>error</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <!-- Email Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Adresse e-mail</mat-label>
+        <input
+          matInput
+          type="email"
+          formControlName="email"
+          placeholder="votre.email@exemple.fr"
+          autocomplete="email"
+        />
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-error *ngIf="hasError('email')">
+          {{ getErrorMessage('email') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Password Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Mot de passe</mat-label>
+        <input
+          matInput
+          [type]="hidePassword ? 'password' : 'text'"
+          formControlName="password"
+          placeholder="Entrez votre mot de passe"
+          autocomplete="current-password"
+        />
+        <mat-icon matPrefix>lock</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword = !hidePassword"
+          [attr.aria-label]="'Afficher/masquer le mot de passe'"
+        >
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="hasError('password')">
+          {{ getErrorMessage('password') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Forgot Password Link -->
+      <div class="forgot-password-wrapper">
+        <a routerLink="/auth/forgot-password" class="forgot-password-link">
+          Mot de passe oublié ?
+        </a>
+      </div>
+
+      <!-- Remember Me Checkbox -->
+      <div class="checkbox-wrapper">
+        <mat-checkbox formControlName="rememberMe" color="primary">
+          Rester connecté
+        </mat-checkbox>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="submit-button full-width"
+        [disabled]="(isLoading$ | async) || loginForm.invalid"
+      >
+        <span *ngIf="!(isLoading$ | async)">Se connecter</span>
+        <mat-spinner *ngIf="isLoading$ | async" diameter="20" class="button-spinner"></mat-spinner>
+      </button>
+
+      <!-- Register Link -->
+      <div class="alternate-action">
+        <p class="alternate-text">
+          Vous n'avez pas de compte ?
+          <a routerLink="/auth/register" class="alternate-link">S'inscrire ici</a>
+        </p>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <p class="footer-text">
+        En vous connectant, vous acceptez nos
+        <a href="/terms" target="_blank">Conditions d'utilisation</a> et notre
+        <a href="/privacy" target="_blank">Politique de confidentialité</a>
+      </p>
+    </div>
+  </div>
+</div>

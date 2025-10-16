@@ -1,0 +1,142 @@
+<div class="dashboard-container">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && currentUser" class="dashboard-content">
+    <!-- Header Section -->
+    <header class="dashboard-header">
+      <div class="header-content">
+        <div class="user-info">
+          <div class="user-avatar">
+            {{ getUserInitials() }}
+          </div>
+          <div class="user-details">
+            <h1>{{ getGreeting() }}, {{ currentUser.firstName }}!</h1>
+            <p class="subtitle">Welcome to your Airsen Dashboard</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+            <mat-icon>account_circle</mat-icon>
+          </button>
+          <mat-menu #userMenu="matMenu">
+            <div class="user-menu-header">
+              <p class="user-name">{{ getUserFullName() }}</p>
+              <p class="user-email">{{ currentUser.email }}</p>
+              <mat-chip class="role-chip">{{ getRoleDisplay() }}</mat-chip>
+            </div>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="navigateTo('/profile')">
+              <mat-icon>person</mat-icon>
+              <span>Profile</span>
+            </button>
+            <button mat-menu-item (click)="navigateTo('/settings')">
+              <mat-icon>settings</mat-icon>
+              <span>Settings</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </header>
+
+    <!-- Welcome Card -->
+    <section class="welcome-section">
+      <mat-card class="welcome-card">
+        <mat-card-content>
+          <div class="welcome-content">
+            <div class="welcome-text">
+              <h2>Welcome to Airsen</h2>
+              <p>
+                Access real-time environmental data, join community discussions,
+                and stay informed about air quality in your region.
+              </p>
+            </div>
+            <mat-icon class="welcome-icon">eco</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
+    <!-- Navigation Cards Grid -->
+    <section class="navigation-section">
+      <h2 class="section-title">Quick Access</h2>
+      <div class="navigation-grid">
+        <mat-card
+          *ngFor="let card of navigationCards"
+          class="navigation-card"
+          [class]="'card-' + card.color"
+          (click)="navigateTo(card.route)"
+        >
+          <mat-card-content>
+            <div class="card-icon">
+              <mat-icon [color]="card.color">{{ card.icon }}</mat-icon>
+            </div>
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.description }}</p>
+            <button mat-icon-button class="card-arrow">
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Quick Stats Section (Placeholder for future implementation) -->
+    <section class="stats-section">
+      <h2 class="section-title">Quick Stats</h2>
+      <div class="stats-grid">
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <mat-icon color="primary">location_on</mat-icon>
+            <h3>Saved Locations</h3>
+            <p class="stat-value">0</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <mat-icon color="accent">notifications</mat-icon>
+            <h3>Active Alerts</h3>
+            <p class="stat-value">0</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <mat-icon color="primary">forum</mat-icon>
+            <h3>Forum Posts</h3>
+            <p class="stat-value">0</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <mat-icon color="accent">visibility</mat-icon>
+            <h3>Days Active</h3>
+            <p class="stat-value">1</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !currentUser" class="error-container">
+    <mat-icon>error_outline</mat-icon>
+    <h2>Unable to load dashboard</h2>
+    <p>Please try logging in again</p>
+    <button mat-raised-button color="primary" (click)="logout()">
+      Back to Login
+    </button>
+  </div>
+</div>

@@ -1,85 +1,170 @@
-version: '3.8'
-
 services:
-  # Redis Cache
+  # MariaDB Database - Local Development
+  mariadb:
+    image: mariadb:11.6
+    container_name: airsen-mariadb
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MARIADB_CHARACTER_SET_SERVER: utf8mb4
+      MARIADB_COLLATE_SERVER: utf8mb4_unicode_ci
+    ports:
+      - '${DB_PORT}:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./docs/database/init:/docker-entrypoint-initdb.d:ro
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=200
+      --innodb-buffer-pool-size=256M
+    networks:
+      - airsen-network
+    profiles:
+      - database
+      - backend
+      - local-dev
+      - full-stack
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mariadb-admin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          'root',
+          '-p${DB_ROOT_PASSWORD:-root123}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis Cache - Session Storage and API Caching
   redis:
     image: redis:7-alpine
     container_name: airsen-redis
     ports:
-      - '6379:6379'
+      - '${REDIS_PORT}:6379'
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     networks:
       - airsen-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    profiles:
+      - database
+      - backend
+      - local-dev
+      - full-stack
 
   # Backend - Spring Boot Application
   airsen-backend:
     build:
       context: ./airsen-backend
       dockerfile: Dockerfile
+      target: development
     container_name: airsen-backend
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_NAME: ${DB_NAME}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      # Database configuration
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      # Redis configuration
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # JWT configuration
       JWT_SECRET: ${JWT_SECRET}
-      ATMO_API_URL: ${ATMO_API_URL}
-      OPEN_METEO_URL: ${OPEN_METEO_URL}
+      # Email configuration
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      # External APIs
       INSEE_API_URL: ${INSEE_API_URL}
+      ATMO_API_URL: ${ATMO_API_URL}
+      ATMO_USERNAME: ${ATMO_USERNAME}
+      ATMO_PASSWORD: ${ATMO_PASSWORD}
+      ATMO_JWT_TOKEN: ${ATMO_JWT_TOKEN}
+      OPEN_METEO_URL: ${OPEN_METEO_URL}
+      # JVM options for development
+      MAVEN_OPTS: -Xmx512m -XX:MaxMetaspaceSize=128m
     ports:
-      - '8080:8080'
+      - '${BACKEND_PORT:-8080}:8080'
+    volumes:
+      # Mount source code for hot reload (without :ro flag)
+      - ./airsen-backend/src:/app/src
+      - ./airsen-backend/pom.xml:/app/pom.xml
+      # Maven cache to speed up builds (using host directory)
+      - ./docker/maven-cache:/home/airsen/.m2
+      # DON'T mount target directory to avoid conflicts
     depends_on:
-      - redis
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - airsen-network
     profiles:
       - backend
       - full-stack
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/actuator/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Frontend - Angular Application
   airsen-frontend:
     build:
       context: ./airsen-frontend
       dockerfile: Dockerfile
+      target: development
     container_name: airsen-frontend
     environment:
       NODE_ENV: development
-      API_BASE_URL: http://airsen-backend:8080/api/v1
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:8080/api/v1}
     ports:
-      - '4200:80'
-    depends_on:
-      - airsen-backend
+      - '${FRONTEND_PORT:-4200}:4200'
+    volumes:
+      # Mount source code for hot reload
+      - ./airsen-frontend/src:/app/src
+      - ./airsen-frontend/angular.json:/app/angular.json
+      - ./airsen-frontend/package.json:/app/package.json
+      - ./airsen-frontend/tsconfig.json:/app/tsconfig.json
+      # Node modules cache
+      - frontend_node_modules:/app/node_modules
+    restart: unless-stopped
     networks:
       - airsen-network
     profiles:
       - frontend
       - full-stack
 
-  # Development Tools (Optional)
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: airsen-redis-commander
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    ports:
-      - '8082:8081'
-    depends_on:
-      - redis
-    networks:
-      - airsen-network
-    profiles:
-      - development
-
 volumes:
+  mariadb_data:
+    driver: local
   redis_data:
+    driver: local
+  frontend_node_modules:
+    driver: local
 
 networks:
   airsen-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

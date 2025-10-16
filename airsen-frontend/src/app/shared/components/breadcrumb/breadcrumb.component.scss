@@ -1,0 +1,159 @@
+// Breadcrumb Component Styles - Airsen Platform
+// Accessible navigation trail with modern styling
+
+.breadcrumb-nav {
+  background-color: hsl(0, 0%, 98%);
+  border-bottom: 1px solid hsl(0, 0%, 93%);
+  padding: 1rem 2rem;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+  }
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:first-child {
+    .breadcrumb-link {
+      &.home {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.5rem;
+        background-color: hsl(123, 61%, 49%, 0.05);
+        transition: all 0.2s ease;
+
+        mat-icon {
+          font-size: 1.25rem;
+          width: 1.25rem;
+          height: 1.25rem;
+          color: hsl(123, 47%, 33%);
+        }
+
+        span {
+          font-weight: 500;
+        }
+
+        &:hover {
+          background-color: hsl(123, 61%, 49%, 0.1);
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  .separator {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: hsl(0, 0%, 62%);
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}
+
+.breadcrumb-link {
+  color: hsl(0, 0%, 46%);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+
+  &:hover {
+    color: hsl(123, 47%, 33%);
+    background-color: hsl(123, 61%, 49%, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid hsl(123, 47%, 33%);
+    outline-offset: 2px;
+  }
+}
+
+.breadcrumb-current {
+  color: hsl(123, 47%, 33%);
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  background-color: hsl(123, 61%, 49%, 0.08);
+}
+
+// Truncate long breadcrumb labels on mobile
+@media (max-width: 768px) {
+  .breadcrumb-link,
+  .breadcrumb-current {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .breadcrumb-item:first-child .breadcrumb-link.home span {
+    display: none;
+  }
+}
+
+// Dark mode support (optional)
+@media (prefers-color-scheme: dark) {
+  .breadcrumb-nav {
+    background-color: hsl(0, 0%, 16%);
+    border-bottom-color: hsl(0, 0%, 20%);
+  }
+
+  .breadcrumb-link {
+    color: hsl(0, 0%, 62%);
+
+    &:hover {
+      color: hsl(123, 47%, 58%);
+      background-color: hsl(0, 0%, 20%);
+    }
+  }
+
+  .breadcrumb-current {
+    color: hsl(123, 47%, 58%);
+    background-color: hsl(0, 0%, 20%);
+  }
+
+  .breadcrumb-item:first-child .breadcrumb-link.home {
+    background-color: hsl(0, 0%, 20%);
+
+    mat-icon {
+      color: hsl(123, 47%, 58%);
+    }
+
+    &:hover {
+      background-color: hsl(0, 0%, 24%);
+    }
+  }
+
+  .separator {
+    color: hsl(0, 0%, 46%);
+  }
+}
+
+// Accessibility
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

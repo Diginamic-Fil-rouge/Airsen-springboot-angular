@@ -1,5 +1,5 @@
-# Multi-stage build
-FROM maven:3.8-openjdk-17-slim AS builder
+# Multi-stage build for Java 21
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 COPY pom.xml .
@@ -8,16 +8,45 @@ RUN mvn dependency:go-offline -B
 COPY src src
 RUN mvn clean package -DskipTests
 
-# Production stage
-FROM openjdk:17-jdk-slim
+# Development stage - for local development with hot reload
+FROM maven:3.9-eclipse-temurin-21-alpine AS development
 
 WORKDIR /app
 
 # Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
+
+# Create non-root user with home directory and Maven cache directory
+RUN addgroup -S airsen && adduser -S airsen -G airsen -h /home/airsen && \
+    mkdir -p /home/airsen/.m2 && \
+    mkdir -p /app/target && \
+    chown -R airsen:airsen /home/airsen /app
+
+# Copy source code (will be overridden by volume mount in docker-compose)
+COPY . .
+
+# Download dependencies for faster startup
+RUN mvn dependency:go-offline -B
+
+# Change ownership after copying
+RUN chown -R airsen:airsen /app
+
+USER airsen
+
+# Development server with hot reload
+EXPOSE 8080
+CMD ["mvn","clean","spring-boot:run"]
+
+# Production stage
+FROM eclipse-temurin:21-jdk-alpine AS production
+
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Create non-root user
-RUN groupadd -r airsen && useradd -r -g airsen airsen
+RUN addgroup -S airsen && adduser -S airsen -G airsen
 
 # Copy jar from builder stage
 COPY --from=builder /app/target/*.jar app.jar

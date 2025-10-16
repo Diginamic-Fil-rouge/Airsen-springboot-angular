@@ -1,0 +1,101 @@
+/**
+ * Angular Material Theme Configuration
+ *
+ * This file contains the Material Design theme customization for the Airsen application.
+ * It includes color palettes, typography, and component-specific theme configurations.
+ *
+ * DO NOT mix with custom component styles - keep Material theme separate.
+ */
+
+@use '@angular/material' as mat;
+
+// Include the common styles for Angular Material
+@include mat.core();
+
+// Define Airsen color palette based on the design system
+$airsen-primary-palette: (
+  50: #e8f5e9,
+  100: #c8e6c9,
+  200: #a5d6a7,
+  300: #81c784,
+  400: #66bb6a,
+  500: #4caf50,  // Primary green
+  600: #43a047,
+  700: #388e3c,
+  800: #2e7d32,
+  900: #1b5e20,
+  A100: #b9f6ca,
+  A200: #69f0ae,
+  A400: #00e676,
+  A700: #00c853,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: rgba(black, 0.87),
+    A700: white,
+  )
+);
+
+$airsen-accent-palette: (
+  50: #e3f2fd,
+  100: #bbdefb,
+  200: #90caf9,
+  300: #64b5f6,
+  400: #42a5f5,
+  500: #2196f3,
+  600: #1e88e5,
+  700: #1976d2,
+  800: #1565c0,
+  900: #0d47a1,
+  A100: #82b1ff,
+  A200: #448aff,
+  A400: #2979ff,
+  A700: #2962ff,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: white,
+    A400: white,
+    A700: white,
+  )
+);
+
+// Define the palettes for the theme (Angular Material 20+)
+$airsen-primary: mat.define-palette($airsen-primary-palette, 500);
+$airsen-accent: mat.define-palette($airsen-accent-palette, 500);
+$airsen-warn: mat.define-palette(mat.$red-palette);
+
+// Create the theme
+$airsen-theme: mat.define-light-theme((
+  color: (
+    primary: $airsen-primary,
+    accent: $airsen-accent,
+    warn: $airsen-warn,
+  ),
+  typography: mat.define-typography-config(
+    $font-family: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Helvetica Neue", Arial, sans-serif',
+  ),
+  density: 0,
+));
+
+// Include theme styles for core and each component
+@include mat.all-component-themes($airsen-theme);

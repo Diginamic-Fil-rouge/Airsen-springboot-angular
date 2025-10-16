@@ -3,32 +3,23 @@ package fr.airsen.api;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-/**
- * Application principale Airsen pour le monitoring de la qualité de l'air.
- * 
- * Cette application Spring Boot fournit une API REST pour consulter les données
- * environnementales (qualité de l'air, météo) des communes françaises.
- * 
- * @author Airsen Team
- * @version 1.0.0
- * @since 2024-09-12
- */
+
 @SpringBootApplication
 @EnableCaching
 @EnableScheduling
 @EnableAsync
+@EnableRetry
 @EnableTransactionManagement
+@EnableJpaAuditing
 public class AirsenApiApplication {
 
-    /**
-     * Point d'entrée de l'application.
-     * 
-     * @param args arguments de ligne de commande
-     */
+
     public static void main(String[] args) {
         SpringApplication.run(AirsenApiApplication.class, args);
     }

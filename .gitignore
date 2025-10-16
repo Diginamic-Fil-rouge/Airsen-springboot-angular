@@ -1,75 +1,4 @@
 # =============================================================================
-# Airsen Project - GitIgnore Configuration
-# =============================================================================
-
-# =============================================================================
-# PROJECT DOCUMENTATION AND CLAUDE CODE FILES (DO NOT COMMIT)
-# =============================================================================
-
-# Claude Code configuration and documentation
-CLAUDE.md
-claude.md
-
-# Documentation directory (contains sensitive project info and design docs)
-/docs/
-docs/
-
-# Project design and specification files
-*.md
-!README.md
-!CHANGELOG.md
-!CONTRIBUTING.md
-!LICENSE.md
-
-# Project structure documentation
-spring-boot-project-structure.md
-project-structure.md
-endpoints.md
-api-endpoints.md
-class-diagram.md
-dossier-conception-*.md
-
-# Implementation guides and installation docs
-installation-guide.md
-setup-guide.md
-deployment-guide.md
-
-# Architecture and design documents
-architecture/
-design/
-specifications/
-
-# OpenAPI specifications (until finalized)
-openapi-spec.yaml
-swagger-spec.yaml
-api-spec.json
-
-# =============================================================================
-# SENSITIVE CONFIGURATION FILES
-# =============================================================================
-
-# Environment variables and secrets
-.env
-.env.local
-.env.development
-.env.test
-.env.production
-*.env
-
-# Configuration files with sensitive data
-config/secrets/
-secrets/
-certificates/
-*.key
-*.pem
-*.p12
-*.jks
-
-# Database configuration files
-database.yml
-db-config.properties
-
-# =============================================================================
 # JAVA / SPRING BOOT (BACKEND)
 # =============================================================================
 
@@ -193,7 +122,8 @@ coverage/
 *.db
 *.mdb
 
-# MySQL
+# MariaDB & MySQL
+mariadb-data/
 mysql-data/
 
 # PostgreSQL
@@ -218,6 +148,9 @@ redis-data/
 docker-data/
 **/data/
 volumes/
+
+# Maven cache directory (host-mounted)
+docker/maven-cache/
 
 # Docker Compose override files
 docker-compose.override.yml
@@ -388,6 +321,60 @@ sample-exports/
 *.trace
 profiling-results/
 
+
+
+
 # =============================================================================
-# END OF GITIGNORE
+# PROJECT DOCUMENTATION FILES (DO NOT COMMIT)
 # =============================================================================
+
+# Claude Code configuration and documentation
+CLAUDE.md
+claude.md
+.claude/
+
+# Documentation directory (contains sensitive project info and design docs)
+/docs/
+docs/
+.specify/
+
+# Project design and specification files
+*.md
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!LICENSE.md
+
+
+# Project structure documentation
+dossier-conception-*.md
+
+
+# OpenAPI specifications (until finalized)
+openapi-spec.yaml
+swagger-spec.yaml
+api-spec.json
+
+# =============================================================================
+# SENSITIVE CONFIGURATION FILES
+# =============================================================================
+
+# Environment variables and secrets
+.env
+.env.development
+.env.test
+.env.production
+*.env
+
+# Configuration files with sensitive data
+config/secrets/
+secrets/
+certificates/
+*.key
+*.pem
+*.p12
+*.jks
+
+# Database configuration files
+database.yml
+db-config.properties

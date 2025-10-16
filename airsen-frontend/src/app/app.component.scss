@@ -1,0 +1,164 @@
+// Main Application Layout Styles - Airsen Platform
+// Clean white background with minimal design
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: white;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, hsl(123, 47%, 33%, 0.95), hsl(123, 47%, 38%, 0.95));
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+
+  .spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+
+    p {
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    ::ng-deep .mat-progress-spinner circle {
+      stroke: white !important;
+    }
+  }
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  background-color: white;
+
+  &.with-nav {
+    padding-top: 0;
+  }
+}
+
+.sidenav {
+  flex-shrink: 0;
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: white;
+
+  &.with-sidenav {
+    width: calc(100% - 280px);
+
+    @media (max-width: 1024px) {
+      width: 100%;
+    }
+  }
+}
+
+.content-area {
+  flex: 1;
+  padding: 2rem;
+  background-color: white;
+  min-height: calc(100vh - 200px);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.footer {
+  margin-top: auto;
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .sidenav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
+
+  .content-wrapper {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-area {
+    padding: 1rem;
+    min-height: calc(100vh - 150px);
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .app-container {
+    background-color: hsl(0, 0%, 13%);
+  }
+
+  .main-content {
+    background-color: hsl(0, 0%, 13%);
+  }
+
+  .content-wrapper {
+    background-color: hsl(0, 0%, 13%);
+  }
+
+  .content-area {
+    background-color: hsl(0, 0%, 13%);
+    color: hsl(0, 0%, 96%);
+  }
+
+  .loading-overlay {
+    background: linear-gradient(135deg, hsl(123, 47%, 58%, 0.95), hsl(123, 47%, 68%, 0.95));
+  }
+}
+
+// Print styles
+@media print {
+  .loading-overlay,
+  app-header,
+  app-sidebar,
+  app-breadcrumb,
+  app-footer {
+    display: none !important;
+  }
+
+  .content-area {
+    padding: 0;
+    min-height: auto;
+  }
+}
+
+// Accessibility
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

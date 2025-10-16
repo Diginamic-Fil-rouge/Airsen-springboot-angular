@@ -1,0 +1,25 @@
+<nav class="breadcrumb-nav" aria-label="Fil d'Ariane" *ngIf="breadcrumbs.length > 0">
+  <ol class="breadcrumb-list">
+    <li class="breadcrumb-item">
+      <a routerLink="/" class="breadcrumb-link home">
+        <mat-icon>home</mat-icon>
+        <span>Accueil</span>
+      </a>
+    </li>
+
+    <li *ngFor="let breadcrumb of breadcrumbs; let last = last" class="breadcrumb-item">
+      <mat-icon class="separator">chevron_right</mat-icon>
+
+      <a
+        *ngIf="!breadcrumb.isActive"
+        [routerLink]="breadcrumb.url"
+        class="breadcrumb-link">
+        {{ breadcrumb.label }}
+      </a>
+
+      <span *ngIf="breadcrumb.isActive" class="breadcrumb-current" aria-current="page">
+        {{ breadcrumb.label }}
+      </span>
+    </li>
+  </ol>
+</nav>

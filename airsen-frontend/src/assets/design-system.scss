@@ -1,0 +1,502 @@
+// =============================================================================
+// COLOR SYSTEM
+// =============================================================================
+
+// Air Quality Scale Colors (European Index Standards)
+$airsen-green-good: #4CAF50 !default;        // 0-50: Bon
+$airsen-yellow-moderate: #FFC107 !default;   // 51-100: Moyen  
+$airsen-orange-sensitive: #FF9800 !default;  // 101-150: Dégradé
+$airsen-red-unhealthy: #F44336 !default;     // 151-200: Mauvais
+$airsen-purple-very: #9C27B0 !default;       // 201-300: Très mauvais
+$airsen-maroon-hazardous: #8D2635 !default;  // 301+: Extrêmement mauvais
+
+// Brand Colors
+$airsen-primary: #2E7D32 !default;           // Forest green - trust, environment
+$airsen-primary-light: #66BB6A !default;     // Light green for hovers
+$airsen-primary-dark: #1B5E20 !default;      // Dark green for emphasis
+
+$airsen-secondary: #1976D2 !default;         // Professional blue
+$airsen-secondary-light: #42A5F5 !default;   // Light blue for info
+$airsen-secondary-dark: #0D47A1 !default;    // Dark blue for links
+
+$airsen-accent: #00BCD4 !default;            // Cyan for highlights
+$airsen-accent-light: #4DD0E1 !default;      // Light cyan
+$airsen-accent-dark: #00838F !default;       // Dark cyan
+
+// Neutral Palette
+$airsen-gray-50: #FAFAFA !default;           // Background
+$airsen-gray-100: #F5F5F5 !default;         // Light background
+$airsen-gray-200: #EEEEEE !default;         // Borders
+$airsen-gray-300: #E0E0E0 !default;         // Disabled
+$airsen-gray-400: #BDBDBD !default;         // Placeholder
+$airsen-gray-500: #9E9E9E !default;         // Secondary text
+$airsen-gray-600: #757575 !default;         // Icons
+$airsen-gray-700: #616161 !default;         // Secondary headings
+$airsen-gray-800: #424242 !default;         // Primary text
+$airsen-gray-900: #212121 !default;         // Headings
+
+// Semantic Colors
+$airsen-white: #FFFFFF !default;             // Cards, modals
+$airsen-success: #4CAF50 !default;          // Success states
+$airsen-warning: #FF9800 !default;          // Warnings
+$airsen-error: #F44336 !default;            // Errors
+$airsen-info: #2196F3 !default;             // Information
+
+// Color Maps for programmatic access
+$air-quality-colors: (
+  "good": $airsen-green-good,
+  "moderate": $airsen-yellow-moderate,
+  "sensitive": $airsen-orange-sensitive,
+  "unhealthy": $airsen-red-unhealthy,
+  "very-unhealthy": $airsen-purple-very,
+  "hazardous": $airsen-maroon-hazardous
+) !default;
+
+$brand-colors: (
+  "primary": $airsen-primary,
+  "primary-light": $airsen-primary-light,
+  "primary-dark": $airsen-primary-dark,
+  "secondary": $airsen-secondary,
+  "secondary-light": $airsen-secondary-light,
+  "secondary-dark": $airsen-secondary-dark,
+  "accent": $airsen-accent,
+  "accent-light": $airsen-accent-light,
+  "accent-dark": $airsen-accent-dark
+) !default;
+
+$gray-colors: (
+  "50": $airsen-gray-50,
+  "100": $airsen-gray-100,
+  "200": $airsen-gray-200,
+  "300": $airsen-gray-300,
+  "400": $airsen-gray-400,
+  "500": $airsen-gray-500,
+  "600": $airsen-gray-600,
+  "700": $airsen-gray-700,
+  "800": $airsen-gray-800,
+  "900": $airsen-gray-900
+) !default;
+
+// =============================================================================
+// TYPOGRAPHY
+// =============================================================================
+
+// Font Families
+$font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !default;
+$font-family-mono: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !default;
+
+// Font Sizes (rem units)
+$font-size-xs: 0.75rem !default;     // 12px - Caption text
+$font-size-sm: 0.875rem !default;    // 14px - Small text
+$font-size-base: 1rem !default;      // 16px - Default body text
+$font-size-lg: 1.125rem !default;    // 18px - Large body text
+$font-size-xl: 1.25rem !default;     // 20px - Component titles
+$font-size-2xl: 1.5rem !default;     // 24px - Card titles
+$font-size-3xl: 2rem !default;       // 32px - Section headings
+$font-size-4xl: 2.5rem !default;     // 40px - Page titles
+$font-size-5xl: 3.5rem !default;     // 56px - Hero numbers
+$font-size-data: 2.25rem !default;   // 36px - Data values
+
+// Font Weights
+$font-weight-light: 300 !default;
+$font-weight-normal: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+$font-weight-bold: 700 !default;
+
+// Line Heights
+$line-height-tight: 1.2 !default;    // Headings
+$line-height-normal: 1.5 !default;   // Body text
+$line-height-relaxed: 1.75 !default; // Large text blocks
+
+// Letter Spacing
+$letter-spacing-tight: -0.025em !default;
+$letter-spacing-normal: 0 !default;
+$letter-spacing-wide: 0.05em !default;   // Labels, small caps
+
+// Typography Scale Map
+$font-sizes: (
+  "xs": $font-size-xs,
+  "sm": $font-size-sm,
+  "base": $font-size-base,
+  "lg": $font-size-lg,
+  "xl": $font-size-xl,
+  "2xl": $font-size-2xl,
+  "3xl": $font-size-3xl,
+  "4xl": $font-size-4xl,
+  "5xl": $font-size-5xl,
+  "data": $font-size-data
+) !default;
+
+// =============================================================================
+// SPACING SYSTEM
+// =============================================================================
+
+// Base spacing unit: 8px
+$space-1: 0.25rem !default;   // 4px
+$space-2: 0.5rem !default;    // 8px
+$space-3: 0.75rem !default;   // 12px
+$space-4: 1rem !default;      // 16px
+$space-5: 1.25rem !default;   // 20px
+$space-6: 1.5rem !default;    // 24px
+$space-8: 2rem !default;      // 32px
+$space-10: 2.5rem !default;   // 40px
+$space-12: 3rem !default;     // 48px
+$space-16: 4rem !default;     // 64px
+$space-20: 5rem !default;     // 80px
+$space-24: 6rem !default;     // 96px
+
+// Spacing Map
+$spacing: (
+  "1": $space-1,
+  "2": $space-2,
+  "3": $space-3,
+  "4": $space-4,
+  "5": $space-5,
+  "6": $space-6,
+  "8": $space-8,
+  "10": $space-10,
+  "12": $space-12,
+  "16": $space-16,
+  "20": $space-20,
+  "24": $space-24
+) !default;
+
+// =============================================================================
+// LAYOUT & GRID
+// =============================================================================
+
+// Container Widths
+$container-sm: 640px !default;
+$container-md: 768px !default;
+$container-lg: 1024px !default;
+$container-xl: 1280px !default;
+$container-2xl: 1536px !default;
+
+// Breakpoints
+$breakpoint-sm: 640px !default;
+$breakpoint-md: 768px !default;
+$breakpoint-lg: 1024px !default;
+$breakpoint-xl: 1280px !default;
+$breakpoint-2xl: 1536px !default;
+
+// Sidebar Widths
+$sidebar-width: 240px !default;
+$sidebar-width-collapsed: 60px !default;
+$sidebar-width-mobile: 280px !default;
+
+// Header Heights
+$header-height: 64px !default;
+$header-height-mobile: 56px !default;
+
+// Bottom Navigation Height
+$bottom-nav-height: 64px !default;
+
+// Grid Gaps
+$grid-gap: $space-6 !default;
+$grid-gap-sm: $space-4 !default;
+$grid-gap-lg: $space-8 !default;
+
+// Breakpoints Map
+$breakpoints: (
+  "sm": $breakpoint-sm,
+  "md": $breakpoint-md,
+  "lg": $breakpoint-lg,
+  "xl": $breakpoint-xl,
+  "2xl": $breakpoint-2xl
+) !default;
+
+// =============================================================================
+// SHADOWS & EFFECTS
+// =============================================================================
+
+// Box Shadows
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1) !default;
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15) !default;
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2) !default;
+$shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.25) !default;
+
+// Focus Shadow
+$shadow-focus: 0 0 0 3px rgba(46, 125, 50, 0.3) !default;
+
+// Shadows Map
+$shadows: (
+  "sm": $shadow-sm,
+  "md": $shadow-md,
+  "lg": $shadow-lg,
+  "xl": $shadow-xl,
+  "focus": $shadow-focus
+) !default;
+
+// Border Radius
+$radius-none: 0 !default;
+$radius-sm: 4px !default;
+$radius-md: 6px !default;
+$radius-lg: 8px !default;
+$radius-xl: 12px !default;
+$radius-full: 50% !default;
+
+// Border Radius Map
+$radius: (
+  "none": $radius-none,
+  "sm": $radius-sm,
+  "md": $radius-md,
+  "lg": $radius-lg,
+  "xl": $radius-xl,
+  "full": $radius-full
+) !default;
+
+// =============================================================================
+// TRANSITIONS & ANIMATIONS
+// =============================================================================
+
+// Transition Durations
+$duration-fast: 0.15s !default;
+$duration-normal: 0.2s !default;
+$duration-slow: 0.3s !default;
+
+// Transition Easings
+$ease-linear: linear !default;
+$ease-in: ease-in !default;
+$ease-out: ease-out !default;
+$ease-in-out: ease-in-out !default;
+
+// Common Transitions
+$transition-all: all $duration-normal $ease-in-out !default;
+$transition-colors: background-color $duration-normal $ease-in-out, border-color $duration-normal $ease-in-out, color $duration-normal $ease-in-out !default;
+$transition-transform: transform $duration-normal $ease-in-out !default;
+$transition-opacity: opacity $duration-normal $ease-in-out !default;
+
+// =============================================================================
+// Z-INDEX SCALE
+// =============================================================================
+
+$z-index-dropdown: 10 !default;
+$z-index-sticky: 20 !default;
+$z-index-fixed: 30 !default;
+$z-index-modal-backdrop: 40 !default;
+$z-index-modal: 50 !default;
+$z-index-popover: 60 !default;
+$z-index-tooltip: 70 !default;
+
+// Z-Index Map
+$z-indices: (
+  "dropdown": $z-index-dropdown,
+  "sticky": $z-index-sticky,
+  "fixed": $z-index-fixed,
+  "modal-backdrop": $z-index-modal-backdrop,
+  "modal": $z-index-modal,
+  "popover": $z-index-popover,
+  "tooltip": $z-index-tooltip
+) !default;
+
+// =============================================================================
+// COMPONENT SPECIFIC TOKENS
+// =============================================================================
+
+// Buttons
+$btn-padding-sm: $space-2 $space-4 !default;
+$btn-padding-md: $space-3 $space-6 !default;
+$btn-padding-lg: $space-4 $space-8 !default;
+
+$btn-font-size-sm: $font-size-sm !default;
+$btn-font-size-md: $font-size-base !default;
+$btn-font-size-lg: $font-size-lg !default;
+
+$btn-border-radius: $radius-md !default;
+$btn-font-weight: $font-weight-medium !default;
+
+// Form Controls
+$input-padding: $space-3 $space-4 !default;
+$input-border-width: 2px !default;
+$input-border-color: $airsen-gray-200 !default;
+$input-border-radius: $radius-md !default;
+$input-focus-border-color: $airsen-primary !default;
+
+// Cards
+$card-padding: $space-6 !default;
+$card-padding-sm: $space-4 !default;
+$card-border-radius: $radius-lg !default;
+$card-background: $airsen-white !default;
+$card-shadow: $shadow-sm !default;
+$card-shadow-hover: $shadow-md !default;
+
+// Navigation
+$nav-link-padding: $space-3 $space-4 !default;
+$nav-link-border-radius: $radius-md !default;
+
+// Air Quality Badges
+$badge-padding: $space-2 $space-4 !default;
+$badge-border-radius: 20px !default;
+$badge-font-size: $font-size-sm !default;
+$badge-font-weight: $font-weight-medium !default;
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+// Function to get color from maps
+@function color($palette, $tone: null) {
+  @if $tone == null {
+    @return map-get($brand-colors, $palette);
+  }
+  
+  @if $palette == "gray" {
+    @return map-get($gray-colors, $tone);
+  }
+  
+  @if $palette == "air-quality" {
+    @return map-get($air-quality-colors, $tone);
+  }
+  
+  @return null;
+}
+
+// Function to get spacing value
+@function space($size) {
+  @return map-get($spacing, $size);
+}
+
+// Function to get font size
+@function font-size($size) {
+  @return map-get($font-sizes, $size);
+}
+
+// Function to get shadow
+@function shadow($size) {
+  @return map-get($shadows, $size);
+}
+
+// Function to get border radius
+@function radius($size) {
+  @return map-get($radius, $size);
+}
+
+// =============================================================================
+// MIXINS
+// =============================================================================
+
+// Responsive breakpoint mixin
+@mixin breakpoint($size) {
+  @if map-has-key($breakpoints, $size) {
+    @media (min-width: map-get($breakpoints, $size)) {
+      @content;
+    }
+  } @else {
+    @warn "Unknown breakpoint: #{$size}";
+  }
+}
+
+// Focus ring mixin
+@mixin focus-ring() {
+  outline: none;
+  box-shadow: $shadow-focus;
+}
+
+// Card mixin
+@mixin card() {
+  background: $card-background;
+  border-radius: $card-border-radius;
+  box-shadow: $card-shadow;
+  padding: $card-padding;
+  transition: box-shadow $duration-normal $ease-in-out;
+  
+  &:hover {
+    box-shadow: $card-shadow-hover;
+  }
+}
+
+// Button mixin
+@mixin button($variant: "primary", $size: "md") {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: $btn-border-radius;
+  font-weight: $btn-font-weight;
+  cursor: pointer;
+  transition: $transition-all;
+  text-decoration: none;
+  
+  @if $size == "sm" {
+    padding: $btn-padding-sm;
+    font-size: $btn-font-size-sm;
+  } @else if $size == "lg" {
+    padding: $btn-padding-lg;
+    font-size: $btn-font-size-lg;
+  } @else {
+    padding: $btn-padding-md;
+    font-size: $btn-font-size-md;
+  }
+  
+  @if $variant == "primary" {
+    background: $airsen-primary;
+    color: $airsen-white;
+    
+    &:hover:not(:disabled) {
+      background: $airsen-primary-dark;
+      transform: translateY(-1px);
+    }
+  } @else if $variant == "secondary" {
+    background: transparent;
+    color: $airsen-primary;
+    border: 2px solid $airsen-primary;
+    
+    &:hover:not(:disabled) {
+      background: $airsen-primary;
+      color: $airsen-white;
+    }
+  }
+  
+  &:focus {
+    @include focus-ring();
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Air quality color mixin
+@mixin air-quality-color($level) {
+  @if $level == "good" {
+    background-color: $airsen-green-good;
+    color: $airsen-white;
+  } @else if $level == "moderate" {
+    background-color: $airsen-yellow-moderate;
+    color: $airsen-gray-900;
+  } @else if $level == "sensitive" {
+    background-color: $airsen-orange-sensitive;
+    color: $airsen-white;
+  } @else if $level == "unhealthy" {
+    background-color: $airsen-red-unhealthy;
+    color: $airsen-white;
+  } @else if $level == "very-unhealthy" {
+    background-color: $airsen-purple-very;
+    color: $airsen-white;
+  } @else if $level == "hazardous" {
+    background-color: $airsen-maroon-hazardous;
+    color: $airsen-white;
+  }
+}
+
+// Screen reader only mixin
+@mixin sr-only() {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Truncate text mixin
+@mixin truncate() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

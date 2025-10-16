@@ -1,0 +1,31 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed">
+  <div class="sidebar-header">
+    <button mat-icon-button class="toggle-button" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+      <mat-icon>{{ isCollapsed ? 'menu_open' : 'menu' }}</mat-icon>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li *ngFor="let item of visibleNavItems" class="nav-item">
+        <button
+          mat-button
+          class="nav-link"
+          [class.active]="isActive(item.route)"
+          (click)="navigateTo(item.route)"
+          [matTooltip]="isCollapsed ? item.label : ''"
+          matTooltipPosition="right">
+          <mat-icon>{{ item.icon }}</mat-icon>
+          <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer" *ngIf="!isCollapsed">
+    <div class="version-info">
+      <mat-icon>info</mat-icon>
+      <span>Version 1.0.0</span>
+    </div>
+  </div>
+</aside>
