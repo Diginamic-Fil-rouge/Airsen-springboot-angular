@@ -29,10 +29,10 @@
     </h3>
     <div class="messages-container">
       @for (message of (thread$ | async)?.messages; track $index) {
-        <forum-message [message]="message"></forum-message>
+        <forum-message [message]="message" (editMessageEvent)="refreshThread()" ></forum-message>
       }
     </div>
-    <app-add-message [thread]="(thread$ | async)" (newMessageEvent)="refreshThread($event)"></app-add-message>
+    <app-add-message [thread]="(thread$ | async)" (newMessageEvent)="refreshThread()"></app-add-message>
   }
   @else {
     <app-loader></app-loader>
