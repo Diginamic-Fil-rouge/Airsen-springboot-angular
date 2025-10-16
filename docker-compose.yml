@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 name: airsen
 
@@ -23,7 +23,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL","mariadb-admin ping -h 127.0.0.1 -uroot -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      test: ["CMD-SHELL","mariadb-admin ping -h 127.0.0.1 -u$${MARIADB_USER} -p$${MARIADB_PASSWORD} --silent || mariadb-admin ping -h 127.0.0.1 -uroot -p$${MARIADB_ROOT_PASSWORD} --silent"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -75,6 +75,8 @@ services:
       CORS_ALLOWED_ORIGINS: http://localhost:4200
       JWT_SECRET: ${JWT_SECRET}
       LOGGING_LEVEL_COM_AIRSEN: DEBUG
+      ATMO_SCHEDULE_CRON: ${ATMO_SCHEDULE_CRON}
+      WEATHER_SCHEDULE_CRON: ${WEATHER_SCHEDULE_CRON}
     command: mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xms256m -Xmx512m"
     volumes:
       - ./airsen-backend:/app
