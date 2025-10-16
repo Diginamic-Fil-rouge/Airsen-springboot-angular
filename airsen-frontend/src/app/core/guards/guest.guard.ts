@@ -10,7 +10,7 @@ import { StorageService } from '@/auth/services/storage.service';
  *
  * Purpose: Prevent authenticated users from accessing login/register pages
  * Redirects: Authenticated users → /dashboard or returnUrl
- * Access: Visitors ✅ | Users ❌ | Admins ❌
+ * Access: Visitors  | Users  | Admins
  *
  * Usage:
  * {

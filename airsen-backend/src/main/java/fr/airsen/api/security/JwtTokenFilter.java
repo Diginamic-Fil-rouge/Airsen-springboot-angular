@@ -1,5 +1,6 @@
 package fr.airsen.api.security;
 
+import fr.airsen.api.service.JwtBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,6 +72,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private JwtBlacklistService jwtBlacklistService;
+
     /**
      * Filters incoming HTTP requests to process JWT authentication.
      * 
@@ -103,11 +107,23 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String token = extractTokenFromRequest(request);
 
             // Process token if present and valid
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                authenticateUser(token, request);
-            } else if (token != null) {
-                // Token present but invalid - log for security monitoring
-                logger.debug("Invalid JWT token in request from IP: {}", getClientIpAddress(request));
+            if (token != null) {
+                // Check if token is blacklisted (revoked via logout)
+                if (jwtBlacklistService.isTokenBlacklisted(token)) {
+                    logger.warn("Attempted use of blacklisted token from IP: {}", getClientIpAddress(request));
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Token has been revoked\",\"message\":\"Please log in again\"}");
+                    return;
+                }
+
+                // Validate token structure and expiration
+                if (jwtTokenProvider.validateToken(token)) {
+                    authenticateUser(token, request);
+                } else {
+                    // Token present but invalid - log for security monitoring
+                    logger.debug("Invalid JWT token in request from IP: {}", getClientIpAddress(request));
+                }
             }
 
         } catch (Exception e) {

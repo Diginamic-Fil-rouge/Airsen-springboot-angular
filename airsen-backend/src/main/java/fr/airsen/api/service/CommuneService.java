@@ -12,6 +12,8 @@ import fr.airsen.api.repository.RegionRepository;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -69,9 +71,17 @@ public class CommuneService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Searches for communes by name or INSEE code (cached for 7 days).
+     *
+     * @param query search query (name or INSEE code)
+     * @param limit maximum number of results
+     * @return list of matching commune DTOs
+     */
+    @Cacheable(value = "communes", key = "#query + ':' + #limit", unless = "#result == null || #result.isEmpty()")
     @Transactional
     public List<CommuneDTO> searchCommunes(String query, int limit) {
-        log.info("Searching communes by name or INSEE code: {} (limit: {})", query, limit);
+        log.info("Cache miss - Searching communes by name or INSEE code: {} (limit: {})", query, limit);
 
         // First, search in local database
         Page<Commune> communePage = communeRepository.searchByNameOrInseeCode(query, PageRequest.of(0, limit));
@@ -132,6 +142,14 @@ public class CommuneService {
 
         // Enrich coordinates for results that are missing them
         return enrichCoordinatesIfMissing(results);
+    }
+
+    /**
+     * Clears all commune cache.
+     */
+    @CacheEvict(value = "communes", allEntries = true)
+    public void evictAllCommuneCache() {
+        log.info("Cleared all commune cache");
     }
 
     /**

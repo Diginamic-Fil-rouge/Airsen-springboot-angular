@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,6 +26,7 @@ import jakarta.annotation.PostConstruct;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -55,9 +57,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints - Authentication not required
                 .requestMatchers("/auth/login", "/auth/register", "/auth/refresh", "/auth/logout", "/auth/health").permitAll()
-                .requestMatchers("/test/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html").permitAll()
+
+                // Redis Test endpoints - Read-only public, destructive operations require ADMIN
+                .requestMatchers(HttpMethod.GET, "/test/redis/connection", "/test/redis/cache-stats",
+                                "/test/redis/metrics", "/test/redis/info").permitAll()
+                .requestMatchers(HttpMethod.GET, "/test/redis/keys").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/test/redis/clear-cache/**", "/test/redis/clear-cache").hasRole("ADMIN")
+
+                // Other test endpoints (ATMO, Health, etc.) - public for integration testing
+                .requestMatchers("/test/**").permitAll()
                 
                 
                 // Forum endpoints - VISITOR can read, USER/ADMIN can write

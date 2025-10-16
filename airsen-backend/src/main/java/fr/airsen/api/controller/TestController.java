@@ -54,6 +54,11 @@ public class TestController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/hot-reload-test")
+    public ResponseEntity<String> hotReloadTest() {
+        return ResponseEntity.ok("Hot reload is working! Timestamp: " + System.currentTimeMillis());
+    }
+
     /**
      * GET /test/echo/{message}
      * 

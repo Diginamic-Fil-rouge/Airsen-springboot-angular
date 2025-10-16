@@ -1,42 +1,45 @@
 # Airsen - Environmental Information Exchange Platform
 
-**Airsen** is an environmental information platform designed to deliver French citizens with real-time environmental data. Built as a Spring Boot REST API, Airsen provides environmental information from official monitoring sources and comunity-drivent contributions. The goal is to make complex environmental data accessble, actinable and secure. 
-
-## Mission Statement
-
-Airsen connects official monitoring systems with user engagement. By combining verified environmental data with citizen input, it supports both short-term decision-making (daily activities) and long-term awareness (climate and health impact).
+**Airsen** is an environmental information platform delivering real-time environmental data to French citizens. Built with Spring Boot and Angular, it integrates official monitoring sources (ATMO France, INSEE, Open-Meteo) with community-driven contributions.
 
 ## Key Features
 
-### Environmental Intelligence
-- **Air Quality Monitoring**: Real-time ATMO indices and pollutant concentrations from official French monitoring stations
-- **Weather Integration**: Current conditions and forecasts correlated with air quality data
-- **Geographic Coverage**: Complete French administrative hierarchy (regions, departments, communes)
+- **Air Quality Monitoring**: Real-time ATMO indices and pollutant data from French monitoring stations
+- **Weather Integration**: Current conditions and forecasts correlated with air quality
+- **Community Forums**: Category-based discussions on environmental topics with voting system
+- **Admin Alert System**: Automated detection of environmental signals (ATMO + Open-Meteo) with admin-approved broadcast notifications
+- **Data Export**: PDF and CSV reports for personal tracking
+- **Secure Access**: JWT authentication with role-based authorization (Visitor/User/Admin)
 
-### Community Engagement
-- **Discussion Forums**: Category-based community discussions on environmental topics
-- **Citizen Reporting**: Share local environmental observations and experiences
-- **Voting System**: Community-driven content validation and engagement
+## Notification & Alert System
 
-### Personalized Alerts
-- **Smart Notifications**: Customizable air quality and weather alerts based on user preferences
-- **Threshold Management**: Personal health-based alert configurations
-- **Multi-channel Delivery**: Email and in-app notification systems
+The platform implements an **admin-controlled broadcast system**:
 
-### Data & Insights
-- **Open Data Integration**: ATMO France, INSEE, and Open-Meteo APIs
-- **Export Capabilities**: PDF and CSV reports for personal tracking
-- **Real-time Dashboard**: Live environmental data visualization
+### How It Works
+1. **Automated Detection**: System monitors ATMO France (air quality episodes) and Open-Meteo (weather thresholds: heat ≥35°C, wind ≥70 km/h, rain ≥30mm/24h)
+2. **Admin Alert Center**: Detected signals appear in admin dashboard with pre-filled notification templates
+3. **Admin Review & Broadcast**: Admins review, edit, and approve notifications to be sent to users by geographic scope (France/Region/Department/Commune)
+4. **User Notifications**: Users receive email notifications only when admins approve and send campaigns
 
-### Secure Platform
-- **JWT Authentication**: Secure user authentication with role-based authorization (Visitor/User/Admin)
-- **Privacy-First**: GDPR-compliant data handling and user privacy protection
-- **API Documentation**: Interactive Swagger UI for developers and integrators
+**Key Points**:
+- Users receive notifications sent by admins
+- Admins receive alerts from external APIs and monitor thresholds
+- No automatic user alerts without admin approval
+- No user-defined thresholds or personalized alerts
+
+
+## Technology Stack
+
+- **Backend**: Spring Boot 3.2.0 (Java 21) + MariaDB 11.6 + Redis 7
+- **Frontend**: Angular 20 + TypeScript + Node.js 22.19.0
+- **Infrastructure**: Docker + Docker Compose with profiles
+- **Security**: Spring Security with JWT + GDPR-compliant data handling
 
 ## Prerequisites
 
 - Docker 20.0+ with Docker Compose v2.0+
-- Git for version control
+- Git
+- Available ports: 3306, 6379, 8080, 4200
 
 ## Quick Start
 
@@ -46,71 +49,249 @@ git clone https://github.com/Diginamic-Fil-rouge/Airsen-springboot-angular.git
 cd Airsen-springboot-angular
 ```
 
-### 2. Environment Setup
-Create `.env` file:
+### 2. Configure Environment
+
+Create `.env.local` file in project root:
+
 ```env
-DB_HOST=82.165.152.149
-DB_PORT=3307
-DB_NAME=2025-d08b-g1
-DB_USERNAME=main1
-DB_PASSWORD=your_password
-JWT_SECRET=your-super-secret-jwt-key-with-at-least-32-characters
+# Database
+DB_HOST=mariadb
+DB_PORT=3306
+DB_NAME=airsen_dev
+DB_USERNAME=airsen_dev
+DB_PASSWORD=dev_password
+DB_ROOT_PASSWORD=root123
+
+# Redis
 REDIS_HOST=redis
 REDIS_PORT=6379
+
+# JWT (use strong secret in production!)
+JWT_SECRET=your-super-secret-jwt-key-with-at-least-32-characters-base64-encoded
+
+# Spring Boot
+SPRING_PROFILES_ACTIVE=dev
+BACKEND_PORT=8080
+FRONTEND_PORT=4200
+
+# External APIs
+ATMO_API_URL=https://api.atmo-france.org/v1
+ATMO_USERNAME=your_atmo_username
+ATMO_PASSWORD=your_atmo_password
+ATMO_JWT_TOKEN=your_atmo_jwt_token
+OPEN_METEO_URL=https://api.open-meteo.com/v1
+INSEE_API_URL=https://api.insee.fr/metadonnees/V1
+
+# Email (use Gmail App Password)
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+
+# Frontend
+API_BASE_URL=http://localhost:8080/api/v1
 ```
 
 ### 3. Start Application
+
+Choose the profile matching your needs:
+
 ```bash
-# Start backend services
-docker-compose --profile backend up -d
+# Backend Only (MariaDB + Redis + API)
+docker-compose --env-file .env.local --profile backend up -d
+
+# Full Stack (MariaDB + Redis + API + Frontend)
+docker-compose --env-file .env.local --profile full-stack up -d
+
+# Database Only (MariaDB + Redis)
+docker-compose --env-file .env.local --profile database up -d
+
+# Frontend Only (Angular)
+docker-compose --env-file .env.local --profile frontend up -d
+```
+
+### 4. Verify Installation
+
+```bash
+# Check status
+docker-compose ps
+
+# Test backend
+curl http://localhost:8080/actuator/health
 
 # Access Swagger UI
-http://localhost:8080/api/v1/swagger-ui/index.html
+open http://localhost:8080/api/v1/swagger-ui.html
 ```
 
-## Docker Environment
+## Docker Compose Commands
 
-### Available Profiles
+### Basic Operations
 
-**Backend Profile:**
 ```bash
-docker-compose --profile backend up -d
-```
-Services: Redis + Spring Boot API
+# Start services
+docker-compose --env-file .env.local --profile backend up -d
 
-**Full Stack Profile:**
-```bash
-docker-compose --profile full-stack up -d
-```
-Services: Redis + Backend + Angular Frontend
+# Stop services (keeps data)
+docker-compose stop
 
-**Development Profile:**
-```bash
-docker-compose --profile development up -d
-```
-Services: All + Redis Commander (web GUI for Redis cache management)
+# Stop and remove containers (keeps data)
+docker-compose down
 
-### Container Management
-```bash
+# Stop and remove everything including data (deletes database!)
+docker-compose down -v
+
 # View status
 docker-compose ps
 
-# View logs
+# View logs (follow mode)
+docker-compose logs -f
+
+# View logs for specific service
 docker-compose logs -f airsen-backend
-
-# Stop services
-docker-compose down
-
-# Clean rebuild
-docker-compose down -v && docker-compose --profile backend build --no-cache
 ```
 
-## Available Services
+### Build & Rebuild
 
-- **Swagger UI**: http://localhost:8080/api/v1/swagger-ui/index.html
-- **Health Check**: http://localhost:8080/api/v1/test/health
-- **Redis Commander**: http://localhost:8082 (development profile - Redis cache management)
+```bash
+# Rebuild specific service
+docker-compose --env-file .env.local build airsen-backend
+
+# Rebuild without cache (clean build)
+docker-compose --env-file .env.local build --no-cache airsen-backend
+
+# Rebuild and restart
+docker-compose --env-file .env.local up -d --build airsen-backend
+
+# Clean rebuild (fresh start)
+docker-compose down -v && \
+docker-compose --env-file .env.local --profile backend build --no-cache && \
+docker-compose --env-file .env.local --profile backend up -d
+```
+
+### Service Management
+
+```bash
+# Restart specific service
+docker-compose restart airsen-backend
+
+# Restart all services
+docker-compose restart
+
+# Start stopped services
+docker-compose start
+
+# Check resource usage
+docker stats
+```
+
+## MariaDB Commands
+
+```bash
+# Access MariaDB console
+docker-compose exec mariadb mariadb -u airsen_dev -pdev_password -D airsen_dev
+
+# Run SQL query
+docker-compose exec mariadb mariadb -u airsen_dev -pdev_password -D airsen_dev \
+  -e "SELECT COUNT(*) FROM users;"
+
+# Backup database
+docker-compose exec mariadb mariadb-dump -u airsen_dev -pdev_password airsen_dev > backup.sql
+
+# Restore database
+docker-compose exec -T mariadb mariadb -u airsen_dev -pdev_password airsen_dev < backup.sql
+
+# Reset database (deletes all data!)
+docker-compose down -v
+docker-compose --env-file .env.local --profile backend up -d
+```
+
+## Redis Commands
+
+```bash
+# Access Redis CLI
+docker-compose exec redis redis-cli
+
+# Check Redis status
+docker-compose exec redis redis-cli PING
+
+# View all cached keys
+docker-compose exec redis redis-cli KEYS "*"
+
+# Clear all cache
+docker-compose exec redis redis-cli FLUSHALL
+```
+
+## Available Endpoints
+
+### Backend API
+- **Base URL**: http://localhost:8080/api/v1
+- **Swagger UI**: http://localhost:8080/api/v1/swagger-ui.html
+- **Health Check**: http://localhost:8080/actuator/health
+
+### Frontend (full-stack profile)
+- **Angular App**: http://localhost:4200
+
+## Troubleshooting
+
+### Container Won't Start
+```bash
+# View logs
+docker-compose logs airsen-backend
+
+# Check status
+docker-compose ps
+
+# Check resources
+docker stats
+```
+
+### Port Conflicts
+```bash
+# Check port usage
+lsof -i :8080
+
+# Change port in .env.local
+BACKEND_PORT=8081
+
+# Restart
+docker-compose down
+docker-compose --env-file .env.local --profile backend up -d
+```
+
+### Database Issues
+```bash
+# Test connection
+docker-compose exec mariadb mariadb -u airsen_dev -pdev_password \
+  -e "SELECT 'Connected!' as status;"
+
+# Check logs
+docker-compose logs mariadb
+
+# Verify configuration
+docker-compose config
+```
+
+### Clean Everything
+```bash
+# Nuclear option: remove all containers and data
+docker-compose down -v
+docker system prune -a --volumes
+docker-compose --env-file .env.local --profile backend build --no-cache
+docker-compose --env-file .env.local --profile backend up -d
+```
+
+
+## Docker Profiles Summary
+
+| Profile | Services | Use Case |
+|---------|----------|----------|
+| **backend** | MariaDB + Redis + API | API development |
+| **full-stack** | All services | Complete application |
+| **database** | MariaDB + Redis | Run backend/frontend locally |
+| **frontend** | Angular | Frontend development |
 
 ## License
 
 MIT License
+
+---
+
+**Built with ❤️ for French citizens**

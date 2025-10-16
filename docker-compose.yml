@@ -26,7 +26,6 @@ services:
     profiles:
       - database
       - backend
-      - local-dev
       - full-stack
     healthcheck:
       test:
@@ -108,7 +107,7 @@ services:
       - ./airsen-backend/pom.xml:/app/pom.xml
       # Maven cache to speed up builds (using host directory)
       - ./docker/maven-cache:/home/airsen/.m2
-      # DON'T mount target directory to avoid conflicts
+      - backend_target:/app/target  # Named volume: persist between restarts, faster hot reload
     depends_on:
       mariadb:
         condition: service_healthy
@@ -133,6 +132,8 @@ services:
       context: ./airsen-frontend
       dockerfile: Dockerfile
       target: development
+      args:
+        NODE_IMAGE: node:20-alpine
     container_name: airsen-frontend
     environment:
       NODE_ENV: development
@@ -140,19 +141,24 @@ services:
     ports:
       - '${FRONTEND_PORT:-4200}:4200'
     volumes:
-      # Mount source code for hot reload
-      - ./airsen-frontend/src:/app/src
-      - ./airsen-frontend/angular.json:/app/angular.json
-      - ./airsen-frontend/package.json:/app/package.json
-      - ./airsen-frontend/tsconfig.json:/app/tsconfig.json
-      # Node modules cache
-      - frontend_node_modules:/app/node_modules
+      # Mount entire project for full workspace visibility
+      - ./airsen-frontend:/app
+      # Protect container's node_modules from host override
+      - /app/node_modules
+    working_dir: /app
+    command: npx ng serve --host 0.0.0.0 --port 4200 --poll 2000
     restart: unless-stopped
     networks:
       - airsen-network
     profiles:
       - frontend
       - full-stack
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4200" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   mariadb_data:
@@ -160,6 +166,8 @@ volumes:
   redis_data:
     driver: local
   frontend_node_modules:
+    driver: local
+  backend_target:
     driver: local
 
 networks:
