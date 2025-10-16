@@ -1,5 +1,7 @@
 <!-- Main Header Navigation - Simplified Design -->
-<header class="header-toolbar">
+<header class="header-toolbar"
+[ngClass]="{ 'header--logged-in': isAuthenticated }"
+>
   <div class="header-container">
     <!-- Logo and Brand -->
     <div class="logo-section" routerLink="/" style="cursor: pointer;">
