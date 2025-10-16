@@ -72,6 +72,8 @@ public class AtmoDataService {
         
         return atmoApiClient.getCurrentAirQuality(communeInseeCode)
             .flatMap(this::convertAndSaveAirQuality)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                "Commune " + communeInseeCode + " not found in database. Please ensure the commune exists before fetching air quality data.")))
             .doOnSuccess(entity -> log.info("Successfully stored air quality data for commune: {}", communeInseeCode))
             .doOnError(error -> log.error("Failed to fetch air quality for commune: {}", communeInseeCode, error));
     }
@@ -121,7 +123,8 @@ public class AtmoDataService {
                 .orElse(null);
             
             if (commune == null) {
-                log.warn("Commune not found for INSEE code: {}", atmoResponse.communeInsee());
+                log.warn("Commune not found in database for INSEE code: {} (commune name: {}). ATMO data exists but cannot be stored without commune reference.", 
+                    atmoResponse.communeInsee(), atmoResponse.zoneName());
                 return null;
             }
 

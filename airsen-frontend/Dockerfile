@@ -1,53 +1,84 @@
-ARG NODE_IMAGE=node:22.12-bullseye-slim
-ARG NGINX_IMAGE=nginx:1.27-alpine
+# syntax=docker/dockerfile:1
+#
+# Optimized Multi-stage Dockerfile for Airsen Frontend (Angular)
+# Supports: development (with live reload), production
+#
+# Key Optimizations:
+# - Dev: No source copy (bind-mounted), only node_modules cached
+# - Prod: Clean multi-stage build, minimal Nginx runtime
+# - Dependencies cached separately from source code
+#
 
-# DEVELOPMENT STAGE
-FROM ${NODE_IMAGE} AS development
-WORKDIR /usr/src/app
-EXPOSE 4200
-CMD ["bash","-lc","npm ci --no-audit --no-fund && npx ng serve --host 0.0.0.0 --port 4200 --poll 2000"]
+# ==========================================
+# DEVELOPMENT STAGE - Live Reload with Angular CLI
+# ==========================================
+FROM node:22-alpine AS development
 
-# BUILD STAGE
-FROM ${NODE_IMAGE} AS build
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# OOM protection for large Angular apps
-ENV NODE_OPTIONS=--max-old-space-size=4096
+# Install basic utilities
+RUN apk add --no-cache curl bash
 
-# Install dependencies
+# Copy ONLY package files for dependency caching (source will be bind-mounted)
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund
 
-# Copy source and build
-COPY . .
-RUN npm run build:docker
+# Install dependencies (cached layer - only invalidates if package.json changes)
+RUN npm ci --prefer-offline --no-audit
 
-# Verify build output
-RUN test -d /usr/src/app/dist
+# DON'T COPY src - will be bind-mounted in docker-compose
+# This allows Angular CLI to detect file changes and live reload
 
-# PRODUCTION STAGE
-FROM ${NGINX_IMAGE} AS production
+# Expose Angular dev server port
+EXPOSE 4200
 
-# Copy built Angular app
-COPY --from=build /usr/src/app/dist/ /usr/share/nginx/html/
+# Set Node memory options
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
-# Create non-root user for nginx
-RUN addgroup -g 101 -S nginx-runtime && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx-runtime -g nginx-runtime nginx-runtime
+# Angular CLI with live reload (polling for Docker compatibility)
+CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
 
-# Set proper permissions
-RUN chown -R nginx-runtime:nginx-runtime /usr/share/nginx/html && \
-    chown -R nginx-runtime:nginx-runtime /var/cache/nginx && \
-    chown -R nginx-runtime:nginx-runtime /var/log/nginx && \
-    touch /var/run/nginx.pid && \
-    chown -R nginx-runtime:nginx-runtime /var/run/nginx.pid
+# ==========================================
+# BUILDER STAGE - Compile Angular Application
+# ==========================================
+FROM node:22-alpine AS builder
 
-USER nginx-runtime
+WORKDIR /build
 
-# Health check
+# Copy package files first for dependency caching
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production --prefer-offline --no-audit
+
+# Copy Angular configuration files
+COPY angular.json tsconfig*.json ./
+
+# Copy source code (invalidates only if src changes)
+COPY src ./src
+
+# Build production-optimized Angular app
+RUN npm run build -- --configuration production --output-path=dist/airsen-frontend
+
+# ==========================================
+# PRODUCTION STAGE - Nginx Static Server
+# ==========================================
+FROM nginx:alpine AS production
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy ONLY built Angular app from builder stage
+COPY --from=builder /build/dist/airsen-frontend /usr/share/nginx/html
+
+# Create health check endpoint
+RUN echo "OK" > /usr/share/nginx/html/health
+
+# Health check for production readiness
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+  CMD curl -f http://localhost:80/health || exit 1
 
+# Expose HTTP port
 EXPOSE 80
 
+# Run nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]

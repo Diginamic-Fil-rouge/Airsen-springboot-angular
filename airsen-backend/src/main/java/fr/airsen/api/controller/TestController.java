@@ -47,6 +47,7 @@ public class TestController {
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");
+        response.put("message", "Hot Reload is WORKING!");
         response.put("timestamp", LocalDateTime.now());
         response.put("service", "Airsen API");
         response.put("version", "1.0.0-SNAPSHOT");
