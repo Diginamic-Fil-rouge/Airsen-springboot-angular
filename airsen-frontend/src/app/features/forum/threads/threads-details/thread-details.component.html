@@ -17,6 +17,7 @@
           {{ (thread$ | async)?.lastMessageDate | date : "short" }}
         </div>
         <div class="view-count">{{ (thread$ | async)?.viewCount }}</div>
+        <a routerLink="/forum/edit/thread/{{ (thread$ | async)?.id }}">Modifier</a>
       </div>
     </div>
     <p class="content">{{ (thread$ | async)?.content }}</p>

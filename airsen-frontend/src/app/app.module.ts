@@ -86,8 +86,9 @@ import { LoaderComponent } from './shared/components/loader/loader.component';
 import { BackButtonComponent } from './shared/components/backButton/back-button.component';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
+import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
 
 @NgModule({
   declarations: [
@@ -111,6 +112,7 @@ import { AddMessageComponent } from './features/forum/messages/add-message/add-m
     MessageComponent,
     ThreadComponent,
     AddThreadComponent,
+    EditThreadComponent,
     AddMessageComponent,
     ThreadDetailsComponent,
     VotingComponent,

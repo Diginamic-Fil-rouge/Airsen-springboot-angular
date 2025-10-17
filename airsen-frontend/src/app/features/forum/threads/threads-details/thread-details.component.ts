@@ -6,6 +6,7 @@ import { ThreadService } from '../../services/thread.service';
 import { Message } from '../../models/message.model';
 
 @Component({
+    standalone: false,
     selector: 'forum-thread-details',
     templateUrl: './thread-details.component.html',
     styleUrls: ['./thread-details.component.scss']

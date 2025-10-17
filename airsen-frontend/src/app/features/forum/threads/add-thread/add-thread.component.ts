@@ -1,10 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { ForumService } from '../../services/forum.service';
-import { AuthService } from '@/app/core/auth/services/auth.service';
-import { AuthUser } from '@/app/core/auth/models/auth.model';
-import { Subject, takeUntil } from 'rxjs';
 import { Router } from '@angular/router';
 @Component({
+    standalone : false,
     selector: 'forum-add-thread',
     templateUrl: './add-thread.component.html',
     styleUrls: ['./add-thread.component.scss']

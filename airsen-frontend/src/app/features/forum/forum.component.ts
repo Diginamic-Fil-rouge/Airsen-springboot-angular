@@ -9,6 +9,7 @@ import { Page } from './models/page.model';
 import { LoaderComponent } from '@/app/shared/components/loader/loader.component';
 
 @Component({
+  standalone : false,
   selector: 'app-forum',
   templateUrl: './forum.component.html',
   styleUrls: ['./forum.component.scss']
