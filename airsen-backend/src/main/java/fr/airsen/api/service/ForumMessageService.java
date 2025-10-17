@@ -47,17 +47,16 @@ public class ForumMessageService {
     }
 
     @Transactional
-    public List<ForumMessageDTO> findByAuthor(Long id) throws EntityNotFoundException{
+    public List<ForumMessageDTO> findByAuthor(Long id) throws EntityNotFoundException {
         User author = userRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Author not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         return forumMessageMapper.toDTOs(forumMessageRepository.findByAuthor(author));
     }
 
     @Transactional
-    public List<ForumMessageDTO> getMessagesByThread(long id) throws EntityNotFoundException{
+    public List<ForumMessageDTO> getMessagesByThread(long id) throws EntityNotFoundException {
         ForumThread thread = forumThreadRepository.findById(id).orElse(null);
-        if (thread == null)
-        {
+        if (thread == null) {
             throw new EntityNotFoundException("Thread not found");
         }
         return forumMessageMapper.toDTOs(forumMessageRepository.findByThread(thread));
@@ -67,7 +66,7 @@ public class ForumMessageService {
      * Adds a new message to a forum thread from a request DTO.
      *
      * @param threadId the thread ID to add the message to
-     * @param request the message creation request containing content
+     * @param request  the message creation request containing content
      * @return the created message DTO
      * @throws EntityNotFoundException if thread or user not found
      */
@@ -75,16 +74,16 @@ public class ForumMessageService {
     public ForumMessageDTO addMessageToThread(long threadId, ForumMessageCreateRequest request) throws EntityNotFoundException {
         // Find thread
         ForumThread thread = forumThreadRepository.findById(threadId)
-            .orElseThrow(() -> new EntityNotFoundException("Thread not found with ID: " + threadId));
+                .orElseThrow(() -> new EntityNotFoundException("Thread not found with ID: " + threadId));
 
         // Get authenticated user
         UserPrincipal principal = (UserPrincipal) SecurityContextHolder
-            .getContext()
-            .getAuthentication()
-            .getPrincipal();
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
         User author = userRepository.findById(principal.getId())
-            .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + principal.getId()));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + principal.getId()));
 
         // Create message entity
         ForumMessage message = new ForumMessage();
@@ -106,7 +105,7 @@ public class ForumMessageService {
     /**
      * Updates an existing forum message from a request DTO.
      *
-     * @param id the message ID to update
+     * @param id      the message ID to update
      * @param request the message update request containing new content
      * @return the updated message DTO
      * @throws EntityNotFoundException if message not found
@@ -115,7 +114,7 @@ public class ForumMessageService {
     public ForumMessageDTO updateMessage(long id, ForumMessageUpdateRequest request) throws EntityNotFoundException {
         // Find existing message
         ForumMessage message = forumMessageRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Message not found with ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Message not found with ID: " + id));
 
         // Update content
         message.setContent(request.getContent());
@@ -126,12 +125,19 @@ public class ForumMessageService {
     }
 
     @Transactional
-    public void deleteMessage(long id) throws EntityNotFoundException{
+    public void deleteMessage(long id) throws EntityNotFoundException {
         ForumMessage message = forumMessageRepository.findById(id).orElse(null);
-        if (message == null)
-        {
+        if (message == null) {
             throw new EntityNotFoundException("Message not found");
         }
+
+        if (message.getAuthor() != null && message.getAuthor().getMessages() != null) {
+            message.getAuthor().getMessages().remove(message);
+        }
+        if (message.getThread() != null && message.getThread().getMessages() != null) {
+            message.getThread().getMessages().remove(message);
+        }
+
         forumMessageRepository.deleteById(id);
     }
 }
