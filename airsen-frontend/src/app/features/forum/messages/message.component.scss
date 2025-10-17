@@ -1,7 +1,9 @@
+@import '/src/assets/design-system.scss';
+
 .message-container{
     width: 100%;
     margin: 0 auto;
-    background-color: #ffffff;
+    background-color: $airsen-white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -21,14 +23,14 @@
 
             .date{
                 font-size: 0.8rem;
-                color: #999999;
+                color: $airsen-gray-500;
             }
         }
 
         .edit-button{
             border: none;
             background-color: transparent;
-            color: #999999;
+            color: $airsen-gray-500;
             text-decoration: underline;
         }
     }
@@ -36,9 +38,9 @@
     textarea{
         height: 200px;
         padding: 10px;
-        border: 1px solid #ccc;
+        border: 1px solid $airsen-gray-400;
         border-radius: 5px;
-        background-color: #fafafa;
+        background-color: $airsen-white;
     }
 
     .buttons-container{
@@ -47,16 +49,16 @@
 
         .validate-button{
             border: none;
-            background-color: #00bdd6;
-            color: #ffffff;
+            background-color: $airsen-info;
+            color: $airsen-white;
             padding: 5px 10px;
             border-radius: 5px;
         }
 
         .cancel-button{
             border: none;
-            background-color: #999999;
-            color: #ffffff;
+            background-color: $airsen-gray-500;
+            color: $airsen-white;
             padding: 5px 10px;
             border-radius: 5px;
         }
