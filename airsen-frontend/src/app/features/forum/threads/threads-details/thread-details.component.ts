@@ -25,7 +25,7 @@ export class ThreadDetailsComponent {
  * Refreshes the thread data by getting the thread with the given id
  * @param threadId - the id of the thread to refresh
  */
-    refreshThread(threadId: number) {
-    this.thread$ = this.service.getThread(threadId);
+    refreshThread() {
+    this.thread$ = this.service.getThread(this.id());
   }
 }

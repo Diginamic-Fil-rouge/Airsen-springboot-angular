@@ -1,4 +1,4 @@
-import { Component, input, inject } from '@angular/core';
+import { Component, EventEmitter, inject, input, Output } from '@angular/core';
 import { Message } from '../models/message.model';
 import { MessageService } from '../services/message.service';
 
@@ -9,9 +9,40 @@ import { MessageService } from '../services/message.service';
     styleUrls: ['./message.component.scss']
 })
 export class MessageComponent {
+    messageService = inject(MessageService);
     message = input<Message>();
     service = inject(MessageService);
     showModal = false;
+
+    isEditing = false;
+
+    content: string | undefined = '';
+
+    @Output() editMessageEvent = new EventEmitter<number>();
+
+    ngOnInit() {
+        this.content = this.message()?.content;
+    }
+
+    triggerEdit() {
+        this.isEditing = !this.isEditing
+    }
+
+    editMessage() {
+        this.messageService.editMessage({ content: this.content, id: this.message()?.id }).subscribe({
+            next: () => {
+                this.emitEditMessageEvent();
+                this.isEditing = false;
+            },
+            error: (error) => {
+                console.error('Error editing message:', error);
+            }
+        });
+    }
+
+    emitEditMessageEvent() {
+        this.editMessageEvent.emit(this.message()?.thread?.id);
+    }
 
     displayModal() {
         this.showModal = !this.showModal;
@@ -30,4 +61,5 @@ export class MessageComponent {
             }
         });
     }
+
 }

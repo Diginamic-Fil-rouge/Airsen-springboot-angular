@@ -1,12 +1,24 @@
 <div class="message-container">
     <div class="message-infos">
-        <div class="thread-datas">
+        <div class="message-datas">
             <h2>{{ message()?.author?.firstName + ' ' + message()?.author?.lastName }}</h2>
             <p class="date">{{ message()?.createdDate | date: 'short' }}</p>
         </div>
+        @if(!isEditing){
+            <button class="edit-button" (click)="triggerEdit()">Modifier</button>
+        }
         <button class="delete-button" (click)="displayModal()">Supprimer</button>
     </div>
-    <p class="content">{{ message()?.content }}</p>
+    @if (!isEditing){
+        <p class="content">{{ message()?.content }}</p>
+    }
+    @else {
+        <textarea class="edit-content" name="content" id="content" [(ngModel)]="content" value="{{message()?.content}}"></textarea>
+        <div class="buttons-container">
+            <button class="validate-button" (click)="editMessage()">Valider</button>
+            <button class="cancel-button" (click)="triggerEdit()">Annuler</button>
+        </div>
+    }
 </div>
 
 @if(showModal){

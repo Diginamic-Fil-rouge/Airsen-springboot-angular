@@ -15,10 +15,22 @@
         display: flex;
         justify-content: space-between;
         
-        .thread-datas{
+        .message-datas{
             display: flex;
             align-items: center;
             gap: 5px;
+          
+           .date{
+              font-size: 0.8rem;
+              color: $airsen-gray-500;
+           }
+        }
+      
+      .edit-button{
+            border: none;
+            background-color: transparent;
+            color: $airsen-gray-500;
+            text-decoration: underline;
         }
         
         .delete-button{
@@ -30,11 +42,46 @@
             color: $airsen-gray-600;
         }
     }
+  
+    textarea{
+          height: 200px;
+          padding: 10px;
+          border: 1px solid $airsen-gray-400;
+          border-radius: 5px;
+          background-color: $airsen-white;
+      }
+  
+   .buttons-container{
+        display: flex;
+        gap: 5px;
 
-    .date{
-        font-size: 0.8rem;
-        color: $airsen-gray-500;
-    }
+        .validate-button{
+            border: none;
+            background-color: $airsen-info;
+            color: $airsen-white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .cancel-button{
+            border: none;
+            background-color: $airsen-gray-500;
+            color: $airsen-white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        button:hover{
+            font-size: 1em;
+        }
+  }
+  
+   button{
+        width: fit-content;
+        cursor: pointer;
+  }
+
+   
 }
 
 .confirmation-modal{
@@ -84,5 +131,4 @@
                 transition: all 0.2s ease;
             }
         }
-    }
-}
+  }
