@@ -266,10 +266,13 @@ public class ExportDataService {
      * Valid air quality indicators: aqi, pm25, pm10, no2, o3, so2
      * Valid weather indicators: temperature, humidity, windSpeed, windDirection, pressure
      * 
+     * Merges air quality and weather data chronologically, ensuring all dates from both
+     * datasets are represented in the output (even if one has data and the other doesn't).
+     * 
      * @param airQualityList list of air quality data
      * @param weatherList list of weather data
      * @param indicatorsFilter optional comma-separated indicator filter (null or empty returns all)
-     * @return filtered list of data points
+     * @return filtered list of data points sorted by timestamp
      */
     private List<DataPoint> buildDataPoints(List<AirQuality> airQualityList, List<WeatherData> weatherList, String indicatorsFilter) {
         List<DataPoint> dataPoints = new ArrayList<>();
@@ -279,7 +282,7 @@ public class ExportDataService {
         boolean hasAirQualityIndicators = requestedIndicators.stream().anyMatch(ind -> 
             ind.matches("aqi|pm25|pm10|no2|o3|so2"));
         boolean hasWeatherIndicators = requestedIndicators.stream().anyMatch(ind -> 
-            ind.matches("temperature|humidity|windSpeed|windDirection|pressure"));
+            ind.matches("temperature|humidity|windspeed|winddirection|weathercode"));
 
         // If no indicators specified, include all
         if (requestedIndicators.isEmpty()) {
@@ -287,17 +290,26 @@ public class ExportDataService {
             hasWeatherIndicators = true;
         }
 
-        // Create a map of weather data by date for easy lookup
+        // Create maps for easy lookup by date
+        java.util.Map<LocalDate, AirQuality> airQualityByDate = new java.util.HashMap<>();
+        airQualityList.forEach(aq -> airQualityByDate.putIfAbsent(aq.getMeasurementDate(), aq));
+
         java.util.Map<LocalDate, WeatherData> weatherByDate = new java.util.HashMap<>();
         weatherList.forEach(w -> weatherByDate.putIfAbsent(w.getMeasurementDate(), w));
 
-        // Build data points from air quality data
-        for (AirQuality aq : airQualityList) {
-            WeatherData weather = weatherByDate.get(aq.getMeasurementDate());
+        // Collect all unique dates from both datasets
+        Set<LocalDate> allDates = new java.util.TreeSet<>();
+        allDates.addAll(airQualityByDate.keySet());
+        allDates.addAll(weatherByDate.keySet());
+
+        // Build data points for all dates, merging both datasets
+        for (LocalDate date : allDates) {
+            AirQuality aq = airQualityByDate.get(date);
+            WeatherData weather = weatherByDate.get(date);
 
             // Build air quality data point (with filtering if needed)
             AirQualityDataPoint aqPoint = null;
-            if (hasAirQualityIndicators) {
+            if (hasAirQualityIndicators && aq != null) {
                 aqPoint = filterAirQualityDataPoint(aq, requestedIndicators);
             }
 
@@ -310,7 +322,7 @@ public class ExportDataService {
             // Only add data point if it has at least one requested indicator
             if (aqPoint != null || weatherPoint != null) {
                 DataPoint dataPoint = new DataPoint(
-                        aq.getMeasurementDate().atStartOfDay(),
+                        date.atStartOfDay(),
                         aqPoint,
                         weatherPoint
                 );
