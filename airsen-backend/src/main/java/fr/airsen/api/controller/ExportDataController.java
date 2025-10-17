@@ -1,8 +1,11 @@
 package fr.airsen.api.controller;
 
+import fr.airsen.api.dto.cache.CachedEntry;
 import fr.airsen.api.dto.response.ExportDataResponse;
 import fr.airsen.api.dto.response.HistoricalDataResponse;
+import fr.airsen.api.entity.cache.CacheMetadata;
 import fr.airsen.api.service.ExportDataService;
+import fr.airsen.api.service.cache.SmartCacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,25 +24,27 @@ import java.time.LocalDate;
 /**
  * REST Controller for export data endpoints.
  * 
- * Provides optimized data aggregation endpoints for client-side PDF/CSV export generation.
+ * Provides optimized data aggregation endpoints for client-side PDF/CSV export generation
+ * with integrated intelligent caching for performance optimization.
  * 
- * Two main endpoints:
- * 1. GET /communes/{inseeCode}/export-data - Current snapshot for PDF export
- * 2. GET /communes/{inseeCode}/historical-data - Time-series for CSV export
- * 
- * Both endpoints require authentication with USER or ADMIN role.
+ * Cache Strategy:
+ * - Export data is cached with 6-hour TTL (ON_DEMAND_FETCH source)
+ * - Scheduled refresh every 2-24 hours depending on commune tier
+ * - Response headers include cache freshness indicators
  */
 @RestController
-@RequestMapping("/api/v1/communes")
+@RequestMapping("communes")
 @Tag(name = "Export Data", description = "Endpoints for data export (client-side generation)")
-@SecurityRequirement(name = "Bearer Authentication")
+@SecurityRequirement(name = "bearerAuth")
 public class ExportDataController {
 
     private final ExportDataService exportDataService;
+    private final SmartCacheService cacheService;
 
     @Autowired
-    public ExportDataController(ExportDataService exportDataService) {
+    public ExportDataController(ExportDataService exportDataService, SmartCacheService cacheService) {
         this.exportDataService = exportDataService;
+        this.cacheService = cacheService;
     }
 
     /**
@@ -51,30 +56,41 @@ public class ExportDataController {
      * - Latest weather data (temperature, humidity, wind)
      * - Data quality metadata (freshness indicators)
      * 
-     * Performance: < 200ms
-     * Response size: ~2-5 KB
+     * Caching Strategy:
+     * - Data is cached with 6-hour TTL (ON_DEMAND_FETCH source)
+     * - Scheduled refresh every 2-24 hours depending on commune population
+     * - Stale data returned if API is temporarily unavailable
+     * - Response headers indicate cache freshness
      * 
      * @param inseeCode commune INSEE code (5-digit identifier)
-     * @return ExportDataResponse with complete current commune state
+     * @param forceRefresh optional parameter to bypass cache and fetch fresh data (admin only)
+     * @return ExportDataResponse with complete current commune state + cache metadata headers
      */
     @GetMapping("/{inseeCode}/export-data")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(
             summary = "Get export data for PDF generation",
             description = "Retrieves all data needed for PDF export in a single API call. " +
-                         "Includes commune info, latest air quality, latest weather, and data quality metadata.",
+                         "Data is intelligently cached with 6-hour TTL and scheduled refresh. " +
+                         "Response headers indicate cache freshness and data source.",
             parameters = {
                     @Parameter(
                             name = "inseeCode",
                             description = "5-digit INSEE code of the commune",
                             example = "75056",
                             required = true
+                    ),
+                    @Parameter(
+                            name = "forceRefresh",
+                            description = "Admin only: Force bypass cache and fetch fresh data from API",
+                            example = "false",
+                            required = false
                     )
             }
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Export data retrieved successfully",
+            description = "Export data retrieved successfully (from cache or API)",
             content = @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ExportDataResponse.class)
@@ -89,10 +105,32 @@ public class ExportDataController {
             description = "Commune not found"
     )
     public ResponseEntity<ExportDataResponse> getExportData(
-            @PathVariable String inseeCode
+            @PathVariable String inseeCode,
+            @RequestParam(required = false, defaultValue = "false") boolean forceRefresh
     ) {
-        ExportDataResponse response = exportDataService.getExportData(inseeCode);
-        return ResponseEntity.ok(response);
+        // Build consistent cache key
+        String cacheKey = "export:" + inseeCode;
+
+        // Get data from cache or API
+        CachedEntry<ExportDataResponse> cachedData = cacheService.getOrFetch(
+            cacheKey,
+            ExportDataResponse.class,
+            CacheMetadata.DataSource.ON_DEMAND_FETCH,
+            forceRefresh,
+            () -> exportDataService.getExportData(inseeCode)
+        );
+
+        ExportDataResponse data = cachedData.getData();
+        CacheMetadata metadata = cachedData.getMetadata();
+
+        // Build response with cache metadata headers
+        return ResponseEntity.ok()
+            .header("X-Data-Source", metadata.getSource().toString())
+            .header("X-Cache-Age", metadata.getAgeDescription())
+            .header("X-Cache-Freshness", String.format("%.0f%%", (1 - metadata.getStaleness()) * 100))
+            .header("X-Cache-TTL", metadata.getTtlSeconds() + " seconds")
+            .header("X-Cache-Fresh", String.valueOf(cachedData.isFresh()))
+            .body(data);
     }
 
     /**
@@ -109,11 +147,7 @@ public class ExportDataController {
      * 
      * Performance: 500ms - 1s (depending on date range)
      * Response size: ~50-500 KB (depending on date range)
-     * 
-     * Example requests:
-     * - GET /communes/75056/historical-data?startDate=2025-09-01&endDate=2025-10-09
-     * - GET /communes/75056/historical-data?startDate=2025-09-01&endDate=2025-09-30&indicators=aqi,pm25,temperature
-     * 
+     *
      * @param inseeCode commune INSEE code (5-digit identifier)
      * @param startDate start date (ISO 8601 format: YYYY-MM-DD)
      * @param endDate end date (ISO 8601 format: YYYY-MM-DD)

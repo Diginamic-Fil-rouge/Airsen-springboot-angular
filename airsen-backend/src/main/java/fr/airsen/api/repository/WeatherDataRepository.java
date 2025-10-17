@@ -172,10 +172,11 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
      * @param inseeCode commune INSEE code
      * @return optional weather data
      */
-    @Query(value = "SELECT TOP 1 w.* FROM weather_data w " +
+    @Query(value = "SELECT w.* FROM weather_data w " +
                    "JOIN communes c ON w.commune_id = c.id " +
                    "WHERE c.insee_code = :inseeCode " +
-                   "ORDER BY w.measurement_date DESC", 
+                   "ORDER BY w.measurement_date DESC " +
+                   "LIMIT 1", 
            nativeQuery = true)
     Optional<WeatherData> findLatestExportDataByInseeCode(@Param("inseeCode") String inseeCode);
 

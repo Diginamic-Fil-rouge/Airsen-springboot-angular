@@ -61,10 +61,12 @@ public class WeatherService {
      * - scheduling.weather.cron: Cron expression (default: 0 30 0 * * *)
      * - scheduling.weather.timezone: Timezone (default: Europe/Paris)
      *
-     * @return Mono<Void> indicating completion
+     * Scheduler Integration:
+     * Uses reactive Flux to process all communes in parallel with error handling.
+     * The reactive chain is subscribed to immediately to ensure the scheduler task completes.
      */
     @Scheduled(cron = "${scheduling.weather.cron}", zone = "${scheduling.weather.timezone}")
-    public Mono<Void> updateAllWeatherData() {
+    public void updateAllWeatherData() {
         LocalDateTime startTime = LocalDateTime.now();
         log.info("========================================");
         log.info("SCHEDULED WEATHER SYNC STARTED at {}", startTime);
@@ -73,7 +75,7 @@ public class WeatherService {
         List<Commune> communes = communeRepository.findAll();
         log.info("Found {} communes to update weather data", communes.size());
 
-        return Flux.fromIterable(communes)
+        Flux.fromIterable(communes)
             .flatMap(commune ->
                 updateWeatherForCommune(commune.getInseeCode())
                     .onErrorContinue((error, commune_obj) ->
@@ -96,7 +98,8 @@ public class WeatherService {
                 log.error("Duration before failure: {} seconds", duration.getSeconds());
                 log.error("Error: {}", error.getMessage(), error);
                 log.error("========================================");
-            });
+            })
+            .subscribe(); // Subscribe to execute the reactive chain
     }
 
     /**

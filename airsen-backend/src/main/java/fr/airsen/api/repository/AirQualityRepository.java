@@ -162,10 +162,11 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
      * @param inseeCode commune INSEE code
      * @return optional air quality data
      */
-    @Query(value = "SELECT TOP 1 aq.* FROM air_quality aq " +
+    @Query(value = "SELECT aq.* FROM air_quality aq " +
                    "JOIN communes c ON aq.commune_id = c.id " +
                    "WHERE c.insee_code = :inseeCode " +
-                   "ORDER BY aq.measurement_date DESC", 
+                   "ORDER BY aq.measurement_date DESC " +
+                   "LIMIT 1", 
            nativeQuery = true)
     Optional<AirQuality> findLatestExportDataByInseeCode(@Param("inseeCode") String inseeCode);
 
