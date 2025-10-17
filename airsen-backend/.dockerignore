@@ -16,8 +16,14 @@ mvnw.cmd
 .factorypath
 .springBeans
 .sts4-cache/
-.DS_Store
-Thumbs.db
+
+# macOS system files (recursive patterns)
+**/.DS_Store
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/ehthumbs.db
+**/Thumbs.db
 
 # Git files
 .git/
