@@ -3,7 +3,7 @@ import { Message } from '../models/message.model';
 import { MessageService } from '../services/message.service';
 
 @Component({
-    standalone : false,
+    standalone: false,
     selector: 'forum-message',
     templateUrl: './message.component.html',
     styleUrls: ['./message.component.scss']
@@ -11,6 +11,8 @@ import { MessageService } from '../services/message.service';
 export class MessageComponent {
     messageService = inject(MessageService);
     message = input<Message>();
+    service = inject(MessageService);
+    showModal = false;
 
     isEditing = false;
 
@@ -41,4 +43,23 @@ export class MessageComponent {
     emitEditMessageEvent() {
         this.editMessageEvent.emit(this.message()?.thread?.id);
     }
+
+    displayModal() {
+        this.showModal = !this.showModal;
+    }
+
+    deleteMessage() {
+        return this.service.deleteMessage(this.message()?.id).subscribe({
+            next: () => {
+                // This currently does not work, but should once the edit_message branch is merged
+                // TODO : rename the EventEmitter simply to messageEvent (currently : editMessageEvent)
+                this.emitEditMessageEvent();
+                this.showModal = false;
+            },
+            error: (error) => {
+                console.error('Error creating thread:', error);
+            }
+        });
+    }
+
 }
