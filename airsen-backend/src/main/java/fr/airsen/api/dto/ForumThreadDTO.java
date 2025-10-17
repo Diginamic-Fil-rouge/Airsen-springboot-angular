@@ -69,7 +69,7 @@ public class ForumThreadDTO {
         this.viewCount = forumThread.getViewCount();
         this.pinned = forumThread.isPinned();
         this.closed = forumThread.isClosed();
-        this.likeCount = forumThread.getLikeCount();
+        this.likeCount = forumThread.getVotesValue();
         this.messageCount = (forumThread.getMessages() != null) ? forumThread.getMessages().size() : 0;
 
         if (withEntities) {
@@ -82,7 +82,7 @@ public class ForumThreadDTO {
             }
             if (forumThread.getVotes() != null) {
                 for (ForumVote vote : forumThread.getVotes()) {
-                    this.votes.add(new ForumVoteDTO(vote, false));
+                    this.votes.add(new ForumVoteDTO(vote, true));
                 }
             }
         }

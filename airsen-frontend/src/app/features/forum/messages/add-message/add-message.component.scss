@@ -1,0 +1,46 @@
+.add-message-container{
+    width: 100%;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+
+    form{
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        .form-group{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            textarea{
+                padding: 10px;
+                height: 200px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #fafafa;
+            }
+        }
+
+        button{
+            padding: 10px 20px;
+            background: linear-gradient(to right,#2d7c31, #61c566);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: fit-content;
+        }
+
+        button:hover{
+            font-size: 1em;
+        }
+    }
+}

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 // Angular Material Modules
@@ -75,7 +75,20 @@ import { BreadcrumbComponent } from './shared/components/breadcrumb/breadcrumb.c
 // import { SearchBarComponent } from './components/shared/search-bar/search-bar.component';
 
 // Services & Interceptors
-import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { authInterceptorFn } from './core/interceptors/auth.interceptor';
+import { CategoryComponent } from './features/forum/categories/category.component';
+import { MessageComponent } from './features/forum/messages/message.component';
+import { ThreadComponent } from './features/forum/threads/thread.component';
+import { AddThreadComponent } from './features/forum/threads/add-thread/add-thread.component';
+import { ThreadDetailsComponent } from './features/forum/threads/threads-details/thread-details.component';
+import { VotingComponent } from './features/forum/voting/voting.component';
+import { LoaderComponent } from './shared/components/loader/loader.component';
+import { BackButtonComponent } from './shared/components/backButton/back-button.component';
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
+import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
 
 @NgModule({
   declarations: [
@@ -94,7 +107,17 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     HomeComponent,
     NotFoundComponent,
     CarteComponent,
-    ForumComponent
+    ForumComponent,
+    CategoryComponent,
+    MessageComponent,
+    ThreadComponent,
+    AddThreadComponent,
+    EditThreadComponent,
+    AddMessageComponent,
+    ThreadDetailsComponent,
+    VotingComponent,
+    LoaderComponent,
+    BackButtonComponent,
     // Page Components
     // HomeComponent,
     // MapComponent,
@@ -111,9 +134,13 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     // SearchBarComponent
   ],
   imports: [
+    AsyncPipe,
     BrowserModule,
+    CommonModule,
+    DatePipe,
     ReactiveFormsModule,
     FormsModule,
+    RouterModule,
     AppRoutingModule,
     // Angular Material Modules
     MatToolbarModule,
@@ -147,12 +174,7 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
   ],
   providers: [
     provideAnimations(),
-    provideHttpClient(),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true
-    }
+    provideHttpClient(withInterceptors([authInterceptorFn])),
   ],
   bootstrap: [AppComponent]
 })

@@ -1,17 +1,5 @@
-# syntax=docker/dockerfile:1
-#
-# Optimized Multi-stage Dockerfile for Airsen Frontend (Angular)
-# Supports: development (with live reload), production
-#
-# Key Optimizations:
-# - Dev: No source copy (bind-mounted), only node_modules cached
-# - Prod: Clean multi-stage build, minimal Nginx runtime
-# - Dependencies cached separately from source code
-#
 
-# ==========================================
 # DEVELOPMENT STAGE - Live Reload with Angular CLI
-# ==========================================
 FROM node:22-alpine AS development
 
 WORKDIR /app
@@ -28,7 +16,6 @@ RUN npm ci --prefer-offline --no-audit
 # DON'T COPY src - will be bind-mounted in docker-compose
 # This allows Angular CLI to detect file changes and live reload
 
-# Expose Angular dev server port
 EXPOSE 4200
 
 # Set Node memory options
@@ -37,9 +24,9 @@ ENV NODE_OPTIONS="--max-old-space-size=2048"
 # Angular CLI with live reload (polling for Docker compatibility)
 CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
 
-# ==========================================
+
+
 # BUILDER STAGE - Compile Angular Application
-# ==========================================
 FROM node:22-alpine AS builder
 
 WORKDIR /build
@@ -59,9 +46,9 @@ COPY src ./src
 # Build production-optimized Angular app
 RUN npm run build -- --configuration production --output-path=dist/airsen-frontend
 
-# ==========================================
+
+
 # PRODUCTION STAGE - Nginx Static Server
-# ==========================================
 FROM nginx:alpine AS production
 
 # Install curl for health checks
@@ -77,7 +64,7 @@ RUN echo "OK" > /usr/share/nginx/html/health
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:80/health || exit 1
 
-# Expose HTTP port
+
 EXPOSE 80
 
 # Run nginx in foreground

@@ -1,0 +1,31 @@
+<div class="page-container">
+    <back-button route="/forum" textContent="Retour au forum"></back-button>
+    <h2>Créer une nouvelle discussion</h2>
+    @if (errors$ != []) {
+        @for (error of errors$ ; track $index) {
+            <p class="error">{{ error }}</p>
+        }
+    }
+    <form>
+        <div class="form-group">
+            <label for="title">Titre *</label>
+            <input type="text" id="title" name="title" [(ngModel)]="title" placeholder="Entrez un titre descriptif..."/>
+        </div>
+        <div class="form-group">
+            <label for="category">Catégorie *</label>
+            <select id="category" name="category" [(ngModel)]="categoryId">
+                @for (category of categories$ | async; track $index) {
+                    <option [value]="category.id">
+                        {{ category.name }}
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="content">Contenu *</label>
+            <textarea id="content" name="content" [(ngModel)]="content" placeholder="Décrivez votre sujet en détails..."></textarea>
+        </div>
+        <p>* Champs obligatoires</p>
+        <button type="submit" (click)="createThread()">Publier la discussion</button>
+    </form>
+</div>

@@ -20,7 +20,7 @@ public class ForumThread {
     @Column(name = "id", nullable = false, length = 10)
     private long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "author_id")
     private User author;
 
@@ -158,6 +158,19 @@ public class ForumThread {
 
     public Integer getLikeCount() {
         return likeCount;
+    }
+
+    public int getVotesValue(){
+        if (this.votes == null){
+            return 0;
+        }
+        int votesValue = 0;
+
+        for (ForumVote vote : this.votes){
+            votesValue += vote.getVoteType().toInt();
+        }
+
+        return votesValue;
     }
 
     public void setLikeCount(Integer likeCount) {

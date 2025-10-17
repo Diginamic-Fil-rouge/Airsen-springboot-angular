@@ -1,0 +1,135 @@
+@import '/src/assets/design-system.scss';
+
+.message-container{
+    width: 100%;
+    margin: 0 auto;
+    background-color: $airsen-white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+
+    .message-infos{
+        display: flex;
+        justify-content: space-between;
+        
+        .message-datas{
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          
+           .date{
+              font-size: 0.8rem;
+              color: $airsen-gray-500;
+           }
+        }
+      
+      .edit-button{
+            border: none;
+            background-color: transparent;
+            color: $airsen-gray-500;
+            text-decoration: underline;
+        }
+        
+        .delete-button{
+            margin: 0 0 12px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            text-decoration: underline;
+            color: $airsen-gray-600;
+        }
+    }
+  
+    textarea{
+          height: 200px;
+          padding: 10px;
+          border: 1px solid $airsen-gray-400;
+          border-radius: 5px;
+          background-color: $airsen-white;
+      }
+  
+   .buttons-container{
+        display: flex;
+        gap: 5px;
+
+        .validate-button{
+            border: none;
+            background-color: $airsen-info;
+            color: $airsen-white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .cancel-button{
+            border: none;
+            background-color: $airsen-gray-500;
+            color: $airsen-white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        button:hover{
+            font-size: 1em;
+        }
+  }
+  
+   button{
+        width: fit-content;
+        cursor: pointer;
+  }
+
+   
+}
+
+.confirmation-modal{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+
+    .modal-container{
+        background-color: $airsen-white;
+        padding: 2rem;
+        color: $airsen-gray-900;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+
+        .modal-buttons{
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+
+            .danger{
+                background-color: $airsen-error;
+                color: $airsen-white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .cancel{
+                background-color: $airsen-success;
+                color: $airsen-white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+        }
+  }
+}

@@ -40,6 +40,21 @@ export class AuthService {
     private storageService: StorageService
   ) {
     this.initializeAuth();
+
+  //   // 🧪 TEST : simuler un utilisateur connecté (temporaire)
+  // // -------------------------------------------------------
+  // setTimeout(() => {
+  //   console.log('🔵 Simulation de connexion...');
+  //   this.isAuthenticatedSubject.next(true);
+  //   this.currentUserSubject.next({
+  //     id: 1,
+  //     firstName: 'Test',
+  //     lastName: 'User',
+  //     email: 'test@airsen.fr',
+  //     role: 'USER'
+  //   });
+  // }, 3000); // après 3 secondes
+
   }
 
   /**
@@ -203,7 +218,7 @@ export class AuthService {
 
     // Map backend response to AuthUser
     const user: AuthUser = {
-      id: this.tokenService.getUserIdFromToken() || 0,
+      id: response.userId,
       firstName: response.userFirstName,
       lastName: response.userLastName,
       email: response.userEmail,
