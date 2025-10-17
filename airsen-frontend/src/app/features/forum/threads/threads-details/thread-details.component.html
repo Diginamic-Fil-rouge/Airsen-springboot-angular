@@ -2,41 +2,68 @@
   <back-button route="/forum" textContent="Retour au forum"></back-button>
   <div class="thread-content">
     @if (thread$ | async) {
-      <div class="thread-infos">
+    <div class="thread-infos">
+      <div class="thread-header">
         <h1 class="title">{{ (thread$ | async)?.title }}</h1>
-        <div class="thread-data">
+        <div class="action-buttons">
+          <a routerLink="/forum/edit/thread/{{ (thread$ | async)?.id }}"
+            >Modifier</a
+          >
+          <button class="delete-button" (click)="displayModal()">Supprimer</button>
+        </div>
+      </div>
+      <div class="thread-data">
           <div class="author">
             par
             {{
               (thread$ | async)?.author?.firstName +
-              " " +
-              (thread$ | async)?.author?.lastName
+                " " +
+                (thread$ | async)?.author?.lastName
             }}
-        </div>
-        <div class="last-activity">
-          {{ (thread$ | async)?.lastMessageDate | date : "short" }}
-        </div>
-        <div class="view-count">{{ (thread$ | async)?.viewCount }}</div>
-        <a routerLink="/forum/edit/thread/{{ (thread$ | async)?.id }}">Modifier</a>
+          </div>
+          <div class="last-activity">
+            {{ (thread$ | async)?.lastMessageDate | date : "short" }}
+          </div>
+          <div class="view-count">{{ (thread$ | async)?.viewCount }}</div>
       </div>
     </div>
     <p class="content">{{ (thread$ | async)?.content }}</p>
-    
+
     <div class="thread-data">
-      <thread-voting [thread]="(thread$ | async)" [voteCount]="(thread$ | async)?.likeCount"></thread-voting>
+      <thread-voting
+        [thread]="thread$ | async"
+        [voteCount]="(thread$ | async)?.likeCount"
+      ></thread-voting>
     </div>
     <h3 class="message-count">
       Réponses ({{ (thread$ | async)?.messageCount }})
     </h3>
     <div class="messages-container">
       @for (message of (thread$ | async)?.messages; track $index) {
-        <forum-message [message]="message"></forum-message>
+      <forum-message [message]="message"></forum-message>
       }
     </div>
-    <app-add-message [thread]="(thread$ | async)" (newMessageEvent)="refreshThread($event)"></app-add-message>
-  }
-  @else {
+    <app-add-message
+      [thread]="thread$ | async"
+      (newMessageEvent)="refreshThread($event)"
+    ></app-add-message>
+    } @else {
     <app-loader></app-loader>
-  }
+    }
   </div>
 </div>
+
+@if(showModal){
+<div class="confirmation-modal">
+  <div class="modal-container">
+    <p>
+      Êtes vous sûr de vouloir supprimer la discussion ? cette action est
+      définitive
+    </p>
+    <div class="modal-buttons">
+      <button class="danger" (click)="deleteThread()">Valider</button>
+      <button class="cancel" (click)="displayModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+}
