@@ -2,8 +2,11 @@ package fr.airsen.api.service;
 
 import fr.airsen.api.dto.response.*;
 import fr.airsen.api.entity.*;
-import fr.airsen.api.repository.*;
 import fr.airsen.api.exception.ResourceNotFoundException;
+import fr.airsen.api.repository.AirQualityRepository;
+import fr.airsen.api.repository.CommuneRepository;
+import fr.airsen.api.repository.WeatherDataRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,11 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -26,13 +25,9 @@ import java.util.stream.Collectors;
  * 
  * 1. Export Data (Current Snapshot): Get latest commune state for PDF export
  *    - Returns: Current commune info + latest air quality + latest weather
- *    - Response time: < 200ms
- *    - Size: ~2-5 KB
  * 
  * 2. Historical Data (Time-Series): Get data over a date range for CSV export
  *    - Returns: Array of data points with air quality + weather measurements
- *    - Response time: 500ms - 1s
- *    - Size: ~50-500 KB
  */
 @Service
 @Transactional(readOnly = true)

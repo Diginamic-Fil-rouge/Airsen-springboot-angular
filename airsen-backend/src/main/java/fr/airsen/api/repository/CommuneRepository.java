@@ -244,4 +244,61 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      * @return list of communes in the region
      */
     List<Commune> findByRegionCode(String regionCode);
+
+    /**
+     * Finds Tier 1 communes (population >= 100,000).
+     * 
+     * Tier 1 communes are high-priority targets for frequent cache refresh
+     * due to their importance and resource availability.
+     * 
+     * @return list of all Tier 1 communes ordered by population descending
+     */
+    @Query("SELECT c FROM Commune c WHERE c.population >= 100000 ORDER BY c.population DESC")
+    List<Commune> findTier1Communes();
+
+    /**
+     * Finds Tier 2 communes (population between 10,000 and 99,999).
+     * 
+     * Tier 2 communes are medium-priority targets with moderate
+     * cache refresh frequency.
+     * 
+     * @return list of all Tier 2 communes ordered by population descending
+     */
+    @Query("SELECT c FROM Commune c WHERE c.population >= 10000 AND c.population < 100000 ORDER BY c.population DESC")
+    List<Commune> findTier2Communes();
+
+    /**
+     * Finds Tier 3 communes (population < 10,000).
+     * 
+     * Tier 3 communes are low-priority targets with infrequent
+     * cache refresh to reduce API load.
+     * 
+     * @return list of all Tier 3 communes ordered by population descending
+     */
+    @Query("SELECT c FROM Commune c WHERE c.population < 10000 ORDER BY c.population DESC")
+    List<Commune> findTier3Communes();
+
+    /**
+     * Counts Tier 1 communes.
+     * 
+     * @return number of communes with population >= 100,000
+     */
+    @Query("SELECT COUNT(c) FROM Commune c WHERE c.population >= 100000")
+    long countTier1Communes();
+
+    /**
+     * Counts Tier 2 communes.
+     * 
+     * @return number of communes with population between 10,000-99,999
+     */
+    @Query("SELECT COUNT(c) FROM Commune c WHERE c.population >= 10000 AND c.population < 100000")
+    long countTier2Communes();
+
+    /**
+     * Counts Tier 3 communes.
+     * 
+     * @return number of communes with population < 10,000
+     */
+    @Query("SELECT COUNT(c) FROM Commune c WHERE c.population < 10000")
+    long countTier3Communes();
 }
