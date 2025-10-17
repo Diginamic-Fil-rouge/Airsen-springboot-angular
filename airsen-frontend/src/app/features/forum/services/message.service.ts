@@ -23,4 +23,8 @@ export class MessageService {
     addMessageToThread(threadId: number | undefined, message: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/${threadId}/messages`, message);
     }
+
+    deleteMessage(messageId: number | undefined): Observable<any> {
+        return this.http.delete(`${environment.apiUrl}/api/v1/forum/messages/${messageId}`);
+    }
 }
