@@ -205,10 +205,18 @@ public class ForumThreadService {
 
     @Transactional
     public void deleteThread(Long id) throws EntityNotFoundException {
-        ForumThread entityExists = forumThreadRepository.findById(id).orElse(null);
-        if (entityExists == null) {
-            throw new EntityNotFoundException("Failed to delete thread - Thread not found");
+        ForumThread thread = forumThreadRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Thread not found"));
+
+        // Remove from parent collections if they exist
+        if (thread.getAuthor() != null && thread.getAuthor().getThreads() != null) {
+            thread.getAuthor().getThreads().remove(thread);
         }
-        forumThreadRepository.deleteById(id);
+
+        if (thread.getCategory() != null && thread.getCategory().getThreads() != null) {
+            thread.getCategory().getThreads().remove(thread);
+        }
+
+        forumThreadRepository.delete(thread);
     }
 }
