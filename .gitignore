@@ -171,6 +171,7 @@ tmp/
 temp/
 .tmp/
 .temp/
+*.sh
 
 # Cache directories
 .cache/
@@ -320,6 +321,7 @@ api-spec.json
 .env.local
 .env.production
 *.env
+*.env.local
 
 # Configuration files with sensitive data
 config/secrets/

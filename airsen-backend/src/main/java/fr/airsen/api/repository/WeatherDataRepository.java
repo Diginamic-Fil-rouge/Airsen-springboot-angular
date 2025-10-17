@@ -162,4 +162,40 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
      * @return list of weather data within date range
      */
     List<WeatherData> findByCommune_InseeCodeAndMeasurementDateBetween(String inseeCode, java.time.LocalDateTime startDateTime, java.time.LocalDateTime endDateTime);
+
+    /**
+     * Finds latest weather data for a commune for export endpoint.
+     * 
+     * Optimized query for export/export-data endpoint that retrieves
+     * the most recent weather measurement in a single query.
+     * 
+     * @param inseeCode commune INSEE code
+     * @return optional weather data
+     */
+    @Query(value = "SELECT TOP 1 w.* FROM weather_data w " +
+                   "JOIN communes c ON w.commune_id = c.id " +
+                   "WHERE c.insee_code = :inseeCode " +
+                   "ORDER BY w.measurement_date DESC", 
+           nativeQuery = true)
+    Optional<WeatherData> findLatestExportDataByInseeCode(@Param("inseeCode") String inseeCode);
+
+    /**
+     * Finds weather data for a commune within a date range for export endpoint.
+     * 
+     * Optimized query for export/historical-data endpoint that retrieves
+     * all weather measurements within a date range in chronological order.
+     * 
+     * @param inseeCode commune INSEE code
+     * @param startDate start date (inclusive)
+     * @param endDate end date (inclusive)
+     * @return list of weather data ordered by date
+     */
+    @Query("SELECT w FROM WeatherData w " +
+           "WHERE w.commune.inseeCode = :inseeCode " +
+           "AND w.measurementDate BETWEEN :startDate AND :endDate " +
+           "ORDER BY w.measurementDate ASC")
+    List<WeatherData> findHistoricalExportDataByInseeCode(
+            @Param("inseeCode") String inseeCode,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }
