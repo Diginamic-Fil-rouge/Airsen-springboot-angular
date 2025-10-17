@@ -25,8 +25,14 @@ dist/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
+
+# macOS system files (recursive patterns)
+**/.DS_Store
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/ehthumbs.db
+**/Thumbs.db
 
 # Git files - Not needed in image
 .git/

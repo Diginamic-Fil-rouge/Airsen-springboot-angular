@@ -12,7 +12,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for export data aggregation.
@@ -115,8 +119,8 @@ public class ExportDataService {
         // Fetch historical weather data
         List<WeatherData> weatherData = weatherDataRepository.findHistoricalExportDataByInseeCode(inseeCode, startDate, endDate);
 
-        // Build data points
-        List<DataPoint> dataPoints = buildDataPoints(airQualityData, weatherData);
+        // Build data points (with optional indicator filtering)
+        List<DataPoint> dataPoints = buildDataPoints(airQualityData, weatherData, indicators);
 
         // Build response
         CommuneBasicDTO communeDTO = new CommuneBasicDTO(commune.getName(), commune.getInseeCode());
@@ -128,6 +132,11 @@ public class ExportDataService {
 
     /**
      * Maps Commune entity to CommuneExportDTO.
+     * 
+     * Builds a clean DTO hierarchy without redundant fields:
+     * - Removes departmentCode and regionCode (available in nested department.region)
+     * - Removes internal database IDs (use official INSEE codes instead)
+     * - Maintains geographic hierarchy through nested DTOs
      */
     private CommuneExportDTO mapCommuneToExportDTO(Commune commune) {
         Department department = commune.getDepartment();
@@ -135,21 +144,21 @@ public class ExportDataService {
 
         if (department != null) {
             Region region = department.getRegion();
+            // Create region DTO with official code only (no internal ID)
             RegionExportDTO regionDTO = new RegionExportDTO(
-                    region.getId(),
                     region.getName(),
                     region.getRegionCode()
             );
 
+            // Create department DTO without ID and without redundant regionCode
             departmentDTO = new DepartmentExportDTO(
-                    department.getId(),
                     department.getName(),
                     department.getDepartmentCode(),
-                    department.getRegionCode(),
                     regionDTO
             );
         }
 
+        // Create commune DTO with geographic data but no redundant codes
         return new CommuneExportDTO(
                 commune.getId(),
                 commune.getInseeCode(),
@@ -157,8 +166,6 @@ public class ExportDataService {
                 commune.getPopulation(),
                 commune.getLatitude() != null ? commune.getLatitude().doubleValue() : null,
                 commune.getLongitude() != null ? commune.getLongitude().doubleValue() : null,
-                commune.getDepartmentCode(),
-                commune.getRegionCode(),
                 departmentDTO
         );
     }
@@ -258,10 +265,32 @@ public class ExportDataService {
     }
 
     /**
-     * Builds data points from air quality and weather data lists.
+     * Builds data points from air quality and weather data lists with optional indicator filtering.
+     * 
+     * Filters data points to include only the requested indicators.
+     * Valid air quality indicators: aqi, pm25, pm10, no2, o3, so2
+     * Valid weather indicators: temperature, humidity, windSpeed, windDirection, pressure
+     * 
+     * @param airQualityList list of air quality data
+     * @param weatherList list of weather data
+     * @param indicatorsFilter optional comma-separated indicator filter (null or empty returns all)
+     * @return filtered list of data points
      */
-    private List<DataPoint> buildDataPoints(List<AirQuality> airQualityList, List<WeatherData> weatherList) {
+    private List<DataPoint> buildDataPoints(List<AirQuality> airQualityList, List<WeatherData> weatherList, String indicatorsFilter) {
         List<DataPoint> dataPoints = new ArrayList<>();
+
+        // Parse and validate indicators filter
+        Set<String> requestedIndicators = parseIndicators(indicatorsFilter);
+        boolean hasAirQualityIndicators = requestedIndicators.stream().anyMatch(ind -> 
+            ind.matches("aqi|pm25|pm10|no2|o3|so2"));
+        boolean hasWeatherIndicators = requestedIndicators.stream().anyMatch(ind -> 
+            ind.matches("temperature|humidity|windSpeed|windDirection|pressure"));
+
+        // If no indicators specified, include all
+        if (requestedIndicators.isEmpty()) {
+            hasAirQualityIndicators = true;
+            hasWeatherIndicators = true;
+        }
 
         // Create a map of weather data by date for easy lookup
         java.util.Map<LocalDate, WeatherData> weatherByDate = new java.util.HashMap<>();
@@ -271,39 +300,96 @@ public class ExportDataService {
         for (AirQuality aq : airQualityList) {
             WeatherData weather = weatherByDate.get(aq.getMeasurementDate());
 
-            AirQualityDataPoint aqPoint = new AirQualityDataPoint(
-                    aq.getAtmIndex(),
-                    aq.getAtmoQual(),
-                    aq.getAtmoColor(),
-                    aq.getNO2(),
-                    aq.getO3(),
-                    aq.getPm10(),
-                    aq.getPm25(),
-                    aq.getSO2()
-            );
+            // Build air quality data point (with filtering if needed)
+            AirQualityDataPoint aqPoint = null;
+            if (hasAirQualityIndicators) {
+                aqPoint = filterAirQualityDataPoint(aq, requestedIndicators);
+            }
 
-            WeatherDataPoint weatherPoint = weather != null
-                    ? new WeatherDataPoint(
-                            weather.getTemperature(),
-                            weather.getHumidity(),
-                            weather.getWindSpeed(),
-                            weather.getWindDirection(),
-                            weather.getWeatherCode(),
-                            null, // precipitation not available in WeatherData entity
-                            null  // cloudCover not available in WeatherData entity
-                    )
-                    : null;
+            // Build weather data point (with filtering if needed)
+            WeatherDataPoint weatherPoint = null;
+            if (hasWeatherIndicators && weather != null) {
+                weatherPoint = filterWeatherDataPoint(weather, requestedIndicators);
+            }
 
-            DataPoint dataPoint = new DataPoint(
-                    aq.getMeasurementDate().atStartOfDay(),
-                    aqPoint,
-                    weatherPoint
-            );
-
-            dataPoints.add(dataPoint);
+            // Only add data point if it has at least one requested indicator
+            if (aqPoint != null || weatherPoint != null) {
+                DataPoint dataPoint = new DataPoint(
+                        aq.getMeasurementDate().atStartOfDay(),
+                        aqPoint,
+                        weatherPoint
+                );
+                dataPoints.add(dataPoint);
+            }
         }
 
         return dataPoints;
+    }
+
+    /**
+     * Parses indicator filter string into a set of individual indicators.
+     * 
+     * @param indicatorsFilter comma-separated indicator string (e.g., "aqi,pm25,temperature")
+     * @return set of parsed indicators (empty if filter is null or empty)
+     */
+    private Set<String> parseIndicators(String indicatorsFilter) {
+        if (indicatorsFilter == null || indicatorsFilter.trim().isEmpty()) {
+            return new HashSet<>();
+        }
+        
+        return Arrays.stream(indicatorsFilter.split(","))
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Filters air quality data point to include only requested indicators.
+     * 
+     * @param aq air quality entity
+     * @param requestedIndicators set of requested indicators
+     * @return filtered AirQualityDataPoint with null values for non-requested fields
+     */
+    private AirQualityDataPoint filterAirQualityDataPoint(AirQuality aq, Set<String> requestedIndicators) {
+        // If no indicators specified or "aqi" is requested, include AQI fields; otherwise null
+        Integer aqi = (requestedIndicators.isEmpty() || requestedIndicators.contains("aqi")) ? aq.getAtmIndex() : null;
+        String qualifier = (requestedIndicators.isEmpty() || requestedIndicators.contains("aqi")) ? aq.getAtmoQual() : null;
+        String color = (requestedIndicators.isEmpty() || requestedIndicators.contains("aqi")) ? aq.getAtmoColor() : null;
+
+        // Include individual pollutants if requested
+        Double no2 = (requestedIndicators.isEmpty() || requestedIndicators.contains("no2")) ? aq.getNO2() : null;
+        Double o3 = (requestedIndicators.isEmpty() || requestedIndicators.contains("o3")) ? aq.getO3() : null;
+        Double pm10 = (requestedIndicators.isEmpty() || requestedIndicators.contains("pm10")) ? aq.getPm10() : null;
+        Integer pm25 = (requestedIndicators.isEmpty() || requestedIndicators.contains("pm25")) ? aq.getPm25() : null;
+        Double so2 = (requestedIndicators.isEmpty() || requestedIndicators.contains("so2")) ? aq.getSO2() : null;
+
+        return new AirQualityDataPoint(aqi, qualifier, color, no2, o3, pm10, pm25, so2);
+    }
+
+    /**
+     * Filters weather data point to include only requested indicators.
+     * 
+     * @param weather weather data entity
+     * @param requestedIndicators set of requested indicators
+     * @return filtered WeatherDataPoint with null values for non-requested fields
+     */
+    private WeatherDataPoint filterWeatherDataPoint(WeatherData weather, Set<String> requestedIndicators) {
+        // Include weather indicators if requested or if no filter specified
+        Double temperature = (requestedIndicators.isEmpty() || requestedIndicators.contains("temperature")) ? weather.getTemperature() : null;
+        Double humidity = (requestedIndicators.isEmpty() || requestedIndicators.contains("humidity")) ? weather.getHumidity() : null;
+        Double windSpeed = (requestedIndicators.isEmpty() || requestedIndicators.contains("windspeed")) ? weather.getWindSpeed() : null;
+        Double windDirection = (requestedIndicators.isEmpty() || requestedIndicators.contains("winddirection")) ? weather.getWindDirection() : null;
+        Integer weatherCode = (requestedIndicators.isEmpty() || requestedIndicators.contains("weathercode")) ? weather.getWeatherCode() : null;
+
+        return new WeatherDataPoint(
+                temperature,
+                humidity,
+                windSpeed,
+                windDirection,
+                weatherCode,
+                null, // precipitation not available in WeatherData entity
+                null  // cloudCover not available in WeatherData entity
+        );
     }
 
     /**

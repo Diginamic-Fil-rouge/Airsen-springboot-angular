@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -119,7 +120,7 @@ public class AtmoIntegrationService {
      * @return Mono containing the air quality data as DTO
      */
     public Mono<Optional<AirQualityResponseDTO>> getAirQualityForCommune(String inseeCode) {
-        log.error(">>> DEBUG: Starting getAirQualityForCommune for: {}", inseeCode);
+        log.info("Starting getAirQualityForCommune for: {}", inseeCode);
         
         return atmoApiClient.getCurrentAirQuality(inseeCode)
             .flatMap(this::convertToAirQuality)
@@ -128,7 +129,7 @@ public class AtmoIntegrationService {
                     log.info("Attempting to save air quality data for commune: {} with measurement date: {}", 
                             inseeCode, airQuality.getMeasurementDate());
                     log.info("Air quality data: index={}, qualifier={}, color={}", 
-                            airQuality.getAtmoIndex(), airQuality.getQualifier(), airQuality.getColor());
+                            airQuality.getAtmIndex(), airQuality.getQualifier(), airQuality.getColor());
                     
                     // Check if data already exists for today
                     LocalDate measurementDate = airQuality.getMeasurementDate();
@@ -258,7 +259,7 @@ public class AtmoIntegrationService {
                     // Check if data already exists for today
                     LocalDate measurementDate = airQuality.getMeasurementDate();
                     Optional<AirQuality> existing = airQualityRepository
-                        .findByCommuneAndMeasurementDate(airQuality.getCommune(), measurementDate);
+                        .findByCommuneAndMeasurementDateWithEagerLoading(airQuality.getCommune(), measurementDate);
                     
                     if (existing.isPresent()) {
                         // Update existing record
