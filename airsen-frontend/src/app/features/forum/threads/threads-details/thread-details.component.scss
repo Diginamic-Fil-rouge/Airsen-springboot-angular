@@ -1,21 +1,23 @@
+@import '/src/assets/design-system.scss';
+
 .thread-container{
-    background-color: #f5f5f5;
+    background-color: $airsen-gray-100;
     padding: 2rem;
-    color: #2c3e50;
+    color: $airsen-gray-800;
 
     a{
-        color: #2c3e50;
+        color: $airsen-gray-800;
     }
 
     a:visited{
-        color: #2c3e50;
+        color: $airsen-gray-800;
     }
     
     .back-button{
-        color: #2c3e50;
+        color: $airsen-gray-800;
         text-decoration: none;
         cursor: pointer;
-        box-shadow: inset 1px -1px 1px 1px #e5e5e5;
+        box-shadow: inset 1px -1px 1px 1px $airsen-gray-100;
         padding: 5px 10px;
         border-radius: 5px;
         font-size: 1rem;
@@ -28,8 +30,8 @@
     }
 
     .back-button:hover{
-        background-color: #00bdd6;
-        color:#ffffff;
+        background-color: $airsen-accent;
+        color:$airsen-white;
         padding: 7px 12px;
     }
     
@@ -38,9 +40,9 @@
         max-width: 100%;
         margin: 0 auto;
         padding: 3rem 2rem;
-        background-color: #ffffff;
+        background-color: $airsen-gray-100;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px $airsen-gray-400;
         display: flex;
         flex-direction: column;
         gap: 50px;
@@ -62,7 +64,7 @@
                         border: none;
                         background-color: transparent;
                         text-decoration: underline;
-                        color:#2c3e50
+                        color: $airsen-gray-800;
                     }
                 }
             }
@@ -70,7 +72,7 @@
             .thread-data{
                 display: flex;
                 padding: 5px;
-                color: #8c8c8c;
+                color: $airsen-gray-500;
                 gap: 50px;
                 width: 100%;
             }
@@ -121,8 +123,8 @@
             justify-content: center;
 
             .danger{
-                background-color: #ff0000;
-                color: #ffffff;
+                background-color: $airsen-error;
+                color: $airsen-white;
                 padding: 10px 20px;
                 border: none;
                 border-radius: 5px;
@@ -131,8 +133,8 @@
             }
 
             .cancel{
-                background-color: #428945;
-                color: #ffffff;
+                background-color: $airsen-success;
+                color: $airsen-white;
                 padding: 10px 20px;
                 border: none;
                 border-radius: 5px;
