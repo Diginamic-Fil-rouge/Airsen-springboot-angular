@@ -15,7 +15,7 @@ export class ThreadService {
     threads: Observable<Thread[]> = this.http.get<Thread[]>(this.apiUrl);
 
     getAllThreads(): Observable<Page> {
-        return this.http.get<Page>(`${this.apiUrl}`);
+        return this.http.get<Page>(`${this.apiUrl}`, { params: { sortBy: 'lastMessageDate' }});
     }
     
     getThreads(id: number): Observable<Thread[]> {
@@ -32,5 +32,9 @@ export class ThreadService {
 
     editThread(thread: any): Observable<any> {
         return this.http.put(`${this.apiUrl}/${thread.id}`, thread);
+    }
+
+    deleteThread(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/${id}`);
     }
 }

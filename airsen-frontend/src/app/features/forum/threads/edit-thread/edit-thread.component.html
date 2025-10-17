@@ -1,5 +1,5 @@
 <div class="page-container">
-    <back-button route="/forum" textContent="Retour au forum"></back-button>
+    <back-button route="/forum/thread/{{(thread$ | async)?.id}}" textContent="Retour au post"></back-button>
     <h2>Modifier la discussion</h2>
     @if (errors$ != []) {
         @for (error of errors$ ; track $index) {
