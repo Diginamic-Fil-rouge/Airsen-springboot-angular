@@ -1,92 +1,71 @@
-# Multi-stage build for Angular with Node v22.19.0
-ARG NODE_IMAGE=node:22-alpine
-FROM ${NODE_IMAGE} AS builder
+
+# DEVELOPMENT STAGE - Live Reload with Angular CLI
+FROM node:22-alpine AS development
 
 WORKDIR /app
 
-# Copy package files
+# Install basic utilities
+RUN apk add --no-cache curl bash
+
+# Copy ONLY package files for dependency caching (source will be bind-mounted)
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (cached layer - only invalidates if package.json changes)
+RUN npm ci --prefer-offline --no-audit
 
-# Copy source code
-COPY . .
+# DON'T COPY src - will be bind-mounted in docker-compose
+# This allows Angular CLI to detect file changes and live reload
 
-# Build Angular application for production
-RUN npm run build -- --configuration production
-
-# Development stage - for local development with hot reload
-FROM ${NODE_IMAGE} AS development
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install all dependencies (including dev dependencies) deterministically
-RUN npm ci
-
-# Copy source code (will be overridden by volume mount in docker-compose)
-COPY . .
-
-# Create non-root user
-RUN addgroup -S angular && adduser -S angular -G angular && \
-    chown -R angular:angular /app
-
-# Change ownership
-RUN chown -R angular:angular /app
-
-USER angular
-
-# Development server with hot reload
 EXPOSE 4200
+
+# Set Node memory options
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
+# Angular CLI with live reload (polling for Docker compatibility)
 CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
 
-# Production stage with Nginx
+
+
+# BUILDER STAGE - Compile Angular Application
+FROM node:22-alpine AS builder
+
+WORKDIR /build
+
+# Copy package files first for dependency caching
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production --prefer-offline --no-audit
+
+# Copy Angular configuration files
+COPY angular.json tsconfig*.json ./
+
+# Copy source code (invalidates only if src changes)
+COPY src ./src
+
+# Build production-optimized Angular app
+RUN npm run build -- --configuration production --output-path=dist/airsen-frontend
+
+
+
+# PRODUCTION STAGE - Nginx Static Server
 FROM nginx:alpine AS production
 
-# Generate nginx SPA configuration inline
-RUN echo 'server { \
-    listen 80; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-    \
-    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
-        expires 1y; \
-        add_header Cache-Control "public, immutable"; \
-    } \
-    \
-    gzip on; \
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
-    gzip_min_length 1000; \
-    \
-    add_header X-Frame-Options "SAMEORIGIN" always; \
-    add_header X-Content-Type-Options "nosniff" always; \
-    add_header X-XSS-Protection "1; mode=block" always; \
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always; \
-}' > /etc/nginx/conf.d/default.conf
+# Install curl for health checks
+RUN apk add --no-cache curl
 
-# Copy built Angular app
-COPY --from=builder /app/dist/airsen-frontend /tmp/dist
+# Copy ONLY built Angular app from builder stage
+COPY --from=builder /build/dist/airsen-frontend /usr/share/nginx/html
 
-# Intelligently copy based on Angular version (v17+ uses /browser subfolder)
-RUN if [ -d /tmp/dist/browser ]; then \
-        cp -r /tmp/dist/browser/* /usr/share/nginx/html/; \
-    else \
-        cp -r /tmp/dist/* /usr/share/nginx/html/; \
-    fi && \
-    rm -rf /tmp/dist
+# Create health check endpoint
+RUN echo "OK" > /usr/share/nginx/html/health
 
-# Verify index.html exists (fail fast if build is broken)
-RUN test -f /usr/share/nginx/html/index.html || (echo "ERROR: index.html not found!" && exit 1)
+# Health check for production readiness
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:80/health || exit 1
 
 
 EXPOSE 80
 
+# Run nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]

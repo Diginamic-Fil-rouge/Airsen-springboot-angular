@@ -68,25 +68,41 @@ public class WeatherController {
     })
     public ResponseEntity<WeatherDataDTO> getCurrentWeather(
             @Parameter(description = "INSEE code of the commune", example = "75101")
-            @PathVariable 
+            @PathVariable
             @NotBlank(message = "Commune INSEE code cannot be blank")
             @Pattern(regexp = "\\d{5}", message = "INSEE code must be 5 digits")
             String communeInseeCode) {
-        
+
         log.info("Fetching current weather for commune: {}", communeInseeCode);
-        
+
         try {
-            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(communeInseeCode).block();
+            // Add timeout to prevent blocking indefinitely
+            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(communeInseeCode)
+                .block(java.time.Duration.ofSeconds(15)); // 15 second timeout
+
             if (weatherData != null) {
+                // Check if commune relationship is loaded to avoid LazyInitializationException
+                if (weatherData.getCommune() == null) {
+                    log.error("Weather data commune relationship not loaded for: {}", communeInseeCode);
+                    return ResponseEntity.internalServerError().build();
+                }
+
                 WeatherDataDTO dto = mapToDTO(weatherData);
-                log.info("Successfully fetched current weather for commune: {}", communeInseeCode);
+                log.info("Successfully fetched current weather for commune: {} - Temperature: {}°C",
+                        communeInseeCode, weatherData.getTemperature());
                 return ResponseEntity.ok(dto);
             } else {
-                log.warn("No weather data found for commune: {}", communeInseeCode);
+                log.warn("No weather data found for commune: {} - Check if commune exists and has coordinates",
+                        communeInseeCode);
                 return ResponseEntity.notFound().build();
             }
+        } catch (IllegalStateException error) {
+            // Handle specific error when commune has no coordinates
+            log.error("Commune {} configuration error: {}", communeInseeCode, error.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (Exception error) {
-            log.error("Failed to fetch current weather for commune: {}", communeInseeCode, error);
+            log.error("Failed to fetch current weather for commune: {} - Error: {}",
+                    communeInseeCode, error.getMessage(), error);
             return ResponseEntity.internalServerError().build();
         }
     }

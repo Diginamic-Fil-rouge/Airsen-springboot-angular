@@ -68,6 +68,17 @@ spring:
       use-key-prefix: true
       key-prefix: "airsen:"
   
+  # Jackson JSON Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+      accept-single-value-as-array: true
+    default-property-inclusion: non_null
+    time-zone: Europe/Paris
+  
   # Security Configuration
   security:
     jwt:

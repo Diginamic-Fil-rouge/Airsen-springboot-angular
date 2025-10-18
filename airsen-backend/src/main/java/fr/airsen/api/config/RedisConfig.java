@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @Configuration
 @EnableCaching
-@ConditionalOnProperty(name = "spring.data.redis.host", havingValue = "redis", matchIfMissing = false)
+@ConditionalOnProperty(name = "spring.data.redis.host", matchIfMissing = false)
 public class RedisConfig {
 
     private static final Logger log = LoggerFactory.getLogger(RedisConfig.class);
@@ -117,12 +117,17 @@ public class RedisConfig {
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         log.info("Creating CacheManager bean with custom TTL configurations");
 
+        // Configure ObjectMapper with JavaTimeModule for LocalDate/LocalDateTime support
+        ObjectMapper cacheObjectMapper = new ObjectMapper();
+        cacheObjectMapper.registerModule(new JavaTimeModule());
+        GenericJackson2JsonRedisSerializer cacheSerializer = new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
+
         // Default configuration - 1 hour TTL
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
                 .disableCachingNullValues()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(cacheSerializer));
 
         // Cache-specific configurations with different TTL values
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();

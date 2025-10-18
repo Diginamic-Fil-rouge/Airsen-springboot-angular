@@ -1,5 +1,6 @@
 package fr.airsen.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -20,6 +21,7 @@ public class WeatherData {
 
     @ManyToOne
     @JoinColumn(name = "commune_id")
+    @JsonIgnoreProperties({"weatherData", "airQualities", "airQuality", "hibernateLazyInitializer", "handler"})
     private Commune commune;
 
     @Column(name = "measurement_date")

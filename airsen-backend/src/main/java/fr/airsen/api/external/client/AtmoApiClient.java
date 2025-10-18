@@ -1,5 +1,7 @@
 package fr.airsen.api.external.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.airsen.api.external.config.AtmoApiConfig;
 import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
 import fr.airsen.api.external.dto.atmo.AtmoGeoJsonResponse;
@@ -19,8 +21,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Client for ATMO France API integration.
@@ -39,6 +39,11 @@ public class AtmoApiClient {
     private final ObjectMapper objectMapper;
     
     private static final String JWT_TOKEN_CACHE_KEY = "atmo:jwt:token";
+    private static final Duration TOKEN_CACHE_DURATION = Duration.ofHours(24); // Cache token for 1 hour
+    
+    // In-memory cache as fallback when Redis is unavailable
+    private String cachedToken = null;
+    private java.time.Instant tokenExpirationTime = null;
 
     @Autowired
     public AtmoApiClient(@Qualifier("atmoWebClient") WebClient webClient,
@@ -51,11 +56,45 @@ public class AtmoApiClient {
     }
 
     /**
-     * Gets JWT token from ATMO API using username/password authentication.
+     * Gets a valid JWT token, using cache when available.
+     * Tries Redis cache first, falls back to in-memory cache, and authenticates if needed.
      * 
      * @return Mono containing the JWT token
      */
     private Mono<String> getJwtToken() {
+        // Check in-memory cache first (fastest)
+        if (cachedToken != null && tokenExpirationTime != null && 
+            java.time.Instant.now().isBefore(tokenExpirationTime)) {
+            log.debug("Using in-memory cached JWT token");
+            return Mono.just(cachedToken);
+        }
+        
+        // Check Redis cache if available
+        if (redisTemplate != null) {
+            try {
+                String cachedTokenFromRedis = (String) redisTemplate.opsForValue().get(JWT_TOKEN_CACHE_KEY);
+                if (cachedTokenFromRedis != null && !cachedTokenFromRedis.isEmpty()) {
+                    log.debug("Using Redis cached JWT token");
+                    // Update in-memory cache
+                    cachedToken = cachedTokenFromRedis;
+                    tokenExpirationTime = java.time.Instant.now().plus(TOKEN_CACHE_DURATION);
+                    return Mono.just(cachedTokenFromRedis);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to retrieve token from Redis cache, will authenticate: {}", e.getMessage());
+            }
+        }
+        
+        // No valid cached token, authenticate
+        return authenticateAndCacheToken();
+    }
+    
+    /**
+     * Authenticates with ATMO API and caches the token.
+     * 
+     * @return Mono containing the JWT token
+     */
+    private Mono<String> authenticateAndCacheToken() {
         log.info("Authenticating with ATMO API to get JWT token");
         String loginPayload = "{\"username\": \"" + config.getUsername() + 
                              "\", \"password\": \"" + config.getPassword() + "\"}";
@@ -69,6 +108,22 @@ public class AtmoApiClient {
                 Mono.error(new AtmoApiException("JWT Authentication failed: " + response.statusCode())))
             .bodyToMono(String.class)
             .map(this::extractTokenFromResponse)
+            .doOnNext(token -> {
+                // Cache token in memory
+                cachedToken = token;
+                tokenExpirationTime = java.time.Instant.now().plus(TOKEN_CACHE_DURATION);
+                
+                // Cache token in Redis if available
+                if (redisTemplate != null) {
+                    try {
+                        redisTemplate.opsForValue().set(JWT_TOKEN_CACHE_KEY, token, TOKEN_CACHE_DURATION);
+                        log.debug("JWT token cached in Redis");
+                    } catch (Exception e) {
+                        log.warn("Failed to cache token in Redis: {}", e.getMessage());
+                    }
+                }
+                log.info("JWT token obtained and cached successfully");
+            })
             .doOnError(error -> log.error("Failed to get JWT token", error))
             .timeout(Duration.ofMillis(config.getTimeoutMs()));
     }

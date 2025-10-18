@@ -1,0 +1,79 @@
+# Dependencies - Will be installed via npm ci in container
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs - Will be generated during Docker build
+dist/
+.angular/
+*.tsbuildinfo
+.cache/
+
+# Environment files - Use docker-compose environment variables instead
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+
+# IDE and Editor files - Not needed in container
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS system files (recursive patterns)
+**/.DS_Store
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/ehthumbs.db
+**/Thumbs.db
+
+# Git files - Not needed in image
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Testing - Not needed in production image
+coverage/
+.nyc_output/
+*.spec.ts
+*.spec.js
+e2e/
+cypress/
+karma.conf.js
+protractor.conf.js
+
+# Documentation - Not needed in runtime
+*.md
+README*
+CHANGELOG*
+LICENSE*
+docs/
+.editorconfig
+
+# Docker files - Prevent recursion
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD files - Not needed in container
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+.circleci/
+jenkinsfile
+
+# Miscellaneous
+*.log
+*.backup
+*.orig
+*.tmp
+.eslintcache
+.stylelintcache
