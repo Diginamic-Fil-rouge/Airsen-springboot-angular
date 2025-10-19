@@ -11,6 +11,7 @@ services:
   mariadb:
     <<: *common
     image: mariadb:11.6
+    profiles: ["backend", "full-stack"]
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${DB_NAME}
@@ -37,6 +38,7 @@ services:
   redis:
     <<: *common
     image: redis:7.4-alpine
+    profiles: ["backend", "full-stack"]
     command: ["redis-server","--appendonly","yes","--maxmemory","256mb","--maxmemory-policy","allkeys-lru"]
     ports:
       - "6379:6379"
@@ -54,15 +56,15 @@ services:
         reservations:
           memory: 128M
 
-  # DEVELOPMENT BACKEND - Hot Reload with DevTools
-  api-dev:
+  # BACKEND
+  api:
     <<: *common
-    profiles: ["dev"]
+    profiles: ["backend", "full-stack"]
     build:
       context: ./airsen-backend
       dockerfile: Dockerfile
-      target: development
-    image: airsen-api:dev
+      target: ${API_TARGET}
+    image: airsen-api:${API_TARGET}
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/${DB_NAME}?useUnicode=true&characterEncoding=UTF-8
@@ -74,26 +76,19 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ORIGINS}
       JWT_SECRET: ${JWT_SECRET}
       LOGGING_LEVEL_COM_AIRSEN: ${LOG_LEVEL}
-
-      # External APIs
       ATMO_API_URL: ${ATMO_API_URL}
       ATMO_USERNAME: ${ATMO_USERNAME}
       ATMO_PASSWORD: ${ATMO_PASSWORD}
       OPEN_METEO_URL: ${OPEN_METEO_URL}
       INSEE_API_URL: ${INSEE_API_URL}
-
-      # Email configuration
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
       MAIL_FROM_NAME: ${MAIL_FROM_NAME}
     volumes:
-      # MINIMAL BIND MOUNTS - Only source code and pom.xml
       - ./airsen-backend/src:/app/src:ro
       - ./airsen-backend/pom.xml:/app/pom.xml:ro
-      # Writable volume for Maven target directory
       - ./airsen-backend/target:/app/target
-      # Maven cache to speed up builds
       - maven_cache:/root/.m2/repository
     ports:
       - "8080:8080"
@@ -109,23 +104,22 @@ services:
         reservations:
           memory: 512M
 
-  # DEVELOPMENT FRONTEND - Live Reload with Angular CLI
-  web-dev:
+  # FRONTEND
+  web:
     <<: *common
-    profiles: ["dev"]
+    profiles: ["frontend", "full-stack"]
     build:
       context: ./airsen-frontend
       dockerfile: Dockerfile
-      target: development
-    image: airsen-web:dev
+      target: ${WEB_TARGET}
+    image: airsen-web:${WEB_TARGET}
     environment:
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV}
       CHOKIDAR_USEPOLLING: "true"
       NG_CLI_ANALYTICS: "false"
       API_BASE_URL: ${API_BASE_URL}
       NODE_OPTIONS: "--max-old-space-size=2048"
     volumes:
-      # MINIMAL BIND MOUNTS - Only source code and config files
       - ./airsen-frontend/src:/app/src:ro
       - ./airsen-frontend/angular.json:/app/angular.json:ro
       - ./airsen-frontend/tsconfig.json:/app/tsconfig.json:ro
@@ -133,98 +127,11 @@ services:
       - ./airsen-frontend/tsconfig.spec.json:/app/tsconfig.spec.json:ro
       - ./airsen-frontend/package.json:/app/package.json:ro
       - ./airsen-frontend/package-lock.json:/app/package-lock.json:ro
-      # Cache node_modules (persist between rebuilds)
       - node_modules_cache:/app/node_modules
     ports:
       - "4200:4200"
     depends_on:
-      - api-dev
-    deploy:
-      resources:
-        limits:
-          memory: 2048M
-        reservations:
-          memory: 1024M
-
-  # PRODUCTION BACKEND
-  api:
-    <<: *common
-    profiles: ["prod"]
-    build:
-      context: ./airsen-backend
-      dockerfile: Dockerfile
-      target: production
-    image: airsen-api:prod
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/${DB_NAME}?useUnicode=true&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-      CORS_ALLOWED_ORIGINS: ${CORS_ORIGINS:-http://localhost}
-      JWT_SECRET: ${JWT_SECRET}
-      LOGGING_LEVEL_ROOT: WARN
-      LOGGING_LEVEL_COM_AIRSEN: INFO
-
-      ATMO_API_URL: ${ATMO_API_URL}
-      ATMO_USERNAME: ${ATMO_USERNAME}
-      ATMO_PASSWORD: ${ATMO_PASSWORD}
-      OPEN_METEO_URL: ${OPEN_METEO_URL}
-      INSEE_API_URL: ${INSEE_API_URL}
-
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
-      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
-    expose:
-      - "8080"
-    healthcheck:
-      test: ["CMD","curl","-f","http://localhost:8080/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 60s
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 768M
-        reservations:
-          memory: 512M
-
-  # PRODUCTION FRONTEND
-  web:
-    <<: *common
-    profiles: ["prod"]
-    build:
-      context: ./airsen-frontend
-      dockerfile: Dockerfile
-      target: production
-    image: airsen-web:prod
-    environment:
-      API_BASE_URL: http://api:8080
-    expose:
-      - "80"
-    healthcheck:
-      test: ["CMD","curl","-f","http://localhost:80/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-    depends_on:
-      api:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
+      - api
 
   # PRODUCTION NGINX REVERSE PROXY
   nginx:
