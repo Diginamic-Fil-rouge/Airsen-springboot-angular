@@ -182,7 +182,7 @@ public class ExportDataController {
                     @Parameter(
                             name = "indicators",
                             description = "Optional comma-separated indicator filter. Valid values: " +
-                                         "aqi,pm25,pm10,no2,o3,so2,temperature,humidity,windSpeed,pressure. " +
+                                         "aqi,pm25,pm10,no2,o3,so2,temperature,humidity,windSpeed,windDirection,weatherCode. " +
                                          "If not specified, all indicators are returned.",
                             example = "aqi,pm25,temperature,humidity",
                             required = false

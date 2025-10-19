@@ -39,7 +39,7 @@ public class AtmoApiClient {
     private final ObjectMapper objectMapper;
     
     private static final String JWT_TOKEN_CACHE_KEY = "atmo:jwt:token";
-    private static final Duration TOKEN_CACHE_DURATION = Duration.ofHours(24); // Cache token for 1 hour
+    private static final Duration TOKEN_CACHE_DURATION = Duration.ofHours(24); // Cache token for 24 hour
     
     // In-memory cache as fallback when Redis is unavailable
     private String cachedToken = null;
