@@ -316,7 +316,7 @@ api-spec.json
 # Environment variables and secrets
 .env
 .env.prod
-.env.development
+.env.dev
 .env.test
 .env.local
 .env.production

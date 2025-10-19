@@ -1,5 +1,3 @@
-# Example: make dev, make prod, make test
-
 .PHONY: help dev dev-backend dev-frontend prod test down logs clean rebuild status health
 
 # Default target - show help
@@ -36,7 +34,7 @@ help:
 # Start full development stack
 dev:
 	@echo "Starting full development stack...";
-	docker-compose --env-file .env.local --profile dev up -d
+	docker-compose --env-file .env.dev --profile full-stack --profile dev up -d
 	@echo "Development stack started!";
 	@echo "   Backend:  http://localhost:8080";
 	@echo "   Frontend: http://localhost:4200";
@@ -46,14 +44,14 @@ dev:
 # Start backend only (for frontend development on host)
 dev-backend:
 	@echo "Starting backend services...";
-	docker-compose --env-file .env.local up -d mariadb redis api-dev
+	docker-compose --env-file .env.dev --profile backend up -d
 	@echo "Backend started!";
 	@echo "   API: http://localhost:8080";
 
 # Start frontend only (requires backend running)
 dev-frontend:
 	@echo "Starting frontend service...";
-	docker-compose --env-file .env.local up -d web-dev
+	docker-compose --env-file .env.dev --profile frontend up -d
 	@echo "Frontend started!";
 	@echo "   App: http://localhost:4200";
 
@@ -62,13 +60,13 @@ dev-frontend:
 # Build production images
 prod-build:
 	@echo "Building production images...";
-	docker-compose --env-file .env.prod --profile prod build --no-cache
+	docker-compose --env-file .env.prod --profile full-stack --profile prod build --no-cache
 	@echo "Production images built successfully!";
 
 # Start production stack locally
 prod:
 	@echo "Starting production stack locally...";
-	docker-compose --env-file .env.prod --profile prod up -d
+	docker-compose --env-file .env.prod --profile full-stack --profile prod up -d
 	@echo "Production stack started!";
 	@echo "   Application: http://localhost";
 
@@ -78,25 +76,25 @@ prod:
 test:
 	@echo "Running all tests...";
 	@echo "Building test images...";
-	docker-compose --env-file .env.test build --target test
+	docker-compose --env-file .env.test build
 	@echo "Running backend tests...";
-	docker-compose --env-file .env.test run --rm api-dev
+	docker-compose --env-file .env.test run --rm api
 	@echo "Running frontend tests...";
-	docker-compose --env-file .env.test run --rm web-dev
+	docker-compose --env-file .env.test run --rm web
 	@echo "All tests completed!";
 
 # Run backend tests only
 test-backend:
 	@echo "Running backend tests...";
-	docker-compose --env-file .env.test build --target test airsen-backend
-	docker-compose --env-file .env.test run --rm api-dev mvn test
+	docker-compose --env-file .env.test build api
+	docker-compose --env-file .env.test run --rm api mvn test
 	@echo "Backend tests completed!";
 
 # Run frontend tests only
 test-frontend:
 	@echo "Running frontend tests...";
-	docker-compose --env-file .env.test build --target test airsen-frontend
-	docker-compose --env-file .env.test run --rm web-dev npm run test:ci
+	docker-compose --env-file .env.test build web
+	docker-compose --env-file .env.test run --rm web npm run test:ci
 	@echo "Frontend tests completed!";
 
 # UTILITY COMMANDS
@@ -115,12 +113,12 @@ logs:
 # View backend logs only
 logs-backend:
 	@echo "Showing backend logs (Ctrl+C to exit)...";
-	docker-compose logs -f api-dev api
+	docker-compose logs -f api
 
 # View frontend logs only
 logs-frontend:
 	@echo "Showing frontend logs (Ctrl+C to exit)...";
-	docker-compose logs -f web-dev web
+	docker-compose logs -f web
 
 # Clean up everything (containers, volumes, networks)
 clean:
@@ -133,29 +131,25 @@ clean:
 rebuild:
 	@echo "Rebuilding development environment...";
 	docker-compose down -v
-	docker-compose --env-file .env.local --profile dev build --no-cache
-	docker-compose --env-file .env.local --profile dev up -d
+	docker-compose --env-file .env.dev --profile full-stack --profile dev build --no-cache
+	docker-compose --env-file .env.dev --profile full-stack --profile dev up -d
 	@echo "Rebuild completed!";
 
 # Show status of running containers
 status:
 	@echo "Docker containers status:";
-	@docker-compose ps
+	docker-compose ps
 
 # Check health of all services
 health:
 	@echo "Checking services health...";
 	@echo "";
 	@echo "MariaDB:";
-	@docker-compose exec mariadb mariadb-admin ping -h 127.0.0.1 -u root -p$$DB_ROOT_PASSWORD --silent && echo "Healthy" || echo "Unhealthy";
+	docker-compose exec mariadb mariadb-admin ping -h 127.0.0.1 -u root -p$$DB_ROOT_PASSWORD --silent && echo "Healthy" || echo "Unhealthy";
 	@echo "";
 	@echo "Redis:";
-	@docker-compose exec redis redis-cli ping && echo "Healthy" || echo "Unhealthy";
+	docker-compose exec redis redis-cli ping && echo "Healthy" || echo "Unhealthy";
 	@echo "";
 	@echo "Backend API:";
 	@curl -sf http://localhost:8080/actuator/health > /dev/null && echo "Healthy" || echo "Unhealthy";
 	@echo "";
-
-
-
-

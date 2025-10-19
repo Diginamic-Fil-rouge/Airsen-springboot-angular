@@ -1,7 +1,5 @@
 package fr.airsen.api.dto.response;
 
-import java.time.LocalDateTime;
-
 /**
  * Commune export information for API responses.
  * 
@@ -13,7 +11,6 @@ import java.time.LocalDateTime;
  * department.region hierarchy and are the only identifiers needed for exports.
  */
 public record CommuneExportDTO(
-    Long id,
     String inseeCode,
     String name,
     Long population,
