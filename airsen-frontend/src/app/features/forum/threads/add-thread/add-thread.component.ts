@@ -20,9 +20,14 @@ export class AddThreadComponent {
 
     categories$ = this.forumService.getCategories();
 
+    /**
+     * Creates a new thread with the given title, content and category id.
+     * If the thread is successfully created, navigates to the forum page.
+     * If there is an error while creating the thread, logs the error to the console and updates the errors array with the error message and details.
+     */
     createThread() {
         this.errors$ = [];
-        if (this.title && this.content && this.categoryId) {
+        if (this.title && this.content && this.categoryId && this.categoryId != 0) {
             this.forumService.addThreadToCategory({
                 title: this.title,
                 content: this.content,

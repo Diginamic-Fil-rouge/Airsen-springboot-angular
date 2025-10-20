@@ -20,7 +20,7 @@ public class ForumThread {
     @Column(name = "id", nullable = false, length = 10)
     private long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "author_id")
     private User author;
 

@@ -1,35 +1,32 @@
-.page-container {
-  background-color: #f5f5f5;
-  padding: 2rem;
-  color: #2c3e50;
+@use 'src/assets/design-system.scss' as *;
 
   .page-header {
-    max-width: 1200px;
-    margin: 0 auto 2rem;
     padding: 2rem;
-    background-color: #ffffff;
-    border-radius: 8px;
+    background-color: $airsen-gray-50;
+    border-radius: 8px 8px 0 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-
+    border-bottom: 1px solid $airsen-gray-200;
+    
     a{
       text-decoration: none;
       padding: 10px 20px;
-      background-color: #428945;
-      color: #ffffff;
+      background-color: $airsen-primary;
+      color: $airsen-white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
-
+    
     a:hover{
-      background-color: #52a156;
+      background-color: $airsen-primary-light;
     }
-
+    
     .page-title {
+      color: $airsen-gray-900;
       font-size: 2rem;
       font-weight: 600;
       margin: 0;
@@ -38,11 +35,9 @@
   }
   
   .page-content {
-    max-width: 1200px;
     margin: 0 auto;
-    padding: 3rem 2rem;
-    background-color: #ffffff;
-    border-radius: 8px;
+    background-color: $airsen-gray-50;
+    border-radius: 0 0 8px 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     gap: 50px;
@@ -50,12 +45,18 @@
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
-      color: #2c3e50;
+      color: $airsen-gray-900;
       margin-bottom: 1rem;
     }
     .categories-container{
-      padding: 5px;
-      width: 20%;
+      padding: 2rem 5px 2rem 2rem;
+      min-width: 200px;
+      border-right: 1px solid $airsen-gray-200;
+
+      h2{
+        font-size: small;
+        color: $airsen-gray-700;
+      }
 
       .all-category{
         display: flex;
@@ -63,39 +64,38 @@
         gap: 0.5rem;
         cursor: pointer;
         transition: color 0.2s ease;
+        color: $airsen-gray-800;
 
         .dot{
           width: 10px;
           height: 10px;
           border-radius: 50%;
-          background-color: #2c3e50;
+          background-color: $airsen-gray-900;
         }
       }
 
       .all-category:hover{
-        color: green;
+        color: $airsen-primary;
       }
-    }
-
-    .separator{
-      color: lightgrey;
     }
   
     .threads-container{
-      padding: 5px;
-      width: 80%;
+      width: 90%;
+      padding: 10px 20px;
 
       .threads-header{
         display: flex;
-        display: flex;
-        color: #2c3e50;
+        color: $airsen-gray-700;
         justify-content: space-between;
         width: 100%;
-        border-bottom: 1px solid lightgrey;
-        padding: 20px;
+
+        div{
+          padding: 10px 0;
+        }
 
         .title{
           width: 50%;
+          padding-left: 20px;        
         }
 
         .replies-count{
@@ -115,5 +115,5 @@
       }
     }
   }
-}
+
 

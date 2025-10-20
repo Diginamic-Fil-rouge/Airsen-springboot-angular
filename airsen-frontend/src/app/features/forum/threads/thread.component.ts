@@ -25,7 +25,13 @@ export class ThreadComponent {
         pinned: false,
         messageCount: 0
     },);
+    
     constructor(private router: Router) { }
+
+    /**
+     * Navigate to the thread with the given id
+     * @param id - the id of the thread to navigate to
+     */
     goToThread(id: number): void {
         this.router.navigate([`/forum/thread/${id}`]);
     }

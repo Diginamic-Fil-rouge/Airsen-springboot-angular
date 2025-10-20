@@ -63,7 +63,7 @@ export class EditThreadComponent {
                     this.router.navigate(['/forum/thread', this.id()]);
                 },
                 error: (error) => {
-                    console.error('Error creating thread:', error);
+                    console.error('Error editing thread:', error);
                     this.errors$.push('Erreur lors de la modification du thread : ' + error.error.message);
                     for (const e of error.error.details) {
                         this.errors$.push(e.message);
