@@ -1,7 +1,7 @@
 import { Component, EventEmitter, inject, input, Output } from '@angular/core';
 import { Message } from '../models/message.model';
 import { MessageService } from '../services/message.service';
-
+import { AuthService } from '@/app/core/auth/services/auth.service';
 @Component({
     standalone: false,
     selector: 'forum-message',
@@ -9,16 +9,18 @@ import { MessageService } from '../services/message.service';
     styleUrls: ['./message.component.scss']
 })
 export class MessageComponent {
-    messageService = inject(MessageService);
-    message = input<Message>();
     service = inject(MessageService);
-    showModal = false;
+    authService = inject(AuthService);
+    message = input<Message>();
 
+    currentUser = this.authService.getCurrentUser();
+
+    showModal = false;
     isEditing = false;
 
     content: string | undefined = '';
 
-    @Output() editMessageEvent = new EventEmitter<number>();
+    @Output() messageEvent = new EventEmitter<number>();
 
     ngOnInit() {
         this.content = this.message()?.content;
@@ -29,9 +31,9 @@ export class MessageComponent {
     }
 
     editMessage() {
-        this.messageService.editMessage({ content: this.content, id: this.message()?.id }).subscribe({
+        this.service.editMessage({ content: this.content, id: this.message()?.id }).subscribe({
             next: () => {
-                this.emitEditMessageEvent();
+                this.emitMessageEvent();
                 this.isEditing = false;
             },
             error: (error) => {
@@ -40,24 +42,27 @@ export class MessageComponent {
         });
     }
 
-    emitEditMessageEvent() {
-        this.editMessageEvent.emit(this.message()?.thread?.id);
+    emitMessageEvent() {
+        this.messageEvent.emit(this.message()?.thread?.id);
     }
 
-    displayModal() {
+    toggleModal() {
         this.showModal = !this.showModal;
     }
 
     deleteMessage() {
+        const id = this.message()?.id;
+        if (id == null) {
+            console.error('Cannot delete message: id is undefined or null.');
+            return;
+        }
         return this.service.deleteMessage(this.message()?.id).subscribe({
             next: () => {
-                // This currently does not work, but should once the edit_message branch is merged
-                // TODO : rename the EventEmitter simply to messageEvent (currently : editMessageEvent)
-                this.emitEditMessageEvent();
+                this.emitMessageEvent();
                 this.showModal = false;
             },
             error: (error) => {
-                console.error('Error creating thread:', error);
+                console.error('Error deleting thread:', error);
             }
         });
     }

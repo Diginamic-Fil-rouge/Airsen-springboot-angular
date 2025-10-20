@@ -4,10 +4,14 @@
             <h2>{{ message()?.author?.firstName + ' ' + message()?.author?.lastName }}</h2>
             <p class="date">{{ message()?.createdDate | date: 'short' }}</p>
         </div>
-        @if(!isEditing){
-            <button class="edit-button" (click)="triggerEdit()">Modifier</button>
-        }
-        <button class="delete-button" (click)="displayModal()">Supprimer</button>
+        <div class="action-buttons">
+          @if (currentUser?.id == message()?.author?.id ||currentUser?.role === "ADMIN"){
+            @if(!isEditing){
+                <button class="edit-button" (click)="triggerEdit()">Modifier</button>
+            }
+            <button class="delete-button" (click)="toggleModal()">Supprimer</button>
+          }
+        </div>
     </div>
     @if (!isEditing){
         <p class="content">{{ message()?.content }}</p>
@@ -22,15 +26,15 @@
 </div>
 
 @if(showModal){
-<div class="confirmation-modal">
+<div class="confirmation-modal" >
   <div class="modal-container">
     <p>
-      Êtes vous sûr de vouloir supprimer le message ? cette action est
+      Êtes vous sûr de vouloir supprimer le message ? Cette action est
       définitive
     </p>
     <div class="modal-buttons">
       <button class="danger" (click)="deleteMessage()">Valider</button>
-      <button class="cancel" (click)="displayModal()">Annuler</button>
+      <button class="cancel" (click)="toggleModal()">Annuler</button>
     </div>
   </div>
 </div>
