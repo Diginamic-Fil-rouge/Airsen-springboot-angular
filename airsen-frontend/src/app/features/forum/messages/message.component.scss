@@ -1,4 +1,4 @@
-@import '/src/assets/design-system.scss';
+@use 'src/assets/design-system.scss' as *;
 
 .message-container{
     width: 100%;
@@ -27,7 +27,7 @@
             border: none;
             background-color: transparent;
             text-decoration: underline;
-            color: $airsen-gray-600;
+            color: $airsen-gray-500;
         }
     }
 
