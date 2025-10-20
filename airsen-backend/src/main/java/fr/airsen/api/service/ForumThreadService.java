@@ -94,7 +94,12 @@ public class ForumThreadService {
     @Transactional(readOnly = true)
     public ForumThreadDTO findById(Long id) {
         // Use custom query with JOIN FETCH to eagerly load messages
-        return mapper.toDTO(forumThreadRepository.findByIdWithMessages(id).orElse(null));
+        ForumThread thread = forumThreadRepository.findByIdWithMessages(id).orElse(null);
+        if (thread != null) {
+            thread.setViewCount(thread.getViewCount() + 1);
+            forumThreadRepository.save(thread);
+        }
+        return mapper.toDTO(thread);
     }
 
     /**
