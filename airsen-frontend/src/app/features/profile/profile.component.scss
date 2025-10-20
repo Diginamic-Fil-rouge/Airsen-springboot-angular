@@ -1,57 +1,136 @@
-.profile-page {
-  padding: 2rem;
-  .header {
+@use 'src/assets/design-system' as *;
+
+// ====== Profile Page Layout ======
+.profile-container {
+  max-width: $container-md;
+  margin: 0 auto;
+  padding: space(6);
+  background-color: color("gray", "50");
+  border-radius: radius("lg");
+  box-shadow: shadow("md");
+
+  h2 {
+    font-size: font-size("2xl");
+    color: color("gray", "900");
+    font-weight: $font-weight-semibold;
+    margin-bottom: space(4);
+  }
+
+  section {
+    margin-bottom: space(6);
+  }
+}
+
+// ====== Profile Form ======
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+
+  label {
+    font-size: font-size("sm");
+    font-weight: $font-weight-medium;
+    color: color("gray", "700");
+    margin-bottom: space(1);
+  }
+
+  input {
+    padding: $input-padding;
+    border: $input-border-width solid $input-border-color;
+    border-radius: $input-border-radius;
+    font-size: font-size("base");
+    transition: $transition-colors;
+
+    &:focus {
+      border-color: $input-focus-border-color;
+      @include focus-ring();
+    }
+  }
+
+  button {
+    @include button("primary");
+    align-self: flex-start;
+    margin-top: space(4);
+  }
+}
+
+// ====== Notification Settings ======
+.notification-settings {
+  background: color("gray", "100");
+  padding: space(5);
+  border-radius: radius("md");
+
+  h3 {
+    font-size: font-size("xl");
+    color: color("gray", "900");
+    margin-bottom: space(3);
+  }
+
+  .notification-option {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-  }
+    padding: space(3) 0;
+    border-bottom: 1px solid color("gray", "200");
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    gap: 2rem;
-  }
+    &:last-child {
+      border-bottom: none;
+    }
 
-  .card {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
+    span {
+      color: color("gray", "800");
+    }
 
-  .btn-primary {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 0.5rem;
-  }
-
-  .btn-outline {
-    border: 1px solid #ccc;
-    background: transparent;
-    padding: 0.6rem 1.2rem;
-    border-radius: 0.5rem;
-  }
-
-  .btn-danger {
-    background: #dc3545;
-    color: white;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
     button {
-      background: #eee;
-      padding: 0.6rem 1.2rem;
-      border-radius: 0.5rem;
-      &.active {
-        background: #007bff;
-        color: white;
-      }
+      @include button("secondary", "sm");
     }
   }
+}
+
+// ====== Card hover effect ======
+.profile-card {
+  @include card();
+  margin-bottom: space(6);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.profile-page {
+  background-color: $airsen-gray-100; // 💡 Couleur similaire à ton header
+  color: $airsen-gray-900; // pour que le texte reste lisible sur fond foncé
+  min-height: 100vh; // s'étend sur toute la hauteur visible
+  padding: 2rem; // un peu d’air autour du contenu
+}
+
+.header {
+  display: flex;                      // met les éléments sur une seule ligne
+  justify-content: space-between;     // espace maximum entre les deux éléments
+  align-items: center;
+  padding: 0 15rem;                // aligne verticalement le bouton et le titre
+  margin-bottom: 2rem;                // un peu d’espace en dessous du header
+}
+
+.header h1 {
+  margin: 0;                          // supprime les marges par défaut du titre
+  font-size: 2rem;                    // taille du titre (ajuste si besoin)
+}
+
+.header p {
+   margin: 0.25rem 0 0;
+  color: color("gray", "600");        // ou une teinte de ton design system
+}
+
+.header .btn-outline {
+  padding: 0.75rem 1.5rem;            // ajuste la taille du bouton
+  font-weight: 500;
+}
+
+.sidebar-wrapper {
+  border: 1px solid color("gray", "200"); // bordure du cadre
+  border-radius: radius("md");            // arrondi
+  padding: space(4);                       // espace intérieur
+  background-color: color("gray", "50");  // fond clair pour le cadre
+  box-shadow: shadow("sm");               // ombre légère
 }

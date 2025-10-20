@@ -4,45 +4,68 @@
       <h1>Mon profil</h1>
       <p>Gérez vos informations personnelles et préférences</p>
     </div>
-    <button class="btn-outline" routerLink="/dashboard">Retour au tableau de bord</button>
+    <button class="btn-outline" routerLink="/dashboard">
+      Retour au tableau de bord
+    </button>
   </div>
 
   <div class="grid">
     <!-- Colonne gauche -->
-    <div class="sidebar">
-      <div class="card text-center">
-        <div class="avatar-wrapper">
-          <img src="assets/placeholder-avatar.jpg" class="avatar" alt="Avatar" />
+    <div class="sidebar-wrapper">
+      <div class="sidebar">
+        <div class="card text-center">
+          <div class="avatar-wrapper">
+            <img
+              src="assets/placeholder-avatar.jpg"
+              class="avatar"
+              alt="Avatar"
+            />
+          </div>
+
+          <h3>{{ formData.name }}</h3>
+          <p>{{ formData.email }}</p>
+
+          <div class="stats">
+            <div>
+              <strong>{{ userStats.discussions }}</strong>
+              <span>Discussions</span>
+            </div>
+            <div>
+              <strong>{{ userStats.likes }}</strong>
+              <span>J'aime</span>
+            </div>
+            <div>
+              <strong>{{ userStats.followers }}</strong>
+              <span>Abonnés</span>
+            </div>
+          </div>
+
+          <div class="badge">✅ Utilisateur vérifié</div>
         </div>
-
-        <h3>{{ formData.name }}</h3>
-        <p>{{ formData.email }}</p>
-
-        <div class="stats">
-          <div>
-            <strong>{{ userStats.discussions }}</strong>
-            <span>Discussions</span>
-          </div>
-          <div>
-            <strong>{{ userStats.likes }}</strong>
-            <span>J'aime</span>
-          </div>
-          <div>
-            <strong>{{ userStats.followers }}</strong>
-            <span>Abonnés</span>
-          </div>
-        </div>
-
-        <div class="badge">✅ Utilisateur vérifié</div>
       </div>
     </div>
 
     <!-- Colonne droite -->
     <div class="content">
       <div class="tabs">
-        <button [class.active]="activeTab === 'profile'" (click)="activeTab='profile'">Profil</button>
-        <button [class.active]="activeTab === 'notifications'" (click)="activeTab='notifications'">Notifications</button>
-        <button [class.active]="activeTab === 'security'" (click)="activeTab='security'">Sécurité</button>
+        <button
+          [class.active]="activeTab === 'profile'"
+          (click)="activeTab = 'profile'"
+        >
+          Profil
+        </button>
+        <button
+          [class.active]="activeTab === 'notifications'"
+          (click)="activeTab = 'notifications'"
+        >
+          Notifications
+        </button>
+        <button
+          [class.active]="activeTab === 'security'"
+          (click)="activeTab = 'security'"
+        >
+          Sécurité
+        </button>
       </div>
 
       <!-- Onglet Profil -->
@@ -76,12 +99,14 @@
           <div class="notif-row">
             <span>{{ key.key }}</span>
             <button (click)="toggleNotificationKey(key.key)">
-              {{ key.value ? 'Activé' : 'Désactivé' }}
+              {{ key.value ? "Activé" : "Désactivé" }}
             </button>
           </div>
         </div>
 
-        <button (click)="saveNotifications()" class="btn-primary">Sauvegarder</button>
+        <button (click)="saveNotifications()" class="btn-primary">
+          Sauvegarder
+        </button>
       </div>
 
       <!-- Onglet Sécurité -->
