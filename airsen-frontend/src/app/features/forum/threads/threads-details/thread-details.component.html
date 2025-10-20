@@ -12,7 +12,7 @@
               <a class="edit-button" routerLink="/forum/edit/thread/{{ (thread$ | async)?.id }}"
                 >Modifier</a
               >
-              <button class="delete-button" (click)="displayModal()">Supprimer</button>
+              <button class="delete-button" (click)="toggleModal()">Supprimer</button>
             }
           </div>
         </div>
@@ -27,7 +27,7 @@
             </div>
             •
             <div class="last-activity">
-              {{ (thread$ | async)?.lastMessageDate | date : "short" }}
+              {{ (thread$ | async)?.lastMessageDate | date : "dd MMMM yyyy, HH:mm" }}
             </div>
             •
             <div class="view-count">{{ (thread$ | async)?.viewCount }} vues</div>
@@ -67,7 +67,7 @@
     </p>
     <div class="modal-buttons">
       <button class="danger" (click)="deleteThread()">Valider</button>
-      <button class="cancel" (click)="displayModal()">Annuler</button>
+      <button class="cancel" (click)="toggleModal()">Annuler</button>
     </div>
   </div>
 </div>

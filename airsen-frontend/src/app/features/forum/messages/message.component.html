@@ -2,7 +2,7 @@
     <div class="message-infos">
         <div class="message-datas">
             <h2>{{ message()?.author?.firstName + ' ' + message()?.author?.lastName }}</h2>
-            <p class="date">{{ message()?.createdDate | date: 'short' }}</p>
+            <p class="date">{{ message()?.createdDate | date: 'dd MMMM yyyy, HH:mm' }}</p>
         </div>
         <div class="action-buttons">
           @if (currentUser?.id == message()?.author?.id ||currentUser?.role === "ADMIN"){

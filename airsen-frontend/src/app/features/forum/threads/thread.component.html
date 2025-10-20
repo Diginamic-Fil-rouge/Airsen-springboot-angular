@@ -5,5 +5,5 @@
     </div>
     <div class="replies-count">{{ thread().messageCount }}</div>
     <div class="view-count">{{ thread().viewCount }}</div>
-    <div class="activity">{{ thread().lastMessageDate | date: 'short' }}</div>
+    <div class="activity">{{ thread().lastMessageDate | date: 'dd MMMM yyyy, HH:mm' }}</div>
 </div>
