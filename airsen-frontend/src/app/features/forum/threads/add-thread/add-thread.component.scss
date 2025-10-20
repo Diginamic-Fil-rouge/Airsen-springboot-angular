@@ -1,11 +1,14 @@
+@use 'src/assets/design-system.scss' as *;
+
 .page-container{
   height: 100%;
-  background-color: #ffffff;
+  background-color: $airsen-gray-50;
   padding: 2rem;
-  color: #2c3e50;
+  color: $airsen-gray-900;
+  border-radius: 10px;
 
   .error{
-    color: red;
+    color: $airsen-error;
   }
 
   form{

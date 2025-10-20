@@ -14,6 +14,7 @@
         <div class="form-group">
             <label for="category">Catégorie *</label>
             <select id="category" name="category" [(ngModel)]="categoryId">
+                <option value="0">Sélectionnez une catégorie</option>
                 @for (category of categories$ | async; track $index) {
                     <option [value]="category.id">
                         {{ category.name }}
