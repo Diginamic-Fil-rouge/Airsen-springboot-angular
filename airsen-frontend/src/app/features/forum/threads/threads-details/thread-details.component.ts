@@ -4,7 +4,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ThreadService } from '../../services/thread.service';
 import { Message } from '../../models/message.model';
-
+import { AuthService } from '@/app/core/auth/services/auth.service';
 @Component({
     standalone: false,
     selector: 'forum-thread-details',
@@ -14,8 +14,11 @@ import { Message } from '../../models/message.model';
 export class ThreadDetailsComponent {
     activatedRoute = inject(ActivatedRoute);
     service: ThreadService = inject(ThreadService);
+    authService = inject(AuthService);
     router = inject(Router);
+
     id = () => Number(this.activatedRoute.snapshot.params['id']);
+    currentUser = this.authService.getCurrentUser();
     thread$!: Observable<Thread | undefined>;
 
     showModal = false;
@@ -25,7 +28,7 @@ export class ThreadDetailsComponent {
     }
 
 /**
- * Refreshes the thread data by getting the thread with the given id
+ * Refreshes the thread data by fetching the thread using the current route's id.
  * @param threadId - the id of the thread to refresh
  */
     refreshThread() {
@@ -43,7 +46,7 @@ export class ThreadDetailsComponent {
         this.router.navigate(['/forum/']);
       },
       error: (error) => {
-        console.error('Error creating thread:', error);
+        console.error('Error deleting thread:', error);
       }
     });
   }
