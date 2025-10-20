@@ -13,9 +13,6 @@
       <div class="card text-center">
         <div class="avatar-wrapper">
           <img src="assets/placeholder-avatar.jpg" class="avatar" alt="Avatar" />
-          <button class="btn-icon camera-btn">
-            <i class="fa fa-camera"></i>
-          </button>
         </div>
 
         <h3>{{ formData.name }}</h3>
@@ -75,10 +72,10 @@
       <div *ngIf="activeTab === 'notifications'" class="card">
         <h2>Préférences de notification</h2>
 
-        <div *ngFor="let key of (notifications | keyvalue)">
+        <div *ngFor="let key of notifications | keyvalue">
           <div class="notif-row">
             <span>{{ key.key }}</span>
-            <button (click)="toggleNotification(key.key)">
+            <button (click)="toggleNotificationKey(key.key)">
               {{ key.value ? 'Activé' : 'Désactivé' }}
             </button>
           </div>

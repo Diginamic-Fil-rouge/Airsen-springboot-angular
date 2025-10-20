@@ -57,6 +57,16 @@ export class AuthService {
 
   }
 
+  updateProfile(data: any) {
+  const user = this.currentUserSubject.value;
+  if (user) {
+    const updatedUser = { ...user, ...data };
+    this.currentUserSubject.next(updatedUser);
+    this.storageService.storeUser(updatedUser);
+    console.log('✅ Profil mis à jour localement :', updatedUser);
+  }
+}
+
   /**
    * Initialize authentication state from stored tokens
    */
