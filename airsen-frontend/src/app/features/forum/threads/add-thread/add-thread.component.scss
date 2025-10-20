@@ -23,45 +23,45 @@
 
       input{
         padding: 10px;
-        border: 1px solid #ccc;
+        border: 1px solid $airsen-gray-200;
         border-radius: 5px;
-        background-color: #fafafa;
+        background-color: $airsen-gray-100;
       }
 
       textarea{
         padding: 10px;
-        border: 1px solid #ccc;
+        border: 1px solid $airsen-gray-200;
         border-radius: 5px;
-        background-color: #fafafa;
+        background-color: $airsen-gray-100;
         width: 100%;
         min-height: 200px;
       }
 
       select{
         padding: 10px;
-        border: 1px solid #ccc;
+        border: 1px solid $airsen-gray-200;
         border-radius: 5px;
-        background-color: #fafafa;
+        background-color: $airsen-gray-100;
       }
 
       input:focus{
-        outline: 2px solid green;
+        outline: 2px solid $airsen-primary;
       }
 
       textarea:focus{
-        outline: 2px solid green;
+        outline: 2px solid $airsen-primary;
       }
 
       select:focus{
-        outline: 2px solid green;
+        outline: 2px solid $airsen-primary;
       }
     }
 
     button{
       width: fit-content;
       padding: 10px 20px;
-      background: linear-gradient(to right,#2d7c31, #61c566);
-      color: #ffffff;
+      background: linear-gradient(to right, $airsen-primary, $airsen-primary-light);
+      color: $airsen-white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
