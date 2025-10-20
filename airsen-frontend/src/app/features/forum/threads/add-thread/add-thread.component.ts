@@ -22,7 +22,7 @@ export class AddThreadComponent {
 
     createThread() {
         this.errors$ = [];
-        if (this.title && this.content && this.categoryId) {
+        if (this.title && this.content && this.categoryId && this.categoryId != 0) {
             this.forumService.addThreadToCategory({
                 title: this.title,
                 content: this.content,
