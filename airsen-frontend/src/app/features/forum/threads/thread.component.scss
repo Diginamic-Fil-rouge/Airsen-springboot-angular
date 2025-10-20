@@ -1,28 +1,38 @@
+@use 'src/assets/design-system.scss' as *;
+
 .thread-container{
     display: flex;
-    color: #2c3e50;
+    color: $airsen-gray-900;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
-    border-bottom: 1px solid lightgrey;
-    padding: 20px;
+    border-top: 1px solid $airsen-gray-200;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+    
     .thread-infos{
         width: 50%;
+        display: flex;
+        flex-direction: column;
+
         .title{
-            color: #2c3e50;
+            color: $airsen-gray-900;
             text-decoration: none;
             cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .title:hover{
+            color: $airsen-primary;
         }
 
         .thread-category{
-            padding: 2px 6px;
+            padding: 0 10px;
             border-radius: 10px;
-            text-align: center;
             width: fit-content;
             font-size: 0.8rem;
-            color: white;
+            color: $airsen-white;
         }
     }
 
@@ -40,4 +50,8 @@
         width: 10%;
         text-align: center;
     }
+}
+
+.thread-container:hover{
+    background-color: $airsen-gray-100;
 }
