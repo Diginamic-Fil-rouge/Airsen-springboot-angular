@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { Thread } from './models/thread.model';
 import { Page } from './models/page.model';
 import { LoaderComponent } from '@/app/shared/components/loader/loader.component';
+import { AuthService } from '@/app/core/auth/services/auth.service';
 
 @Component({
   standalone : false,
@@ -19,6 +20,9 @@ export class ForumComponent {
 
   private forumService = inject(ForumService);
   private threadService = inject(ThreadService);
+  private authService = inject(AuthService);
+
+  currentUser = this.authService.getCurrentUser();
   categories$ = this.forumService.getCategories();
   allThreads$ = this.threadService.getAllThreads();
   threads$ = this.threadService.getThreads(1);
