@@ -35,10 +35,17 @@ export class ThreadDetailsComponent {
     this.thread$ = this.service.getThread(this.id());
   }
 
-  displayModal() {
+/**
+ * Toggles the showModal property to show or hide the confirmation modal for deleting a thread.
+ */
+  toggleModal() {
     this.showModal = !this.showModal;
   }
 
+/**
+ * Deletes the thread with the given id.
+ * Hides the confirmation modal after deletion and navigates to the forum page.
+ */
   deleteThread() {
     return this.service.deleteThread(this.id()).subscribe({
       next: () => {
