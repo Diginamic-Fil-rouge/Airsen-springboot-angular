@@ -78,33 +78,32 @@ export class VotingComponent {
      */
     voteSignal(voteType: string) {
         if (this.hasVoted) {
-            this.unvoteThread(this.thread()?.id);
-            this.hasVoted = false;
+            this.unvoteThread(this.thread()?.id, voteType);
         } else {
             this.voteThread(this.thread()?.id, voteType);
-            this.hasVoted = true;
         }
     }
-
+    
     /**
      * Vote for a thread with the given vote type.
      * @param threadId - the id of the thread to vote
      * @param voteType - the type of the vote (LIKE or DISLIKE)
-     */
-    voteThread(threadId: number | undefined, voteType: string): void {
-        if (threadId === undefined) return;
-        this.votingService.voteThread(threadId, voteType).subscribe(
-            {
-                next: (res) => {
-                    console.log("thread new vote count : " + res.likeCount);
-                    this.counter = res.likeCount;
-                    for (const vote of res.votes ?? []) {
-                        if (vote?.user?.id === this.user?.id) {
-                            this.currentUserVote = vote;
-                            break;
+    */
+   voteThread(threadId: number | undefined, voteType: string): void {
+       if (threadId === undefined) return;
+       this.votingService.voteThread(threadId, voteType).subscribe(
+           {
+               next: (res) => {
+                   console.log("thread new vote count : " + res.likeCount);
+                   this.counter = res.likeCount;
+                   for (const vote of res.votes ?? []) {
+                       if (vote?.user?.id === this.user?.id) {
+                           this.currentUserVote = vote;
+                           break;
                         }
                     }
                     this.updateThumbsRender(voteType);
+                    this.hasVoted = true;
                 },
                 error: (error) => {
                     console.error('Error voting thread:', error);
@@ -112,20 +111,24 @@ export class VotingComponent {
             }
         );
     }
-
+    
     /**
      * Unvote a thread, if the user has already voted.
      * Reset the UI by setting the vote count, and updating the thumbs render.
      * @param threadId - the id of the thread to unvote
-     */
-    unvoteThread(threadId: number | undefined): void {
-        if (threadId === undefined) return;
-        this.votingService.unvoteThread(threadId).subscribe(
-            {
-                next: () => {
-                    this.updateThumbsRender('UNVOTE');
-                    this.counter = this.counter ? this.counter + (this.currentUserVote?.voteType === 'LIKE' ? -1 : 1) : 0;
-                    this.currentUserVote = null;
+    */
+   unvoteThread(threadId: number | undefined, voteType: string): void {
+       if (threadId === undefined) return;
+       this.votingService.unvoteThread(threadId).subscribe(
+           {
+               next: () => {
+                   this.updateThumbsRender('UNVOTE');
+                   this.counter = this.counter ? this.counter + (this.currentUserVote?.voteType === 'LIKE' ? -1 : 1) : 0;
+                   if (this.currentUserVote?.voteType !== voteType){
+                     this.voteThread(threadId, voteType);
+                   }
+                   this.currentUserVote = null;
+                   this.hasVoted = false;
                 },
                 error: (error) => {
                     console.error('Error unvoting thread:', error);
@@ -133,5 +136,5 @@ export class VotingComponent {
             }
         );
     }
-
+    
 }

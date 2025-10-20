@@ -16,9 +16,9 @@
     <div class="threads-container">
       <div class="threads-header">
         <div class="title">Topic</div>
-        <div class="replies-count">Replies</div>
-        <div class="view-count">Views</div>
-        <div class="activity">Activity</div>
+        <div class="replies-count">Réponses</div>
+        <div class="view-count">Vues</div>
+        <div class="activity">Dernier message</div>
       </div>
       @if ((allThreads$ | async)?.content) {
         @for (thread of (allThreads$ | async)?.content ; track thread.id){
