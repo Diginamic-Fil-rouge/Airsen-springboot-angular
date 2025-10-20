@@ -50,7 +50,9 @@
         <forum-message [message]="message" (messageEvent)="refreshThread()" ></forum-message>
       }
     </div>
+    @if (currentUser) {
     <app-add-message [thread]="thread" (newMessageEvent)="refreshThread()"></app-add-message>
+    }
   </div>
   }
   @else {
