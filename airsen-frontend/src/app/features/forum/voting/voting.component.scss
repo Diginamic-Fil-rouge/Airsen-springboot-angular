@@ -1,3 +1,5 @@
+@use 'src/assets/design-system.scss' as *;
+
 .vote-container{
     display:flex;
     align-items: center;
@@ -10,6 +12,7 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        color: $airsen-gray-800;
 
         .thumb-image{
             width: 15px;
@@ -20,13 +23,15 @@
 
     .vote-button:hover{
         transform: scale(1.2);
-        background-color:#00bdd6;
+        background-color:$airsen-accent;
+        color: $airsen-gray-100;
         border-radius: 25%;
         padding: 4px;
     }
-
+    
     .checked{
-        background-color:#00bdd6;
+        background-color:$airsen-accent;
+        color: $airsen-gray-100;
         border-radius: 25%;
         padding: 2px;
     }
