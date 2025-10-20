@@ -1,22 +1,23 @@
+@use 'src/assets/design-system.scss' as *;
+
 /* From Uiverse.io by terenceodonoghue */ 
 .container {
-  margin: 0 auto;
-  margin-top: 20%;
+  margin: 10% auto;
   border-radius: 50%;
   height: 50px;
   width: 50px;
   animation: rotate_3922 1.2s linear infinite;
-  background-color: #9b59b6;
-  background-image: linear-gradient(#9b59b6, #84cdfa, #5ad1cd);
+  background-color: $airsen-primary-light;
+  background-image: linear-gradient($airsen-primary-light, $airsen-secondary-light, $airsen-accent);
   
   span {
     margin: 0 auto;
-    margin-top: 20%;
+
     border-radius: 50%;
     height: 100%;
     width: 100%;
-    background-color: #9b59b6;
-    background-image: linear-gradient(#9b59b6, #84cdfa, #5ad1cd);
+    background-color: $airsen-primary-light;
+    background-image: linear-gradient($airsen-primary-light, $airsen-secondary-light, $airsen-accent);
 }
 
 }
