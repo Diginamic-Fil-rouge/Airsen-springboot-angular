@@ -1,15 +1,15 @@
 <div class="page-container">
   
-  @if (thread$ | async) {
+  @if (thread && !isLoading) {
     <div class="thread-container">
     <back-button route="/forum" textContent="Retour au forum"></back-button>
     <div class="thread-content">
       <div class="thread-infos">
         <div class="thread-header">
-          <h1 class="title">{{ (thread$ | async)?.title }}</h1>
+          <h1 class="title">{{ thread.title }}</h1>
           <div class="action-buttons">
-            @if (currentUser?.id == (thread$ | async)?.author?.id || currentUser?.role == 'ADMIN') {
-              <a class="edit-button" routerLink="/forum/edit/thread/{{ (thread$ | async)?.id }}"
+            @if (currentUser?.id == thread.author?.id || currentUser?.role == 'ADMIN') {
+              <a class="edit-button" routerLink="/forum/edit/thread/{{ thread.id }}"
                 >Modifier</a
               >
               <button class="delete-button" (click)="toggleModal()">Supprimer</button>
@@ -20,37 +20,37 @@
             <div class="author">
               par
               {{
-                (thread$ | async)?.author?.firstName +
+                thread.author?.firstName +
                   " " +
-                  (thread$ | async)?.author?.lastName
+                  thread.author?.lastName
               }}
             </div>
             •
             <div class="last-activity">
-              {{ (thread$ | async)?.lastMessageDate | date : "dd MMMM yyyy, HH:mm" }}
+              {{ thread.lastMessageDate | date : "dd MMMM yyyy, HH:mm" }}
             </div>
             •
-            <div class="view-count">{{ (thread$ | async)?.viewCount }} vues</div>
+            <div class="view-count">{{ thread.viewCount }} vues</div>
         </div>
       </div>
-      <p class="content">{{ (thread$ | async)?.content }}</p>
+      <p class="content">{{ thread.content }}</p>
       <div class="separator"></div>
       <div class="thread-data">
         <thread-voting
-          [thread]="thread$ | async"
-          [voteCount]="(thread$ | async)?.likeCount"
+          [thread]="thread"
+          [voteCount]="thread.likeCount"
         ></thread-voting>
       </div>
     </div>
     <h3 class="message-count">
-      Réponses ({{ (thread$ | async)?.messageCount }})
+      Réponses ({{ thread.messageCount }})
     </h3>
     <div class="messages-container">
-      @for (message of (thread$ | async)?.messages; track $index) {
+      @for (message of thread.messages; track $index) {
         <forum-message [message]="message" (messageEvent)="refreshThread()" ></forum-message>
       }
     </div>
-    <app-add-message [thread]="(thread$ | async)" (newMessageEvent)="refreshThread()"></app-add-message>
+    <app-add-message [thread]="thread" (newMessageEvent)="refreshThread()"></app-add-message>
   </div>
   }
   @else {
