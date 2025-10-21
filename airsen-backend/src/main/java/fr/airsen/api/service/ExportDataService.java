@@ -155,7 +155,6 @@ public class ExportDataService {
 
         // Create commune DTO with geographic data but no redundant codes
         return new CommuneExportDTO(
-                commune.getId(),
                 commune.getInseeCode(),
                 commune.getName(),
                 commune.getPopulation(),
