@@ -16,7 +16,7 @@ import java.time.LocalDate;
 
 /**
  * Service for managing ATMO air quality data integration.
- * <p>
+ * 
  * Handles fetching data from the ATMO France API and storing
  * it in the local database with proper mapping.
  */

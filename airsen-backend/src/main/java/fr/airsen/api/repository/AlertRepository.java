@@ -37,13 +37,23 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Finds all alerts (active and inactive) for a specific user.
-     * 
+     *
      * @param userId user identifier
      * @param pageable pagination parameters
      * @return page of all alerts for the user
      */
     @Query("SELECT a FROM Alert a WHERE a.user.id = :userId ORDER BY a.createdDate DESC")
     Page<Alert> findAllAlertsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * Finds all alerts (active and inactive) for a specific user.
+     * Used for user deletion to find all alerts to delete.
+     *
+     * @param userId user identifier
+     * @return list of all alerts for the user
+     */
+    @Query("SELECT a FROM Alert a WHERE a.user.id = :userId")
+    List<Alert> findByUserId(@Param("userId") Long userId);
 
     /**
      * Finds all active alerts for a specific commune and pollutant.

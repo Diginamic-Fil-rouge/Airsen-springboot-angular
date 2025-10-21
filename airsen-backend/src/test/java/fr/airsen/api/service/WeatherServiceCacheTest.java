@@ -35,13 +35,11 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for {@link WeatherService} cache behavior.
  *
- * <p>Tests verify:</p>
- * <ul>
- *   <li>Weather data caching with 30-minute TTL</li>
- *   <li>Cache hit/miss scenarios</li>
- *   <li>Database fallback for recent data</li>
- *   <li>Cache eviction (specific and all entries)</li>
- * </ul>
+ * Tests verify:
+ * - Weather data caching with 30-minute TTL
+ * - Cache hit/miss scenarios
+ * - Database fallback for recent data
+ * - Cache eviction (specific and all entries)
  */
 @SpringBootTest
 @Import(CacheTestConfiguration.class)

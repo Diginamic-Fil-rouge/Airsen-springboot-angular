@@ -1,0 +1,14 @@
+package fr.airsen.api.entity.enums;
+
+public enum AdminActionType {
+    USER_SUSPENDED,
+    USER_ACTIVATED,
+    DELETE_USER,
+    USER_ROLE_CHANGED,
+    USER_PASSWORD_RESET,
+    FORUM_MESSAGE_HIDDEN,
+    FORUM_THREAD_LOCKED,
+    FORUM_USER_BANNED,
+    NOTIFICATION_BROADCAST,
+    SETTINGS_CHANGED
+}

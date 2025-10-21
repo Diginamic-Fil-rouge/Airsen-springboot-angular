@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 
 /**
  * Authentication response DTO containing JWT tokens and user information.
- * <p>
+ *
  * This record represents the response returned after successful authentication
  * or registration. It includes JWT tokens for API access and essential user
  * information for the frontend application.
- * <p>
+ *
  * Security Features:
  * - JWT access token for API authentication
  * - Refresh token for token renewal
