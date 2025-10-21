@@ -102,26 +102,22 @@ public class UserDeletionService {
     /**
      * Soft deletes a user account, initiating a 30-day grace period before permanent deletion.
      *
-     * <p>During the grace period:</p>
-     * <ul>
-     *   <li>User account is marked inactive (isActive = false)</li>
-     *   <li>User cannot login or access protected resources</li>
-     *   <li>User can restore account by calling {@link User#cancelDeletion()}</li>
-     *   <li>Deletion timestamp ({@code deletedAt}) is recorded for grace period calculation</li>
-     * </ul>
+     * During the grace period:
+     * - User account is marked inactive (isActive = false)
+     * - User cannot login or access protected resources
+     * - User can restore account by calling {@link User#cancelDeletion()}
+     * - Deletion timestamp ({@code deletedAt}) is recorded for grace period calculation
      *
-     * <p>After 30 days, a scheduled job will call {@link #hardDeleteUser(Long)} to permanently
-     * delete personal data while preserving forum content.</p>
+     * After 30 days, a scheduled job will call {@link #hardDeleteUser(Long)} to permanently
+     * delete personal data while preserving forum content.
      *
-     * <p><strong>GDPR Compliance:</strong> This implements Article 17 Right to Erasure with a
+     * GDPR Compliance: This implements Article 17 Right to Erasure with a
      * grace period. The 30-day window respects "without undue delay" while preventing accidental
-     * deletions and allowing users to change their minds.</p>
+     * deletions and allowing users to change their minds.
      *
-     * <p><strong>Authorization:</strong> This method can be called by:</p>
-     * <ul>
-     *   <li>The user themselves (self-service deletion)</li>
-     *   <li>Administrators (account suspension/removal)</li>
-     * </ul>
+     * Authorization: This method can be called by:
+     * - The user themselves (self-service deletion)
+     * - Administrators (account suspension/removal)
      *
      * @param userId unique identifier of the user to soft delete
      * @param reason optional reason for deletion (for analytics and audit trail), can be null
@@ -161,36 +157,32 @@ public class UserDeletionService {
     /**
      * Permanently deletes a user account after the 30-day grace period has expired.
      *
-     * <p><strong>CRITICAL: This method preserves forum content per GDPR Article 17(3)(e)
-     * public interest exception.</strong> Environmental discussions serve community value
-     * and are retained with the original author's display name.</p>
+     * CRITICAL: This method preserves forum content per GDPR Article 17(3)(e)
+     * public interest exception. Environmental discussions serve community value
+     * and are retained with the original author's display name.
      *
-     * <p>This method performs the following operations in sequence:</p>
-     * <ol>
-     *   <li>Verify grace period has expired (throws exception if not)</li>
-     *   <li>Preserve author display name in all forum threads and messages</li>
-     *   <li>Delete user-created alerts</li>
-     *   <li>Clear user's favorite communes</li>
-     *   <li>Anonymize received notifications (preserve history, break FK link)</li>
-     *   <li>Anonymize forum votes (preserve counts, remove voter identity)</li>
-     *   <li>Delete user entity from database</li>
-     * </ol>
+     * This method performs the following operations in sequence:
+     * 1. Verify grace period has expired (throws exception if not)
+     * 2. Preserve author display name in all forum threads and messages
+     * 3. Delete user-created alerts
+     * 4. Clear user's favorite communes
+     * 5. Anonymize received notifications (preserve history, break FK link)
+     * 6. Anonymize forum votes (preserve counts, remove voter identity)
+     * 7. Delete user entity from database
      *
-     * <p><strong>Authorization:</strong> This method should ONLY be called by a scheduled job
+     * Authorization: This method should ONLY be called by a scheduled job
      * (e.g., @Scheduled cron task), NOT directly by users or admins. The scheduled job finds
-     * all users with expired grace periods and processes them automatically.</p>
+     * all users with expired grace periods and processes them automatically.
      *
-     * <p><strong>Data Deletion vs Preservation:</strong></p>
-     * <ul>
-     *   <li><strong>Deleted:</strong> User entity (email, password, names, bio, etc.),
-     *       alerts, favorite communes</li>
-     *   <li><strong>Preserved with author name:</strong> Forum threads and messages</li>
-     *   <li><strong>Anonymized:</strong> Forum votes (counts kept), notifications (history kept)</li>
-     * </ul>
+     * Data Deletion vs Preservation:
+     * - Deleted: User entity (email, password, names, bio, etc.),
+     *            alerts, favorite communes
+     * - Preserved with author name: Forum threads and messages
+     * - Anonymized: Forum votes (counts kept), notifications (history kept)
      *
-     * <p><strong>Transaction Safety:</strong> All operations run in a single transaction
+     * Transaction Safety: All operations run in a single transaction
      * (@Transactional). If any step fails, the entire deletion is rolled back to prevent
-     * data corruption.</p>
+     * data corruption.
      *
      * @param userId unique identifier of the user to permanently delete
      * @throws EntityNotFoundException if user with the given ID does not exist
@@ -240,24 +232,22 @@ public class UserDeletionService {
     /**
      * Preserves the user's display name in all their forum threads and messages.
      *
-     * <p><strong>GDPR Article 17(3)(e) - Public Interest Exception:</strong> This method
+     * GDPR Article 17(3)(e) - Public Interest Exception: This method
      * implements the legal basis for preserving forum content. Environmental discussions
      * serve public interest (freedom of expression, community value), so author names are
-     * preserved even after user deletion.</p>
+     * preserved even after user deletion.
      *
-     * <p>For each forum thread and message authored by the user:</p>
-     * <ul>
-     *   <li>Copies user's display name to {@code authorName} field</li>
-     *   <li>Sets {@code author} relationship to null (breaks profile link)</li>
-     *   <li>Sets {@code authorDeleted} flag to true (marks as deleted author)</li>
-     * </ul>
+     * For each forum thread and message authored by the user:
+     * - Copies user's display name to {@code authorName} field
+     * - Sets {@code author} relationship to null (breaks profile link)
+     * - Sets {@code authorDeleted} flag to true (marks as deleted author)
      *
-     * <p><strong>Privacy Balance:</strong> The author's name (e.g., "Marie Dupont") remains
+     * Privacy Balance: The author's name (e.g., "Marie Dupont") remains
      * visible for discussion context, but the profile link is permanently broken. Users cannot
-     * navigate to the deleted user's profile page.</p>
+     * navigate to the deleted user's profile page.
      *
-     * <p><strong>CRITICAL: This method MUST be called BEFORE deleting the User entity,
-     * otherwise the display name will be lost.</strong></p>
+     * CRITICAL: This method MUST be called BEFORE deleting the User entity,
+     * otherwise the display name will be lost.
      *
      * @param user the User entity whose forum content should be preserved
      */
@@ -294,12 +284,12 @@ public class UserDeletionService {
     /**
      * Deletes all alerts created by the user.
      *
-     * <p><strong>GDPR Justification:</strong> User-created alerts are personal data directly
+     * GDPR Justification: User-created alerts are personal data directly
      * tied to the user's account. Unlike forum content (which serves public interest), alerts
-     * are administrative data with no community value, so they are deleted per Article 17.</p>
+     * are administrative data with no community value, so they are deleted per Article 17.
      *
-     * <p><strong>Note:</strong> Admin-created alerts broadcast to all users are NOT deleted,
-     * as they serve public safety purposes (air quality warnings, weather alerts).</p>
+     * Note: Admin-created alerts broadcast to all users are NOT deleted,
+     * as they serve public safety purposes (air quality warnings, weather alerts).
      *
      * @param userId unique identifier of the user whose alerts should be deleted
      */
@@ -318,13 +308,13 @@ public class UserDeletionService {
     /**
      * Clears the user's favorite communes collection.
      *
-     * <p><strong>GDPR Justification:</strong> Favorite communes are personal preferences
+     * GDPR Justification: Favorite communes are personal preferences
      * directly tied to the user. They are deleted as part of personal data removal per
-     * Article 17.</p>
+     * Article 17.
      *
-     * <p><strong>Implementation Note:</strong> This clears the many-to-many relationship
+     * Implementation Note: This clears the many-to-many relationship
      * in the {@code user_favorite} join table. The Commune entities themselves are NOT
-     * deleted (they are shared reference data).</p>
+     * deleted (they are shared reference data).
      *
      * @param userId unique identifier of the user whose favorites should be cleared
      */
@@ -345,19 +335,17 @@ public class UserDeletionService {
     /**
      * Anonymizes all notifications received by the user.
      *
-     * <p><strong>Data Retention Strategy:</strong> Notification history is preserved for
+     * Data Retention Strategy: Notification history is preserved for
      * administrative purposes (delivery tracking, system monitoring), but the recipient
-     * link is broken to anonymize the data.</p>
+     * link is broken to anonymize the data.
      *
-     * <p>For each notification received by the user:</p>
-     * <ul>
-     *   <li>Sets {@code userReceiver} relationship to null (breaks FK link)</li>
-     *   <li>Preserves notification content, timestamps, and delivery status</li>
-     * </ul>
+     * For each notification received by the user:
+     * - Sets {@code userReceiver} relationship to null (breaks FK link)
+     * - Preserves notification content, timestamps, and delivery status
      *
-     * <p><strong>Privacy Balance:</strong> Notification system can still track delivery
+     * Privacy Balance: Notification system can still track delivery
      * metrics and troubleshoot issues, but cannot identify which user received the
-     * notification (recipient identity anonymized).</p>
+     * notification (recipient identity anonymized).
      *
      * @param userId unique identifier of the user whose notifications should be anonymized
      */
@@ -381,22 +369,20 @@ public class UserDeletionService {
     /**
      * Anonymizes all forum votes cast by the user.
      *
-     * <p><strong>Data Retention Strategy:</strong> Vote counts are preserved to maintain
-     * accurate thread scores (community value), but voter identity is removed (privacy).</p>
+     * Data Retention Strategy: Vote counts are preserved to maintain
+     * accurate thread scores (community value), but voter identity is removed (privacy).
      *
-     * <p>For each vote cast by the user:</p>
-     * <ul>
-     *   <li>Sets {@code user} relationship to null (breaks FK link)</li>
-     *   <li>Sets {@code userDeleted} flag to true (marks as deleted voter)</li>
-     *   <li>Preserves {@code voteType} (UPVOTE/DOWNVOTE) for score calculation</li>
-     * </ul>
+     * For each vote cast by the user:
+     * - Sets {@code user} relationship to null (breaks FK link)
+     * - Sets {@code userDeleted} flag to true (marks as deleted voter)
+     * - Preserves {@code voteType} (UPVOTE/DOWNVOTE) for score calculation
      *
-     * <p><strong>Privacy Balance:</strong> Thread scores remain accurate (vote counts intact),
-     * but no one can identify who cast the vote (voter anonymization complete).</p>
+     * Privacy Balance: Thread scores remain accurate (vote counts intact),
+     * but no one can identify who cast the vote (voter anonymization complete).
      *
-     * <p><strong>GDPR Justification:</strong> Vote counts serve public interest (highlight
+     * GDPR Justification: Vote counts serve public interest (highlight
      * quality content), but voter identity is personal data with no community value, so it's
-     * removed per Article 17.</p>
+     * removed per Article 17.
      *
      * @param userId unique identifier of the user whose votes should be anonymized
      */

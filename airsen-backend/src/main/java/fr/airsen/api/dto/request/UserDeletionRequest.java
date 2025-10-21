@@ -6,47 +6,38 @@ import jakarta.validation.constraints.Size;
 /**
  * Request DTO for user deletion requests (admin operation).
  *
- * <p>This immutable record represents an admin request to delete a user account. It is used by
- * administrators to initiate the GDPR-compliant user deletion process with a 30-day grace period.</p>
+ * This immutable record represents an admin request to delete a user account. It is used by
+ * administrators to initiate the GDPR-compliant user deletion process with a 30-day grace period.
  *
- * <p><strong>GDPR Compliance:</strong> This DTO supports GDPR Article 17 (Right to Erasure) by
+ * GDPR Compliance: This DTO supports GDPR Article 17 (Right to Erasure) by
  * requiring administrators to provide a documented reason for deletion, creating an audit trail
- * for compliance documentation.</p>
+ * for compliance documentation.
  *
- * <h3>Deletion Process:</h3>
- * <ol>
- *   <li><strong>Soft Delete (Day 0):</strong> User account marked for deletion, becomes inactive,
- *       deletion reason recorded</li>
- *   <li><strong>Grace Period (Days 1-30):</strong> 30-day window for deletion cancellation or user
- *       recovery requests</li>
- *   <li><strong>Hard Delete (Day 30+):</strong> Permanent deletion executed:
- *       <ul>
- *         <li>User record deleted</li>
- *         <li>Forum author names preserved (public interest exception)</li>
- *         <li>Alerts, favorites, profile data deleted</li>
- *         <li>Votes and notifications anonymized</li>
- *       </ul>
- *   </li>
- * </ol>
+ * Deletion Process:
+ * 1. Soft Delete (Day 0): User account marked for deletion, becomes inactive,
+ *    deletion reason recorded
+ * 2. Grace Period (Days 1-30): 30-day window for deletion cancellation or user
+ *    recovery requests
+ * 3. Hard Delete (Day 30+): Permanent deletion executed:
+ *    - User record deleted
+ *    - Forum author names preserved (public interest exception)
+ *    - Alerts, favorites, profile data deleted
+ *    - Votes and notifications anonymized
  *
- * <h3>Valid Deletion Reasons:</h3>
- * <ul>
- *   <li>GDPR deletion request from user</li>
- *   <li>Account violation - spam activity</li>
- *   <li>Account violation - harassment/abusive behavior</li>
- *   <li>Account violation - inappropriate content</li>
- *   <li>User request - privacy concerns</li>
- *   <li>Inactivity - no account activity for 12+ months</li>
- *   <li>Administrative action - policy violation</li>
- * </ul>
+ * Valid Deletion Reasons:
+ * - GDPR deletion request from user
+ * - Account violation - spam activity
+ * - Account violation - harassment/abusive behavior
+ * - Account violation - inappropriate content
+ * - User request - privacy concerns
+ * - Inactivity - no account activity for 12+ months
+ * - Administrative action - policy violation
  *
- * <h3>Usage Example:</h3>
- * <pre>{@code
+ * Usage Example:
  * UserDeletionRequest request = new UserDeletionRequest(
  *     "GDPR deletion request from user - received via support ticket #12345"
  * );
- * // Admin DELETE /api/v1/admin/users/456 with this request body
- * }</pre>
+ * Admin DELETE /api/v1/admin/users/456 with this request body
  *
  * @param reason documented reason for user deletion (10-500 characters, required)
  *
@@ -61,9 +52,9 @@ public record UserDeletionRequest(
     /**
      * Compact constructor with validation and normalization.
      *
-     * <p>Ensures that the deletion reason meets minimum requirements and is properly normalized
+     * Ensures that the deletion reason meets minimum requirements and is properly normalized
      * for storage in the audit trail. Note that @NotBlank and @Size annotations are enforced by
-     * Jakarta Bean Validation at the time of request binding.</p>
+     * Jakarta Bean Validation at the time of request binding.
      *
      * @param reason the documented reason for deletion (required, must be 10-500 characters)
      * @throws IllegalArgumentException if reason is null, empty, or outside size limits
@@ -89,8 +80,8 @@ public record UserDeletionRequest(
     /**
      * Checks if this deletion reason indicates a GDPR compliance deletion.
      *
-     * <p>Returns true if the reason contains keywords suggesting a user-requested deletion
-     * under GDPR Article 17.</p>
+     * Returns true if the reason contains keywords suggesting a user-requested deletion
+     * under GDPR Article 17.
      *
      * @return true if reason suggests GDPR right to erasure, false otherwise
      */
@@ -104,7 +95,7 @@ public record UserDeletionRequest(
     /**
      * Checks if this deletion reason indicates a policy violation.
      *
-     * <p>Returns true if the reason contains keywords suggesting account violation or abuse.</p>
+     * Returns true if the reason contains keywords suggesting account violation or abuse.
      *
      * @return true if reason suggests policy violation, false otherwise
      */
@@ -119,7 +110,7 @@ public record UserDeletionRequest(
     /**
      * Gets a short summary of the deletion reason (first 50 characters).
      *
-     * <p>Useful for logs and audit summaries where full reason text would be too verbose.</p>
+     * Useful for logs and audit summaries where full reason text would be too verbose.
      *
      * @return first 50 characters of the reason, or full reason if shorter
      */

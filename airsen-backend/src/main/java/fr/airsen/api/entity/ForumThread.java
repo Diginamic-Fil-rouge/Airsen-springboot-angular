@@ -10,6 +10,11 @@ import java.util.Objects;
 
 /**
  * This entity represents a thread in the forum. It is linked to a {@link ForumCategory } entity.
+ *
+ * GDPR Author Preservation: When a user is deleted (GDPR right to erasure),
+ * their forum threads are preserved under GDPR Article 17(3)(e) public interest exception for
+ * environmental discussions. The author relationship is set to null, but the authorName field
+ * preserves the original author's display name for discussion context.
  */
 @Entity
 @Table(name = "forum_threads", indexes = {
@@ -25,14 +30,14 @@ public class ForumThread {
     /**
      * The author of this forum thread.
      *
-     * GDPR Compliance: This field is nullable to support author preservation after
-     * user deletion. When a user is deleted (GDPR right to erasure), this field is set
-     * to null, but the authorName field preserves the original author's display name.
+     * GDPR Compliance: This field is nullable to support author preservation
+     * after user deletion. When a user is deleted (GDPR right to erasure), this field is set to
+     * null, but the authorName field preserves the original author's display name.
      *
      * Business Rules:
-     *   - If author != null → active user, use author.getDisplayName() for display
-     *   - If author == null AND authorName != null → deleted user, use authorName for display
-     *   - If both null → data integrity issue (should never happen in production)
+     * - If author != null → active user, use author.getDisplayName() for display
+     * - If author == null AND authorName != null → deleted user, use authorName for display
+     * - If both null → data integrity issue (should never happen in production)
      */
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "author_id", nullable = true)
@@ -42,11 +47,11 @@ public class ForumThread {
      * Flag indicating whether the original author has been deleted.
      *
      * When true, the author field is null and authorName contains the preserved display name.
-     * This flag allows efficient querying for threads with deleted authors without checking
-     * for null author relationships.
+     * This flag allows efficient querying for threads with deleted authors without checking for
+     * null author relationships.
      *
-     * Database Performance: Indexed via idx_thread_author_deleted for fast queries to find
-     * threads by deleted authors (e.g., "show me all my threads even if I'm deleted").
+     * Database Performance: Indexed via idx_thread_author_deleted for fast
+     * queries to find threads by deleted authors (e.g., "show me all my threads even if I'm deleted").
      */
     @Column(name = "author_deleted", nullable = false)
     private Boolean authorDeleted = false;
@@ -59,11 +64,11 @@ public class ForumThread {
      * relationship is set to null. This preserves discussion context while respecting the
      * user's right to erasure.
      *
-     * GDPR Article 17(3)(e): Forum content serves public interest for environmental
-     * discussions, so author names are preserved even after user deletion.
+     * GDPR Article 17(3)(e): Forum content serves public interest for
+     * environmental discussions, so author names are preserved even after user deletion.
      *
-     * Example Values: "Marie Dupont", "Jean Martin", "user@example.com" (falls back to
-     * email if user had no first/last name)
+     * Example Values: "Marie Dupont", "Jean Martin", "user@example.com"
+     * (falls back to email if user had no first/last name)
      */
     @Column(name = "author_name", length = 200)
     @Size(max = 200, message = "Author name cannot exceed 200 characters")
@@ -229,16 +234,17 @@ public class ForumThread {
      * Gets the display name of the thread author for UI rendering.
      *
      * This method intelligently returns the author name based on deletion status:
-     *   - Active author (author != null): Returns author.getDisplayName()
-     *     (user's full name or email)
-     *   - Deleted author (author == null): Returns the preserved authorName field
-     *     (e.g., "Marie Dupont")
-     *   - Data integrity issue (both null): Returns "Unknown User" as fallback
-     *     (should never happen in production)
+     * - Active author (author != null): Returns author.getDisplayName()
+     *                                     (user's full name or email)
+     * - Deleted author (author == null): Returns the preserved authorName
+     *                                      field (e.g., "Marie Dupont")
+     * - Data integrity issue (both null): Returns "Unknown User" as
+     *                                       fallback (should never happen in production)
      *
-     * Usage in UI: Use this method anywhere you need to display the thread author's
-     * name (thread list, thread detail page, user profile, etc.). Do NOT directly
-     * call author.getDisplayName() as it will throw NullPointerException for deleted authors.
+     * Usage in UI: Use this method anywhere you need to display the
+     * thread author's name (thread list, thread detail page, user profile, etc.). Do NOT
+     * directly call author.getDisplayName() as it will throw NullPointerException for
+     * deleted authors.
      *
      * @return Display name of the thread author (never null)
      */
@@ -263,14 +269,14 @@ public class ForumThread {
      * have profile links.
      *
      * Business Rules:
-     *   - If author == null → false (deleted user, no profile link)
-     *   - If author != null AND author.hasProfileLink() → true (active user with
-     *     profile visibility != HIDDEN)
-     *   - If author != null AND !author.hasProfileLink() → false (active user with
-     *     HIDDEN visibility)
+     * - If author == null → false (deleted user, no profile link)
+     * - If author != null AND author.hasProfileLink() → true (active user with
+     *                                                       profile visibility != HIDDEN)
+     * - If author != null AND !author.hasProfileLink() → false (active user with
+     *                                                           HIDDEN visibility)
      *
-     * UI Usage: Use this to determine whether to render the author name as a clickable
-     * link or plain text in thread lists and detail pages.
+     * UI Usage: Use this to determine whether to render the author name as a clickable link
+     * or plain text in thread lists and detail pages.
      *
      * @return true if author profile link should be displayed, false otherwise
      */
@@ -285,7 +291,7 @@ public class ForumThread {
      * Gets the author ID for constructing profile link URLs.
      *
      * Returns the author's user ID if the author is active and has a profile link,
-     * otherwise returns null. Use this method in conjunction with {@link #hasAuthorProfileLink()}
+     * otherwise returns null. Use this method in conjunction with hasAuthorProfileLink()
      * to safely generate profile URLs.
      *
      * Usage Pattern:

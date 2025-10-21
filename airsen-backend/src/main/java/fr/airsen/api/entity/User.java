@@ -262,9 +262,9 @@ public class User {
     /**
      * Updates user profile with new information.
      * Only updates non-null and non-empty values.
-     *
+     * 
      * @param firstName new first name (can be null)
-     * @param lastName new last name (can be null)
+     * @param lastName new last name (can be null) 
      * @param address new address (can be null)
      */
     public void updateProfile(String firstName, String lastName, String address) {
@@ -312,7 +312,7 @@ public class User {
     /**
      * Updates user password.
      * Note: Password must be already encrypted before calling this method.
-     *
+     * 
      * @param encryptedPassword new encrypted password
      */
     public void updatePassword(String encryptedPassword) {
@@ -323,7 +323,7 @@ public class User {
 
     /**
      * Updates user email and resets verification status.
-     *
+     * 
      * @param newEmail new email address
      */
     public void updateEmail(String newEmail) {
@@ -336,11 +336,11 @@ public class User {
     /**
      * Checks if user profile is complete.
      * A profile is considered complete if both first name and last name are provided.
-     *
+     * 
      * @return true if profile is complete
      */
     public boolean isProfileComplete() {
-        return firstName != null && !firstName.trim().isEmpty()
+        return firstName != null && !firstName.trim().isEmpty() 
             && lastName != null && !lastName.trim().isEmpty();
     }
 
@@ -350,7 +350,7 @@ public class User {
 
     /**
      * Gets user's full name.
-     *
+     * 
      * @return full name (first + last) or email if names are not provided
      */
     public String getFullName() {
@@ -465,6 +465,14 @@ public class User {
     /**
      * Checks if this user's profile is publicly accessible.
      *
+     * Returns true only if profile visibility is PUBLIC. This is used to determine
+     * whether to show full profile information (bio, address, badges, etc.).
+     *
+     * Profile Access Matrix:
+     * - HIDDEN → false (profile page returns 404)
+     * - USERNAME_ONLY → false (profile page shows only username)
+     * - PUBLIC → true (profile page shows all information)
+     *
      * @return true if profile visibility is PUBLIC, false otherwise
      */
     public boolean isProfilePublic() {
@@ -472,14 +480,14 @@ public class User {
     }
 
     /**
-     * Checks if profile link should be displayed in forum and UI.
+     * Checks if this user's profile has a clickable link.
      *
      * Returns true if profile visibility allows showing a profile link in forum posts
      * or other UI locations. HIDDEN users do not get profile links.
      *
-     * Business Rule: Deleted users (deletedAt != null) always return false, regardless
-     * of their previous visibility setting. Their profile links are permanently broken
-     * after deletion.
+     * Business Rule: Deleted users (deletedAt != null) always return
+     * false, regardless of their previous visibility setting. Their profile links are
+     * permanently broken after deletion.
      *
      * @return true if profile link should be displayed, false if hidden or deleted
      */
@@ -496,10 +504,10 @@ public class User {
      * Marks this user account for deletion (GDPR soft delete).
      *
      * Initiates a 30-day grace period before permanent deletion. During this period:
-     *   - Account is set to inactive (isActive = false)
-     *   - User cannot login or access protected resources
-     *   - User can restore account by calling {@link #cancelDeletion()}
-     *   - Deletion timestamp is recorded for grace period calculation
+     * - Account is set to inactive (isActive = false)
+     * - User cannot login or access protected resources
+     * - User can restore account by calling {@link #cancelDeletion()}
+     * - Deletion timestamp is recorded for grace period calculation
      *
      * After 30 days, a scheduled job will permanently delete the account while preserving
      * forum content per GDPR Article 17(3)(e) public interest exception.
@@ -537,9 +545,9 @@ public class User {
      * scheduled deletion job to identify accounts ready for permanent deletion.
      *
      * Grace Period Logic:
-     *   If deletedAt is null → false (not marked for deletion)
-     *   If deletedAt + 30 days > now → false (still in grace period)
-     *   If deletedAt + 30 days <= now → true (ready for permanent deletion)
+     * - If deletedAt is null → false (not marked for deletion)
+     * - If deletedAt + 30 days > now → false (still in grace period)
+     * - If deletedAt + 30 days <= now → true (ready for permanent deletion)
      *
      * @return true if grace period has expired, false if still within grace period or not deleted
      */
@@ -572,20 +580,20 @@ public class User {
      * preservation (GDPR Article 17(3)(e) public interest exception).
      *
      * Data Retention Strategy:
-     *   Deleted: email, password, firstName, lastName, address, telephone, bio, favoris
-     *            (all personal data)
-     *   Preserved: id (for foreign key integrity), createdAt (for historical context),
-     *              role (for authorization checks)
-     *   Updated: isActive = false, profileVisibility = HIDDEN
+     * - Deleted: email, password, firstName, lastName, address,
+     *            telephone, bio, favoris (all personal data)
+     * - Preserved: id (for foreign key integrity), createdAt (for
+     *              historical context), role (for authorization checks)
+     * - Updated: isActive = false, profileVisibility = HIDDEN
      *
-     * Forum Content Preservation: Before calling this method, the UserDeletionService must
-     * have already copied the user's display name to the authorName field in all
-     * ForumThread and ForumMessage entities. This preserves discussion context while
-     * anonymizing the author.
+     * Forum Content Preservation: Before calling this method, the
+     * UserDeletionService must have already copied the user's display name to the
+     * authorName field in all ForumThread and ForumMessage entities. This preserves
+     * discussion context while anonymizing the author.
      *
-     * Note: This method does NOT delete the User entity itself, as it must remain for
-     * foreign key integrity with forum content. The user becomes a "deleted user stub"
-     * with no personal data.
+     * Note: This method does NOT delete the User entity itself, as it
+     * must remain for foreign key integrity with forum content. The user becomes a
+     * "deleted user stub" with no personal data.
      */
     public void permanentlyDeletePersonalData() {
         // Clear all personal information
@@ -628,7 +636,7 @@ public class User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
+        
         User user = (User) o;
         return id != null && id.equals(user.id);
     }

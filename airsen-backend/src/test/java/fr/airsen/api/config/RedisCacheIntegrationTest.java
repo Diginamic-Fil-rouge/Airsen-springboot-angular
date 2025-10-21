@@ -27,17 +27,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for Redis cache with TestContainers.
  *
- * <p>This test suite verifies:</p>
- * <ul>
- *   <li>Redis connectivity with actual Redis 7 Alpine instance</li>
- *   <li>Cache manager configuration</li>
- *   <li>Cache key prefixing ("airsen:")</li>
- *   <li>TTL settings for different cache types</li>
- *   <li>Serialization/deserialization with Jackson</li>
- *   <li>Cache eviction operations</li>
- * </ul>
+ * This test suite verifies:
+ * - Redis connectivity with actual Redis 7 Alpine instance
+ * - Cache manager configuration
+ * - Cache key prefixing ("airsen:")
+ * - TTL settings for different cache types
+ * - Serialization/deserialization with Jackson
+ * - Cache eviction operations
  *
- * <p><strong>Requires Docker</strong> to be running to execute tests.</p>
+ * Requires Docker to be running to execute tests.
  */
 @SpringBootTest
 @Testcontainers

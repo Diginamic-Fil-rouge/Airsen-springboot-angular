@@ -25,12 +25,12 @@ import java.util.Optional;
 
 /**
  * Authentication service for user login, registration, and token management.
- * <p>
+ * 
  * This service handles all authentication-related operations including user
  * registration, login authentication, JWT token generation and refresh,
  * and logout functionality. It integrates with Spring Security for secure
  * password handling and JWT token management.
- * <p>
+ *
  * Security Features:
  * - BCrypt password hashing for secure storage
  * - JWT token generation and validation
@@ -38,7 +38,7 @@ import java.util.Optional;
  * - Comprehensive authentication logging
  * - Secure user registration with email uniqueness
  * - Refresh token management for seamless user experience
- * <p>
+ *
  * Business Logic:
  * - User account creation with automatic role assignment
  * - Email normalization and validation
@@ -66,7 +66,7 @@ public class AuthService {
 
     /**
      * Authenticates user credentials and generates JWT tokens.
-     * <p>
+     * 
      * This method validates user credentials against the database using Spring Security
      * authentication manager. Upon successful authentication, it generates JWT access
      * and refresh tokens for API access.
@@ -123,7 +123,7 @@ public class AuthService {
 
     /**
      * Registers a new user account and returns immediate authentication.
-     * <p>
+     * 
      * This method creates a new user account with secure password hashing
      * and role assignment. It prevents duplicate email registration and
      * restricts admin account self-registration. Upon successful registration,
@@ -184,7 +184,7 @@ public class AuthService {
 
     /**
      * Refreshes JWT access token using a valid refresh token.
-     * <p>
+     * 
      * This method validates the refresh token and generates a new access token
      * for continued API access without requiring user re-authentication.
      *
@@ -245,7 +245,7 @@ public class AuthService {
 
     /**
      * Logs out user by invalidating refresh token.
-     * <p>
+     * 
      * This method handles user logout by invalidating the refresh token.
      * Note: JWT access tokens are stateless and handled client-side.
      *

@@ -7,6 +7,14 @@ import java.util.Objects;
 
 /**
  * This entity represents a vote in the forum. It is linked to a {@link User } entity and a {@link ForumThread } entity.
+ *
+ * GDPR Voter Anonymization: When a user is deleted (GDPR right to erasure),
+ * their vote counts are preserved (vote totals remain accurate), but voter identity is anonymized.
+ * The user relationship is set to null and the userDeleted flag is set to true.
+ *
+ * Privacy Rationale: Vote counts serve community value (highlight quality content),
+ * but individual voter identity is not required for this purpose. Anonymizing voters after deletion
+ * balances community needs with user privacy.
  */
 @Entity
 @Table(name = "forum_votes",
@@ -26,16 +34,16 @@ public class ForumVote {
     /**
      * The user who cast this vote.
      *
-     * GDPR Compliance:vThis field is nullable to support voter anonymization
+     * GDPR Compliance: This field is nullable to support voter anonymization
      * after user deletion. When a user is deleted (GDPR right to erasure), this field is set to
      * null to remove voter identity while preserving the vote count.
      *
      * Business Rules:
-     *   If user != null → active voter, vote counts toward thread score
-     *   If user == null AND userDeleted == true → deleted voter, vote count preserved
-     *       but voter identity anonymized
+     * - If user != null → active voter, vote counts toward thread score
+     * - If user == null AND userDeleted == true → deleted voter, vote count preserved
+     *                                               but voter identity anonymized
      *
-     *  Unlike ForumThread/ForumMessage, votes do NOT preserve user
+     * Note: Unlike ForumThread/ForumMessage, votes do NOT preserve user
      * names. Voter anonymization is complete - only the vote type (UPVOTE/DOWNVOTE) is kept.
      */
     @ManyToOne
@@ -44,6 +52,12 @@ public class ForumVote {
 
     /**
      * Flag indicating whether the voter has been deleted.
+     *
+     * When true, the user field is null (voter anonymized), but the vote is still counted
+     * in thread scores. This ensures fair vote tallies while respecting user privacy.
+     *
+     * Database Performance: Indexed via idx_vote_user_deleted for fast
+     * queries to find and anonymize votes when a user is deleted.
      */
     @Column(name = "user_deleted", nullable = false)
     private Boolean userDeleted = false;

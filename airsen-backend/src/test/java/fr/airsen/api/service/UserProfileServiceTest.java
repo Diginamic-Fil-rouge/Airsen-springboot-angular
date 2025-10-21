@@ -1,9 +1,11 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.dto.auth.UserDTO;
 import fr.airsen.api.dto.response.PublicUserProfileDTO;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.ProfileVisibility;
 import fr.airsen.api.exception.ProfileNotAccessibleException;
+import fr.airsen.api.mapper.UserMapper;
 import fr.airsen.api.repository.ForumMessageRepository;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.UserRepository;
@@ -32,6 +34,8 @@ class UserProfileServiceTest {
     private ForumThreadRepository forumThreadRepository;
     @Mock
     private ForumMessageRepository forumMessageRepository;
+    @Mock
+    private UserMapper userMapper; // FIX 1: Added missing mock
 
     @InjectMocks
     private UserProfileService userProfileService;
@@ -43,10 +47,12 @@ class UserProfileServiceTest {
         testUser = new User();
         testUser.setId(1L);
         testUser.setEmail("test@example.com");
+        testUser.setFirstName("Test");
+        testUser.setLastName("User");
         testUser.setBio("Test bio");
         testUser.setCreatedAt(LocalDateTime.now().minusMonths(6));
         testUser.setEmailVerified(true);
-        testUser.setActive(true);
+        testUser.setIsActive(true);
     }
 
     @Test
@@ -63,10 +69,10 @@ class UserProfileServiceTest {
 
         // Then
         assertNotNull(profile);
-        assertEquals("test", profile.displayName());
+        assertEquals("Test User", profile.displayName()); // FIX 3: Corrected display name
         assertEquals("Test bio", profile.bio());
-        assertEquals(5, profile.forumActivity().threadCount());
-        assertEquals(20, profile.forumActivity().messageCount());
+        assertEquals(5, profile.forumStats().threadCount()); // FIX 2: Changed to forumStats()
+        assertEquals(20, profile.forumStats().messageCount()); // FIX 2: Changed to forumStats()
     }
 
     @Test
@@ -114,7 +120,7 @@ class UserProfileServiceTest {
     void getPublicProfile_InactiveUser() {
         // Given
         testUser.setProfileVisibility(ProfileVisibility.PUBLIC);
-        testUser.setActive(false);
+        testUser.setIsActive(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
         // When & Then
@@ -141,12 +147,15 @@ class UserProfileServiceTest {
         // Given
         testUser.setProfileVisibility(ProfileVisibility.USERNAME_ONLY);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userMapper.toDTO(any(User.class))).thenReturn(new UserDTO());
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
         // When
-        userProfileService.updatePrivacySettings(1L, ProfileVisibility.PUBLIC);
+        UserDTO result = userProfileService.updatePrivacySettings(1L, ProfileVisibility.PUBLIC);
 
         // Then
+        assertNotNull(result);
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
         assertEquals(ProfileVisibility.PUBLIC, savedUser.getProfileVisibility());
@@ -158,12 +167,15 @@ class UserProfileServiceTest {
         // Given
         testUser.setProfileVisibility(ProfileVisibility.PUBLIC);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userMapper.toDTO(any(User.class))).thenReturn(new UserDTO());
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
         // When
-        userProfileService.updatePrivacySettings(1L, ProfileVisibility.HIDDEN);
+        UserDTO result = userProfileService.updatePrivacySettings(1L, ProfileVisibility.HIDDEN);
 
         // Then
+        assertNotNull(result);
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
         assertEquals(ProfileVisibility.HIDDEN, savedUser.getProfileVisibility());
@@ -182,9 +194,9 @@ class UserProfileServiceTest {
         PublicUserProfileDTO profile = userProfileService.getPublicProfile(1L);
 
         // Then
-        assertNotNull(profile.forumActivity());
-        assertEquals(5, profile.forumActivity().threadCount());
-        assertEquals(20, profile.forumActivity().messageCount());
+        assertNotNull(profile.forumStats());
+        assertEquals(5, profile.forumStats().threadCount());
+        assertEquals(20, profile.forumStats().messageCount());
     }
 
     @Test
@@ -200,8 +212,8 @@ class UserProfileServiceTest {
         PublicUserProfileDTO profile = userProfileService.getPublicProfile(1L);
 
         // Then
-        assertNotNull(profile.forumActivity());
-        assertEquals(0, profile.forumActivity().threadCount());
-        assertEquals(0, profile.forumActivity().messageCount());
+        assertNotNull(profile.forumStats());
+        assertEquals(0, profile.forumStats().threadCount());
+        assertEquals(0, profile.forumStats().messageCount());
     }
 }

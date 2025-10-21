@@ -18,11 +18,10 @@ import java.util.Map;
 /**
  * Test configuration for Redis cache testing.
  *
- * <p>This configuration mirrors the production {@link RedisConfig} but is optimized
- * for testing with shorter TTL values to speed up test execution.</p>
+ * This configuration mirrors the production {@link RedisConfig} but is optimized
+ * for testing with shorter TTL values to speed up test execution.
  *
- * <p>Usage in tests:</p>
- * <pre>
+ * Usage in tests:
  * {@code
  * @SpringBootTest
  * @Import(CacheTestConfiguration.class)
@@ -30,7 +29,6 @@ import java.util.Map;
  *     // Test code
  * }
  * }
- * </pre>
  *
  * @see RedisConfig
  */
@@ -41,13 +39,11 @@ public class CacheTestConfiguration {
     /**
      * Configures cache manager for testing with reduced TTL values.
      *
-     * <p>TTL values are reduced for faster test execution:</p>
-     * <ul>
-     *   <li>air-quality: 5 minutes (vs 1 hour in production)</li>
-     *   <li>weather: 2 minutes (vs 30 minutes in production)</li>
-     *   <li>population: 10 minutes (vs 24 hours in production)</li>
-     *   <li>geography/communes/departments/regions: 15 minutes (vs 7 days in production)</li>
-     * </ul>
+     * TTL values are reduced for faster test execution:
+     * - air-quality: 5 minutes (vs 1 hour in production)
+     * - weather: 2 minutes (vs 30 minutes in production)
+     * - population: 10 minutes (vs 24 hours in production)
+     * - geography/communes/departments/regions: 15 minutes (vs 7 days in production)
      *
      * @param connectionFactory Redis connection factory from TestContainers
      * @return configured CacheManager for testing

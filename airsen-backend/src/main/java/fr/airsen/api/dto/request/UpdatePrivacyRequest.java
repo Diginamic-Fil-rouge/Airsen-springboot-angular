@@ -6,41 +6,20 @@ import jakarta.validation.constraints.NotNull;
 /**
  * Request DTO for updating user privacy settings.
  *
- * <p>This immutable record represents a request to update a user's profile visibility setting.
- * It is used by authenticated users to change their privacy preferences (HIDDEN, USERNAME_ONLY, or PUBLIC).</p>
+ * This immutable record represents a request to update a user's profile visibility setting.
+ * It is used by authenticated users to change their privacy preferences (HIDDEN, USERNAME_ONLY, or PUBLIC).
  *
- * <p><strong>GDPR Compliance:</strong> This DTO supports GDPR Article 25 (Data Protection by Design and Default)
- * by enabling users to actively control their profile visibility and personal data exposure.</p>
+ * GDPR Compliance: This DTO supports GDPR Article 25 (Data Protection by Design and Default)
+ * by enabling users to actively control their profile visibility and personal data exposure.
  *
- * <h3>Privacy Setting Changes:</h3>
- * <table border="1">
- *   <tr>
- *     <th>From</th>
- *     <th>To</th>
- *     <th>Effect</th>
- *   </tr>
- *   <tr>
- *     <td>USERNAME_ONLY (default)</td>
- *     <td>PUBLIC</td>
- *     <td>Profile becomes publicly accessible with bio and stats</td>
- *   </tr>
- *   <tr>
- *     <td>PUBLIC</td>
- *     <td>USERNAME_ONLY</td>
- *     <td>Profile page becomes inaccessible (404), but username still shows in forum</td>
- *   </tr>
- *   <tr>
- *     <td>Any</td>
- *     <td>HIDDEN</td>
- *     <td>Maximum privacy: profile hidden, username only in forum</td>
- *   </tr>
- * </table>
+ * Privacy Setting Changes:
+ * - From USERNAME_ONLY to PUBLIC: Profile becomes publicly accessible with bio and stats
+ * - From PUBLIC to USERNAME_ONLY: Profile page becomes inaccessible (404), but username still shows in forum
+ * - From Any to HIDDEN: Maximum privacy - profile hidden, username only in forum
  *
- * <h3>Usage Example:</h3>
- * <pre>{@code
+ * Usage Example:
  * UpdatePrivacyRequest request = new UpdatePrivacyRequest(ProfileVisibility.PUBLIC);
- * // User wants to make their profile publicly accessible
- * }</pre>
+ * User wants to make their profile publicly accessible
  *
  * @param profileVisibility the new profile visibility setting (HIDDEN, USERNAME_ONLY, or PUBLIC)
  *
@@ -55,8 +34,8 @@ public record UpdatePrivacyRequest(
     /**
      * Compact constructor with validation.
      *
-     * <p>Ensures that the profile visibility is not null. Note that @NotNull annotation
-     * is enforced by Jakarta Bean Validation at the time of request binding.</p>
+     * Ensures that the profile visibility is not null. Note that @NotNull annotation
+     * is enforced by Jakarta Bean Validation at the time of request binding.
      *
      * @param profileVisibility the new visibility setting (required, cannot be null)
      * @throws IllegalArgumentException if profile visibility is null
