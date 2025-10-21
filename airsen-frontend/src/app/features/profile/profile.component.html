@@ -1,6 +1,7 @@
 <div class="profile-page">
+  <!-- Header -->
   <div class="header">
-    <div>
+    <div class="header-text">
       <h1>Mon profil</h1>
       <p>Gérez vos informations personnelles et préférences</p>
     </div>
@@ -15,11 +16,7 @@
       <div class="sidebar">
         <div class="card text-center">
           <div class="avatar-wrapper">
-            <img
-              src="assets/placeholder-avatar.jpg"
-              class="avatar"
-              alt="Avatar"
-            />
+            <img src="assets/placeholder-avatar.jpg" class="avatar" alt="Avatar" />
           </div>
 
           <h3>{{ formData.name }}</h3>
@@ -47,85 +44,98 @@
 
     <!-- Colonne droite -->
     <div class="content">
-      <div class="tabs">
-        <button
-          [class.active]="activeTab === 'profile'"
-          (click)="activeTab = 'profile'"
-        >
-          Profil
-        </button>
-        <button
-          [class.active]="activeTab === 'notifications'"
-          (click)="activeTab = 'notifications'"
-        >
-          Notifications
-        </button>
-        <button
-          [class.active]="activeTab === 'security'"
-          (click)="activeTab = 'security'"
-        >
-          Sécurité
-        </button>
-      </div>
+      <!-- Conteneur boutons + cadre infos -->
+      <div class="tabs-and-card">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button [class.active]="activeTab === 'profile'" (click)="activeTab='profile'">Profil</button>
+          <button [class.active]="activeTab === 'notifications'" (click)="activeTab='notifications'">Notifications</button>
+          <button [class.active]="activeTab === 'security'" (click)="activeTab='security'">Sécurité</button>
+        </div>
 
-      <!-- Onglet Profil -->
-      <div *ngIf="activeTab === 'profile'" class="card">
-        <h2>Informations personnelles</h2>
-        <form (ngSubmit)="saveProfile()">
-          <label>Nom complet</label>
-          <input [(ngModel)]="formData.name" name="name" />
+        <!-- Onglet Profil -->
+        <div *ngIf="activeTab === 'profile'" class="profile-card card">
+          <h2>Informations personnelles</h2>
 
-          <label>Email</label>
-          <input [(ngModel)]="formData.email" name="email" type="email" />
+          <form (ngSubmit)="saveProfile()" class="form-grid">
+            <!-- Ligne 1 : Nom complet + Email -->
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="name">Nom complet</label>
+                <input [(ngModel)]="formData.name" name="name" id="name" />
+              </div>
 
-          <label>Adresse</label>
-          <input [(ngModel)]="formData.address" name="address" />
+              <div class="form-group">
+                <label for="email">Adresse e-mail</label>
+                <input [(ngModel)]="formData.email" name="email" id="email" type="email" />
+              </div>
+            </div>
 
-          <label>Téléphone</label>
-          <input [(ngModel)]="formData.phone" name="phone" />
+            <!-- Ligne 2 : Adresse -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="address">Adresse</label>
+                <input [(ngModel)]="formData.address" name="address" id="address" />
+              </div>
+            </div>
 
-          <label>Bio</label>
-          <input [(ngModel)]="formData.bio" name="bio" />
+            <!-- Ligne 3 : Téléphone -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="phone">Téléphone</label>
+                <input [(ngModel)]="formData.phone" name="phone" id="phone" />
+              </div>
+            </div>
 
-          <button type="submit" class="btn-primary">Sauvegarder</button>
-        </form>
-      </div>
+            <!-- Ligne 4 : Bio -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="bio">Bio</label>
+                <input [(ngModel)]="formData.bio" name="bio" id="bio" />
+              </div>
+            </div>
 
-      <!-- Onglet Notifications -->
-      <div *ngIf="activeTab === 'notifications'" class="card">
-        <h2>Préférences de notification</h2>
+            <!-- Ligne 5 : Bouton Sauvegarder -->
+            <div class="form-row button-row">
+              <button type="submit" class="btn-save">Sauvegarder les modifications</button>
+            </div>
+          </form>
+        </div>
 
-        <div *ngFor="let key of notifications | keyvalue">
-          <div class="notif-row">
-            <span>{{ key.key }}</span>
-            <button (click)="toggleNotificationKey(key.key)">
-              {{ key.value ? "Activé" : "Désactivé" }}
-            </button>
+        <!-- Onglet Notifications -->
+        <div *ngIf="activeTab === 'notifications'" class="card">
+          <h2>Préférences de notification</h2>
+
+          <div *ngFor="let key of notifications | keyvalue">
+            <div class="notif-row">
+              <span>{{ key.key }}</span>
+              <button (click)="toggleNotificationKey(key.key)">
+                {{ key.value ? "Activé" : "Désactivé" }}
+              </button>
+            </div>
           </div>
+
+          <button (click)="saveNotifications()" class="btn-primary">Sauvegarder</button>
         </div>
 
-        <button (click)="saveNotifications()" class="btn-primary">
-          Sauvegarder
-        </button>
-      </div>
+        <!-- Onglet Sécurité -->
+        <div *ngIf="activeTab === 'security'" class="card">
+          <h2>Sécurité du compte</h2>
 
-      <!-- Onglet Sécurité -->
-      <div *ngIf="activeTab === 'security'" class="card">
-        <h2>Sécurité du compte</h2>
+          <div class="security-section">
+            <h4>Changer le mot de passe</h4>
+            <button class="btn-outline">Modifier</button>
+          </div>
 
-        <div class="security-section">
-          <h4>Changer le mot de passe</h4>
-          <button class="btn-outline">Modifier</button>
-        </div>
+          <div class="security-section">
+            <h4>Authentification à deux facteurs</h4>
+            <button class="btn-outline">Configurer 2FA</button>
+          </div>
 
-        <div class="security-section">
-          <h4>Authentification à deux facteurs</h4>
-          <button class="btn-outline">Configurer 2FA</button>
-        </div>
-
-        <div class="security-section danger">
-          <h4>Zone de danger</h4>
-          <button class="btn-danger">Supprimer le compte</button>
+          <div class="security-section danger">
+            <h4>Zone de danger</h4>
+            <button class="btn-danger">Supprimer le compte</button>
+          </div>
         </div>
       </div>
     </div>

@@ -91,6 +91,7 @@
 .profile-card {
   @include card();
   margin-bottom: space(6);
+  margin-top: space(4);
 
   &:hover {
     transform: translateY(-2px);
@@ -108,7 +109,7 @@
   display: flex;                      // met les éléments sur une seule ligne
   justify-content: space-between;     // espace maximum entre les deux éléments
   align-items: center;
-  padding: 0 15rem;                // aligne verticalement le bouton et le titre
+  padding: 0 0rem;                // aligne verticalement le bouton et le titre
   margin-bottom: 2rem;                // un peu d’espace en dessous du header
 }
 
@@ -124,7 +125,18 @@
 
 .header .btn-outline {
   padding: 0.75rem 1.5rem;            // ajuste la taille du bouton
-  font-weight: 500;
+  border-radius: 14px; /* Arrondit les angles */
+  cursor: pointer;    //transforme le curseur au passage sur le bouton
+  background: transparent;
+  font-weight: $font-weight-light;
+  transition: all 0.2s ease;
+  border: 1px solid $airsen-gray-200; /* couleur du cadre, à ajuster selon ton thème */
+}
+
+/* Effet au survol */
+.btn-outline:hover {
+  background-color: $airsen-secondary; /* bleu plein */
+  color: white; /* texte devient blanc */
 }
 
 .sidebar-wrapper {
@@ -133,4 +145,188 @@
   padding: space(4);                       // espace intérieur
   background-color: color("gray", "50");  // fond clair pour le cadre
   box-shadow: shadow("sm");               // ombre légère
+}
+
+/* === Grille principale === */
+.grid {
+  display: grid;
+  grid-template-columns: 280px 1fr; /* colonne gauche plus fine */
+  align-items: start; /* aligne le haut des colonnes */
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* === Cadre autour de la colonne gauche === */
+.sidebar-wrapper {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background-color: #fafafa; /* fond légèrement gris clair */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* === Ajustements pour la carte à l’intérieur === */
+.sidebar-card {
+  background: transparent; /* pour ne pas doubler le fond */
+  box-shadow: none;
+}
+
+/* === Avatar et texte centrés === */
+.avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ccc;
+}
+
+/* === Zone des stats === */
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+/* === Badge vérifié === */
+.badge {
+  background-color: #e0f7e9;
+  color: #1e7a46;
+  border-radius: 20px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+/* === Cadre général de la section Profil === */
+.profile-form {
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* === Mise en page du formulaire === */
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* Ligne du formulaire */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Deux colonnes (pour Nom + Email) */
+.two-cols .form-group {
+  flex: 1;
+}
+
+/* Champs pleine largeur */
+.full-width {
+  width: 100%;
+}
+
+/* Bloc label + input */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+input {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+
+/* Bouton Sauvegarder */
+.button-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.btn-save {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-save:hover {
+  background-color: #43a047;
+}
+
+.tabs {
+  display: flex;
+  gap: space(2);          // petit espace entre les boutons
+  margin-bottom: space(15); // espace entre les boutons et le cadre "informations personnelles"
+
+  button {
+    flex: 1;               // chaque bouton prend la même largeur
+    padding: $btn-padding-md;
+    font-size: $btn-font-size-md;
+    border-radius: $btn-border-radius;
+    border: 1px solid color("gray", "400");
+    background: color("gray", "50");
+    cursor: pointer;
+    font-weight: $btn-font-weight;
+
+    &.active {
+      background-color: color("airsen-primary");
+      color: color("white");
+      border-color: color("airsen-primary-dark");
+    }
+
+    &:hover:not(.active) {
+      background-color: color("airsen-primary-light");
+      color: color("white");
+    }
+  }
+}
+
+.tabs-and-card {
+  display: flex;
+  flex-direction: column;
+  gap: space(14); // espace entre boutons et cadre
+}
+
+.tabs {
+  display: flex;
+  gap: 0rem; // espace entre les boutons
+  margin-bottom: 2rem;
+}
+
+.tabs button {
+  flex: 1; // occupe équitablement l'espace
+}
+
+.profile-card {
+  @include card();
+  padding: space(6);
 }
