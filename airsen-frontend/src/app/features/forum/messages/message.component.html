@@ -1,24 +1,40 @@
 <div class="message-container">
     <div class="message-infos">
-        <div class="thread-datas">
+        <div class="message-datas">
             <h2>{{ message()?.author?.firstName + ' ' + message()?.author?.lastName }}</h2>
             <p class="date">{{ message()?.createdDate | date: 'dd MMMM yyyy, HH:mm' }}</p>
         </div>
-        <button class="delete-button" (click)="displayModal()">Supprimer</button>
+        <div class="action-buttons">
+          @if (currentUser?.id == message()?.author?.id ||currentUser?.role === "ADMIN"){
+            @if(!isEditing){
+                <button class="edit-button" (click)="triggerEdit()">Modifier</button>
+            }
+            <button class="delete-button" (click)="toggleModal()">Supprimer</button>
+          }
+        </div>
     </div>
-    <p class="content">{{ message()?.content }}</p>
+    @if (!isEditing){
+        <p class="content">{{ message()?.content }}</p>
+    }
+    @else {
+        <textarea class="edit-content" name="content" id="content" [(ngModel)]="content" value="{{message()?.content}}"></textarea>
+        <div class="buttons-container">
+            <button class="validate-button" (click)="editMessage()">Valider</button>
+            <button class="cancel-button" (click)="triggerEdit()">Annuler</button>
+        </div>
+    }
 </div>
 
 @if(showModal){
-<div class="confirmation-modal">
+<div class="confirmation-modal" >
   <div class="modal-container">
     <p>
-      Êtes vous sûr de vouloir supprimer le message ? cette action est
+      Êtes vous sûr de vouloir supprimer le message ? Cette action est
       définitive
     </p>
     <div class="modal-buttons">
       <button class="danger" (click)="deleteMessage()">Valider</button>
-      <button class="cancel" (click)="displayModal()">Annuler</button>
+      <button class="cancel" (click)="toggleModal()">Annuler</button>
     </div>
   </div>
 </div>

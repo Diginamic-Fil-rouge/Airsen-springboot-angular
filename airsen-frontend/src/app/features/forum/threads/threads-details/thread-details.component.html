@@ -1,42 +1,76 @@
-<div class="thread-container">
-  <back-button route="/forum" textContent="Retour au forum"></back-button>
-  <div class="thread-content">
-    @if (thread$ | async) {
+<div class="page-container">
+  
+  @if (thread && !isLoading) {
+    <div class="thread-container">
+    <back-button route="/forum" textContent="Retour au forum"></back-button>
+    <div class="thread-content">
       <div class="thread-infos">
-        <h1 class="title">{{ (thread$ | async)?.title }}</h1>
+        <div class="thread-header">
+          <h1 class="title">{{ thread.title }}</h1>
+          <div class="action-buttons">
+            @if (currentUser?.id == thread.author?.id || currentUser?.role == 'ADMIN') {
+              <a class="edit-button" routerLink="/forum/edit/thread/{{ thread.id }}"
+                >Modifier</a
+              >
+              <button class="delete-button" (click)="toggleModal()">Supprimer</button>
+            }
+          </div>
+        </div>
         <div class="thread-data">
-          <div class="author">
-            par
-            {{
-              (thread$ | async)?.author?.firstName +
-              " " +
-              (thread$ | async)?.author?.lastName
-            }}
+            <div class="author">
+              par
+              {{
+                thread.author?.firstName +
+                  " " +
+                  thread.author?.lastName
+              }}
+            </div>
+            •
+            <div class="last-activity">
+              {{ thread.lastMessageDate | date : "dd MMMM yyyy, HH:mm" }}
+            </div>
+            •
+            <div class="view-count">{{ thread.viewCount }} vues</div>
         </div>
-        <div class="last-activity">
-          {{ (thread$ | async)?.lastMessageDate | date : "short" }}
-        </div>
-        <div class="view-count">{{ (thread$ | async)?.viewCount }}</div>
-        <a routerLink="/forum/edit/thread/{{ (thread$ | async)?.id }}">Modifier</a>
+      </div>
+      <p class="content">{{ thread.content }}</p>
+      <div class="separator"></div>
+      <div class="thread-data">
+        <thread-voting
+          [thread]="thread"
+          [voteCount]="thread.likeCount"
+        ></thread-voting>
       </div>
     </div>
-    <p class="content">{{ (thread$ | async)?.content }}</p>
-    
-    <div class="thread-data">
-      <thread-voting [thread]="(thread$ | async)" [voteCount]="(thread$ | async)?.likeCount"></thread-voting>
-    </div>
     <h3 class="message-count">
-      Réponses ({{ (thread$ | async)?.messageCount }})
+      Réponses ({{ thread.messageCount }})
     </h3>
     <div class="messages-container">
-      @for (message of (thread$ | async)?.messages; track $index) {
-        <forum-message [message]="message" (editMessageEvent)="refreshThread()" ></forum-message>
+      @for (message of thread.messages; track $index) {
+        <forum-message [message]="message" (messageEvent)="refreshThread()" ></forum-message>
       }
     </div>
-    <app-add-message [thread]="(thread$ | async)" (newMessageEvent)="refreshThread()"></app-add-message>
+    @if (currentUser) {
+    <app-add-message [thread]="thread" (newMessageEvent)="refreshThread()"></app-add-message>
+    }
+  </div>
   }
   @else {
     <app-loader></app-loader>
-  }
+    }
+</div>
+
+@if(showModal){
+<div class="confirmation-modal">
+  <div class="modal-container">
+    <p>
+      Êtes-vous sûr de vouloir supprimer la discussion ? cette action est
+      définitive
+    </p>
+    <div class="modal-buttons">
+      <button class="danger" (click)="deleteThread()">Valider</button>
+      <button class="cancel" (click)="toggleModal()">Annuler</button>
+    </div>
   </div>
 </div>
+}

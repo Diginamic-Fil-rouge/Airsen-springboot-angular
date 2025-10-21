@@ -1,17 +1,9 @@
-# syntax=docker/dockerfile:1
-#
-# Optimized Multi-stage Dockerfile for Airsen Backend (Spring Boot)
-# Supports: development (with DevTools hot reload), production
-#
 # Key Optimizations:
 # - Dev: No source copy (bind-mounted), only dependencies cached
 # - Prod: Clean multi-stage build, minimal runtime image
 # - Dependencies cached separately from source code
-#
 
-# ==========================================
 # DEVELOPMENT STAGE - Hot Reload with DevTools
-# ==========================================
 FROM eclipse-temurin:21-jdk-alpine AS development
 
 WORKDIR /app
@@ -28,16 +20,13 @@ RUN mvn dependency:go-offline -B || true
 # DON'T COPY src - will be bind-mounted in docker-compose
 # This allows Spring Boot DevTools to detect file changes and auto-restart
 
-# Expose application and debug ports
 EXPOSE 8080 5005
 
 # Spring Boot DevTools auto-restart enabled by default
 # DevTools will watch for changes in bind-mounted /app/src directory
 CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m"]
 
-# ==========================================
 # BUILDER STAGE - Compile Application
-# ==========================================
 FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /build
@@ -56,9 +45,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B && \
     mv target/*.jar app.jar
 
-# ==========================================
 # PRODUCTION STAGE - Minimal Runtime Image
-# ==========================================
 FROM eclipse-temurin:21-jre-alpine AS production
 
 WORKDIR /app
@@ -77,11 +64,9 @@ USER spring:spring
 # Copy ONLY the compiled JAR from builder stage
 COPY --from=builder --chown=spring:spring /build/app.jar .
 
-# Health check for production readiness
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# Expose application port
 EXPOSE 8080
 
 # JVM optimization flags for production
