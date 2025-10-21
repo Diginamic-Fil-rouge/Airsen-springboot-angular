@@ -3,7 +3,7 @@ package fr.airsen.api.controller;
 import fr.airsen.api.dto.cache.CachedEntry;
 import fr.airsen.api.dto.response.ExportDataResponse;
 import fr.airsen.api.dto.response.HistoricalDataResponse;
-import fr.airsen.api.entity.cache.CacheMetadata;
+import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.service.ExportDataService;
 import fr.airsen.api.service.cache.SmartCacheService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,10 +23,10 @@ import java.time.LocalDate;
 
 /**
  * REST Controller for export data endpoints.
- * 
+ *
  * Provides optimized data aggregation endpoints for client-side PDF/CSV export generation
  * with integrated intelligent caching for performance optimization.
- * 
+ *
  * Cache Strategy:
  * - Export data is cached with 6-hour TTL (ON_DEMAND_FETCH source)
  * - Scheduled refresh every 2-24 hours depending on commune tier
@@ -49,19 +49,19 @@ public class ExportDataController {
 
     /**
      * Gets export data for a commune (current snapshot).
-     * 
+     *
      * Retrieves all data needed for PDF export in a single API call, including:
      * - Commune information (name, INSEE code, population, geographic data)
      * - Latest air quality measurements (ATMO index, pollutants)
      * - Latest weather data (temperature, humidity, wind)
      * - Data quality metadata (freshness indicators)
-     * 
+     *
      * Caching Strategy:
      * - Data is cached with 6-hour TTL (ON_DEMAND_FETCH source)
      * - Scheduled refresh every 2-24 hours depending on commune population
      * - Stale data returned if API is temporarily unavailable
      * - Response headers indicate cache freshness
-     * 
+     *
      * @param inseeCode commune INSEE code (5-digit identifier)
      * @param forceRefresh optional parameter to bypass cache and fetch fresh data (admin only)
      * @return ExportDataResponse with complete current commune state + cache metadata headers
@@ -135,16 +135,16 @@ public class ExportDataController {
 
     /**
      * Gets historical data for a commune (time-series for CSV export).
-     * 
+     *
      * Retrieves time-series data for air quality and weather measurements over a specified
      * date range, with optional indicator filtering.
-     * 
+     *
      * Features:
      * - Flexible date range (up to 90 days maximum)
      * - Optional indicator filtering (air quality or weather specific)
      * - Data completeness metrics (% of expected data points)
      * - Chronologically ordered data points
-     * 
+     *
      * Performance: 500ms - 1s (depending on date range)
      * Response size: ~50-500 KB (depending on date range)
      *

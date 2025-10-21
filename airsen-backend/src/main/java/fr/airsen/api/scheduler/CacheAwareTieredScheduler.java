@@ -2,7 +2,7 @@ package fr.airsen.api.scheduler;
 
 import fr.airsen.api.dto.response.ExportDataResponse;
 import fr.airsen.api.entity.Commune;
-import fr.airsen.api.entity.cache.CacheMetadata;
+import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.service.ExportDataService;
 import fr.airsen.api.service.cache.SmartCacheService;
@@ -17,18 +17,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Intelligent scheduler for cache refresh using population-based tiers.
- * 
+ *
  * Strategy:
  * - Tier 1 (≥100k population): Refresh every 2 hours (frequent updates)
  * - Tier 2 (10k-99,999 population): Refresh every 6 hours (moderate updates)
  * - Tier 3 (<10k population): Refresh every 24 hours (minimal updates)
- * 
+ *
  * Benefits:
  * - Prioritizes high-importance communes (major cities)
  * - Reduces API calls for low-population areas
  * - Automatic background refresh before cache expiration
  * - Staggered refresh to prevent thundering herd
- * 
+ *
  * Expected Impact:
  * - Current: 2,592,000 API calls/day
  * - With scheduling: ~35,000 API calls/day (97% reduction)
@@ -50,13 +50,13 @@ public class CacheAwareTieredScheduler {
 
     /**
      * Refresh Tier 1 communes every 2 hours.
-     * 
+     *
      * Tier 1: ≥100,000 population (major cities with high traffic)
      * - Frequent updates to ensure data freshness
      * - ~300 communes requiring update
      * - ~300 API calls per cycle
      * - 12 cycles/day = 3,600 calls/day for Tier 1
-     * 
+     *
      * Run times: 00:00, 02:00, 04:00, 06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00
      */
     @Scheduled(fixedDelay = 7200000, initialDelay = 300000)  // 2 hours, 5 min initial delay
@@ -112,13 +112,13 @@ public class CacheAwareTieredScheduler {
 
     /**
      * Refresh Tier 2 communes every 6 hours.
-     * 
+     *
      * Tier 2: 10,000-99,999 population (towns with moderate traffic)
      * - Moderate update frequency
      * - ~2,500 communes requiring update
      * - ~2,500 API calls per cycle
      * - 4 cycles/day = 10,000 calls/day for Tier 2
-     * 
+     *
      * Run times: 01:00, 07:00, 13:00, 19:00
      */
     @Scheduled(fixedDelay = 21600000, initialDelay = 3600000)  // 6 hours, 1 hour initial delay
@@ -172,13 +172,13 @@ public class CacheAwareTieredScheduler {
 
     /**
      * Refresh Tier 3 communes once daily.
-     * 
+     *
      * Tier 3: <10,000 population (villages with low traffic)
      * - Infrequent updates to minimize API load
      * - ~33,000 communes requiring update
      * - ~33,000 API calls per cycle
      * - 1 cycle/day = 33,000 calls/day for Tier 3
-     * 
+     *
      * Run time: 02:00 (off-peak hours)
      */
     @Scheduled(fixedDelay = 86400000, initialDelay = 7200000)  // 24 hours, 2 hour initial delay
@@ -232,7 +232,7 @@ public class CacheAwareTieredScheduler {
 
     /**
      * Periodic task to report cache statistics.
-     * 
+     *
      * Runs every 30 minutes to provide visibility into cache health.
      * Logs:
      * - Total communes by tier
@@ -276,10 +276,10 @@ public class CacheAwareTieredScheduler {
 
     /**
      * Build consistent cache key for commune export data.
-     * 
+     *
      * Format: "export:{INSEE_CODE}"
      * Example: "export:75056" (Paris)
-     * 
+     *
      * @param commune the commune to build key for
      * @return cache key for this commune's export data
      */
