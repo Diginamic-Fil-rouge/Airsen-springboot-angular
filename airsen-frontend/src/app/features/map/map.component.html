@@ -1,0 +1,36 @@
+<div class="page-container">
+  <!-- Loading Spinner -->
+  @if (isLoading){
+  <div class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading map...</p>
+  </div>
+  } @if (!isLoading && currentUser){
+  <div class="page-content">
+    <div class="favorites-container">
+      <h2>Mes favoris</h2>
+    </div>
+    <!-- Map Content -->
+    <div class="map-container">
+      <div class="map-frame">
+        <div id="map"></div>
+      </div>
+      <div class="map-datas">
+        <h2>Données environnementales</h2>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (!isLoading && !currentUser){
+  <div class="error-container">
+    <mat-icon>error_outline</mat-icon>
+    <h2>Unable to load map</h2>
+    <p>Please try logging in again</p>
+    <button mat-raised-button color="primary" (click)="logout()">
+      Back to Login
+    </button>
+  </div>
+  }
+</div>
