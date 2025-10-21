@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,46 +21,25 @@ import * as L from 'leaflet';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
-export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
+export class MapComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
 
   currentUser: AuthUser | null = null;
   isLoading = true;
   private destroy$ = new Subject<void>();
-  private map: any;
 
 
   ngOnInit(): void {
     this.loadUserData();
+    if (!this.currentUser){
+      this.router.navigate(['/auth/login']);
+    }
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  ngAfterViewInit(): void {
-    if (!this.currentUser){
-      this.router.navigate(['/auth/login']);
-    }
-    this.initMap();
-  }
-
-  private initMap(): void {
-    this.map = L.map('map', {
-      // coordonnées du milieu de la france
-      center: [ 46.3622, 1.5231 ],
-      zoom: 6
-    });
-
-    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      minZoom: 3,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
-
-    tiles.addTo(this.map);
   }
 
   /**
