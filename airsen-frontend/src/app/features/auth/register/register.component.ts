@@ -119,8 +119,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Registration successful, redirect to dashboard
-          this.router.navigate(['/dashboard']);
+          // Registration successful, redirect to map
+          this.router.navigate(['/map']);
         },
         error: (error) => {
           console.error('Registration failed:', error);

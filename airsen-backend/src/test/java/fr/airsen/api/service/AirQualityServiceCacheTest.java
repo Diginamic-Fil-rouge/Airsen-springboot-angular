@@ -35,14 +35,12 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for {@link AirQualityService} cache behavior.
  *
- * <p>Tests verify:</p>
- * <ul>
- *   <li>Cache hit/miss scenarios</li>
- *   <li>Cache key strategy (INSEE code)</li>
- *   <li>Null result handling (should not cache)</li>
- *   <li>Cache eviction (specific and all entries)</li>
- *   <li>TTL configuration (1 hour in production, 5 minutes in tests)</li>
- * </ul>
+ * Tests verify:
+ * - Cache hit/miss scenarios
+ * - Cache key strategy (INSEE code)
+ * - Null result handling (should not cache)
+ * - Cache eviction (specific and all entries)
+ * - TTL configuration (1 hour in production, 5 minutes in tests)
  */
 @SpringBootTest
 @Import(CacheTestConfiguration.class)

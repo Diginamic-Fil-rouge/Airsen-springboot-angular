@@ -44,7 +44,8 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 // Feature Components
-import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { MapComponent } from './features/map/map.component';
+import { MapViewComponent } from './features/map/map-view/map-view.component';
 import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 import { CarteComponent } from './features/carte/carte.component';
@@ -103,7 +104,8 @@ import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-t
     LoginComponent,
     RegisterComponent,
     // Feature Components
-    DashboardComponent,
+    MapComponent,
+    MapViewComponent,
     HomeComponent,
     NotFoundComponent,
     CarteComponent,
