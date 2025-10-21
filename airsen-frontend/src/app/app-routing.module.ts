@@ -6,7 +6,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 // Feature Components
-import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { MapComponent } from './features/map/map.component';
 import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 import { CarteComponent } from './features/carte/carte.component';
@@ -43,8 +43,7 @@ const routes: Routes = [
   },
 
   // Feature Routes (no guards for now to avoid compilation errors)
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'carte', component: CarteComponent },
+  { path: 'map', component: MapComponent },
   { path: 'forum', component: ForumComponent },
   { path: 'forum/thread/:id', component: ThreadDetailsComponent },
   { path: 'forum/add/thread', component: AddThreadComponent },

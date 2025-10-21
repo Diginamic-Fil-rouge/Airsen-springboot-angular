@@ -86,8 +86,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Get return URL or default to dashboard
-          const returnUrl = this.storageService.getReturnUrl() || '/dashboard';
+          // Get return URL or default to map
+          const returnUrl = this.storageService.getReturnUrl() || '/map';
           this.storageService.clearReturnUrl();
           this.router.navigate([returnUrl]);
         },

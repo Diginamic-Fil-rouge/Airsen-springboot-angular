@@ -13,9 +13,11 @@
       <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
         Accueil
       </a>
-      <a routerLink="/map" routerLinkActive="active-link">
-        Carte
-      </a>
+      @if (currentUser){
+        <a routerLink="/map" routerLinkActive="active-link">
+          Carte
+        </a>
+      }
       <a routerLink="/forum" routerLinkActive="active-link">
         Forum
       </a>
