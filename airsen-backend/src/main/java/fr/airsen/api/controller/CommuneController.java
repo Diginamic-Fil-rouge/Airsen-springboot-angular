@@ -74,7 +74,7 @@ public class CommuneController {
 
     /**
      * GET /communes/search
-     * 
+     *
      * Global search for communes across all departments.
      */
     @GetMapping("/communes/search")
@@ -96,12 +96,36 @@ public class CommuneController {
             @RequestParam("q") @Valid @Size(min = 2, max = 50) String query,
             @Parameter(description = "Maximum number of results", example = "10")
             @RequestParam(defaultValue = "10") @Positive int limit) {
-        
+
         log.info("Received global search request for communes: '{}' (limit: {})", query, limit);
-        
+
         List<CommuneDTO> communes = communeService.searchCommunes(query, limit);
         log.info("Successfully found {} communes matching query: '{}'", communes.size(), query);
-        
+
+        return ResponseEntity.ok(communes);
+    }
+
+    /**
+     * GET /communes/with-coordinates
+     *
+     * Returns all communes that have valid coordinates for map display.
+     * Used by interactive map component to render commune markers.
+     */
+    @GetMapping("/communes/with-coordinates")
+    @Operation(
+        summary = "Get all communes with coordinates",
+        description = "Retrieves all communes that have valid latitude and longitude coordinates. " +
+                     "Used for interactive map display to show commune markers with air quality data."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Communes with coordinates retrieved successfully")
+    })
+    public ResponseEntity<List<CommuneDTO>> getCommunesWithCoordinates() {
+        log.info("Fetching all communes with coordinates for map display");
+
+        List<CommuneDTO> communes = communeService.getAllCommunesWithCoordinates();
+        log.info("Successfully retrieved {} communes with coordinates", communes.size());
+
         return ResponseEntity.ok(communes);
     }
 }

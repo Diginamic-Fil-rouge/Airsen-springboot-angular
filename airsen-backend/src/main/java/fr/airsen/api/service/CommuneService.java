@@ -30,13 +30,13 @@ import java.util.stream.Collectors;
 public class CommuneService {
 
     private static final Logger log = LoggerFactory.getLogger(CommuneService.class);
-    
+
     private final CommuneRepository communeRepository;
     private final DepartmentRepository departmentRepository;
     private final RegionRepository regionRepository;
     private final InseeApiClient inseeApiClient;
 
-    public CommuneService(CommuneRepository communeRepository, 
+    public CommuneService(CommuneRepository communeRepository,
                          DepartmentRepository departmentRepository,
                          RegionRepository regionRepository,
                          InseeApiClient inseeApiClient) {
@@ -153,16 +153,49 @@ public class CommuneService {
     }
 
     /**
+     * Gets all communes that have valid coordinates for map display.
+     *
+     * This method is used by the interactive map component to render commune markers.
+     * Results are cached in Redis for optimal performance.
+     * Only communes with non-null latitude and longitude values are returned.
+     *
+     * @return list of commune DTOs with coordinates
+     */
+    @Cacheable(value = "communes", key = "'all-with-coordinates'")
+    @Transactional(readOnly = true)
+    public List<CommuneDTO> getAllCommunesWithCoordinates() {
+        log.info("Fetching all communes with valid coordinates for map display");
+
+        List<Commune> communes = communeRepository.findCommunesWithCoordinates();
+
+        log.info("Found {} communes with coordinates", communes.size());
+
+        return communes.stream()
+            .map(c -> new CommuneDTO(
+                c.getId(),
+                c.getInseeCode(),
+                c.getName(),
+                c.getDepartment() != null ? c.getDepartment().getDepartmentCode() : null,
+                c.getDepartment() != null && c.getDepartment().getRegion() != null
+                    ? c.getDepartment().getRegion().getRegionCode() : null,
+                c.getPopulation(),
+                c.getLatitude(),
+                c.getLongitude()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    /**
      * Gets communes by department code (for external API controller).
-     * 
+     *
      * @param departmentCode department code as string
      * @return list of commune DTOs
      */
     public List<CommuneDTO> getCommunesByDepartment(String departmentCode) {
         log.info("Fetching communes for department: {}", departmentCode);
-        
+
         List<Commune> communes = communeRepository.findByDepartmentCode(departmentCode);
-        
+
         return communes.stream()
             .map(c -> new CommuneDTO(
                 c.getId(),
@@ -179,43 +212,43 @@ public class CommuneService {
 
     /**
      * Gets coordinates for a specific commune using INSEE API.
-     * 
+     *
      * @param communeId INSEE code of the commune
      * @return Mono containing coordinates [latitude, longitude]
      */
     public Mono<Double[]> getCommuneCoordinates(String communeId) {
         log.info("Fetching coordinates for commune: {}", communeId);
-        
+
         return inseeApiClient.getCommuneCoordinates(communeId)
-            .doOnSuccess(coordinates -> log.info("Retrieved coordinates for commune {}: [{}, {}]", 
+            .doOnSuccess(coordinates -> log.info("Retrieved coordinates for commune {}: [{}, {}]",
                                                communeId, coordinates[0], coordinates[1]))
             .doOnError(error -> log.error("Failed to retrieve coordinates for commune: {}", communeId, error));
     }
 
     /**
      * Synchronizes demographic data for a commune from INSEE API.
-     * 
+     *
      * @param communeId INSEE code of the commune
      * @return Mono containing updated commune DTO
      */
     public Mono<CommuneDTO> syncDemographicData(String communeId) {
         log.info("Synchronizing demographic data for commune: {}", communeId);
-        
+
         return inseeApiClient.getDemographicData(communeId)
             .map(demographicData -> {
                 // Find existing commune
                 Commune commune = communeRepository.findByInseeCode(communeId)
                     .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + communeId));
-                
+
                 // Update demographic data
                 commune.setPopulation(demographicData.population());
-                
+
                 // Save updated commune
                 Commune savedCommune = communeRepository.save(commune);
-                
-                log.info("Updated demographic data for commune: {} - Population: {}", 
+
+                log.info("Updated demographic data for commune: {} - Population: {}",
                         communeId, savedCommune.getPopulation());
-                
+
                 return new CommuneDTO(
                     savedCommune.getId(),
                     savedCommune.getInseeCode(),
@@ -350,16 +383,16 @@ public class CommuneService {
 
     /**
      * Saves INSEE commune data to database with proper geographic hierarchy.
-     * 
+     *
      * Creates or updates Region -> Department -> Commune relationships.
-     * 
+     *
      * @param inseeResponse INSEE API response for a commune
      * @return Mono containing the saved commune DTO
      */
     @Transactional
     public Mono<CommuneDTO> saveInseeDataToDatabase(InseeCommuneResponse inseeResponse) {
         return Mono.fromCallable(() -> {
-            log.info("Saving INSEE data to database for commune: {} ({})", 
+            log.info("Saving INSEE data to database for commune: {} ({})",
                     inseeResponse.name(), inseeResponse.inseeCode());
 
             // Find or create Region
@@ -369,8 +402,8 @@ public class CommuneService {
                     Region newRegion = new Region();
                     newRegion.setRegionCode(inseeResponse.regionCode());
                     // Use actual region name from INSEE API
-                    String regionName = inseeResponse.region() != null && inseeResponse.region().nom() != null 
-                        ? inseeResponse.region().nom() 
+                    String regionName = inseeResponse.region() != null && inseeResponse.region().nom() != null
+                        ? inseeResponse.region().nom()
                         : "Region " + inseeResponse.regionCode();
                     newRegion.setName(regionName);
                     return regionRepository.save(newRegion);
@@ -393,8 +426,8 @@ public class CommuneService {
                     Department newDepartment = new Department();
                     newDepartment.setDepartmentCode(inseeResponse.departmentCode());
                     // Use actual department name from INSEE API
-                    String departmentName = inseeResponse.departement() != null && inseeResponse.departement().nom() != null 
-                        ? inseeResponse.departement().nom() 
+                    String departmentName = inseeResponse.departement() != null && inseeResponse.departement().nom() != null
+                        ? inseeResponse.departement().nom()
                         : "Department " + inseeResponse.departmentCode();
                     newDepartment.setName(departmentName);
                     newDepartment.setRegionCode(inseeResponse.regionCode());
@@ -429,7 +462,7 @@ public class CommuneService {
                 if (latitude != null && longitude != null) {
                     commune.setLatitude(BigDecimal.valueOf(latitude));
                     commune.setLongitude(BigDecimal.valueOf(longitude));
-                    log.info("Set coordinates for {}: lat={}, lng={}", 
+                    log.info("Set coordinates for {}: lat={}, lng={}",
                             inseeResponse.name(), latitude, longitude);
                 }
             }
