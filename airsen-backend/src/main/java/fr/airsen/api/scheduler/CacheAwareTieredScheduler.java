@@ -5,7 +5,7 @@ import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.service.ExportDataService;
-import fr.airsen.api.service.cache.SmartCacheService;
+import fr.airsen.api.service.cacheData.SmartCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

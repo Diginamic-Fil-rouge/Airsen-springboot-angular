@@ -1,11 +1,11 @@
 package fr.airsen.api.controller;
 
-import fr.airsen.api.dto.cache.CachedEntry;
+import fr.airsen.api.dto.cacheData.CachedEntry;
 import fr.airsen.api.dto.response.ExportDataResponse;
 import fr.airsen.api.dto.response.HistoricalDataResponse;
 import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.service.ExportDataService;
-import fr.airsen.api.service.cache.SmartCacheService;
+import fr.airsen.api.service.cacheData.SmartCacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
