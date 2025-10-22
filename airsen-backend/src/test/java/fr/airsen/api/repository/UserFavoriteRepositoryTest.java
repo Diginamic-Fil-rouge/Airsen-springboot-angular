@@ -6,9 +6,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,6 +19,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@EntityScan(basePackageClasses = {
+        UserFavorite.class,
+        User.class,
+        Commune.class,
+        Department.class,
+        Region.class
+})
+@EnableJpaRepositories(basePackageClasses = UserFavoriteRepository.class)
 @DisplayName("UserFavoriteRepository integration tests")
 class UserFavoriteRepositoryTest {
 

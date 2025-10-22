@@ -12,55 +12,6 @@ import java.util.List;
 
 /**
  * Service for GDPR-compliant user deletion with forum author preservation.
- *
- * <p>This service implements the <strong>Right to Erasure (GDPR Article 17)</strong> while
- * preserving forum content under the <strong>public interest exception (Article 17(3)(e))</strong>
- * for freedom of expression and environmental discussions.</p>
- *
- * <h3>Two-Phase Deletion Process:</h3>
- * <ol>
- *   <li><strong>Soft Delete ({@link #softDeleteUser}):</strong> User requests deletion, account
- *       enters 30-day grace period. User cannot login but can restore account during this period.</li>
- *   <li><strong>Hard Delete ({@link #hardDeleteUser}):</strong> After 30 days, scheduled job
- *       permanently deletes personal data while preserving forum content with author names.</li>
- * </ol>
- *
- * <h3>GDPR Compliance Summary:</h3>
- * <ul>
- *   <li><strong>Article 17 - Right to Erasure:</strong> Users can request deletion with 30-day
- *       grace period (respects "without undue delay" principle)</li>
- *   <li><strong>Article 17(3)(e) - Public Interest Exception:</strong> Forum content preserved
- *       because environmental discussions serve community value (freedom of expression)</li>
- *   <li><strong>Article 25 - Data Protection by Design:</strong> Author names preserved but
- *       profile links broken (privacy by design)</li>
- *   <li><strong>Article 30 - Records of Processing:</strong> Audit trail maintained for
- *       admin-initiated deletions</li>
- * </ul>
- *
- * <h3>Data Retention Strategy:</h3>
- * <ul>
- *   <li><strong>Deleted:</strong> Email, password, firstName, lastName, address, telephone,
- *       bio, favorite communes, alerts</li>
- *   <li><strong>Preserved:</strong> Forum threads and messages with author display name</li>
- *   <li><strong>Anonymized:</strong> Votes (counts preserved, voter identity removed),
- *       notifications (history preserved, recipient link broken)</li>
- * </ul>
- *
- * <h3>Usage Examples:</h3>
- * <pre>{@code
- * // User requests deletion
- * userDeletionService.softDeleteUser(userId, "Privacy concerns", null);
- *
- * // Admin initiates deletion
- * userDeletionService.softDeleteUser(userId, "Account violation", adminUserId);
- *
- * // Scheduled job after 30 days
- * userDeletionService.hardDeleteUser(userId);
- * }</pre>
- *
- * @see User#markForDeletion(String)
- * @see User#isDeletionGracePeriodExpired()
- * @since 1.0
  */
 @Service
 public class UserDeletionService {
@@ -73,6 +24,7 @@ public class UserDeletionService {
     private final ForumVoteRepository forumVoteRepository;
     private final AlertRepository alertRepository;
     private final NotificationRepository notificationRepository;
+    private final UserFavoritesService userFavoritesService;
 
     /**
      * Constructs UserDeletionService with required repository dependencies.
@@ -83,6 +35,7 @@ public class UserDeletionService {
      * @param forumVoteRepository repository for ForumVote entities
      * @param alertRepository repository for Alert entities
      * @param notificationRepository repository for Notification entities
+     * @param userFavoritesService service for managing user favorites
      */
     public UserDeletionService(
             UserRepository userRepository,
@@ -90,13 +43,15 @@ public class UserDeletionService {
             ForumMessageRepository forumMessageRepository,
             ForumVoteRepository forumVoteRepository,
             AlertRepository alertRepository,
-            NotificationRepository notificationRepository) {
+            NotificationRepository notificationRepository,
+            UserFavoritesService userFavoritesService) {
         this.userRepository = userRepository;
         this.forumThreadRepository = forumThreadRepository;
         this.forumMessageRepository = forumMessageRepository;
         this.forumVoteRepository = forumVoteRepository;
         this.alertRepository = alertRepository;
         this.notificationRepository = notificationRepository;
+        this.userFavoritesService = userFavoritesService;
     }
 
     /**
@@ -308,10 +263,6 @@ public class UserDeletionService {
     /**
      * Clears the user's favorite communes collection.
      *
-     * GDPR Justification: Favorite communes are personal preferences
-     * directly tied to the user. They are deleted as part of personal data removal per
-     * Article 17.
-     *
      * Implementation Note: This clears the many-to-many relationship
      * in the {@code user_favorite} join table. The Commune entities themselves are NOT
      * deleted (they are shared reference data).
@@ -320,16 +271,8 @@ public class UserDeletionService {
      */
     private void deleteUserFavorites(Long userId) {
         logger.info("Clearing favorite communes for user ID: {}", userId);
-
-        User user = userRepository.findById(userId).orElse(null);
-        if (user != null && user.getFavoris() != null && !user.getFavoris().isEmpty()) {
-            int favoriteCount = user.getFavoris().size();
-            user.getFavoris().clear();
-            userRepository.save(user);
-            logger.info("Cleared {} favorite communes for user ID: {}", favoriteCount, userId);
-        } else {
-            logger.debug("No favorite communes found for user ID: {}", userId);
-        }
+        userFavoritesService.removeAllFavorites(userId);
+        logger.info("Cleared favorite communes for user ID: {}", userId);
     }
 
     /**

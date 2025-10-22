@@ -36,6 +36,8 @@ class UserDeletionServiceTest {
     private AlertRepository alertRepository;
     @Mock
     private NotificationRepository notificationRepository;
+    @Mock
+    private UserFavoritesService userFavoritesService;
     // FIX 2: Removed AuditService mock as it's not yet integrated
 
     @InjectMocks
@@ -204,7 +206,15 @@ class UserDeletionServiceTest {
     void deleteUserFavorites_Success() {
         // Given
         testUser.setDeletedAt(LocalDateTime.now().minusDays(31));
-        testUser.setFavoris(new HashSet<>(Collections.singletonList(new Commune())));
+
+        // Create UserFavorite entity (updated to use join entity instead of direct Commune)
+        Commune commune = new Commune();
+        commune.setInseeCode("75056");
+        UserFavorite favorite = new UserFavorite();
+        favorite.setUser(testUser);
+        favorite.setCommune(commune);
+        testUser.setFavorites(new HashSet<>(Collections.singletonList(favorite)));
+
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
@@ -215,8 +225,8 @@ class UserDeletionServiceTest {
         userDeletionService.hardDeleteUser(1L);
 
         // Then
-        assertTrue(testUser.getFavoris().isEmpty());
-        verify(userRepository, atLeast(1)).save(any(User.class));
+        verify(userFavoritesService).removeAllFavorites(1L);
+        verify(userRepository).delete(testUser);
     }
 
     @Test
