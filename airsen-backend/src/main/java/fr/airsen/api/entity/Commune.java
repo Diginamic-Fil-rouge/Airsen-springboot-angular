@@ -62,9 +62,16 @@ public class Commune {
     @JsonIgnore
     private Set<AirQuality> airQuality = new HashSet<>();
 
-    @ManyToMany(mappedBy = "favoris", fetch = FetchType.LAZY)
+    /**
+     * Users who favorited this commune.
+     *
+     * Bidirectional relationship through UserFavorite join entity.
+     * Useful for analytics queries (e.g., "most popular communes").
+     * Lazy loading prevents performance issues.
+     */
+    @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<User> favoriteUsers = new HashSet<>();
+    private Set<UserFavorite> favoritedBy = new HashSet<>();
 
     /**
      * Air quality alerts monitoring this commune.
@@ -81,7 +88,7 @@ public class Commune {
 
     public Commune() {}
 
-    public Commune(String inseeCode, String name, String departmentCode, String regionCode, 
+    public Commune(String inseeCode, String name, String departmentCode, String regionCode,
                    long population, BigDecimal latitude, BigDecimal longitude, Department department) {
         this.inseeCode = inseeCode;
         this.name = name;
@@ -95,51 +102,51 @@ public class Commune {
 
     // Getters & Setters
     public long getId() {
-        return id; 
+        return id;
     }
 
     public void setId(long id) {
         this.id = id;
     }
 
-    public String getInseeCode() { 
-        return inseeCode; 
+    public String getInseeCode() {
+        return inseeCode;
     }
 
-    public void setInseeCode(String inseeCode) { 
-        this.inseeCode = inseeCode; 
+    public void setInseeCode(String inseeCode) {
+        this.inseeCode = inseeCode;
     }
 
-    public String getName() { 
-        return name; 
+    public String getName() {
+        return name;
     }
 
-    public void setName(String name) { 
-        this.name = name; 
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getDepartmentCode() { 
-        return departmentCode; 
+    public String getDepartmentCode() {
+        return departmentCode;
     }
 
-    public void setDepartmentCode(String departmentCode) { 
-        this.departmentCode = departmentCode; 
+    public void setDepartmentCode(String departmentCode) {
+        this.departmentCode = departmentCode;
     }
 
-    public String getRegionCode() { 
-        return regionCode; 
+    public String getRegionCode() {
+        return regionCode;
     }
 
-    public void setRegionCode(String regionCode) { 
-        this.regionCode = regionCode; 
+    public void setRegionCode(String regionCode) {
+        this.regionCode = regionCode;
     }
 
-    public long getPopulation() { 
-        return population; 
+    public long getPopulation() {
+        return population;
     }
 
-    public void setPopulation(long population) { 
-        this.population = population; 
+    public void setPopulation(long population) {
+        this.population = population;
     }
 
     public BigDecimal getLatitude() {
@@ -158,12 +165,12 @@ public class Commune {
         this.longitude = longitude;
     }
 
-    public Department getDepartment() { 
-        return department; 
+    public Department getDepartment() {
+        return department;
     }
 
-    public void setDepartment(Department department) { 
-        this.department = department; 
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public Set<WeatherData> getWeatherData() {
@@ -182,12 +189,28 @@ public class Commune {
         this.airQuality = airQuality;
     }
 
-    public Set<User> getFavoriteUsers() {
-        return favoriteUsers;
+    /**
+     * Gets users who favorited this commune.
+     *
+     * @return Set of UserFavorite entities
+     */
+    public Set<UserFavorite> getFavoritedBy() {
+        return favoritedBy;
     }
 
-    public void setFavoriteUsers(Set<User> favoriteUsers) {
-        this.favoriteUsers = favoriteUsers;
+    public void setFavoritedBy(Set<UserFavorite> favoritedBy) {
+        this.favoritedBy = favoritedBy;
+    }
+
+    /**
+     * Gets the number of users who favorited this commune.
+     *
+     * Useful for analytics and "popular communes" features.
+     *
+     * @return Count of favorites
+     */
+    public int getFavoriteCount() {
+        return favoritedBy.size();
     }
 
     public Set<Alert> getAlerts() {
