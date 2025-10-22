@@ -16,7 +16,7 @@ export class MapViewComponent implements AfterViewInit {
 
   private initMap(): void {
     this.map = L.map('map', {
-      // coordonnées du milieu de la france
+      // coordinates of the middle of France
       center: [ 46.3622, 1.5231 ],
       zoom: 6
     });
