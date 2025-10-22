@@ -330,3 +330,115 @@ input:focus {
   @include card();
   padding: space(6);
 }
+
+/* ===== Notifications card ===== */
+.notifications-card {
+  padding: 2rem;
+  border-radius: 10px;
+  background-color: #ffffff10; /* léger fond translucide si en dark mode */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-top: 1.5rem;
+
+  h2 {
+    margin-bottom: 0.25rem;
+    font-size: 1.4rem;
+  }
+
+  .notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .notif-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #f9f9f9;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #f0f0f0;
+    }
+
+    .notif-label {
+      font-weight: 500;
+    }
+
+    button {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+      transition: all 0.2s ease-in-out;
+
+      &.inactive {
+        background-color: #007bff; /* bleu */
+      }
+
+      &.active {
+        background-color: #28a745; /* vert */
+      }
+
+      &:hover {
+        opacity: 0.85;
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  .notif-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+  }
+
+  .btn-save {
+    background-color: #28a745;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+
+    &:hover {
+      background-color: #218838;
+    }
+  }
+}
+
+.notif-labels {
+  display: flex;
+  flex-direction: column;
+
+  .notif-title {
+    font-weight: 600;
+    font-size: 1rem; // ou font-size("base") si tu utilises ton design system
+    margin-bottom: 0.25rem;
+  }
+
+  .notif-description {
+    font-weight: 400;
+    font-size: 0.875rem; // un peu plus petit
+    color: color("gray", "700"); // ou une couleur plus douce
+  }
+}
+
+.notif-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem; // espace entre chaque ligne de préférence
+}
+
+.notif-intro {
+  font-size: 0.9rem; // un peu plus petit
+  color: color("gray", "700");
+  margin-bottom: 3rem;
+}

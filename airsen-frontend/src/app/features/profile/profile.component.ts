@@ -6,7 +6,7 @@ import { AuthUser } from "../../core/auth/models/auth.model";
   selector: "app-profile",
   templateUrl: "./profile.component.html",
   styleUrls: ["./profile.component.scss"],
-  standalone : false
+  standalone: false,
 })
 export class ProfileComponent implements OnInit {
   user!: AuthUser;
@@ -18,12 +18,32 @@ export class ProfileComponent implements OnInit {
     bio: "",
   };
 
-  notifications = {
+  notifications: Record<string, boolean> = {
     emailAlerts: true,
+    emergencyAlerts: true,
     forumReplies: true,
     weeklyReport: false,
-    emergencyAlerts: true,
   };
+
+  notificationLabels: Record<keyof typeof this.notifications, { title: string; description: string }> = {
+  emailAlerts: {
+    title: "Alertes e-mail",
+    description: "Recevoir des alertes environnementales par e-mail"
+  },
+  emergencyAlerts: {
+    title: "Alertes d'urgence",
+    description: "Alertes immédiates en cas de risque environnemental élevé"
+  },
+  forumReplies: {
+    title: "Réponses du forum",
+    description: "Être notifié des réponses à vos discussions"
+  },
+  weeklyReport: {
+    title: "Rapport hebdomadaire",
+    description: "Recevoir un résumé hebdomadaire de la qualité de l'air"
+  }
+};
+
 
   userStats = {
     joinDate: "Mars 2024",

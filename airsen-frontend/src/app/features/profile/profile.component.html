@@ -16,7 +16,11 @@
       <div class="sidebar">
         <div class="card text-center">
           <div class="avatar-wrapper">
-            <img src="assets/placeholder-avatar.jpg" class="avatar" alt="Avatar" />
+            <img
+              src="assets/placeholder-avatar.jpg"
+              class="avatar"
+              alt="Avatar"
+            />
           </div>
 
           <h3>{{ formData.name }}</h3>
@@ -48,9 +52,24 @@
       <div class="tabs-and-card">
         <!-- Tabs -->
         <div class="tabs">
-          <button [class.active]="activeTab === 'profile'" (click)="activeTab='profile'">Profil</button>
-          <button [class.active]="activeTab === 'notifications'" (click)="activeTab='notifications'">Notifications</button>
-          <button [class.active]="activeTab === 'security'" (click)="activeTab='security'">Sécurité</button>
+          <button
+            [class.active]="activeTab === 'profile'"
+            (click)="activeTab = 'profile'"
+          >
+            Profil
+          </button>
+          <button
+            [class.active]="activeTab === 'notifications'"
+            (click)="activeTab = 'notifications'"
+          >
+            Notifications
+          </button>
+          <button
+            [class.active]="activeTab === 'security'"
+            (click)="activeTab = 'security'"
+          >
+            Sécurité
+          </button>
         </div>
 
         <!-- Onglet Profil -->
@@ -67,7 +86,12 @@
 
               <div class="form-group">
                 <label for="email">Adresse e-mail</label>
-                <input [(ngModel)]="formData.email" name="email" id="email" type="email" />
+                <input
+                  [(ngModel)]="formData.email"
+                  name="email"
+                  id="email"
+                  type="email"
+                />
               </div>
             </div>
 
@@ -75,7 +99,11 @@
             <div class="form-row">
               <div class="form-group full-width">
                 <label for="address">Adresse</label>
-                <input [(ngModel)]="formData.address" name="address" id="address" />
+                <input
+                  [(ngModel)]="formData.address"
+                  name="address"
+                  id="address"
+                />
               </div>
             </div>
 
@@ -97,25 +125,50 @@
 
             <!-- Ligne 5 : Bouton Sauvegarder -->
             <div class="form-row button-row">
-              <button type="submit" class="btn-save">Sauvegarder les modifications</button>
+              <button type="submit" class="btn-save">
+                Sauvegarder les modifications
+              </button>
             </div>
           </form>
         </div>
 
         <!-- Onglet Notifications -->
-        <div *ngIf="activeTab === 'notifications'" class="card">
+        <div
+          *ngIf="activeTab === 'notifications'"
+          class="card notifications-card"
+        >
           <h2>Préférences de notification</h2>
+          <p class="notif-intro">
+            Choisissez comment vous souhaitez être notifié
+          </p>
 
-          <div *ngFor="let key of notifications | keyvalue">
-            <div class="notif-row">
-              <span>{{ key.key }}</span>
-              <button (click)="toggleNotificationKey(key.key)">
+          <div class="notifications-list">
+            <div *ngFor="let key of notifications | keyvalue" class="notif-row">
+              <!-- <span class="notif-label">{{ key.key }}</span> -->
+              <div class="notif-labels">
+                <span class="notif-title">{{
+                  notificationLabels[key.key]?.title
+                }}</span>
+                <span class="notif-description">{{
+                  notificationLabels[key.key]?.description
+                }}</span>
+              </div>
+
+              <button
+                (click)="toggleNotificationKey(key.key)"
+                [class.active]="key.value"
+                [class.inactive]="!key.value"
+              >
                 {{ key.value ? "Activé" : "Désactivé" }}
               </button>
             </div>
           </div>
 
-          <button (click)="saveNotifications()" class="btn-primary">Sauvegarder</button>
+          <div class="notif-actions">
+            <button (click)="saveNotifications()" class="btn-save">
+              Sauvegarder
+            </button>
+          </div>
         </div>
 
         <!-- Onglet Sécurité -->
