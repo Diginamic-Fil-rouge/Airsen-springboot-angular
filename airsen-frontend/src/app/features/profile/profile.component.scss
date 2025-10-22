@@ -329,6 +329,7 @@ input:focus {
 .profile-card {
   @include card();
   padding: space(6);
+  background-color: $airsen-gray-100;
 }
 
 /* ===== Notifications card ===== */
@@ -441,4 +442,104 @@ input:focus {
   font-size: 0.9rem; // un peu plus petit
   color: color("gray", "700");
   margin-bottom: 3rem;
+}
+
+/* ---- Onglet Sécurité ---- */
+
+.security-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 2rem;
+  background-color: color("gray", "100"); // #fff;
+  margin-top: 1.5rem;
+}
+
+.security-card h2 {
+  margin-bottom: 0.3rem;
+}
+
+.security-subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* Cadres internes */
+.security-section {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.security-section h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.section-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.3rem;
+}
+
+/* Zone de danger */
+.danger-zone {
+  border-color: #d9534f;
+  background-color: transparent; /* ✅ plus de fond rouge */
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.danger-zone h3 {
+  color: #d9534f;
+}
+
+.danger-text {
+  color: #a94442;
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem 0;
+}
+
+/* Boutons arrondis */
+.btn-outline-rounded,
+.btn-danger-rounded {
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Bouton bleu */
+.btn-outline-rounded {
+  border: 1px solid #007bff;
+  background-color: transparent;
+  color: #007bff;
+}
+
+.btn-outline-rounded:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Bouton rouge */
+.btn-danger-rounded {
+  border: 1px solid #d9534f;
+  background-color: transparent;
+  color: #d9534f;
+  align-self: flex-start;
+}
+
+.btn-danger-rounded:hover {
+  background-color: #d9534f;
+  color: white;
 }

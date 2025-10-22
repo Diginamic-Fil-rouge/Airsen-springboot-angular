@@ -172,22 +172,39 @@
         </div>
 
         <!-- Onglet Sécurité -->
-        <div *ngIf="activeTab === 'security'" class="card">
+        <div *ngIf="activeTab === 'security'" class="card security-card">
           <h2>Sécurité du compte</h2>
+          <p class="security-subtitle">
+            Gérez la sécurité et les paramètres de votre compte
+          </p>
 
+          <!-- Changer le mot de passe -->
           <div class="security-section">
-            <h4>Changer le mot de passe</h4>
-            <button class="btn-outline">Modifier</button>
+            <div class="section-text">
+              <h3>Changer le mot de passe</h3>
+              <p class="section-description">
+                Mettez à jour votre mot de passe régulièrement pour la sécurité.
+              </p>
+            </div>
+            <button class="btn-outline-rounded">Modifier</button>
           </div>
 
+          <!-- Authentification à deux facteurs -->
           <div class="security-section">
-            <h4>Authentification à deux facteurs</h4>
-            <button class="btn-outline">Configurer 2FA</button>
+            <div class="section-text">
+              <h3>Authentification à deux facteurs</h3>
+              <p class="section-description">
+                Ajoutez une couche de sécurité supplémentaire à votre compte.
+              </p>
+            </div>
+            <button class="btn-outline-rounded">Configurer 2FA</button>
           </div>
 
-          <div class="security-section danger">
-            <h4>Zone de danger</h4>
-            <button class="btn-danger">Supprimer le compte</button>
+          <!-- Zone de danger -->
+          <div class="security-section danger-zone">
+            <h3>Zone de danger</h3>
+            <p class="danger-text">Actions irréversibles sur votre compte</p>
+            <button class="btn-danger-rounded">🗑️ Supprimer le compte</button>
           </div>
         </div>
       </div>
