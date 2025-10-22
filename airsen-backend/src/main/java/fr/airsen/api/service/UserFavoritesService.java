@@ -121,7 +121,7 @@ public class UserFavoritesService {
                     String.format("Maximum %d favorites per user exceeded", MAX_FAVORITES_PER_USER));
         }
 
-        // Check duplicate (efficient existence check)
+        // Check duplicate using INSEE code directly (no ID conversion needed)
         UserFavoriteId id = new UserFavoriteId(userId, request.communeInseeCode());
         if (favoriteRepository.existsById(id)) {
             logger.warn("User ID {} attempted to add duplicate favorite: {}", userId, request.communeInseeCode());
@@ -129,11 +129,8 @@ public class UserFavoritesService {
                     String.format("Commune '%s' is already in favorites", commune.getName()));
         }
 
-        // Create and save favorite
-        UserFavorite favorite = new UserFavorite();
-        favorite.setId(id);
-        favorite.setUser(user);
-        favorite.setCommune(commune);
+        // Create and save favorite (UserFavorite constructor uses commune.getInseeCode())
+        UserFavorite favorite = new UserFavorite(user, commune);
 
         UserFavorite saved = favoriteRepository.save(favorite);
         logger.info("Successfully added favorite for user ID {} - commune: {} ({})",
@@ -146,14 +143,23 @@ public class UserFavoritesService {
      * Remove a commune from user favorites.
      *
      * Uses efficient DELETE query without loading the entity first.
+     * Uses INSEE code directly.
      *
      * @param userId User ID
-     * @param communeInseeCode Commune INSEE code (5 digits)
+     * @param communeInseeCode Commune INSEE code (5-digit official identifier)
      * @throws ResourceNotFoundException if favorite not found
      */
     public void removeFavorite(Long userId, String communeInseeCode) {
         logger.debug("Removing favorite for user ID: {} - commune: {}", userId, communeInseeCode);
 
+        // Validate commune exists using AIRSEN's findByInseeCode pattern
+        if (!communeRepository.findByInseeCode(communeInseeCode).isPresent()) {
+            logger.warn("Commune not found with INSEE code: {}", communeInseeCode);
+            throw new ResourceNotFoundException(
+                    String.format("Commune not found with INSEE code: %s", communeInseeCode));
+        }
+
+        // Check favorite exists using INSEE code directly (no ID lookup needed)
         UserFavoriteId id = new UserFavoriteId(userId, communeInseeCode);
         if (!favoriteRepository.existsById(id)) {
             logger.warn("Favorite not found for user ID {} - commune: {}", userId, communeInseeCode);
@@ -161,7 +167,8 @@ public class UserFavoritesService {
                     String.format("Favorite not found for user ID %d and commune INSEE code %s", userId, communeInseeCode));
         }
 
-        favoriteRepository.deleteByUserIdAndCommuneId(userId, communeInseeCode);
+        // Delete using INSEE code directly (aligns with AIRSEN's architecture)
+        favoriteRepository.deleteByUserIdAndCommuneInseeCode(userId, communeInseeCode);
         logger.info("Successfully removed favorite for user ID {} - commune: {}", userId, communeInseeCode);
     }
 
@@ -170,14 +177,16 @@ public class UserFavoritesService {
      *
      * Fast boolean check without loading entities.
      * Used by frontend to show/hide "Add to favorites" button.
+     * Uses INSEE code directly (AIRSEN's architectural pattern).
      *
      * @param userId User ID
-     * @param communeInseeCode Commune INSEE code (5 digits)
+     * @param communeInseeCode Commune INSEE code (5-digit official identifier)
      * @return true if commune is in user's favorites
      */
     @Transactional(readOnly = true)
     public boolean isFavorited(Long userId, String communeInseeCode) {
-        boolean favorited = favoriteRepository.existsById_UserIdAndId_CommuneId(userId, communeInseeCode);
+        // Direct existence check using INSEE code (no entity loading needed)
+        boolean favorited = favoriteRepository.existsById_UserIdAndId_CommuneInseeCode(userId, communeInseeCode);
         logger.debug("Favorite check for user ID {} - commune: {} - result: {}",
                 userId, communeInseeCode, favorited);
         return favorited;

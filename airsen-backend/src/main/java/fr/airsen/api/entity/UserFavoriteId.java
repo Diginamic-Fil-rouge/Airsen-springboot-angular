@@ -1,5 +1,6 @@
 package fr.airsen.api.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
@@ -10,31 +11,60 @@ import java.util.Objects;
  * Combines userId and communeId to uniquely identify a favorite relationship.
  * Implements Serializable as required by JPA for composite keys.
  *
- * Uses Java 21 Record for immutability and automatic equals/hashCode implementation.
+ * Not use Java Record because JPA needs mutable setters
+ * to populate fields via @MapsId annotations in UserFavorite entity.
  */
 @Embeddable
-public record UserFavoriteId(
-    Long userId,
-    String communeId
-) implements Serializable {
+public class UserFavoriteId implements Serializable {
+
+    @Column(name = "user_id")
+    private Long userId;
+
+    @Column(name = "insee_code")
+    private String communeInseeCode;
 
     /**
-     * Default constructor required by JPA.
-     * Creates an empty composite key.
+     * Default no-arg constructor required by JPA.
      */
     public UserFavoriteId() {
-        this(null, null);
+    }
+
+    /**
+     * Constructor for creating composite key.
+     *
+     * @param userId User ID
+     * @param communeInseeCode Commune INSEE code (5-digit official identifier)
+     */
+    public UserFavoriteId(Long userId, String communeInseeCode) {
+        this.userId = userId;
+        this.communeInseeCode = communeInseeCode;
     }
 
     /**
      * Validates that both components of the composite key are non-null.
      *
-     * @throws IllegalArgumentException if userId or communeId is null
+     * @throws IllegalArgumentException if userId or communeInseeCode is null
      */
     public void validate() {
-        if (userId == null || communeId == null) {
-            throw new IllegalArgumentException("UserFavoriteId requires both userId and communeId");
+        if (userId == null || communeInseeCode == null) {
+            throw new IllegalArgumentException("UserFavoriteId requires both userId and communeInseeCode");
         }
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getCommuneInseeCode() {
+        return communeInseeCode;
+    }
+
+    public void setCommuneInseeCode(String communeInseeCode) {
+        this.communeInseeCode = communeInseeCode;
     }
 
     @Override
@@ -42,12 +72,20 @@ public record UserFavoriteId(
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserFavoriteId that = (UserFavoriteId) o;
-        return Objects.equals(userId, that.userId) && 
-               Objects.equals(communeId, that.communeId);
+        return Objects.equals(userId, that.userId) &&
+               Objects.equals(communeInseeCode, that.communeInseeCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, communeId);
+        return Objects.hash(userId, communeInseeCode);
+    }
+
+    @Override
+    public String toString() {
+        return "UserFavoriteId{" +
+                "userId=" + userId +
+                ", communeInseeCode='" + communeInseeCode + '\'' +
+                '}';
     }
 }

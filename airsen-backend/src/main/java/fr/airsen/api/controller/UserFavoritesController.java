@@ -51,9 +51,7 @@ public class UserFavoritesController {
      *
      * Returns a list of the user's favorite communes with complete geographic
      * hierarchy (region → department → commune). Results are ordered by creation
-     * date (newest first).
-     *
-     * Authorization: Users can only access their own favorites, admins can access any user's.
+     * date (newest first)
      *
      * @param userId User ID from path variable
      * @param authentication Current authenticated user

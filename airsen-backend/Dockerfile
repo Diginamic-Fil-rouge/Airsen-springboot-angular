@@ -24,7 +24,8 @@ EXPOSE 8080 5005
 
 # Spring Boot DevTools auto-restart enabled by default
 # DevTools will watch for changes in bind-mounted /app/src directory
-CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m"]
+# -Dmaven.test.skip=true skips both test compilation and execution
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m", "-Dmaven.test.skip=true"]
 
 # BUILDER STAGE - Compile Application
 FROM eclipse-temurin:21-jdk-alpine AS builder

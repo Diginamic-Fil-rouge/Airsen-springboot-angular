@@ -58,10 +58,10 @@ public interface UserFavoriteRepository extends JpaRepository<UserFavorite, User
      * Used to prevent duplicate favorites.
      *
      * @param userId User ID
-     * @param communeId Commune INSEE code
+     * @param communeInseeCode Commune INSEE code (5-digit official identifier)
      * @return true if favorite exists, false otherwise
      */
-    boolean existsById_UserIdAndId_CommuneId(Long userId, String communeId);
+    boolean existsById_UserIdAndId_CommuneInseeCode(Long userId, String communeInseeCode);
 
     /**
      * Delete a specific favorite by composite key components.
@@ -70,11 +70,11 @@ public interface UserFavoriteRepository extends JpaRepository<UserFavorite, User
      * Used in remove favorite operation.
      *
      * @param userId User ID
-     * @param communeId Commune INSEE code
+     * @param communeInseeCode Commune INSEE code (5-digit official identifier)
      */
     @Modifying
-    @Query("DELETE FROM UserFavorite uf WHERE uf.id.userId = :userId AND uf.id.communeId = :communeId")
-    void deleteByUserIdAndCommuneId(@Param("userId") Long userId, @Param("communeId") String communeId);
+    @Query("DELETE FROM UserFavorite uf WHERE uf.id.userId = :userId AND uf.id.communeInseeCode = :communeInseeCode")
+    void deleteByUserIdAndCommuneInseeCode(@Param("userId") Long userId, @Param("communeInseeCode") String communeInseeCode);
 
     /**
      * Get most favorited communes for analytics.
@@ -98,11 +98,11 @@ public interface UserFavoriteRepository extends JpaRepository<UserFavorite, User
      * Optional analytics query for commune popularity analysis.
      * Returns only user IDs to avoid loading full user entities.
      *
-     * @param communeId Commune INSEE code
+     * @param communeInseeCode Commune INSEE code (5-digit official identifier)
      * @return List of user IDs who favorited this commune
      */
-    @Query("SELECT uf.id.userId FROM UserFavorite uf WHERE uf.id.communeId = :communeId")
-    List<Long> findUserIdsByCommuneId(@Param("communeId") String communeId);
+    @Query("SELECT uf.id.userId FROM UserFavorite uf WHERE uf.id.communeInseeCode = :communeInseeCode")
+    List<Long> findUserIdsByCommuneInseeCode(@Param("communeInseeCode") String communeInseeCode);
 
     /**
      * Delete all favorites for a user.

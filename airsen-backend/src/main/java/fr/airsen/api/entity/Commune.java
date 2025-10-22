@@ -206,11 +206,14 @@ public class Commune {
      * Gets the number of users who favorited this commune.
      *
      * Useful for analytics and "popular communes" features.
+     * This method should only be called within an active Hibernate session.
+     * For JSON serialization, use a dedicated DTO to avoid lazy initialization issues.
      *
-     * @return Count of favorites
+     * @return Count of favorites, or 0 if collection is not initialized
      */
+    @JsonIgnore
     public int getFavoriteCount() {
-        return favoritedBy.size();
+        return favoritedBy != null ? favoritedBy.size() : 0;
     }
 
     public Set<Alert> getAlerts() {

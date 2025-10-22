@@ -11,18 +11,18 @@ import java.time.LocalDateTime;
  * and enable business logic validation (maximum 10 favorites per user).
  *
  * Database Table: user_favorites
- * Primary Key: Composite (user_id, commune_id)
- * Foreign Keys: user_id -> users.id, commune_id -> communes.insee_code
+ * Primary Key: Composite (user_id, insee_code)
+ * Foreign Keys: user_id -> users.id, insee_code -> communes.insee_code
  */
 @Entity
 @Table(name = "user_favorites",
        uniqueConstraints = @UniqueConstraint(
            name = "uk_user_commune",
-           columnNames = {"user_id", "commune_id"}
+           columnNames = {"user_id", "insee_code"}
        ),
        indexes = {
            @Index(name = "idx_user_favorites_user_id", columnList = "user_id"),
-           @Index(name = "idx_user_favorites_commune_id", columnList = "commune_id"),
+           @Index(name = "idx_user_favorites_insee_code", columnList = "insee_code"),
            @Index(name = "idx_user_favorites_created_at", columnList = "created_at")
        })
 public class UserFavorite {
@@ -43,10 +43,13 @@ public class UserFavorite {
     /**
      * The commune that was favorited.
      * Lazy loading with JOIN FETCH in repository queries.
+     *
+     * Note: Cannot use @MapsId because insee_code is not the @Id field in Commune.
+     * The composite key ID must be set manually before saving the entity.
+     * References insee_code column (natural identifier) instead of auto-generated id.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("communeId")
-    @JoinColumn(name = "commune_id", nullable = false, referencedColumnName = "insee_code")
+    @JoinColumn(name = "insee_code", nullable = false, referencedColumnName = "insee_code", insertable = false, updatable = false)
     @NotNull(message = "Commune is required for favorite")
     private Commune commune;
 
@@ -72,6 +75,7 @@ public class UserFavorite {
 
     /**
      * Constructor for creating a new favorite relationship.
+     * Manually sets composite key because insee_code is not the @Id in Commune.
      *
      * @param user User who is favoriting
      * @param commune Commune being favorited
