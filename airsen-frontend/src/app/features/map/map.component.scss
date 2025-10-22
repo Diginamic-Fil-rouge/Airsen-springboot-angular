@@ -79,6 +79,10 @@
       border: 1px solid $airsen-gray-300;
       padding: 20px;
 
+      .error{
+        color: $airsen-error;
+      }
+
       h2{
         color: $airsen-gray-900;
       }

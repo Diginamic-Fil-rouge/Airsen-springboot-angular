@@ -36,12 +36,53 @@
       </h2>
     </div>
     <!-- Map Content -->
-    <app-map-view></app-map-view>
+    <app-map-view
+      (onMarkerClick)="clickEvent($event)"
+      [communes]="communes"
+    ></app-map-view>
     <div class="map-datas">
-      <h2>Données environnementales</h2>
+      <h2>
+        Données environnementales
+        {{ communeClicked ? "de " + communeClicked.name : "" }}
+      </h2>
+
+      @if (dataErrors){
+      <p class="error">
+        Erreurs lors du chargement des données environnementales:
+      </p>
+      <ul>
+        @for (error of dataErrors; track $index){
+        <li class="error">{{ error }}</li>
+        }
+      </ul>
+      } @if (!isLoadingDatas){
       <h3>Qualité de l'air</h3>
+      <p class="commune-air-quality">
+        {{
+          airQualityClicked
+            ?  + airQualityClicked
+            : ""
+        }}
+      </p>
       <h3>Météo</h3>
+      <p class="commune-weather">
+        {{
+          weatherClicked ?  + weatherClicked : ""
+        }}
+      </p>
       <h3>Géo</h3>
+      <p>
+        {{
+          communeClicked
+            ? "Population : " +
+              (communeClicked.population | number) +
+              " habitants"
+            : ""
+        }}
+      </p>
+      } @else {
+      <p>Chargement des données environnementales...</p>
+      }
     </div>
   </div>
   }
@@ -51,7 +92,10 @@
   <div class="error-container">
     <mat-icon>error_outline</mat-icon>
     <h2>Impossible de charger la carte</h2>
-    <p>Cela peut être dû à un dysfonctionnement interne ou une erreur de connexion</p>
+    <p>
+      Cela peut être dû à un dysfonctionnement interne ou une erreur de
+      connexion
+    </p>
     <button mat-raised-button color="primary" (click)="logout()">
       Retour au Login
     </button>
