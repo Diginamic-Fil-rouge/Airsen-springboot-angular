@@ -5,16 +5,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '@/auth/services/auth.service';
 import { AuthUser } from '@/auth/models/auth.model';
 import * as L from 'leaflet';
-/**
- * DashboardComponent - Main landing page after authentication
- *
- * Features:
- * - Display authenticated user information
- * - Access to environmental data features
- * - Quick navigation to main app sections
- * - User profile management
- * - Logout functionality
- */
+
 @Component({
   standalone: false,
   selector: 'app-map',
@@ -28,7 +19,6 @@ export class MapComponent implements OnInit, OnDestroy {
   currentUser: AuthUser | null = null;
   isLoading = true;
   private destroy$ = new Subject<void>();
-
 
   ngOnInit(): void {
     this.loadUserData();
