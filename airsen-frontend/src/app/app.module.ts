@@ -48,7 +48,6 @@ import { MapComponent } from './features/map/map.component';
 import { MapViewComponent } from './features/map/map-view/map-view.component';
 import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
-import { CarteComponent } from './features/carte/carte.component';
 import { ForumComponent } from './features/forum/forum.component';
 
 // Layout Components
@@ -108,7 +107,6 @@ import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-t
     MapViewComponent,
     HomeComponent,
     NotFoundComponent,
-    CarteComponent,
     ForumComponent,
     CategoryComponent,
     MessageComponent,

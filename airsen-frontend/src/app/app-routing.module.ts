@@ -9,7 +9,6 @@ import { RegisterComponent } from './features/auth/register/register.component';
 import { MapComponent } from './features/map/map.component';
 import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
-import { CarteComponent } from './features/carte/carte.component';
 import { ForumComponent } from './features/forum/forum.component';
 import { ThreadDetailsComponent } from './features/forum/threads/threads-details/thread-details.component';
 import { AddThreadComponent } from './features/forum/threads/add-thread/add-thread.component';
