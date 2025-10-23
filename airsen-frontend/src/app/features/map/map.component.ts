@@ -32,7 +32,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   communeClicked: Commune | null = null;
-  airQualityClicked: AirQuality | null = null;
+  airQualityClicked: any | null = null;
   weatherClicked: Weather | null = null;
   communes = new Observable<Commune[]>();
   isLoadingDatas = false;

@@ -42,6 +42,17 @@ export class MapViewComponent implements AfterViewInit {
     tiles.addTo(this.map);
   }
 
+//   icon = L.Icon.extend({
+//     options: {
+//         shadowUrl: null,
+//         iconSize:     [38, 95],
+//         shadowSize:   [50, 64],
+//         iconAnchor:   [22, 94],
+//         shadowAnchor: [4, 62],
+//         popupAnchor:  [-3, -76]
+//     }
+// });
+
   initMarkers(){
     this.communes()?.forEach(communes => {
       console.log("commune : ", communes);
@@ -55,7 +66,14 @@ export class MapViewComponent implements AfterViewInit {
     if (!commune.latitude || !commune.longitude) {
       return;
     }
-    L.marker([commune.latitude, commune.longitude]).addTo(this.map).on('click', () => {
+    const icon = L.icon({
+      iconUrl: 'assets/images/marker.png',
+      iconSize: [25, 25],
+      iconAnchor: [10, 10],
+      popupAnchor: [-3, -76]
+    });
+    
+    L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map).on('click', () => {
       this.onMarkerClick.emit(commune);
     });
   }
