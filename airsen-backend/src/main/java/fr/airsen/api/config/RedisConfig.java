@@ -54,53 +54,53 @@ public class RedisConfig {
 
     /**
      * Creates Redis connection factory with configured settings.
-     * 
+     *
      * @return configured LettuceConnectionFactory
      */
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         log.info("Configuring Redis connection to {}:{} database {}", redisHost, redisPort, redisDatabase);
-        
+
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(redisHost);
         config.setPort(redisPort);
         config.setDatabase(redisDatabase);
-        
+
         if (redisPassword != null && !redisPassword.trim().isEmpty()) {
             config.setPassword(redisPassword);
         }
-        
+
         return new LettuceConnectionFactory(config);
     }
 
     /**
      * Creates the main RedisTemplate for general caching purposes.
-     * 
+     *
      * @param connectionFactory Redis connection factory
      * @return configured RedisTemplate
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         log.info("Creating RedisTemplate bean for caching");
-        
+
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
-        
+
         // Use String serializer for keys
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
-        
 
-        // Use JSON serializer for values (without polymorphic type info to avoid @class requirement)
+
+        // Configure ObjectMapper with proper type handling for Java 21 Records
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        // Disable default typing to avoid @class property requirement for Records and DTOs
-        // This prevents serialization issues with external API response objects
-        
+        // Enable polymorphic type information for proper deserialization across classloader restarts
+        // This adds @class metadata to JSON, ensuring correct type reconstruction
+
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
-        
+
         template.setDefaultSerializer(jsonSerializer);
         template.afterPropertiesSet();
 
@@ -117,9 +117,17 @@ public class RedisConfig {
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         log.info("Creating CacheManager bean with custom TTL configurations");
 
-        // Configure ObjectMapper with JavaTimeModule for LocalDate/LocalDateTime support
+        // Configure ObjectMapper with JavaTimeModule and type information
         ObjectMapper cacheObjectMapper = new ObjectMapper();
         cacheObjectMapper.registerModule(new JavaTimeModule());
+
+        // Enable polymorphic type information for cache serialization
+        cacheObjectMapper.activateDefaultTyping(
+            cacheObjectMapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL,
+            JsonTypeInfo.As.PROPERTY
+        );
+
         GenericJackson2JsonRedisSerializer cacheSerializer = new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
 
         // Default configuration - 1 hour TTL
