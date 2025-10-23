@@ -13,7 +13,7 @@ import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+// import org.springframework.cache.annotation.Cacheable; // Temporarily disabled
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -72,13 +72,13 @@ public class CommuneService {
     }
 
     /**
-     * Searches for communes by name or INSEE code (cached for 7 days).
+     * Searches for communes by name or INSEE code (cache temporarily disabled).
      *
      * @param query search query (name or INSEE code)
      * @param limit maximum number of results
      * @return list of matching commune DTOs
      */
-    @Cacheable(value = "communes", key = "#query + ':' + #limit", unless = "#result == null || #result.isEmpty()")
+    // @Cacheable(value = "communes", key = "#query + ':' + #limit", unless = "#result == null || #result.isEmpty()")
     @Transactional
     public List<CommuneDTO> searchCommunes(String query, int limit) {
         log.info("Cache miss - Searching communes by name or INSEE code: {} (limit: {})", query, limit);
@@ -156,12 +156,12 @@ public class CommuneService {
      * Gets all communes that have valid coordinates for map display.
      *
      * This method is used by the interactive map component to render commune markers.
-     * Results are cached in Redis for optimal performance.
+     * Cache temporarily disabled for frontend development - fetches fresh data from database.
      * Only communes with non-null latitude and longitude values are returned.
      *
      * @return list of commune DTOs with coordinates
      */
-    @Cacheable(value = "communes", key = "'all-with-coordinates'")
+    // @Cacheable(value = "communes", key = "'all-with-coordinates'")
     @Transactional(readOnly = true)
     public List<CommuneDTO> getAllCommunesWithCoordinates() {
         log.info("Fetching all communes with valid coordinates for map display");
