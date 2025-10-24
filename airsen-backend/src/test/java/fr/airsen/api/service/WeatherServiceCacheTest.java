@@ -8,7 +8,6 @@ import fr.airsen.api.external.client.InseeApiClient;
 import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoCurrentResponse;
 import fr.airsen.api.repository.*;
-import fr.airsen.api.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -65,57 +64,57 @@ class WeatherServiceCacheTest {
     // Additional beans required by Spring Boot context
     @MockBean
     private AirQualityService airQualityService;
-    
+
     @MockBean
     private CommuneService communeService;
-    
+
     @MockBean
     private NotificationService notificationService;
-    
+
     @MockBean
     private JwtBlacklistService jwtBlacklistService;
-    
+
     @MockBean
     private AlertProcessingService alertProcessingService;
 
     // All repositories (excluding already mocked ones)
     @MockBean
     private UserRepository userRepository;
-    
+
     @MockBean
     private AirQualityRepository airQualityRepository;
-    
+
     @MockBean
     private RegionRepository regionRepository;
-    
+
     @MockBean
     private DepartmentRepository departmentRepository;
-    
+
     @MockBean
-    private AlertRepository alertRepository;
-    
+    private AlertSignalRepository alertSignalRepository;
+
     @MockBean
     private AlertHistoryRepository alertHistoryRepository;
-    
+
     @MockBean
     private NotificationRepository notificationRepository;
-    
+
     @MockBean
     private ForumCategoryRepository forumCategoryRepository;
-    
+
     @MockBean
     private ForumThreadRepository forumThreadRepository;
-    
+
     @MockBean
     private ForumMessageRepository forumMessageRepository;
-    
+
     @MockBean
     private ForumVoteRepository forumVoteRepository;
 
     // All external API clients (excluding already mocked ones)
     @MockBean
     private InseeApiClient inseeApiClient;
-    
+
     @MockBean
     private AtmoApiClient atmoApiClient;
 

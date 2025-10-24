@@ -33,7 +33,7 @@ class UserDeletionServiceTest {
     @Mock
     private ForumVoteRepository forumVoteRepository;
     @Mock
-    private AlertRepository alertRepository;
+    private AlertSignalRepository alertSignalRepository;
     @Mock
     private NotificationRepository notificationRepository;
     @Mock
@@ -93,7 +93,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -102,7 +102,7 @@ class UserDeletionServiceTest {
         // Then
         verify(forumThreadRepository).findByAuthor(testUser);
         verify(forumMessageRepository).findByAuthor(testUser);
-        verify(alertRepository).findByUserId(1L);
+        verify(alertSignalRepository).findByUserId(1L);
         verify(notificationRepository).deleteAllForUser(1L);
         verify(userRepository).delete(testUser);
     }
@@ -145,7 +145,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(List.of(thread1, thread2));
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -168,7 +168,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(List.of(message1));
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -191,14 +191,14 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(List.of(alert1, alert2));
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(List.of(alert1, alert2));
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
         userDeletionService.hardDeleteUser(1L);
 
         // Then
-        verify(alertRepository).deleteAll(List.of(alert1, alert2));
+        verify(alertSignalRepository).deleteAll(List.of(alert1, alert2));
     }
 
     @Test
@@ -218,7 +218,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -237,7 +237,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(4);
 
         // When
@@ -258,7 +258,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -286,7 +286,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(List.of(thread));
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(List.of(message));
-        when(alertRepository.findByUserId(1L)).thenReturn(List.of(new Alert()));
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(List.of(new Alert()));
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(1);
 
         // When
@@ -295,7 +295,7 @@ class UserDeletionServiceTest {
         // Then
         verify(forumThreadRepository).save(any(ForumThread.class));
         verify(forumMessageRepository).save(any(ForumMessage.class));
-        verify(alertRepository).deleteAll(anyList());
+        verify(alertSignalRepository).deleteAll(anyList());
         verify(notificationRepository).deleteAllForUser(1L);
         verify(forumVoteRepository).save(any(ForumVote.class));
         verify(userRepository).delete(testUser);
@@ -313,7 +313,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(List.of(thread));
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -335,7 +335,7 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
+        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When

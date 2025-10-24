@@ -17,17 +17,17 @@ import java.util.Optional;
 
 /**
  * Repository for managing Alert entities.
- * 
+ *
  * Provides data access methods for user-defined air quality alerts
  * with custom queries for threshold monitoring and alert management
  * according to Airsens data model specifications.
  */
 @Repository
-public interface AlertRepository extends JpaRepository<Alert, Long> {
+public interface AlertSignalRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Finds all active alerts for a specific user.
-     * 
+     *
      * @param userId user identifier
      * @param pageable pagination parameters
      * @return page of active alerts for the user
@@ -58,7 +58,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     /**
      * Finds all active alerts for a specific commune and pollutant.
      * Used for threshold checking when new air quality data arrives.
-     * 
+     *
      * @param communeId commune identifier
      * @param pollutant pollutant type
      * @return list of active alerts to check
@@ -68,7 +68,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Finds active alerts that should be triggered by a specific pollutant value.
-     * 
+     *
      * @param communeId commune identifier
      * @param pollutant pollutant type
      * @param currentValue current pollutant measurement
@@ -79,7 +79,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Finds all alerts for a specific commune.
-     * 
+     *
      * @param communeId commune identifier
      * @param pageable pagination parameters
      * @return page of alerts for the commune
@@ -88,7 +88,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Finds alerts by user and commune.
-     * 
+     *
      * @param userId user identifier
      * @param communeId commune identifier
      * @return list of alerts for the user in the specific commune
@@ -98,7 +98,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     /**
      * Finds alerts by user, commune, and pollutant.
      * Used to prevent duplicate alerts for the same combination.
-     * 
+     *
      * @param userId user identifier
      * @param communeId commune identifier
      * @param pollutant pollutant type
@@ -108,7 +108,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Counts active alerts for a user.
-     * 
+     *
      * @param userId user identifier
      * @return number of active alerts
      */
@@ -117,7 +117,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Counts all alerts for a user.
-     * 
+     *
      * @param userId user identifier
      * @return number of alerts for the user
      */
@@ -126,7 +126,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Counts all alerts for a commune.
-     * 
+     *
      * @param communeId commune identifier
      * @return number of alerts for the commune
      */
@@ -134,7 +134,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Activates an alert.
-     * 
+     *
      * @param alertId alert identifier
      */
     @Modifying
@@ -143,7 +143,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Deactivates an alert.
-     * 
+     *
      * @param alertId alert identifier
      */
     @Modifying
@@ -152,7 +152,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     /**
      * Updates the threshold value for an alert.
-     * 
+     *
      * @param alertId alert identifier
      * @param newThreshold new threshold value
      */
@@ -163,7 +163,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     /**
      * Deactivates all alerts for a user.
      * Used when user account is deactivated.
-     * 
+     *
      * @param userId user identifier
      */
     @Modifying
@@ -173,7 +173,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     /**
      * Deletes alerts created before a certain date.
      * Used for data retention policies.
-     * 
+     *
      * @param cutoffDate date before which alerts should be deleted
      * @return number of deleted alerts
      */
@@ -184,7 +184,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     /**
      * Finds all active alerts across the system.
      * Used for system-wide alert monitoring.
-     * 
+     *
      * @return list of all active alerts
      */
     @Query("SELECT a FROM Alert a WHERE a.active = true")
@@ -193,7 +193,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     /**
      * Finds active alerts created after a specific date.
      * Used for monitoring recent alert activity.
-     * 
+     *
      * @param since date from which to find alerts
      * @return list of recent active alerts
      */
@@ -203,7 +203,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     /**
      * Checks if a user has reached the maximum number of alerts.
      * Business rule: users can have a maximum number of active alerts.
-     * 
+     *
      * @param userId user identifier
      * @param maxAlerts maximum allowed alerts per user
      * @return true if user has reached the limit

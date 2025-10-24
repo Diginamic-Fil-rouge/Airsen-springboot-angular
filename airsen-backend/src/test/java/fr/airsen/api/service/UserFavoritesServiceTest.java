@@ -176,7 +176,7 @@ class UserFavoritesServiceTest {
 
         userFavoritesService.removeFavorite(user.getId(), "34172");
 
-        verify(favoriteRepository).deleteByUserIdAndCommuneId(user.getId(), "34172");
+        verify(favoriteRepository).deleteByUserIdAndCommuneInseeCode(user.getId(), "34172");
     }
 
     @Test
@@ -186,13 +186,13 @@ class UserFavoritesServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> userFavoritesService.removeFavorite(user.getId(), "34172"));
-        verify(favoriteRepository, never()).deleteByUserIdAndCommuneId(anyLong(), anyString());
+        verify(favoriteRepository, never()).deleteByUserIdAndCommuneInseeCode(anyLong(), anyString());
     }
 
     @Test
     @DisplayName("isFavorited delegates to repository")
     void isFavorited() {
-        when(favoriteRepository.existsById_UserIdAndId_CommuneId(user.getId(), "34172")).thenReturn(true);
+        when(favoriteRepository.existsById_UserIdAndId_CommuneInseeCode(user.getId(), "34172")).thenReturn(true);
 
         assertTrue(userFavoritesService.isFavorited(user.getId(), "34172"));
     }

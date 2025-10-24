@@ -5,7 +5,7 @@ import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.NotificationType;
 import fr.airsen.api.entity.enums.Pollutant;
-import fr.airsen.api.repository.AlertRepository;
+import fr.airsen.api.repository.AlertSignalRepository;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import java.util.Optional;
 
 /**
  * Service for managing Alert entities and alert-related business logic.
- * 
+ *
  * This service provides comprehensive alert management functionality including
  * CRUD operations, threshold checking, activation management, and business rule enforcement
  * for the Airsens air quality monitoring system.
@@ -31,7 +31,7 @@ import java.util.Optional;
 @Transactional
 public class AlertService {
 
-    private final AlertRepository alertRepository;
+    private final AlertSignalRepository alertSignalRepository;
     private final UserRepository userRepository;
     private final CommuneRepository communeRepository;
 
@@ -40,25 +40,25 @@ public class AlertService {
 
     /**
      * Constructor for AlertService.
-     * 
-     * @param alertRepository alert data access repository
+     *
+     * @param alertSignalRepository alert data access repository
      * @param userRepository user data access repository
      * @param communeRepository commune data access repository
      */
     @Autowired
-    public AlertService(AlertRepository alertRepository, 
-                       UserRepository userRepository,
-                       CommuneRepository communeRepository) {
-        this.alertRepository = alertRepository;
+    public AlertService(AlertSignalRepository alertSignalRepository,
+                        UserRepository userRepository,
+                        CommuneRepository communeRepository) {
+        this.alertSignalRepository = alertSignalRepository;
         this.userRepository = userRepository;
         this.communeRepository = communeRepository;
     }
 
     /**
      * Creates a new alert for a user.
-     * 
+     *
      * @param userId user identifier
-     * @param communeId commune identifier  
+     * @param communeId commune identifier
      * @param pollutant pollutant to monitor
      * @param thresholdValue threshold for alert triggering
      * @param notificationType notification delivery method
@@ -67,7 +67,7 @@ public class AlertService {
      */
     public Alert createAlert(Long userId, Long communeId, Pollutant pollutant,
                            BigDecimal thresholdValue, NotificationType notificationType) {
-        
+
         // Validate user exists
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
@@ -82,7 +82,7 @@ public class AlertService {
         }
 
         // Check for duplicate alert
-        Optional<Alert> existingAlert = alertRepository.findByUserIdAndCommuneIdAndPollutant(
+        Optional<Alert> existingAlert = alertSignalRepository.findByUserIdAndCommuneIdAndPollutant(
             userId, communeId, pollutant);
         if (existingAlert.isPresent()) {
             throw new IllegalArgumentException("Alert already exists for this user, commune, and pollutant combination");
@@ -93,47 +93,47 @@ public class AlertService {
 
         // Create and save alert
         Alert alert = new Alert(user, commune, pollutant, thresholdValue, notificationType);
-        return alertRepository.save(alert);
+        return alertSignalRepository.save(alert);
     }
 
     /**
      * Retrieves active alerts for a specific user.
-     * 
+     *
      * @param userId user identifier
      * @param pageable pagination parameters
      * @return page of active alerts
      */
     @Transactional(readOnly = true)
     public Page<Alert> getActiveAlertsByUserId(Long userId, Pageable pageable) {
-        return alertRepository.findActiveAlertsByUserId(userId, pageable);
+        return alertSignalRepository.findActiveAlertsByUserId(userId, pageable);
     }
 
     /**
      * Retrieves all alerts for a specific user.
-     * 
+     *
      * @param userId user identifier
      * @param pageable pagination parameters
      * @return page of all alerts
      */
     @Transactional(readOnly = true)
     public Page<Alert> getAllAlertsByUserId(Long userId, Pageable pageable) {
-        return alertRepository.findAllAlertsByUserId(userId, pageable);
+        return alertSignalRepository.findAllAlertsByUserId(userId, pageable);
     }
 
     /**
      * Retrieves a specific alert by ID.
-     * 
+     *
      * @param alertId alert identifier
      * @return optional alert
      */
     @Transactional(readOnly = true)
     public Optional<Alert> getAlertById(Long alertId) {
-        return alertRepository.findById(alertId);
+        return alertSignalRepository.findById(alertId);
     }
 
     /**
      * Updates an existing alert.
-     * 
+     *
      * @param alertId alert identifier
      * @param thresholdValue new threshold value
      * @param notificationType new notification type
@@ -141,7 +141,7 @@ public class AlertService {
      * @throws IllegalArgumentException if alert not found
      */
     public Alert updateAlert(Long alertId, BigDecimal thresholdValue, NotificationType notificationType) {
-        Alert alert = alertRepository.findById(alertId)
+        Alert alert = alertSignalRepository.findById(alertId)
             .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
 
         if (thresholdValue != null) {
@@ -153,70 +153,70 @@ public class AlertService {
             alert.updateNotificationType(notificationType);
         }
 
-        return alertRepository.save(alert);
+        return alertSignalRepository.save(alert);
     }
 
     /**
      * Updates only the threshold value for an alert.
-     * 
+     *
      * @param alertId alert identifier
      * @param newThreshold new threshold value
      * @return updated alert
      */
     public Alert updateAlertThreshold(Long alertId, BigDecimal newThreshold) {
-        Alert alert = alertRepository.findById(alertId)
+        Alert alert = alertSignalRepository.findById(alertId)
             .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
 
         validateThresholdValue(alert.getPollutant(), newThreshold);
         alert.updateThreshold(newThreshold);
-        
-        return alertRepository.save(alert);
+
+        return alertSignalRepository.save(alert);
     }
 
     /**
      * Activates an alert.
-     * 
+     *
      * @param alertId alert identifier
      * @return activated alert
      */
     public Alert activateAlert(Long alertId) {
-        Alert alert = alertRepository.findById(alertId)
+        Alert alert = alertSignalRepository.findById(alertId)
             .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
 
         alert.activate();
-        return alertRepository.save(alert);
+        return alertSignalRepository.save(alert);
     }
 
     /**
      * Deactivates an alert.
-     * 
+     *
      * @param alertId alert identifier
      * @return deactivated alert
      */
     public Alert deactivateAlert(Long alertId) {
-        Alert alert = alertRepository.findById(alertId)
+        Alert alert = alertSignalRepository.findById(alertId)
             .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
 
         alert.deactivate();
-        return alertRepository.save(alert);
+        return alertSignalRepository.save(alert);
     }
 
     /**
      * Deletes an alert.
-     * 
+     *
      * @param alertId alert identifier
      * @throws IllegalArgumentException if alert not found
      */
     public void deleteAlert(Long alertId) {
-        if (!alertRepository.existsById(alertId)) {
+        if (!alertSignalRepository.existsById(alertId)) {
             throw new IllegalArgumentException("Alert not found with id: " + alertId);
         }
-        alertRepository.deleteById(alertId);
+        alertSignalRepository.deleteById(alertId);
     }
 
     /**
      * Finds active alerts that should be triggered by current pollutant values.
-     * 
+     *
      * @param communeId commune identifier
      * @param pollutant pollutant type
      * @param currentValue current pollutant measurement
@@ -224,70 +224,70 @@ public class AlertService {
      */
     @Transactional(readOnly = true)
     public List<Alert> findTriggeredAlerts(Long communeId, Pollutant pollutant, BigDecimal currentValue) {
-        return alertRepository.findTriggeredAlerts(communeId, pollutant, currentValue);
+        return alertSignalRepository.findTriggeredAlerts(communeId, pollutant, currentValue);
     }
 
     /**
      * Gets alert statistics for a user.
-     * 
+     *
      * @param userId user identifier
      * @return alert count information
      */
     @Transactional(readOnly = true)
     public AlertStatistics getUserAlertStatistics(Long userId) {
-        long activeAlerts = alertRepository.countActiveAlertsByUserId(userId);
+        long activeAlerts = alertSignalRepository.countActiveAlertsByUserId(userId);
         // Count all alerts for the user (simple count query)
-        long totalAlerts = alertRepository.countByUserId(userId);
-        
+        long totalAlerts = alertSignalRepository.countByUserId(userId);
+
         return new AlertStatistics(activeAlerts, totalAlerts, maxAlertsPerUser);
     }
 
     /**
      * Checks if a user has reached the maximum number of alerts.
-     * 
+     *
      * @param userId user identifier
      * @return true if user has reached the limit
      */
     @Transactional(readOnly = true)
     public boolean hasUserReachedAlertLimit(Long userId) {
-        return alertRepository.hasUserReachedAlertLimit(userId, maxAlertsPerUser);
+        return alertSignalRepository.hasUserReachedAlertLimit(userId, maxAlertsPerUser);
     }
 
     /**
      * Deactivates all alerts for a user.
      * Used when user account is deactivated.
-     * 
+     *
      * @param userId user identifier
      */
     public void deactivateAllUserAlerts(Long userId) {
-        alertRepository.deactivateAllUserAlerts(userId);
+        alertSignalRepository.deactivateAllUserAlerts(userId);
     }
 
     /**
      * Gets all active alerts across the system.
      * Used for system-wide monitoring.
-     * 
+     *
      * @return list of all active alerts
      */
     @Transactional(readOnly = true)
     public List<Alert> getAllActiveAlerts() {
-        return alertRepository.findAllActiveAlerts();
+        return alertSignalRepository.findAllActiveAlerts();
     }
 
     /**
      * Gets recent active alerts since a specific date.
-     * 
+     *
      * @param since date from which to find alerts
      * @return list of recent active alerts
      */
     @Transactional(readOnly = true)
     public List<Alert> getActiveAlertsSince(LocalDateTime since) {
-        return alertRepository.findActiveAlertsSince(since);
+        return alertSignalRepository.findActiveAlertsSince(since);
     }
 
     /**
      * Validates threshold value for a specific pollutant type.
-     * 
+     *
      * @param pollutant pollutant type
      * @param thresholdValue threshold value to validate
      * @throws IllegalArgumentException if threshold is invalid
@@ -308,7 +308,7 @@ public class AlertService {
 
         if (thresholdValue.compareTo(maxValue) > 0) {
             throw new IllegalArgumentException(
-                "Threshold value too high for " + pollutant.getDisplayName() + 
+                "Threshold value too high for " + pollutant.getDisplayName() +
                 ". Maximum allowed: " + maxValue + " " + pollutant.getUnit());
         }
     }

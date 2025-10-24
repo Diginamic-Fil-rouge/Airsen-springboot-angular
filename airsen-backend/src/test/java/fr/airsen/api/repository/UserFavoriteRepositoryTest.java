@@ -83,24 +83,24 @@ class UserFavoriteRepositoryTest {
     }
 
     @Test
-    @DisplayName("existsById_UserIdAndId_CommuneId should detect existing favorite")
+    @DisplayName("existsById_UserIdAndId_CommuneInseeCode should detect existing favorite")
     void existsByCompositeKey_returnsTrueWhenFavoriteExists() {
         persistFavorite(persistedUser, montpellier);
 
-        boolean exists = userFavoriteRepository.existsById_UserIdAndId_CommuneId(persistedUser.getId(), montpellier.getInseeCode());
+        boolean exists = userFavoriteRepository.existsById_UserIdAndId_CommuneInseeCode(persistedUser.getId(), montpellier.getInseeCode());
 
         assertTrue(exists);
     }
 
     @Test
-    @DisplayName("deleteByUserIdAndCommuneId should remove favorite")
-    void deleteByUserIdAndCommuneId_removesFavorite() {
+    @DisplayName("deleteByUserIdAndCommuneInseeCode should remove favorite")
+    void deleteByUserIdAndCommuneInseeCode_removesFavorite() {
         persistFavorite(persistedUser, montpellier);
 
-        userFavoriteRepository.deleteByUserIdAndCommuneId(persistedUser.getId(), montpellier.getInseeCode());
+        userFavoriteRepository.deleteByUserIdAndCommuneInseeCode(persistedUser.getId(), montpellier.getInseeCode());
         entityManager.flush();
 
-        boolean exists = userFavoriteRepository.existsById_UserIdAndId_CommuneId(persistedUser.getId(), montpellier.getInseeCode());
+        boolean exists = userFavoriteRepository.existsById_UserIdAndId_CommuneInseeCode(persistedUser.getId(), montpellier.getInseeCode());
         assertFalse(exists);
     }
 
@@ -138,13 +138,13 @@ class UserFavoriteRepositoryTest {
     }
 
     @Test
-    @DisplayName("findUserIdsByCommuneId should return all user ids favoriting the commune")
-    void findUserIdsByCommuneId_returnsUserIds() {
+    @DisplayName("findUserIdsByCommuneInseeCode should return all user ids favoriting the commune")
+    void findUserIdsByCommuneInseeCode_returnsUserIds() {
         User otherUser = persistUser("third-user@example.com");
         persistFavorite(persistedUser, montpellier);
         persistFavorite(otherUser, montpellier);
 
-        List<Long> userIds = userFavoriteRepository.findUserIdsByCommuneId(montpellier.getInseeCode());
+        List<Long> userIds = userFavoriteRepository.findUserIdsByCommuneInseeCode(montpellier.getInseeCode());
 
         assertEquals(2, userIds.size());
         assertTrue(userIds.contains(persistedUser.getId()));

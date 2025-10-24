@@ -363,11 +363,11 @@ public class ExportDataService {
         String color = (requestedIndicators.isEmpty() || requestedIndicators.contains("aqi")) ? aq.getAtmoColor() : null;
 
         // Include individual pollutants if requested
-        Double no2 = (requestedIndicators.isEmpty() || requestedIndicators.contains("no2")) ? aq.getNO2() : null;
-        Double o3 = (requestedIndicators.isEmpty() || requestedIndicators.contains("o3")) ? aq.getO3() : null;
-        Double pm10 = (requestedIndicators.isEmpty() || requestedIndicators.contains("pm10")) ? aq.getPm10() : null;
+        Integer no2 = (requestedIndicators.isEmpty() || requestedIndicators.contains("no2")) ? aq.getNO2() : null;
+        Integer o3 = (requestedIndicators.isEmpty() || requestedIndicators.contains("o3")) ? aq.getO3() : null;
+        Integer pm10 = (requestedIndicators.isEmpty() || requestedIndicators.contains("pm10")) ? aq.getPm10() : null;
         Integer pm25 = (requestedIndicators.isEmpty() || requestedIndicators.contains("pm25")) ? aq.getPm25() : null;
-        Double so2 = (requestedIndicators.isEmpty() || requestedIndicators.contains("so2")) ? aq.getSO2() : null;
+        Integer so2 = (requestedIndicators.isEmpty() || requestedIndicators.contains("so2")) ? aq.getSO2() : null;
 
         return new AirQualityDataPoint(aqi, qualifier, color, no2, o3, pm10, pm25, so2);
     }

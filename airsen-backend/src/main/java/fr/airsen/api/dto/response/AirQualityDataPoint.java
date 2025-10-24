@@ -9,9 +9,9 @@ public record AirQualityDataPoint(
     Integer aqi,
     String qualifier,
     String color,
-    Double no2,
-    Double o3,
-    Double pm10,
+    Integer no2,
+    Integer o3,
+    Integer pm10,
     Integer pm25,
-    Double so2
+    Integer so2
 ) {}

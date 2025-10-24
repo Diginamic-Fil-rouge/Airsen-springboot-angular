@@ -22,7 +22,7 @@ public class UserDeletionService {
     private final ForumThreadRepository forumThreadRepository;
     private final ForumMessageRepository forumMessageRepository;
     private final ForumVoteRepository forumVoteRepository;
-    private final AlertRepository alertRepository;
+    private final AlertSignalRepository alertSignalRepository;
     private final NotificationRepository notificationRepository;
     private final UserFavoritesService userFavoritesService;
 
@@ -33,7 +33,7 @@ public class UserDeletionService {
      * @param forumThreadRepository repository for ForumThread entities
      * @param forumMessageRepository repository for ForumMessage entities
      * @param forumVoteRepository repository for ForumVote entities
-     * @param alertRepository repository for Alert entities
+     * @param alertSignalRepository repository for Alert entities
      * @param notificationRepository repository for Notification entities
      * @param userFavoritesService service for managing user favorites
      */
@@ -42,14 +42,14 @@ public class UserDeletionService {
             ForumThreadRepository forumThreadRepository,
             ForumMessageRepository forumMessageRepository,
             ForumVoteRepository forumVoteRepository,
-            AlertRepository alertRepository,
+            AlertSignalRepository alertSignalRepository,
             NotificationRepository notificationRepository,
             UserFavoritesService userFavoritesService) {
         this.userRepository = userRepository;
         this.forumThreadRepository = forumThreadRepository;
         this.forumMessageRepository = forumMessageRepository;
         this.forumVoteRepository = forumVoteRepository;
-        this.alertRepository = alertRepository;
+        this.alertSignalRepository = alertSignalRepository;
         this.notificationRepository = notificationRepository;
         this.userFavoritesService = userFavoritesService;
     }
@@ -251,9 +251,9 @@ public class UserDeletionService {
     private void deleteUserAlerts(Long userId) {
         logger.info("Deleting alerts for user ID: {}", userId);
 
-        List<Alert> alerts = alertRepository.findByUserId(userId);
+        List<Alert> alerts = alertSignalRepository.findByUserId(userId);
         if (!alerts.isEmpty()) {
-            alertRepository.deleteAll(alerts);
+            alertSignalRepository.deleteAll(alerts);
             logger.info("Deleted {} alerts for user ID: {}", alerts.size(), userId);
         } else {
             logger.debug("No alerts found for user ID: {}", userId);
