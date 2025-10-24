@@ -42,17 +42,6 @@ export class MapViewComponent implements AfterViewInit {
     tiles.addTo(this.map);
   }
 
-//   icon = L.Icon.extend({
-//     options: {
-//         shadowUrl: null,
-//         iconSize:     [38, 95],
-//         shadowSize:   [50, 64],
-//         iconAnchor:   [22, 94],
-//         shadowAnchor: [4, 62],
-//         popupAnchor:  [-3, -76]
-//     }
-// });
-
   initMarkers(){
     this.communes()?.forEach(communes => {
       console.log("commune : ", communes);
@@ -68,8 +57,8 @@ export class MapViewComponent implements AfterViewInit {
     }
     const icon = L.icon({
       iconUrl: 'assets/images/marker.png',
-      iconSize: [25, 25],
-      iconAnchor: [10, 10],
+      iconSize: [20, 20],
+      iconAnchor: [0, 0],
       popupAnchor: [-3, -76]
     });
     

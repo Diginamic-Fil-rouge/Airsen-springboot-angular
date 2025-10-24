@@ -42,15 +42,17 @@
     ></app-map-view>
     <div class="map-datas">
       @if (communeClicked){
-      <h2>Données environnementales de {{ communeClicked.name }}</h2>
-      <p>
-        Population :
-        {{ communeClicked.population | number }}
-        habitants
-      </p>
+      <div class="datas-header">
+        <h2>Données environnementales de {{ communeClicked.name }}</h2>
+        <p>
+          Population :
+          {{ communeClicked.population | number }}
+          habitants
+        </p>
+      </div>
 
       @if (dataErrors){
-      <p class="error">
+      <p class="error error-text">
         Erreurs lors du chargement des données environnementales:
       </p>
       <ul>
@@ -58,40 +60,41 @@
         <li class="error">{{ error }}</li>
         }
       </ul>
-      } @if (!isLoadingDatas){
-      <h3>Qualité de l'air</h3>
-      <div class="commune-air-quality">
+      } 
+      @if (!isLoadingDatas && !dataErrors){
+      <div class="commune-air-quality" style="background-color: {{ airQualityClicked.airQuality.color }}">
+        <h3>Qualité de l'air</h3>
         @if (airQualityClicked){
-        <p style="color: {{ airQualityClicked.airQuality.color }}">Niveau de qualité : {{ airQualityClicked.airQuality.qualifier }}</p>
-        <br />
+        <p>
+          Niveau de qualité : {{ airQualityClicked.airQuality.qualifier }}
+        </p>
         <p>PM10 : {{ airQualityClicked.airQuality.pollutants.PM10 }} μg/m3</p>
-        <br />
         <p>PM2.5 : {{ airQualityClicked.airQuality.pollutants.PM2_5 }} μg/m3</p>
-        <br />
         <p>O3 : {{ airQualityClicked.airQuality.pollutants.O3 }} μg/m3</p>
-        <br />
         <p>NO2 : {{ airQualityClicked.airQuality.pollutants.NO2 }} μg/m3</p>
-        <br />
         <p>SO2 : {{ airQualityClicked.airQuality.pollutants.SO2 }} μg/m3</p>
-        <br />
         @if (airQualityClicked.lastUpdated){ Date du dernier prélèvement :
         {{ airQualityClicked.lastUpdated | date }}
         } }
       </div>
-      <h3>Météo</h3>
       <div class="commune-weather">
-        @if (weatherClicked){ Température : {{ weatherClicked.temperature }} °
-        <br />
+        <h3>Météo</h3>
+        @if (weatherClicked){ Température : {{ weatherClicked.temperature }} °C
         <p>Humidité : {{ weatherClicked.humidity }} %</p>
-        <br />
         <p>Vitesse du vent : {{ weatherClicked.windSpeed }} m/s</p>
-        <br />
         <p>Direction du vent : {{ weatherClicked.windDirection }}°</p>
         }
       </div>
-      } @else {
-      <p>Chargement des données environnementales...</p>
-      } } @else {
+      }
+       @else if (isLoadingDatas)
+       {
+      <div class="loading-container">
+        <p>Chargement des données environnementales...</p>
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+      } 
+    } 
+    @else {
       <h2>
         Cliquez sur une commune pour afficher ses données environnementales
       </h2>

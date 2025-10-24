@@ -76,30 +76,59 @@
       background-color: $airsen-gray-50;
       border-radius: 8px;
       border: 1px solid $airsen-gray-300;
-      padding: 20px;
+
+     .error-text{
+        padding: 20px;
+      }
 
       .error{
         color: $airsen-error;
       }
 
       h2{
+        text-align: center;
         color: $airsen-gray-900;
+        padding-top: 20px;
       }
 
       h3{
-        text-decoration: underline;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .datas-header{
+        padding:10px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid $airsen-gray-300;
       }
 
       .commune-air-quality{
+        padding:10px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        border: 1px solid $airsen-gray-300;
+        color: $airsen-white;
+        opacity: 0.6;
+      }
+      
+      .commune-weather{
+        padding:10px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid $airsen-gray-300;
       }
 
-      .commune-weather{
+      .loading-container{
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        justify-content: flex-start;
+        height: 50px;
+
+        p {
+          color: $airsen-gray-700;
+          font-size: 1rem;
+        }
       }
 
     }
