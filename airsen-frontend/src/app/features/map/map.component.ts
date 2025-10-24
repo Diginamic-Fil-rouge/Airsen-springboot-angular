@@ -62,14 +62,14 @@ export class MapComponent implements OnInit, OnDestroy {
   onSearchResultClicked(commune: Commune){
     this.searchQuery = commune.name;
     this.searchResults = new Observable<Commune[]>();
-    this.clickEvent(commune);
+    this.clickEvent(commune, "NEW");
   }
 
   closeSearchResults(){
     this.searchResults = new Observable<Commune[]>();
   }
 
-  async clickEvent(commune: Commune): Promise<void> {
+  async clickEvent(commune: Commune, type: string): Promise<void> {
     // Prevent duplicate clicks on same commune
     if (this.communeClicked && this.communeClicked.inseeCode === commune.inseeCode) {
       return;
@@ -88,7 +88,7 @@ export class MapComponent implements OnInit, OnDestroy {
       // Fetch both weather and air quality data in parallel for better performance
       const [weather, airQuality] = await Promise.all([
         firstValueFrom(this.weatherService.getCurrentWeather(commune.inseeCode)),
-        firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)),
+        type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)),
       ]);
 
       console.log("Weather data received:", weather);

@@ -127,16 +127,18 @@
       }
     }
   }
+  }
 
-    .map-datas{
+  .map-datas{
       display: flex;
       flex-direction: column;
       color: $airsen-gray-800;
-      width:30%;
+      width:50%;
       height: fit-content;
       background-color: $airsen-gray-50;
       border-radius: 8px;
       border: 1px solid $airsen-gray-300;
+      margin: 0 auto;
 
      .error-text{
         padding: 20px;
@@ -193,7 +195,6 @@
       }
 
     }
-  }
 }
   
   

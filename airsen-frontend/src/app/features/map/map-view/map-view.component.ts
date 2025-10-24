@@ -14,8 +14,10 @@ export class MapViewComponent implements AfterViewInit {
   private map: any;
   private geographicService = inject(GeographicService)
 
-  // communes$ = this.geographicService.getCommunesWithCoordinates();
+  markersInitialized = false;
   communes = input<Observable<Commune[]>>();
+  communeClicked = input<Commune | null>();
+  markers: L.Marker[] = [];
   @Output() onMarkerClick = new EventEmitter<any>();
 
   ngAfterViewInit(): void {
@@ -28,8 +30,8 @@ export class MapViewComponent implements AfterViewInit {
 
   private initMap(): void {
     this.map = L.map('map', {
-      // coordinates of the middle of France
-      center: [46.3622, 1.5231],
+      // coordinates of France
+      center: [47.0, 1.5231],
       zoom: 7
     });
 
@@ -43,12 +45,19 @@ export class MapViewComponent implements AfterViewInit {
   }
 
   initMarkers(){
-    this.communes()?.forEach(communes => {
-      console.log("commune : ", communes);
-      communes.forEach(commune => {
-        this.addMarketToMap(commune);
+    if (!this.markersInitialized){
+      this.communes()?.forEach(communes => {
+        console.log("commune : ", communes);
+        communes.forEach(commune => {
+          this.addMarketToMap(commune);
+        });
       });
-    });
+      this.markersInitialized = true;
+    }
+
+    if (this.communeClicked()){
+      this.addMarketToMap(this.communeClicked());
+    }
   }
 
   addMarketToMap(commune: any) {
@@ -62,9 +71,9 @@ export class MapViewComponent implements AfterViewInit {
       popupAnchor: [-3, -76]
     });
     
-    L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map).on('click', () => {
+    this.markers.push(L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map).on('click', () => {
       this.onMarkerClick.emit(commune);
-    });
+    }));
   }
 
 }
