@@ -48,27 +48,62 @@ public class CommuneService {
 
     @Transactional(readOnly = true)
     public List<CommuneDTO> getCommunesByDepartment(Long departmentId, int page, int size, String search) {
-        Pageable pageable = PageRequest.of(page, size);
-        List<Commune> communes;
+        log.info("Fetching communes for department {} (page: {}, size: {}, search: '{}')",
+            departmentId, page, size, search != null ? search : "none");
 
+        Pageable pageable = PageRequest.of(page, size);
+        List<Object[]> results;
+
+        // Query repository with appropriate method based on search criteria
         if (search != null && !search.isEmpty()) {
-            communes = communeRepository.findByDepartmentIdAndNameContainingIgnoreCase(departmentId, search, pageable);
+            results = communeRepository.findByDepartmentIdAndNameWithLatestAirQuality(
+                departmentId, search, pageable);
+            log.debug("Using filtered search query with air quality data");
         } else {
-            communes = communeRepository.findByDepartmentIdAsList(departmentId, pageable);
+            results = communeRepository.findByDepartmentIdWithLatestAirQuality(
+                departmentId, pageable);
+            log.debug("Using standard query with air quality data");
         }
 
-        return communes.stream()
-                .map(c -> new CommuneDTO(
-                        c.getId(),
-                        c.getInseeCode(),
-                        c.getName(),
-                        String.valueOf(c.getDepartment().getDepartmentCode()),
-                        c.getRegionCode(),
-                        c.getPopulation(),
-                        c.getLatitude(),
-                        c.getLongitude()
-                ))
-                .collect(Collectors.toList());
+        // Calculate statistics for monitoring
+        long totalCommunes = results.size();
+        long communesWithAirQuality = results.stream()
+            .filter(row -> row[1] != null) // atmoIndex is not null
+            .count();
+        long communesWithoutAirQuality = totalCommunes - communesWithAirQuality;
+
+        log.info("Retrieved {} communes: {} with air quality data, {} without",
+            totalCommunes, communesWithAirQuality, communesWithoutAirQuality);
+
+        // Map Object[] results to CommuneDTO with null-safe air quality data
+        return results.stream()
+            .map(row -> {
+                Commune c = (Commune) row[0];
+                Integer atmoIndex = (Integer) row[1];
+                String qualifier = (String) row[2];
+                String color = (String) row[3];
+
+                // Log warning if coordinates are missing (impacts map display)
+                if (c.getLatitude() == null || c.getLongitude() == null) {
+                    log.warn("Commune {} ({}) has missing coordinates - will not display on map",
+                        c.getName(), c.getInseeCode());
+                }
+
+                return new CommuneDTO(
+                    c.getId(),
+                    c.getInseeCode(),
+                    c.getName(),
+                    String.valueOf(c.getDepartment().getDepartmentCode()),
+                    c.getRegionCode(),
+                    c.getPopulation(),
+                    c.getLatitude(),
+                    c.getLongitude(),
+                    atmoIndex,      // Null if no air quality data
+                    qualifier,      // Null
+                    color           // Null
+                );
+            })
+            .collect(Collectors.toList());
     }
 
     /**
@@ -97,7 +132,7 @@ public class CommuneService {
                     CommuneDTO fetchedCommune = fetchCommuneByInseeCode(query).block();
                     if (fetchedCommune != null) {
                         log.info("✓ Successfully fetched commune from INSEE API: {} ({})",
-                                fetchedCommune.getName(), fetchedCommune.getInseeCode());
+                                fetchedCommune.name(), fetchedCommune.inseeCode());
                         return List.of(fetchedCommune);
                     }
                 } else {
@@ -136,7 +171,10 @@ public class CommuneService {
                         c.getRegionCode(),
                         c.getPopulation(),
                         c.getLatitude(),
-                        c.getLongitude()
+                        c.getLongitude(),
+                        null,  // atmoIndex - not fetched in search
+                        null,  // qualifier - not fetched in search
+                        null   // color - not fetched in search
                 ))
                 .collect(Collectors.toList());
 
@@ -161,27 +199,50 @@ public class CommuneService {
      *
      * @return list of commune DTOs with coordinates
      */
-    // @Cacheable(value = "communes", key = "'all-with-coordinates'")
+    // @Cacheable(value = "communes", key = "'all-with-coordinates'") // Re-enable after testing
     @Transactional(readOnly = true)
     public List<CommuneDTO> getAllCommunesWithCoordinates() {
-        log.info("Fetching all communes with valid coordinates for map display");
+        log.info("Fetching all communes with valid coordinates AND air quality data for map display");
 
-        List<Commune> communes = communeRepository.findCommunesWithCoordinates();
+        // Use new repository method that includes air quality data via LEFT JOIN
+        List<Object[]> results = communeRepository.findCommunesWithCoordinatesAndAirQuality();
 
-        log.info("Found {} communes with coordinates", communes.size());
+        log.info("Found {} communes with coordinates", results.size());
 
-        return communes.stream()
-            .map(c -> new CommuneDTO(
-                c.getId(),
-                c.getInseeCode(),
-                c.getName(),
-                c.getDepartment() != null ? c.getDepartment().getDepartmentCode() : null,
-                c.getDepartment() != null && c.getDepartment().getRegion() != null
-                    ? c.getDepartment().getRegion().getRegionCode() : null,
-                c.getPopulation(),
-                c.getLatitude(),
-                c.getLongitude()
-            ))
+        // Calculate statistics for monitoring air quality data coverage
+        long communesWithAirQuality = results.stream()
+            .filter(row -> row[1] != null) // atmoIndex is not null
+            .count();
+        long communesWithoutAirQuality = results.size() - communesWithAirQuality;
+
+        log.info("Air quality data coverage: {} with data ({} %), {} without data",
+            communesWithAirQuality,
+            results.isEmpty() ? 0 : (communesWithAirQuality * 100 / results.size()),
+            communesWithoutAirQuality);
+
+        // Map Object[] results to CommuneDTO with populated air quality fields
+        return results.stream()
+            .map(row -> {
+                Commune c = (Commune) row[0];
+                Integer atmoIndex = (Integer) row[1];  // Can be null
+                String qualifier = (String) row[2];    // Can be null
+                String color = (String) row[3];        // Can be null
+
+                return new CommuneDTO(
+                    c.getId(),
+                    c.getInseeCode(),
+                    c.getName(),
+                    c.getDepartment() != null ? c.getDepartment().getDepartmentCode() : null,
+                    c.getDepartment() != null && c.getDepartment().getRegion() != null
+                        ? c.getDepartment().getRegion().getRegionCode() : null,
+                    c.getPopulation(),
+                    c.getLatitude(),
+                    c.getLongitude(),
+                    atmoIndex,   // populated or null
+                    qualifier,   // populated or null
+                    color        // populated or null
+                );
+            })
             .collect(Collectors.toList());
     }
 
@@ -205,7 +266,10 @@ public class CommuneService {
                 c.getRegionCode(),
                 c.getPopulation(),
                 c.getLatitude(),
-                c.getLongitude()
+                c.getLongitude(),
+                null,  // atmoIndex - not fetched in this method
+                null,  // qualifier - not fetched in this method
+                null   // color - not fetched in this method
             ))
             .collect(Collectors.toList());
     }
@@ -255,7 +319,12 @@ public class CommuneService {
                     savedCommune.getName(),
                     String.valueOf(savedCommune.getDepartment().getDepartmentCode()),
                     savedCommune.getRegionCode(),
-                    savedCommune.getPopulation()
+                    savedCommune.getPopulation(),
+                    savedCommune.getLatitude(),
+                    savedCommune.getLongitude(),
+                    null,  // atmoIndex - not synced in this method
+                    null,  // qualifier - not synced in this method
+                    null   // color - not synced in this method
                 );
             })
             .doOnError(error -> log.error("Failed to sync demographic data for commune: {}", communeId, error));
@@ -368,7 +437,10 @@ public class CommuneService {
                     c.getRegionCode(),
                     c.getPopulation(),
                     c.getLatitude(),
-                    c.getLongitude()
+                    c.getLongitude(),
+                    null,  // atmoIndex - not fetched in INSEE sync
+                    null,  // qualifier - not fetched in INSEE sync
+                    null   // color - not fetched in INSEE sync
                 ))
                 .collect(Collectors.toList());
 
@@ -484,7 +556,10 @@ public class CommuneService {
                 savedCommune.getRegionCode(),
                 savedCommune.getPopulation(),
                 savedCommune.getLatitude(),
-                savedCommune.getLongitude()
+                savedCommune.getLongitude(),
+                null,  // atmoIndex - not fetched from INSEE API
+                null,  // qualifier - not fetched from INSEE API
+                null   // color - not fetched from INSEE API
             );
         });
     }
@@ -496,7 +571,7 @@ public class CommuneService {
      * @return true if both latitude and longitude are present
      */
     private boolean hasCoordinates(CommuneDTO commune) {
-        return commune.getLatitude() != null && commune.getLongitude() != null;
+        return commune.latitude() != null && commune.longitude() != null;
     }
 
     /**
@@ -520,10 +595,10 @@ public class CommuneService {
             if (!hasCoordinates(communeDTO)) {
                 // DEBUG - only in development
                 log.debug("Commune '{}' ({}) missing coordinates. Fetching from INSEE API...",
-                        communeDTO.getName(), communeDTO.getInseeCode());
+                        communeDTO.name(), communeDTO.inseeCode());
 
                 try {
-                    CommuneDTO enriched = fetchCommuneByInseeCode(communeDTO.getInseeCode()).block();
+                    CommuneDTO enriched = fetchCommuneByInseeCode(communeDTO.inseeCode()).block();
 
                     if (enriched != null && hasCoordinates(enriched)) {
                         enrichedCommunes.add(enriched);
@@ -531,17 +606,17 @@ public class CommuneService {
 
                         // DEBUG - only in development
                         log.debug("Enriched coordinates for '{}': lat={}, lng={}",
-                                enriched.getName(), enriched.getLatitude(), enriched.getLongitude());
+                                enriched.name(), enriched.latitude(), enriched.longitude());
                     } else {
                         // WARN - kept in production (unusual situation)
                         log.warn("INSEE API did not provide coordinates for '{}' ({})",
-                                communeDTO.getName(), communeDTO.getInseeCode());
+                                communeDTO.name(), communeDTO.inseeCode());
                         enrichedCommunes.add(communeDTO);
                     }
                 } catch (Exception e) {
                     // ERROR - always kept in production
                     log.error("Failed to fetch coordinates for '{}' ({}): {}",
-                            communeDTO.getName(), communeDTO.getInseeCode(), e.getMessage());
+                            communeDTO.name(), communeDTO.inseeCode(), e.getMessage());
                     enrichedCommunes.add(communeDTO);
                 }
             } else {
