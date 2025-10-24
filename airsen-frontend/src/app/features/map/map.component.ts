@@ -69,6 +69,13 @@ export class MapComponent implements OnInit, OnDestroy {
     this.searchResults = new Observable<Commune[]>();
   }
 
+  goToAnchor(){
+    const element = document.getElementById("map-datas");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
   async clickEvent(commune: Commune, type: string): Promise<void> {
     // Prevent duplicate clicks on same commune
     if (this.communeClicked && this.communeClicked.inseeCode === commune.inseeCode) {

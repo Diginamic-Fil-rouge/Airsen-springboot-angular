@@ -19,6 +19,7 @@ export class MapViewComponent implements AfterViewInit {
   communeClicked = input<Commune | null>();
   markers: L.Marker[] = [];
   @Output() onMarkerClick = new EventEmitter<any>();
+  @Output() anchorLinkClicked = new EventEmitter<any>();
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -44,8 +45,8 @@ export class MapViewComponent implements AfterViewInit {
     tiles.addTo(this.map);
   }
 
-  initMarkers(){
-    if (!this.markersInitialized){
+  initMarkers() {
+    if (!this.markersInitialized) {
       this.communes()?.forEach(communes => {
         console.log("commune : ", communes);
         communes.forEach(commune => {
@@ -55,7 +56,7 @@ export class MapViewComponent implements AfterViewInit {
       this.markersInitialized = true;
     }
 
-    if (this.communeClicked()){
+    if (this.communeClicked()) {
       this.addMarketToMap(this.communeClicked());
     }
   }
@@ -70,9 +71,15 @@ export class MapViewComponent implements AfterViewInit {
       iconAnchor: [10, 5],
       popupAnchor: [-3, -76]
     });
-    
+
     this.markers.push(L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map).on('click', () => {
       this.onMarkerClick.emit(commune);
+
+      var latlng = L.latLng(commune.latitude, commune.longitude);
+      var popup = L.popup()
+        .setLatLng(latlng)
+        .setContent('<div style="text-align: center; font-weight: bold">' + commune.name + '</div><br>Qualité de l\'air : ' + commune.airQuality + '<br>Température : ' + commune.temperature + ' °C<br><button (click)="anchorLinkClicked.emit()">Plus de details</button>')
+        .openOn(this.map);
     }));
   }
 

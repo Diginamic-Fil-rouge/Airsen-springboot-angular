@@ -81,11 +81,12 @@
     <!-- Map Content -->
     <app-map-view
       (onMarkerClick)="clickEvent($event, 'LATEST')"
+      (anchorLinkClicked)="goToAnchor()"
       [communes]="communes"
       [communeClicked]="communeClicked"
     ></app-map-view>
   </div>
-  <div class="map-datas">
+  <div class="map-datas" id="map-datas">
       @if (communeClicked){
       <div class="datas-header">
         <h2>Données environnementales de {{ communeClicked.name }}</h2>
