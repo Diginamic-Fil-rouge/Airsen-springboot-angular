@@ -58,7 +58,7 @@ export class MapViewComponent implements AfterViewInit {
     const icon = L.icon({
       iconUrl: 'assets/images/marker.png',
       iconSize: [20, 20],
-      iconAnchor: [0, 0],
+      iconAnchor: [10, 5],
       popupAnchor: [-3, -76]
     });
     

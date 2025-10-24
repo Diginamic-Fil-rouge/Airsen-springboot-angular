@@ -44,7 +44,7 @@ export class MapComponent implements OnInit, OnDestroy {
     if (!this.currentUser) {
       this.router.navigate(["/auth/login"]);
     }
-    this.communes = this.geographicService.getCommunesWithCoordinates();
+    this.communes = this.geographicService.getCommunesWithCoordinatesAndMinPop();
   }
 
   ngOnDestroy(): void {
