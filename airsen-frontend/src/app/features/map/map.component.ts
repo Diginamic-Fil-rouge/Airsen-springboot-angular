@@ -39,6 +39,9 @@ export class MapComponent implements OnInit, OnDestroy {
 
   dataErrors: string[] | null = null;
 
+  searchQuery: string = "";
+  searchResults =  new Observable<Commune[]>();
+
   ngOnInit(): void {
     this.loadUserData();
     if (!this.currentUser) {
@@ -50,6 +53,20 @@ export class MapComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  onSearchInput(){
+    this.searchResults = this.geographicService.searchCommunes(this.searchQuery);
+  }
+
+  onSearchResultClicked(commune: Commune){
+    this.searchQuery = commune.name;
+    this.searchResults = new Observable<Commune[]>();
+    this.clickEvent(commune);
+  }
+
+  closeSearchResults(){
+    this.searchResults = new Observable<Commune[]>();
   }
 
   async clickEvent(commune: Commune): Promise<void> {

@@ -26,4 +26,8 @@ export class GeographicService {
     return this.http.get<Commune[]>(`${environment.apiUrl}/api/v1/department/${departmentId}/communes`);
   }
 
+  searchCommunes(query: string): Observable<Commune[]> {
+    return this.http.get<Commune[]>(`${this.apiUrl}/search`, { params: { q: query }});
+  }
+
 }
