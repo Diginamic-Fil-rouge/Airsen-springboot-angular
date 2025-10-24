@@ -70,7 +70,6 @@
     .map-datas{
       display: flex;
       flex-direction: column;
-      gap: 1rem;
       color: $airsen-gray-800;
       width:30%;
       height: fit-content;
@@ -90,6 +89,19 @@
       h3{
         text-decoration: underline;
       }
+
+      .commune-air-quality{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .commune-weather{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
     }
   }
 }

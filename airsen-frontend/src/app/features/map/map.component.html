@@ -41,10 +41,13 @@
       [communes]="communes"
     ></app-map-view>
     <div class="map-datas">
-      <h2>
-        Données environnementales
-        {{ communeClicked ? "de " + communeClicked.name : "" }}
-      </h2>
+      @if (communeClicked){
+      <h2>Données environnementales de {{ communeClicked.name }}</h2>
+      <p>
+        Population :
+        {{ communeClicked.population | number }}
+        habitants
+      </p>
 
       @if (dataErrors){
       <p class="error">
@@ -57,29 +60,35 @@
       </ul>
       } @if (!isLoadingDatas){
       <h3>Qualité de l'air</h3>
-      <p class="commune-air-quality">
-        {{
-          airQualityClicked
-            ?  + airQualityClicked
-            : ""
-        }}
-      </p>
+      <div class="commune-air-quality">
+        @if (airQualityClicked){
+        <p style="color: {{ airQualityClicked.airQuality.color }}">Niveau de qualité : {{ airQualityClicked.airQuality.qualifier }}</p>
+        <br />
+        <p>PM10 : {{ airQualityClicked.airQuality.pollutants.PM10 }} μg/m3</p>
+        <br />
+        <p>PM2.5 : {{ airQualityClicked.airQuality.pollutants.PM2_5 }} μg/m3</p>
+        <br />
+        <p>O3 : {{ airQualityClicked.airQuality.pollutants.O3 }} μg/m3</p>
+        <br />
+        <p>NO2 : {{ airQualityClicked.airQuality.pollutants.NO2 }} μg/m3</p>
+        <br />
+        <p>SO2 : {{ airQualityClicked.airQuality.pollutants.SO2 }} μg/m3</p>
+        <br />
+        @if (airQualityClicked.lastUpdated){ Date du dernier prélèvement :
+        {{ airQualityClicked.lastUpdated | date }}
+        } }
+      </div>
       <h3>Météo</h3>
-      <p class="commune-weather">
-        {{
-          weatherClicked ?  + weatherClicked : ""
-        }}
-      </p>
-      <h3>Géo</h3>
-      <p>
-        {{
-          communeClicked
-            ? "Population : " +
-              (communeClicked.population | number) +
-              " habitants"
-            : ""
-        }}
-      </p>
+      <div class="commune-weather">
+        @if (weatherClicked){ Température : {{ weatherClicked.temperature }} °
+        <br />
+        <p>Humidité : {{ weatherClicked.humidity }} %</p>
+        <br />
+        <p>Vitesse du vent : {{ weatherClicked.windSpeed }} m/s</p>
+        <br />
+        <p>Direction du vent : {{ weatherClicked.windDirection }}°</p>
+        }
+      </div>
       } @else {
       <p>Chargement des données environnementales...</p>
       }
