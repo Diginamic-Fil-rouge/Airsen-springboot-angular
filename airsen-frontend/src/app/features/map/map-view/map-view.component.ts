@@ -30,7 +30,7 @@ export class MapViewComponent implements AfterViewInit {
     this.map = L.map('map', {
       // coordinates of the middle of France
       center: [46.3622, 1.5231],
-      zoom: 6
+      zoom: 7
     });
 
     const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
