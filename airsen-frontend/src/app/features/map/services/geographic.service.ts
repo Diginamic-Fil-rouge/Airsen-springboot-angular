@@ -18,4 +18,12 @@ export class GeographicService {
     );
   }
 
+  getAllCommunesWithCoordinates(): Observable<Commune[]>{
+    return this.http.get<Commune[]>(`${this.apiUrl}/with-coordinates`);
+  }
+
+  getAllCommunesByDepartment(departmentId: number){
+    return this.http.get<Commune[]>(`${environment.apiUrl}/api/v1/department/${departmentId}/communes`);
+  }
+
 }
