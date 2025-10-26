@@ -105,30 +105,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Finds all active users with verified emails for broadcasting.
+     * Used for FRANCE-level notifications (all users).
      */
     @Query("SELECT DISTINCT u FROM User u WHERE u.isActive = true AND u.emailVerified = true")
     java.util.List<User> findAllActiveUsersWithVerifiedEmail();
-
-    /**
-     * Finds users by region code through their alerts.
-     */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c JOIN c.department d JOIN d.region r " +
-           "WHERE u.isActive = true AND u.emailVerified = true AND r.regionCode = :regionCode")
-    java.util.List<User> findActiveUsersByRegionCode(@Param("regionCode") String regionCode);
-
-    /**
-     * Finds users by department code through their alerts.
-     */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c JOIN c.department d " +
-           "WHERE u.isActive = true AND u.emailVerified = true AND d.departmentCode = :departmentCode")
-    java.util.List<User> findActiveUsersByDepartmentCode(@Param("departmentCode") String departmentCode);
-
-    /**
-     * Finds users by commune code through their alerts.
-     */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c " +
-           "WHERE u.isActive = true AND u.emailVerified = true AND c.inseeCode = :communeCode")
-    java.util.List<User> findActiveUsersByCommuneCode(@Param("communeCode") String communeCode);
 
     /**
      * Finds users by region code through their favorite communes.

@@ -23,7 +23,7 @@ import java.util.Optional;
 
 /**
  * Service for integrating ATMO air quality data with the application.
- * 
+ *
  * Handles data transformation, validation, and persistence
  * for air quality measurements from external ATMO API.
  */
@@ -36,37 +36,35 @@ public class AirQualityService {
     private final AtmoApiClient atmoApiClient;
     private final AirQualityRepository airQualityRepository;
     private final CommuneRepository communeRepository;
-    private final AlertProcessingService alertProcessingService;
 
     public AirQualityService(AtmoApiClient atmoApiClient,
                             AirQualityRepository airQualityRepository,
-                            CommuneRepository communeRepository,
-                            AlertProcessingService alertProcessingService) {
+                            CommuneRepository communeRepository)
+                            {
         this.atmoApiClient = atmoApiClient;
         this.airQualityRepository = airQualityRepository;
         this.communeRepository = communeRepository;
-        this.alertProcessingService = alertProcessingService;
     }
 
     /**
      * Updates air quality data for all tracked communes.
-     * 
+     *
      * This method is called by scheduled tasks to keep air quality data current.
-     * 
+     *
      * @return Mono<Void> indicating completion
      */
     @Scheduled(fixedRate = 3600000) // Every hour
     public Mono<Void> updateAllAirQualityData() {
         log.info("Starting scheduled air quality data update");
-        
+
         List<Commune> communes = communeRepository.findAll();
         log.info("Found {} communes to update", communes.size());
-        
+
         return Flux.fromIterable(communes)
-            .flatMap(commune -> 
+            .flatMap(commune ->
                 updateAirQualityForCommune(commune.getInseeCode())
-                    .onErrorContinue((error, commune_obj) -> 
-                        log.warn("Failed to update air quality for commune: {}", 
+                    .onErrorContinue((error, commune_obj) ->
+                        log.warn("Failed to update air quality for commune: {}",
                                commune.getInseeCode(), error)))
             .then()
             .doOnSuccess(v -> log.info("Completed scheduled air quality data update"))
@@ -75,24 +73,24 @@ public class AirQualityService {
 
     /**
      * Updates air quality data for a specific commune.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<AirQuality> containing the updated data
      */
     public Mono<AirQuality> updateAirQualityForCommune(String communeInseeCode) {
         log.info("Updating air quality data for commune: {}", communeInseeCode);
-        
+
         return atmoApiClient.getCurrentAirQuality(communeInseeCode)
             .map(this::mapToEntity)
             .flatMap(airQuality -> {
                 AirQuality saved = airQualityRepository.save(airQuality);
-                
+
                 // Trigger alert processing for the new data
-                alertProcessingService.processAirQualityUpdate(saved);
-                
-                log.info("Successfully updated air quality data for commune: {} with ATMO index: {}", 
+//                alertProcessingService.processAirQualityUpdate(saved);
+
+                log.info("Successfully updated air quality data for commune: {} with ATMO index: {}",
                         communeInseeCode, saved.getAtmoIndex());
-                
+
                 return Mono.just(saved);
             });
     }
@@ -143,31 +141,31 @@ public class AirQualityService {
 
     /**
      * Gets historical air quality data for a commune.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @param startDate start date for historical data
      * @param endDate end date for historical data
      * @return Flux<AirQuality> containing historical data
      */
-    public Flux<AirQuality> getHistoricalAirQuality(String communeInseeCode, 
-                                                   LocalDate startDate, 
+    public Flux<AirQuality> getHistoricalAirQuality(String communeInseeCode,
+                                                   LocalDate startDate,
                                                    LocalDate endDate) {
-        log.info("Fetching historical air quality data for commune: {} from {} to {}", 
+        log.info("Fetching historical air quality data for commune: {} from {} to {}",
                 communeInseeCode, startDate, endDate);
-        
+
         return atmoApiClient.getHistoricalAirQuality(communeInseeCode, startDate, endDate)
             .map(this::mapToEntity)
             .flatMap(airQuality -> {
                 AirQuality saved = airQualityRepository.save(airQuality);
                 return Mono.just(saved);
             })
-            .doOnComplete(() -> log.info("Completed historical data fetch for commune: {}", 
+            .doOnComplete(() -> log.info("Completed historical data fetch for commune: {}",
                                        communeInseeCode));
     }
 
     /**
      * Forces update of air quality data for a commune (bypasses cache).
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<AirQuality> containing the updated data
      */
@@ -178,18 +176,18 @@ public class AirQualityService {
 
     /**
      * Get daily air quality measurements for current date.
-     * 
+     *
      * Business logic concept from air_quality_service (commit 6be37b8),
      * implemented with reactive patterns and proper error handling.
-     * 
+     *
      * @return Flux of current day air quality data
      */
     public Flux<AirQuality> getAllDailyAirQualities() {
         LocalDate today = LocalDate.now();
         log.info("Fetching daily air quality data for date: {}", today);
-        
+
         return Flux.fromIterable(airQualityRepository.findByMeasurementDate(today))
-            .doOnNext(airQuality -> log.debug("Found air quality data for commune: {}", 
+            .doOnNext(airQuality -> log.debug("Found air quality data for commune: {}",
                                              airQuality.getCommune().getInseeCode()))
             .doOnComplete(() -> log.info("Completed daily air quality data fetch"))
             .onErrorResume(error -> {
@@ -200,7 +198,7 @@ public class AirQualityService {
 
     /**
      * Maps ATMO API response to AirQuality entity.
-     * 
+     *
      * @param response ATMO API response
      * @return AirQuality entity
      */
@@ -214,7 +212,7 @@ public class AirQualityService {
         airQuality.setAtmIndex(response.atmoIndex());
         airQuality.setAtmoQual(response.qualifier());
         airQuality.setAtmoColor(response.color());
-        
+
         // Map pollutant codes from ATMO API
         if (response.no2Code() != null) {
             Integer no2Concentration = convertCodeToConcentration("NO2", response.no2Code());
@@ -246,7 +244,7 @@ public class AirQualityService {
                 airQuality.setSO2(so2Concentration);
             }
         }
-        
+
         return airQuality;
     }
 

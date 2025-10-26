@@ -93,7 +93,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -102,7 +101,6 @@ class UserDeletionServiceTest {
         // Then
         verify(forumThreadRepository).findByAuthor(testUser);
         verify(forumMessageRepository).findByAuthor(testUser);
-        verify(alertSignalRepository).findByUserId(1L);
         verify(notificationRepository).deleteAllForUser(1L);
         verify(userRepository).delete(testUser);
     }
@@ -145,7 +143,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(List.of(thread1, thread2));
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -168,7 +165,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(List.of(message1));
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -181,25 +177,8 @@ class UserDeletionServiceTest {
         assertEquals("Test User", message1.getAuthorName());
     }
 
-    @Test
-    @DisplayName("deleteUserAlerts_Success: Should delete all user alerts")
-    void deleteUserAlerts_Success() {
-        // Given
-        testUser.setDeletedAt(LocalDateTime.now().minusDays(31));
-        Alert alert1 = new Alert();
-        Alert alert2 = new Alert();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(List.of(alert1, alert2));
-        when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
-
-        // When
-        userDeletionService.hardDeleteUser(1L);
-
-        // Then
-        verify(alertSignalRepository).deleteAll(List.of(alert1, alert2));
-    }
+    // NOTE: deleteUserAlerts_Success test removed - users no longer create alerts.
+    // AlertSignal entities are admin-detected environmental signals, not user-created alerts.
 
     @Test
     @DisplayName("deleteUserFavorites_Success: Should clear all user favorites")
@@ -218,7 +197,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -237,7 +215,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(4);
 
         // When
@@ -258,7 +235,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -286,7 +262,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(List.of(thread));
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(List.of(message));
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(List.of(new Alert()));
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(1);
 
         // When
@@ -295,7 +270,6 @@ class UserDeletionServiceTest {
         // Then
         verify(forumThreadRepository).save(any(ForumThread.class));
         verify(forumMessageRepository).save(any(ForumMessage.class));
-        verify(alertSignalRepository).deleteAll(anyList());
         verify(notificationRepository).deleteAllForUser(1L);
         verify(forumVoteRepository).save(any(ForumVote.class));
         verify(userRepository).delete(testUser);
@@ -313,7 +287,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(List.of(thread));
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When
@@ -335,7 +308,6 @@ class UserDeletionServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(forumThreadRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
         when(forumMessageRepository.findByAuthor(testUser)).thenReturn(Collections.emptyList());
-        when(alertSignalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
         when(notificationRepository.deleteAllForUser(1L)).thenReturn(0);
 
         // When

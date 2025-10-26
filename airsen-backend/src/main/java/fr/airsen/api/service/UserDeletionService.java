@@ -33,7 +33,7 @@ public class UserDeletionService {
      * @param forumThreadRepository repository for ForumThread entities
      * @param forumMessageRepository repository for ForumMessage entities
      * @param forumVoteRepository repository for ForumVote entities
-     * @param alertSignalRepository repository for Alert entities
+     * @param alertSignalRepository repository for AlertSignal entities (admin-detected signals, not user-created)
      * @param notificationRepository repository for Notification entities
      * @param userFavoritesService service for managing user favorites
      */
@@ -119,19 +119,20 @@ public class UserDeletionService {
      * This method performs the following operations in sequence:
      * 1. Verify grace period has expired (throws exception if not)
      * 2. Preserve author display name in all forum threads and messages
-     * 3. Delete user-created alerts
-     * 4. Clear user's favorite communes
-     * 5. Anonymize received notifications (preserve history, break FK link)
-     * 6. Anonymize forum votes (preserve counts, remove voter identity)
-     * 7. Delete user entity from database
+     * 3. Clear user's favorite communes
+     * 4. Anonymize received notifications (preserve history, break FK link)
+     * 5. Anonymize forum votes (preserve counts, remove voter identity)
+     * 6. Delete user entity from database
+     *
+     * Note: User-created alerts are NOT deleted because users no longer create alerts.
+     * Alerts are now admin-detected environmental signals (AlertSignal entities).
      *
      * Authorization: This method should ONLY be called by a scheduled job
      * (e.g., @Scheduled cron task), NOT directly by users or admins. The scheduled job finds
      * all users with expired grace periods and processes them automatically.
      *
      * Data Deletion vs Preservation:
-     * - Deleted: User entity (email, password, names, bio, etc.),
-     *            alerts, favorite communes
+     * - Deleted: User entity (email, password, names, bio, etc.), favorite communes
      * - Preserved with author name: Forum threads and messages
      * - Anonymized: Forum votes (counts kept), notifications (history kept)
      *
@@ -166,19 +167,16 @@ public class UserDeletionService {
         // Step 1: Preserve author name in forum content (CRITICAL - must happen BEFORE user deletion)
         preserveAuthorNameInForumContent(user);
 
-        // Step 2: Delete user-created alerts
-        deleteUserAlerts(userId);
-
-        // Step 3: Clear user's favorite communes
+        // Step 2: Clear user's favorite communes
         deleteUserFavorites(userId);
 
-        // Step 4: Anonymize received notifications (preserve history)
+        // Step 3: Anonymize received notifications (preserve history)
         anonymizeNotifications(userId);
 
-        // Step 5: Anonymize forum votes (preserve counts)
+        // Step 4: Anonymize forum votes (preserve counts)
         anonymizeForumVotes(userId);
 
-        // Step 6: Delete user entity (personal data removed)
+        // Step 5: Delete user entity (personal data removed)
         userRepository.delete(user);
 
         logger.info("Successfully hard deleted user ID: {}. Personal data removed, forum content preserved.", userId);
@@ -236,29 +234,8 @@ public class UserDeletionService {
                 threads.size(), messages.size(), user.getId());
     }
 
-    /**
-     * Deletes all alerts created by the user.
-     *
-     * GDPR Justification: User-created alerts are personal data directly
-     * tied to the user's account. Unlike forum content (which serves public interest), alerts
-     * are administrative data with no community value, so they are deleted per Article 17.
-     *
-     * Note: Admin-created alerts broadcast to all users are NOT deleted,
-     * as they serve public safety purposes (air quality warnings, weather alerts).
-     *
-     * @param userId unique identifier of the user whose alerts should be deleted
-     */
-    private void deleteUserAlerts(Long userId) {
-        logger.info("Deleting alerts for user ID: {}", userId);
-
-        List<Alert> alerts = alertSignalRepository.findByUserId(userId);
-        if (!alerts.isEmpty()) {
-            alertSignalRepository.deleteAll(alerts);
-            logger.info("Deleted {} alerts for user ID: {}", alerts.size(), userId);
-        } else {
-            logger.debug("No alerts found for user ID: {}", userId);
-        }
-    }
+    // NOTE: deleteUserAlerts method removed - users no longer create alerts.
+    // AlertSignal entities are now admin-detected environmental signals, not user-created alerts.
 
     /**
      * Clears the user's favorite communes collection.
