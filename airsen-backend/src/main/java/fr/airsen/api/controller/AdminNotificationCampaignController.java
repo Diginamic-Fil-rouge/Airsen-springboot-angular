@@ -8,6 +8,7 @@ import fr.airsen.api.entity.NotificationCampaign;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.NotificationCampaignStatus;
 import fr.airsen.api.mapper.NotificationCampaignMapper;
+import fr.airsen.api.service.CurrentUserService;
 import fr.airsen.api.service.NotificationCampaignService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,12 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -42,13 +40,16 @@ public class AdminNotificationCampaignController {
 
     private final NotificationCampaignService campaignService;
     private final NotificationCampaignMapper campaignMapper;
+    private final CurrentUserService currentUserService;
 
     public AdminNotificationCampaignController(
         NotificationCampaignService campaignService,
-        NotificationCampaignMapper campaignMapper
+        NotificationCampaignMapper campaignMapper,
+        CurrentUserService currentUserService
     ) {
         this.campaignService = campaignService;
         this.campaignMapper = campaignMapper;
+        this.currentUserService = currentUserService;
     }
 
 
@@ -64,9 +65,9 @@ public class AdminNotificationCampaignController {
     })
     public ResponseEntity<NotificationCampaignDTO> createDraftFromSignal(
         @Parameter(description = "Alert signal ID", required = true)
-        @PathVariable Long signalId,
-        @AuthenticationPrincipal User admin
+        @PathVariable Long signalId
     ) {
+        User admin = currentUserService.getCurrentUser();
         log.info("Admin {} creating draft campaign from signal {}", admin.getEmail(), signalId);
 
         NotificationCampaign campaign = campaignService.createDraftFromSignal(signalId, admin);
@@ -88,9 +89,9 @@ public class AdminNotificationCampaignController {
     })
     public ResponseEntity<NotificationCampaignDTO> createManualCampaign(
         @Parameter(description = "Campaign creation request", required = true)
-        @Valid @RequestBody CreateCampaignRequest request,
-        @AuthenticationPrincipal User admin
+        @Valid @RequestBody CreateCampaignRequest request
     ) {
+        User admin = currentUserService.getCurrentUser();
         log.info("Admin {} creating manual campaign: {}", admin.getEmail(), request.title());
 
         NotificationCampaign campaign = campaignService.createManualCampaign(request, admin);

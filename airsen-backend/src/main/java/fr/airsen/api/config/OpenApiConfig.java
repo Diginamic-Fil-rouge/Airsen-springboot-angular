@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
@@ -17,12 +18,15 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI airsenOpenAPI() {
+        // Define the security scheme name
+        final String securitySchemeName = "bearerAuth";
+
         return new OpenAPI()
             .info(new Info()
                 .title("Airsen API")
                 .description("""
                     **REST API for air quality monitoring in France**
-                    
+
                     This API provides real-time data on:
                     - **Air Quality**: ATMO indices and pollutant concentrations
                     - **Weather**: Current conditions and forecasts
@@ -30,16 +34,6 @@ public class OpenApiConfig {
                     - **User Management**: Profiles, favorites and personalized alerts
                     - **Community Forum**: Discussions and experience sharing
                     - **Data Export**: PDF and CSV report generation
-                    
-                    ## Authentication
-                    The API uses JWT authentication. For protected endpoints:
-                    1. Login via `/auth/login`
-                    2. Use the received token in the `Authorization: Bearer {token}` header
-                    
-                    ## Data Sources
-                    - **ATMO France**: Official air quality data
-                    - **Open-Meteo**: Weather data
-                    - **INSEE**: Geographic and demographic data
                     """)
                 .version("1.0.0-SNAPSHOT")
                 .contact(new Contact()
@@ -57,13 +51,16 @@ public class OpenApiConfig {
                     .url("https://api.airsen.fr/v1")
                     .description("Production server")
             ))
+            // Add global security requirement
+            .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+            // Define security schemes
             .components(new Components()
-                .addSecuritySchemes("bearerAuth", 
+                .addSecuritySchemes(securitySchemeName,
                     new SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
                         .bearerFormat("JWT")
-                        .description("JWT Authentication")
+                        .description("Enter JWT token. You can get one from /auth/login endpoint.")
                 )
             );
     }
