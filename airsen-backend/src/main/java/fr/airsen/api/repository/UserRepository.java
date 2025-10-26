@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -45,7 +46,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("DELETE FROM User u WHERE u.createdAt < :cutoffDate")
     int deleteByCreatedAtBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
 
-    // ==================== PROFILE UPDATE METHODS ====================
+    // PROFILE UPDATE METHODS
 
     @Modifying
     @Query("UPDATE User u SET u.firstName = :firstName, u.lastName = :lastName, u.address = :address WHERE u.id = :userId")
@@ -66,7 +67,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User u SET u.address = :address WHERE u.id = :userId")
     void updateAddress(@Param("userId") Long userId, @Param("address") String address);
 
-    // ==================== EMAIL MANAGEMENT METHODS ====================
+    // EMAIL MANAGEMENT METHODS
     /**
      * Checks if an email is already used by another user.
      *
@@ -77,7 +78,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email AND u.id != :excludeUserId")
     boolean isEmailTakenByOtherUser(@Param("email") String email, @Param("excludeUserId") Long excludeUserId);
 
-    // ==================== PASSWORD MANAGEMENT METHODS ====================
+    // PASSWORD MANAGEMENT METHODS
 
     /**
      * Updates a user's password.
@@ -101,7 +102,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u.password FROM User u WHERE u.id = :userId")
     String findPasswordByUserId(@Param("userId") Long userId);
 
-    // ==================== BROADCAST NOTIFICATION METHODS ====================
+    // BROADCAST NOTIFICATION METHODS
 
     /**
      * Finds all active users with verified emails for broadcasting.
@@ -134,4 +135,61 @@ public interface UserRepository extends JpaRepository<User, Long> {
            "WHERE u.isActive = true AND u.emailVerified = true AND c.inseeCode = :communeCode")
     java.util.List<User> findActiveUsersByFavoriteCommuneCode(@Param("communeCode") String communeCode);
 
+    // USER FAVORITES-BASED TARGETING
+    /**
+     * Find users who have favorites in a specific region.
+     *
+     * Users receive notifications for ALL their favorite locations.
+     *
+     * @param regionId Region identifier (e.g., 11 for Île-de-France)
+     * @return List of active users with at least one favorite in this region
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN u.favorites f
+        JOIN f.commune c
+        JOIN c.department d
+        WHERE d.region.id = :regionId
+        AND u.isActive = true
+        AND u.deletedAt IS NULL
+    """)
+    List<User> findUsersWithFavoritesInRegion(@Param("regionId") Long regionId);
+
+    /**
+     * Find users who have favorites in a specific department.
+     *
+     * Used by notification campaign fan-out to target users who favorited
+     * any commune in the specified department.
+     *
+     * @param departmentId Department identifier (e.g., 75 for Paris)
+     * @return List of active users with at least one favorite in this department
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN u.favorites f
+        JOIN f.commune c
+        WHERE c.department.id = :departmentId
+        AND u.isActive = true
+        AND u.deletedAt IS NULL
+    """)
+    List<User> findUsersWithFavoritesInDepartment(@Param("departmentId") Long departmentId);
+
+    /**
+     * Find users who have favorites in a specific commune.
+     *
+     * Used by notification campaign fan-out to target users who favorited
+     * a specific commune (identified by INSEE code).
+     *
+     * @param inseeCode Commune INSEE code (e.g., "75056" for Paris)
+     * @return List of active users who favorited this commune
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN u.favorites f
+        JOIN f.commune c
+        WHERE c.inseeCode = :inseeCode
+        AND u.isActive = true
+        AND u.deletedAt IS NULL
+    """)
+    List<User> findUsersWithFavoritesInCommune(@Param("inseeCode") String inseeCode);
 }

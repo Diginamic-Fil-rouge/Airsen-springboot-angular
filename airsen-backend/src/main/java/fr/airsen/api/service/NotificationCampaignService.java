@@ -13,12 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Service for managing notification broadcast campaigns.
@@ -38,18 +34,21 @@ public class NotificationCampaignService {
     private final UserRepository userRepository;
     private final AlertSignalRepository alertSignalRepository;
     private final NotificationService notificationService;
+    private final CommuneRepository communeRepository;
 
     public NotificationCampaignService(
             NotificationCampaignRepository campaignRepository,
             NotificationRepository notificationRepository,
             UserRepository userRepository,
             AlertSignalRepository alertSignalRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            CommuneRepository communeRepository) {
         this.campaignRepository = campaignRepository;
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.alertSignalRepository = alertSignalRepository;
         this.notificationService = notificationService;
+        this.communeRepository = communeRepository;
     }
 
     /**
@@ -215,59 +214,82 @@ public class NotificationCampaignService {
 
     /**
      * Filters users by geographic scope to determine campaign recipients.
+     *
+     * Uses database queries to efficiently find users with favorites in the target scope.
+     * This avoids loading all users into memory and filtering with Java streams.
+     *
+     * Geographic Targeting Logic:
+     * - FRANCE: All active users with verified emails
+     * - REGION: Users with favorites in the target region
+     * - DEPARTMENT: Users with favorites in the target department
+     * - COMMUNE: Users with favorites in the target commune
+     *
+     * @param scopeType geographic scope type
+     * @param scopeId scope identifier (nullable for FRANCE)
+     * @return list of users matching the scope
      */
     private List<User> filterUsersByScope(GeographicScopeType scopeType, Long scopeId) {
-        List<User> allActiveUsers = userRepository.findByEmailVerifiedTrue(Pageable.unpaged()).getContent();
+        log.debug("Filtering users by scope: type={}, scopeId={}", scopeType, scopeId);
 
-        return switch (scopeType) {
-            case FRANCE -> allActiveUsers;
+        Set<User> targetedUsers = new HashSet<>();
 
-            case REGION -> allActiveUsers.stream()
-                    .filter(user -> isUserInRegion(user, scopeId))
-                    .collect(Collectors.toList());
+        switch (scopeType) {
+            case FRANCE:
+                // All active users with verified emails
+                List<User> allUsers = userRepository.findByEmailVerifiedTrue(Pageable.unpaged()).getContent();
+                targetedUsers.addAll(allUsers);
+                log.info("FRANCE scope: {} active users targeted", targetedUsers.size());
+                break;
 
-            case DEPARTMENT -> allActiveUsers.stream()
-                    .filter(user -> isUserInDepartment(user, scopeId))
-                    .collect(Collectors.toList());
+            case REGION:
+                // Users with favorites in this region (direct database query)
+                if (scopeId == null) {
+                    log.warn("REGION scope specified but scopeId is null");
+                    return Collections.emptyList();
+                }
+                List<User> usersInRegion = userRepository.findUsersWithFavoritesInRegion(scopeId);
+                targetedUsers.addAll(usersInRegion);
+                log.info("REGION scope (ID={}): {} users with favorites targeted", scopeId, targetedUsers.size());
+                break;
 
-            case COMMUNE -> allActiveUsers.stream()
-                    .filter(user -> isUserInCommune(user, scopeId))
-                    .collect(Collectors.toList());
-        };
-    }
+            case DEPARTMENT:
+                // Users with favorites in this department (direct database query)
+                if (scopeId == null) {
+                    log.warn("DEPARTMENT scope specified but scopeId is null");
+                    return Collections.emptyList();
+                }
+                List<User> usersInDepartment = userRepository.findUsersWithFavoritesInDepartment(scopeId);
+                targetedUsers.addAll(usersInDepartment);
+                log.info("DEPARTMENT scope (ID={}): {} users with favorites targeted", scopeId, targetedUsers.size());
+                break;
 
-    /**
-     * Checks if user is in the specified region (by favorites).
-     *
-     * Note: User entity doesn't have direct commune relationship,
-     * so we can only filter by favorites.
-     */
-    private boolean isUserInRegion(User user, Long regionId) {
-        // Check user's favorites
-        return user.getFavorites().stream()
-                .anyMatch(fav -> Objects.equals(
-                        fav.getCommune().getDepartment().getRegion().getId(),
-                        regionId));
-    }
+            case COMMUNE:
+                // Users with favorites in this commune (direct database query)
+                if (scopeId == null) {
+                    log.warn("COMMUNE scope specified but scopeId is null");
+                    return Collections.emptyList();
+                }
 
-    /**
-     * Checks if user is in the specified department (by favorites).
-     */
-    private boolean isUserInDepartment(User user, Long departmentId) {
-        // Check user's favorites
-        return user.getFavorites().stream()
-                .anyMatch(fav -> Objects.equals(
-                        fav.getCommune().getDepartment().getId(),
-                        departmentId));
-    }
+                // Lookup commune to get INSEE code for efficient query
+                Commune commune = communeRepository.findById(scopeId)
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Commune not found with id: " + scopeId));
 
-    /**
-     * Checks if user is in the specified commune (by favorites).
-     */
-    private boolean isUserInCommune(User user, Long communeId) {
-        // Check user's favorites
-        return user.getFavorites().stream()
-                .anyMatch(fav -> Objects.equals(fav.getCommune().getId(), communeId));
+                List<User> usersInCommune = userRepository.findUsersWithFavoritesInCommune(commune.getInseeCode());
+                targetedUsers.addAll(usersInCommune);
+                log.info("COMMUNE scope (ID={}, INSEE={}): {} users with favorites targeted",
+                        scopeId, commune.getInseeCode(), targetedUsers.size());
+                break;
+
+            default:
+                log.error("Unknown geographic scope type: {}", scopeType);
+                throw new IllegalStateException("Unknown scope type: " + scopeType);
+        }
+
+        // Convert Set back to List and return
+        List<User> result = new ArrayList<>(targetedUsers);
+        log.debug("Total users targeted after deduplication: {}", result.size());
+        return result;
     }
 
     /**
