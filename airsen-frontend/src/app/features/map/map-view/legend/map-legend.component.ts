@@ -7,6 +7,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./map-legend.component.scss']
 })
 export class MapLegendComponent {
+  displayLegend: boolean = false;
 
+  toggleLegend(){
+    this.displayLegend = !this.displayLegend;
+  }
 }
 

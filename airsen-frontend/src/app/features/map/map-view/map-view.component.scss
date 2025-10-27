@@ -13,10 +13,13 @@
     border-radius: 10px;
     height: 100%;
     width: 100%;
-    overflow: hidden;
-    position: relative;
-
-    #map {
+    min-height: 750px;
+    display: flex;
+    flex-direction: column;
+    
+    .map-frame {
+      border: 2px solid $airsen-gray-300;
+      border-radius: 10px;
       height: 100%;
       width: 100%;
     }
@@ -26,9 +29,13 @@
     height: 500px;
   }
 
-  @include breakpoint("lg") {
-    height: 600px;
-  }
+        app-map-legend{
+          position: absolute;
+          bottom: 15px;
+          right: 15px;
+          z-index: 9000;
+        }
+      }
 
   @include breakpoint("xl") {
     height: 700px;

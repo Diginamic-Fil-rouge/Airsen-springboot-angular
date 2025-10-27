@@ -34,13 +34,15 @@
         </div>
       </div>
       <p class="content">{{ thread.content }}</p>
-      <div class="separator"></div>
-      <div class="thread-data">
-        <thread-voting
-          [thread]="thread"
-          [voteCount]="thread.likeCount"
-        ></thread-voting>
-      </div>
+      @if(currentUser){
+        <div class="separator"></div>
+        <div class="thread-data">
+          <thread-voting
+            [thread]="thread"
+            [voteCount]="thread.likeCount"
+          ></thread-voting>
+        </div>
+      }
     </div>
     <h3 class="message-count">
       Réponses ({{ thread.messageCount }})
@@ -68,7 +70,7 @@
       définitive
     </p>
     <div class="modal-buttons">
-      <button class="danger" (click)="deleteThread()">Valider</button>
+      <button class="danger" (click)="deleteThread()">Confirmer la suppression</button>
       <button class="cancel" (click)="toggleModal()">Annuler</button>
     </div>
   </div>

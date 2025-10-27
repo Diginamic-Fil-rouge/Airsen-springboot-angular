@@ -2,8 +2,8 @@
 
 .page-container {
   background-color: $airsen-gray-100;
-  padding: 2rem;
   border-radius: 8px;
+  position: relative;
   transition: padding $duration-normal $ease-in-out;
 
   @include breakpoint("lg") {
@@ -75,11 +75,15 @@
       display: flex;
       align-items: center;
 
-      svg {
-        color: $airsen-gray-800;
-        width: 25px;
-        height: 25px;
-      }
+.search-bar{
+  width: 300px;
+  border: 1px solid $airsen-gray-300;
+  border-radius: 8px;
+  background-color: $airsen-gray-50;
+  padding: 5px;
+  position: absolute;
+  right:0;
+  z-index: 9000;
 
       input {
         padding: 10px;
@@ -128,6 +132,15 @@
       }
     }
 
+  app-map-view{
+    width: 100%;
+  }
+  
+  .map-datas{
+      display: flex;
+      flex-direction: column;
+      color: $airsen-gray-800;
+      width:20%;
     @include breakpoint("lg") {
       width: 500px;
 
@@ -168,6 +181,11 @@
       background-color: $airsen-gray-50;
       border-radius: 8px;
       border: 1px solid $airsen-gray-300;
+      margin: 0 auto;
+      position: absolute;
+      left: 1%;
+      top: 12%;
+      z-index: 8999;
       padding: 20px;
       transition: all $duration-normal $ease-in-out;
       flex: 0 0 100%;
@@ -175,35 +193,38 @@
       h2 {
         color: $airsen-gray-900;
 
-        svg {
-          width: 16px;
-          height: 16px;
-          color: $airsen-primary;
-        }
+      h2{
+        text-align: center;
+        color: $airsen-gray-900;
+        padding-top: 20px;
       }
-    }
-
-    // Map view component styling
-    app-map-view {
-      width: 100%;
-      display: block;
-      flex: 1 1 100%;
-      transition: flex-basis $duration-normal $ease-in-out, max-width $duration-normal $ease-in-out;
-    }
 
     @include breakpoint("lg") {
       flex-direction: row;
       gap: $space-6;
       padding: $space-6;
 
-      .favorites-container {
-        flex: 0 0 20%;
-        max-width: 20%;
+      .datas-header{
+        padding:10px;
+        display: flex;
+        flex-direction: column;
+
       }
 
-      app-map-view {
-        flex: 1 1 80%;
-        max-width: 80%;
+      .commune-air-quality{
+        padding:10px;
+        display: flex;
+        flex-direction: column;
+        border-top: 1px solid $airsen-gray-300;
+        border-bottom: 1px solid $airsen-gray-300;
+        opacity: 0.6;
+      }
+      
+      .commune-weather{
+        padding:10px;
+        display: flex;
+        flex-direction: column;
+
       }
     }
 

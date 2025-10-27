@@ -89,8 +89,6 @@ import { RouterModule } from '@angular/router';
 import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
 import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
 import { MapLegendComponent } from './features/map/map-view/legend/map-legend.component';
-import { MarkerPopupComponent } from './features/map/map-view/popup/markerPopup.component';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
@@ -108,7 +106,6 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
     MapComponent,
     MapViewComponent,
     MapLegendComponent,
-    MarkerPopupComponent,
     HomeComponent,
     DashboardComponent,
     NotFoundComponent,

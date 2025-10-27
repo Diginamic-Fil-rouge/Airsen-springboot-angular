@@ -1,10 +1,9 @@
 import { Component, AfterViewInit, input, inject, Output, EventEmitter, ViewContainerRef, Injector, ComponentRef, createComponent } from '@angular/core';
 import * as L from 'leaflet';
-import * as I from './icons';
 import { Observable } from 'rxjs';
 import { Commune } from '../models/commune.model';
 import { GeographicService } from '../services/geographic.service';
-import { MarkerPopupComponent } from './popup/markerPopup.component';
+
 @Component({
   standalone: false,
   selector: 'app-map-view',
@@ -17,9 +16,8 @@ export class MapViewComponent implements AfterViewInit {
 
   markersInitialized = false;
   communes = input<Observable<Commune[]>>();
-  communeClicked = input<Commune | null>();
+  communeSearched = input<Commune | null>();
   @Output() onMarkerClick = new EventEmitter<any>();
-  @Output() anchorLinkClicked = new EventEmitter<any>();
 
   constructor(
     private viewContainerRef: ViewContainerRef,
@@ -34,11 +32,20 @@ export class MapViewComponent implements AfterViewInit {
     this.initMarkers();
   }
 
+/**
+ * Initializes the Leaflet map with France's coordinates
+ * and adds a tile layer to display OpenStreetMap tiles.
+ * The map is centered on France with a zoom level of 7.
+ * The tile layer is configured to display tiles from OpenStreetMap
+ * with a maximum zoom level of 18 and a minimum zoom level of 3.
+ * The attribution for the tile layer is set to the OpenStreetMap
+ * copyright notice.
+ */
   private initMap(): void {
     this.map = L.map('map', {
       // coordinates of France
       center: [47.0, 1.5231],
-      zoom: 7
+      zoom: 6
     });
 
     const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -50,94 +57,94 @@ export class MapViewComponent implements AfterViewInit {
     tiles.addTo(this.map);
   }
 
+  /**
+   * Initializes the markers on the map.
+   * If the markers have not been initialized yet, it fetches the communes from the input observable and adds a marker to the map for each commune.
+   * If a commune has been clicked, it fetches the commune data from the geographic service and adds a marker to the map for the commune.
+   * The markers are only initialized once, and then the function does nothing.
+   */
   initMarkers() {
     if (!this.markersInitialized) {
       this.communes()?.forEach(communes => {
         console.log("commune : ", communes);
         communes.forEach(commune => {
-          this.addMarketToMap(commune);
+          this.addMarkerToMap(commune);
         });
       });
       this.markersInitialized = true;
     }
 
-    if (this.communeClicked()) {
-      this.addMarketToMap(this.communeClicked());
+    if (this.communeSearched()) {
+      let communeData: Commune = {
+        id: 0,
+        inseeCode: '',
+        name: '',
+        departmentCode: '',
+        regionCode: '',
+        population: 0,
+        latitude: 0,
+        longitude: 0,
+        qualifier: '',
+        color: '',
+        atmoIndex: 0
+      };
+      this.geographicService.getCommuneDatas(this.communeSearched()?.inseeCode).subscribe({
+        next: (data) => {
+          communeData.inseeCode = data.commune.inseeCode;
+          communeData.name = data.commune.name;
+          communeData.departmentCode = data.commune.department.departmentCode;
+          communeData.regionCode = data.commune.department.region.regionCode;
+          communeData.population = data.commune.population;
+          communeData.latitude = data.commune.latitude;
+          communeData.longitude = data.commune.longitude;
+          communeData.qualifier = data.airQuality?.atmoQual;
+          communeData.color = data.airQuality?.atmoColor;
+          communeData.atmoIndex = data.airQuality?.atmIndex;
+          console.log("communeData : ", communeData);
+          this.addMarkerToMap(communeData);
+          this.zoomOnMap([communeData.latitude, communeData.longitude], 11);
+        },
+        error: (error) => {
+          console.error('Error fetching commune data:', error);
+        }
+      });
     }
   }
 
-  addMarketToMap(commune: any) {
+  /**
+   * Adds a marker to the map for the given commune.
+   * The marker is displayed at the commune's latitude and longitude,
+   * and its icon is determined by the commune's atmoIndex.
+   * When the marker is clicked, emits the onMarkerClick event with the commune,
+   * and opens a popup displaying the commune's data.
+   * @param commune The commune data to add to the map.
+   */
+  addMarkerToMap(commune: any) {
     if (!commune.latitude || !commune.longitude) {
       return;
     }
 
-    let icon: any = null;
-
-    if (commune.qualifier === 'Bon') {
-      icon = I.goodIcon;
-    } else if (commune.qualifier === 'Moyen') {
-      icon = I.mediumIcon;
-    }
-    else if (commune.qualifier === 'Dégradé') {
-      icon = I.deterioratedIcon;
-    }
-    else if (commune.qualifier === 'Mauvais') {
-      icon = I.badIcon;
-    }
-    else if (commune.qualifier === 'Très mauvais') {
-      icon = I.veryBadIcon;
-    }
-    else if (commune.qualifier === 'Extrêmement mauvais') {
-      icon = I.extremelyBadIcon;
-    }
-    else {
-      icon = I.undefinedIcon;
-    }
+    let icon: any = L.icon({
+    iconUrl: `assets/images/marker-${commune.atmoIndex}.png`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [-3, -76]
+  });
 
     const marker = L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map);
 
     marker.on('click', () => {
       this.onMarkerClick.emit(commune);
-      this.openPopup(marker, commune);
     });
   }
 
-  openPopup(marker: L.Marker, commune: Commune) {
-    // Create DOM container for popup content
-    const popupContainer = document.createElement('div');
-
-    // Create dynamic Angular component **rendered into** popupContainer
-    const compRef = this.viewContainerRef.createComponent(MarkerPopupComponent, {
-      injector: this.injector,
-    });
-    popupContainer.appendChild(compRef.location.nativeElement);
-
-    // pass inputs
-    compRef.instance.commune = commune;
-
-    // subscribe to output and forward to parent
-    const sub = compRef.instance.more.subscribe(() => {
-      this.anchorLinkClicked.emit(commune);
-    });
-
-    // open popup
-    var popup = L.popup()
-    .setLatLng([commune.latitude, commune.longitude])
-    .setContent(popupContainer)
-    .openOn(this.map);
-
-    // Destroy dynamic component when popup closes (prevents leaks)
-    const onClose = () => {
-      try {
-        sub.unsubscribe();
-      } catch { }
-      try {
-        compRef.destroy();
-      } catch { }
-      marker.off('popupclose', onClose);
-    };
-
-    marker.on('popupclose', onClose);
-  }
+/**
+ * Zooms the map to the given latitude and longitude at the given zoom level.
+ * @param {any} latLng - The latitude and longitude to zoom to.
+ * @param {number} zoomLevel - The zoom level to use.
+ */
+zoomOnMap(latLng: any, zoomLevel: number){
+  this.map.setView(latLng, zoomLevel);
+}
 
 }
