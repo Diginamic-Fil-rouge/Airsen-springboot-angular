@@ -4,19 +4,6 @@
   background-color: $airsen-gray-100;
   border-radius: 8px;
   position: relative;
-  transition: padding $duration-normal $ease-in-out;
-
-  @include breakpoint("lg") {
-    padding: $space-8;
-  }
-
-  @include breakpoint("xl") {
-    padding: $space-10;
-  }
-
-  @include breakpoint("2xl") {
-    padding: $space-12;
-  }
 
   // Loading State
   .loading-container {
@@ -26,13 +13,13 @@
     justify-content: center;
     min-height: 100vh;
     gap: 1rem;
-
+    
     p {
       color: $airsen-gray-700;
       font-size: 1rem;
     }
   }
-
+  
   // Error State
   .error-container {
     display: flex;
@@ -42,38 +29,25 @@
     min-height: 100vh;
     text-align: center;
     gap: 1rem;
-
-    mat-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      color: $airsen-error;
-    }
-
-    h2 {
-      margin: 0;
-      color: $airsen-gray-900;
-    }
-
-    p {
-      color: $airsen-gray-700;
-    }
-
-
+    
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: $airsen-error;
+  }
+  
+  h2 {
+    margin: 0;
+    color: $airsen-gray-900;
+  }
+  
+  p {
+    color: $airsen-gray-700;
   }
 
-  .search-bar {
-    margin: 0 auto;
-    width: 300px;
-    border: 1px solid $airsen-gray-300;
-    border-radius: 8px;
-    background-color: $airsen-gray-50;
-    padding: 5px;
-    transition: width $duration-normal $ease-in-out;
 
-    .search-input {
-      display: flex;
-      align-items: center;
+}
 
 .search-bar{
   width: 300px;
@@ -85,52 +59,50 @@
   right:0;
   z-index: 9000;
 
-      input {
-        padding: 10px;
-        width: 275px;
-        border-radius: 8px;
-        border: none;
-        outline: none;
-        transition: width $duration-normal $ease-in-out;
-      }
-    }
-
-    .search-input:focus {
-      outline: 2px solid $airsen-primary;
-    }
-
-    .search-results {
-      position: absolute;
-      z-index: 99999;
-      background-color: $airsen-gray-50;
+  .search-input{
+    display: flex;
+    align-items: center;
+    
+    svg{
       color: $airsen-gray-800;
+      width:25px;
+      height: 25px;
+    }
+    
+    input{
+      padding: 10px;
+      width: 275px;
       border-radius: 8px;
-      border: 1px solid $airsen-gray-300;
-      width: 300px;
-      transition: width $duration-normal $ease-in-out;
+      border:none;
+      outline: none
+    }
+  }
 
-      li {
-        list-style: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
+  .search-input:focus{
+    outline: 2px solid $airsen-primary;
+  }
 
-      li:hover {
-        color: $airsen-primary;
-      }
+  .search-results{
+    position: absolute;
+    z-index: 99999;
+    background-color: $airsen-gray-50;
+    color: $airsen-gray-800;
+    border-radius: 8px;
+    border: 1px solid $airsen-gray-300;
+    width: 300px;
+
+    li{
+      list-style: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    @include breakpoint("md") {
-      width: 400px;
-
-      .search-input input {
-        width: 370px;
-      }
-
-      .search-results {
-        width: 400px;
-      }
+    li:hover{
+      color: $airsen-primary;
     }
+  }
+  
+}
 
   app-map-view{
     width: 100%;
@@ -141,42 +113,6 @@
       flex-direction: column;
       color: $airsen-gray-800;
       width:20%;
-    @include breakpoint("lg") {
-      width: 500px;
-
-      .search-input input {
-        width: 470px;
-      }
-
-      .search-results {
-        width: 500px;
-      }
-    }
-
-    @include breakpoint("xl") {
-      width: 600px;
-
-      .search-input input {
-        width: 570px;
-      }
-
-      .search-results {
-        width: 600px;
-      }
-    }
-
-  }
-
-  .page-content {
-    padding: 20px;
-    display: flex;
-    gap: 20px;
-    width: 100%;
-    flex-direction: column;
-
-    .favorites-container {
-      color: $airsen-gray-800;
-      width: 100%;
       height: fit-content;
       background-color: $airsen-gray-50;
       border-radius: 8px;
@@ -186,12 +122,10 @@
       left: 1%;
       top: 12%;
       z-index: 8999;
-      padding: 20px;
-      transition: all $duration-normal $ease-in-out;
-      flex: 0 0 100%;
 
-      h2 {
-        color: $airsen-gray-900;
+     .error-text{
+        padding: 20px;
+      }
 
       h2{
         text-align: center;
@@ -199,10 +133,10 @@
         padding-top: 20px;
       }
 
-    @include breakpoint("lg") {
-      flex-direction: row;
-      gap: $space-6;
-      padding: $space-6;
+      h3{
+        text-align: center;
+        font-weight: bold;
+      }
 
       .datas-header{
         padding:10px;
@@ -226,97 +160,21 @@
         flex-direction: column;
 
       }
-    }
 
-    @include breakpoint("xl") {
-      gap: $space-8;
-      padding: $space-8;
-    }
+      .loading-container{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        height: 50px;
 
-    @include breakpoint("2xl") {
-      gap: $space-10;
-      padding: $space-10;
-    }
-  }
-
-  .map-datas {
-    display: flex;
-    flex-direction: column;
-    color: $airsen-gray-800;
-    width: 100%;
-    height: fit-content;
-    background-color: $airsen-gray-50;
-    border-radius: 8px;
-    border: 1px solid $airsen-gray-300;
-    margin: 0 auto;
-    transition: all $duration-normal $ease-in-out;
-
-    .error-text {
-      padding: 20px;
-    }
-
-    .error {
-      color: $airsen-error;
-    }
-
-    h2 {
-      text-align: center;
-      color: $airsen-gray-900;
-      padding-top: 20px;
-    }
-
-    h3 {
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .datas-header {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid $airsen-gray-300;
-    }
-
-    .commune-air-quality {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid $airsen-gray-300;
-      color: $airsen-white;
-      opacity: 0.6;
-    }
-
-    .commune-weather {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid $airsen-gray-300;
-    }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      height: 50px;
-
-      p {
-        color: $airsen-gray-700;
-        font-size: 1rem;
+        p {
+          color: $airsen-gray-700;
+          font-size: 1rem;
+        }
       }
-    }
 
-    @include breakpoint("lg") {
-      width: 50%;
-      margin: 0;
     }
-
-    @include breakpoint("xl") {
-      width: 48%;
-    }
-
-    @include breakpoint("2xl") {
-      width: 45%;
-    }
-
-  }
 }
+  
+  
+

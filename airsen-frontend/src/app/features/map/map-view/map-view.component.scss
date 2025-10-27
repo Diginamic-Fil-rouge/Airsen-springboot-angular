@@ -1,17 +1,7 @@
 @use 'src/assets/design-system.scss' as *;
 
-// Map Content - Responsive Design
-.map-container {
-  width: 100%;
-  height: 400px;
-  display: flex;
-  flex-direction: column;
-  transition: all $duration-normal $ease-in-out;
-
-  .map-frame {
-    border: 2px solid $airsen-gray-300;
-    border-radius: 10px;
-    height: 100%;
+  // map Content
+  .map-container {
     width: 100%;
     min-height: 750px;
     display: flex;
@@ -22,12 +12,12 @@
       border-radius: 10px;
       height: 100%;
       width: 100%;
-    }
-  }
+      position: relative;
 
-  @include breakpoint("md") {
-    height: 500px;
-  }
+      #map {
+          height: 100%;
+          width: 100%;
+        }
 
         app-map-legend{
           position: absolute;
@@ -37,11 +27,5 @@
         }
       }
 
-  @include breakpoint("xl") {
-    height: 700px;
-  }
-
-  @include breakpoint("2xl") {
-    height: 800px;
-  }
-}
+    }
+    
