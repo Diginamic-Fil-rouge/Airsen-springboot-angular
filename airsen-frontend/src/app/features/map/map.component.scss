@@ -2,8 +2,8 @@
 
 .page-container {
   background-color: $airsen-gray-100;
-  padding: 2rem;
   border-radius: 8px;
+  position: relative;
 
   // Loading State
   .loading-container {
@@ -50,12 +50,14 @@
 }
 
 .search-bar{
-  margin: 0 auto;
   width: 300px;
   border: 1px solid $airsen-gray-300;
   border-radius: 8px;
   background-color: $airsen-gray-50;
   padding: 5px;
+  position: absolute;
+  right:0;
+  z-index: 9000;
 
   .search-input{
     display: flex;
@@ -102,54 +104,27 @@
   
 }
 
-.page-content{
-  padding: 20px;
-  display: flex;
-  gap: 20px;
-  width: 100%;
-
-  .favorites-container{
-    color: $airsen-gray-800;
-    width:20%;
-    height: fit-content;
-    background-color: $airsen-gray-50;
-    border-radius: 8px;
-    border: 1px solid $airsen-gray-300;
-    padding: 20px;
-
-    h2{
-      color: $airsen-gray-900;
-
-      svg{
-        width: 16px;
-        height: 16px;
-        color: $airsen-primary;
-      }
-    }
-  }
-
   app-map-view{
-    width: 80%;
+    width: 100%;
   }
-  }
-
+  
   .map-datas{
       display: flex;
       flex-direction: column;
       color: $airsen-gray-800;
-      width:50%;
+      width:20%;
       height: fit-content;
       background-color: $airsen-gray-50;
       border-radius: 8px;
       border: 1px solid $airsen-gray-300;
       margin: 0 auto;
+      position: absolute;
+      left: 1%;
+      top: 12%;
+      z-index: 8999;
 
      .error-text{
         padding: 20px;
-      }
-
-      .error{
-        color: $airsen-error;
       }
 
       h2{
@@ -167,15 +142,15 @@
         padding:10px;
         display: flex;
         flex-direction: column;
-        border: 1px solid $airsen-gray-300;
+
       }
 
       .commune-air-quality{
         padding:10px;
         display: flex;
         flex-direction: column;
-        border: 1px solid $airsen-gray-300;
-        color: $airsen-white;
+        border-top: 1px solid $airsen-gray-300;
+        border-bottom: 1px solid $airsen-gray-300;
         opacity: 0.6;
       }
       
@@ -183,7 +158,7 @@
         padding:10px;
         display: flex;
         flex-direction: column;
-        border: 1px solid $airsen-gray-300;
+
       }
 
       .loading-container{

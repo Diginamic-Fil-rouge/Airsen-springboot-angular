@@ -43,105 +43,77 @@
     >
       <ul>
         @for (result of (searchResults | async); track $index){
-        <li (click)="onSearchResultClicked(result)">{{ result.name }} ({{ result.departmentCode }})</li>
+        <li (click)="onSearchResultClicked(result)">
+          {{ result.name }} ({{ result.departmentCode }})
+        </li>
         }
       </ul>
     </div>
   </div>
   @if (!isLoading && currentUser){
-  <div class="page-content">
-    <div class="favorites-container">
-      <h2>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-heart w-5 h-5 text-primary"
-          data-lov-id="src/pages/Favorites.tsx:211:18"
-          data-lov-name="Heart"
-          data-component-path="src/pages/Favorites.tsx"
-          data-component-line="211"
-          data-component-file="Favorites.tsx"
-          data-component-name="Heart"
-          data-component-content="%7B%22className%22%3A%22w-5%20h-5%20text-primary%22%7D"
-        >
-          <path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-          ></path>
-        </svg>
-        Mes favoris
-      </h2>
-    </div>
-    <!-- Map Content -->
-    <app-map-view
-      (onMarkerClick)="clickEvent($event, 'LATEST')"
-      (anchorLinkClicked)="goToAnchor()"
-      [communes]="communes"
-      [communeClicked]="communeClicked"
-    ></app-map-view>
-  </div>
-  <div class="map-datas" id="map-datas">
-      @if (communeClicked){
-      <div class="datas-header">
-        <h2>Données environnementales de {{ communeClicked.name }}</h2>
-        <p>
-          Population :
-          {{ communeClicked.population | number }}
-          habitants
-        </p>
-      </div>
 
-      @if (dataErrors){
-      <p class="error error-text">
-        Erreurs lors du chargement des données environnementales:
-      </p>
-      <ul>
-        @for (error of dataErrors; track $index){
-        <li class="error">{{ error }}</li>
-        }
-      </ul>
-      } @if (!isLoadingDatas && !dataErrors){
-      <div
-        class="commune-air-quality"
-        style="background-color: {{ airQualityClicked.airQuality.color }}"
-      >
-        <h3>Qualité de l'air</h3>
-        @if (airQualityClicked){
-        <p>Niveau de qualité : {{ airQualityClicked.airQuality.qualifier }}</p>
-        <p>PM10 : {{ airQualityClicked.airQuality.pollutants.PM10 }} μg/m3</p>
-        <p>PM2.5 : {{ airQualityClicked.airQuality.pollutants.PM2_5 }} μg/m3</p>
-        <p>O3 : {{ airQualityClicked.airQuality.pollutants.O3 }} μg/m3</p>
-        <p>NO2 : {{ airQualityClicked.airQuality.pollutants.NO2 }} μg/m3</p>
-        <p>SO2 : {{ airQualityClicked.airQuality.pollutants.SO2 }} μg/m3</p>
-        @if (airQualityClicked.lastUpdated){ Date du dernier prélèvement :
-        {{ airQualityClicked.lastUpdated | date }}
-        } }
-      </div>
-      <div class="commune-weather">
-        <h3>Météo</h3>
-        @if (weatherClicked){ Température : {{ weatherClicked.temperature }} °C
-        <p>Humidité : {{ weatherClicked.humidity }} %</p>
-        <p>Vitesse du vent : {{ weatherClicked.windSpeed }} m/s</p>
-        <p>Direction du vent : {{ weatherClicked.windDirection }}°</p>
-        }
-      </div>
-      } @else if (isLoadingDatas) {
-      <div class="loading-container">
-        <p>Chargement des données environnementales...</p>
-        <mat-spinner diameter="50"></mat-spinner>
-      </div>
-      } } @else {
+  <!-- Map Content -->
+  <app-map-view
+    (onMarkerClick)="clickEvent($event, 'LATEST')"
+    [communes]="communes"
+    [communeSearched]="communeSearched"
+  ></app-map-view>
+
+  <div class="map-datas" id="map-datas">
+    @if (communeClicked){
+    <div class="datas-header">
       <h2>
-        Cliquez sur une commune pour afficher ses données environnementales
+        Données environnementales de <br />
+        {{ communeClicked.name }}
       </h2>
+      <p>
+        Population :
+        {{ communeClicked.population | number }}
+        habitants
+      </p>
+    </div>
+
+    @if (!isLoadingDatas){
+
+    <div
+      class="commune-air-quality"
+      style="background-color: {{ airQualityClicked?.airQuality.color?? '' }}; color: {{ airQualityClicked?.airQuality.color? 'white' : 'black' }}"
+    >
+      <h3>Qualité de l'air</h3>
+      @if (airQualityClicked){
+      <p>Niveau de qualité : {{ airQualityClicked.airQuality.qualifier }}</p>
+      <p>PM10 : {{ airQualityClicked.airQuality.pollutants.PM10 }} μg/m3</p>
+      <p>PM2.5 : {{ airQualityClicked.airQuality.pollutants.PM2_5 }} μg/m3</p>
+      <p>O3 : {{ airQualityClicked.airQuality.pollutants.O3 }} μg/m3</p>
+      <p>NO2 : {{ airQualityClicked.airQuality.pollutants.NO2 }} μg/m3</p>
+      <p>SO2 : {{ airQualityClicked.airQuality.pollutants.SO2 }} μg/m3</p>
+      @if (airQualityClicked.lastUpdated){ Date du dernier prélèvement :
+      {{ airQualityClicked.lastUpdated | date }}
+      } } @else{
+      <p>Pas de données de qualité de l'air pour la commune sélectionnée</p>
       }
     </div>
+    <div class="commune-weather">
+      <h3>Météo</h3>
+      @if (weatherClicked){
+      <p>Température : {{ weatherClicked.temperature }} °C</p>
+      <p>Humidité : {{ weatherClicked.humidity }} %</p>
+      <p>Vitesse du vent : {{ weatherClicked.windSpeed }} m/s</p>
+      <p>Direction du vent : {{ weatherClicked.windDirection }}°</p>
+      } @else{
+      <p>Pas de données metéorologiques pour la commune sélectionnée</p>
+      }
+    </div>
+    } 
+    @else if (isLoadingDatas) {
+    <div class="loading-container">
+      <p>Chargement des données environnementales...</p>
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+    } } @else {
+    <h2>Cliquez sur une commune pour afficher ses données environnementales</h2>
+    }
+  </div>
   }
 
   <!-- Error State -->

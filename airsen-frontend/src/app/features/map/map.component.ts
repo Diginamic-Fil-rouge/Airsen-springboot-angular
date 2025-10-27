@@ -32,6 +32,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   communeClicked: Commune | null = null;
+  communeSearched: Commune | null = null;
   airQualityClicked: any | null = null;
   weatherClicked: Weather | null = null;
   communes = new Observable<Commune[]>();
@@ -55,20 +56,41 @@ export class MapComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Updates the search results based on the current search query.
+   * Calls the searchCommunes function of the GeographicService with the current search query,
+   * and assigns the result to the searchResults observable.
+   */
   onSearchInput(){
     this.searchResults = this.geographicService.searchCommunes(this.searchQuery);
   }
 
+  /**
+   * Handles the event when a search result is clicked.
+   * Resets the search query to the name of the clicked commune,
+   * resets the search results to an empty observable, and
+   * calls the clickEvent function with the clicked commune and the type "NEW".
+   * @param commune The Commune object of the clicked search result.
+   */
   onSearchResultClicked(commune: Commune){
     this.searchQuery = commune.name;
     this.searchResults = new Observable<Commune[]>();
+    this.communeSearched = commune;
     this.clickEvent(commune, "NEW");
   }
 
+  /**
+   * Resets the search results to an empty observable.
+   * This is used to clear the search results when the user wants to go back to the original map view.
+   */
   closeSearchResults(){
     this.searchResults = new Observable<Commune[]>();
   }
 
+  /**
+   * Scrolls to the element with the id "map-datas" when called.
+   * Does nothing if the element does not exist.
+   */
   goToAnchor(){
     const element = document.getElementById("map-datas");
     if (element) {
@@ -76,6 +98,15 @@ export class MapComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Fetches weather and air quality data for the given commune,
+   * and stores the results in the component's state.
+   * Prevents duplicate clicks on the same commune by
+   * resetting the state when a new commune is clicked.
+   * @param commune The Commune object to fetch data for.
+   * @param type The type of data to fetch, either "NEW" or "LATEST".
+   * @returns A promise that resolves when the data has been fetched.
+   */
   async clickEvent(commune: Commune, type: string): Promise<void> {
     // Prevent duplicate clicks on same commune
     if (this.communeClicked && this.communeClicked.inseeCode === commune.inseeCode) {
@@ -91,11 +122,11 @@ export class MapComponent implements OnInit, OnDestroy {
 
     console.log("Fetching data for commune:", commune.name, "INSEE Code:", commune.inseeCode);
 
-    try {
+
       // Fetch both weather and air quality data in parallel for better performance
       const [weather, airQuality] = await Promise.all([
-        firstValueFrom(this.weatherService.getCurrentWeather(commune.inseeCode)),
-        type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)),
+        firstValueFrom(this.weatherService.getCurrentWeather(commune.inseeCode)).catch(() => null),
+        type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)).catch(() => null) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)).catch(() => null),
       ]);
 
       console.log("Weather data received:", weather);
@@ -103,22 +134,9 @@ export class MapComponent implements OnInit, OnDestroy {
 
       this.weatherClicked = weather;
       this.airQualityClicked = airQuality;
-    } catch (error: any) {
-      console.error("Detailed error loading commune data:", error);
-      console.error("Error status:", error?.status);
-      console.error("Error message:", error?.message);
-      console.error("Error body:", error?.error);
-
-      // Handle specific error cases
-      if (error?.status === 404) {
-        this.dataErrors = ["No data available for this commune."];
-      } else {
-        const errorMsg = error?.error?.message || error?.message || "Unknown error";
-        this.dataErrors = [`Failed to load data: ${errorMsg}`];
-      }
-    } finally {
+    
       this.isLoadingDatas = false;
-    }
+    
   }
 
   /**
