@@ -1,10 +1,12 @@
-<div class="legend-container">
+<div (click)="toggleLegend()" class="legend-container">
     <h3>Légende</h3>
-    <div><img src="assets/images/marker-bon.png" alt="Marqueur bon"> : Bon</div>
-    <div><img src="assets/images/marker-moyen.png" alt="Marqueur moyen"> : Moyen</div>
-    <div><img src="assets/images/marker-dégradé.png" alt="Marqueur dégradé"> : Dégradé</div>
-    <div><img src="assets/images/marker-mauvais.png" alt="Marqueur mauvais"> : Mauvais</div>
-    <div><img src="assets/images/marker-très-mauvais.png" alt="Marqueur très mauvais"> : Très mauvais</div>
-    <div><img src="assets/images/marker-extrêmement-mauvais.png" alt="Marqueur extrêmement mauvais"> : Extrêmement mauvais</div>
-    <div><img src="assets/images/marker-undefined.png" alt="Marqueur pas de données"> : Pas de données</div>
+    @if(displayLegend){
+        <div class="legend"><img src="assets/images/marker-bon.png" alt="Marqueur bon">  <p>: Bon</p></div>
+        <div class="legend"><img src="assets/images/marker-moyen.png" alt="Marqueur moyen">  <p>: Moyen</p></div>
+        <div class="legend"><img src="assets/images/marker-dégradé.png" alt="Marqueur dégradé">  <p>: Dégradé</p></div>
+        <div class="legend"><img src="assets/images/marker-mauvais.png" alt="Marqueur mauvais">  <p>: Mauvais</p></div>
+        <div class="legend"><img src="assets/images/marker-très-mauvais.png" alt="Marqueur très mauvais">  <p>: Très mauvais</p></div>
+        <div class="legend"><img src="assets/images/marker-extrêmement-mauvais.png" alt="Marqueur extrêmement mauvais">  <p>: Extrêmement mauvais</p></div>
+        <div class="legend"><img src="assets/images/marker-undefined.png" alt="Marqueur pas de données">  <p>: Pas de données</p></div>
+    }
 </div>

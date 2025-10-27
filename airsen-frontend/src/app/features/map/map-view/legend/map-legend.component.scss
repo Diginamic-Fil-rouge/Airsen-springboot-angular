@@ -9,9 +9,23 @@
     padding: 20px;
     color: $airsen-gray-800;
     opacity: 0.8;
-    
-    img{
-        width: 16px;
-        height: 16px;
+    cursor: pointer;
+
+    h3{
+        text-align: center;
+    }
+
+    .legend{
+        display: flex;
+        gap: 5px;
+
+        p{
+            height: 16px;
+        }
+
+        img{
+            width: 16px;
+            height: 16px;
+        }
     }
 }
