@@ -265,7 +265,7 @@ public class AtmoController {
                 "NO2", airQuality.no2Concentration(),
                 "O3", airQuality.o3Concentration(),
                 "PM10", airQuality.pm10Concentration(),
-                "PM2.5", airQuality.pm25Concentration(),
+                "PM2_5", airQuality.pm25Concentration(),
                 "SO2", airQuality.so2Concentration()
             )
         ));
