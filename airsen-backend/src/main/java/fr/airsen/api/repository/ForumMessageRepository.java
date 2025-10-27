@@ -41,4 +41,12 @@ public interface ForumMessageRepository extends JpaRepository<ForumMessage, Long
      * @param id id of the message to delete.
      */
     void deleteById(Long id);
+
+    /**
+     * Count messages posted by a specific author.
+     *
+     * @param authorId author user ID
+     * @return number of messages posted by the author
+     */
+    long countByAuthorId(Long authorId);
 }

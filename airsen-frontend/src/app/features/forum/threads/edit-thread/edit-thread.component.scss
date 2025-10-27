@@ -1,0 +1,74 @@
+@use 'src/assets/design-system.scss' as *;
+
+.page-container{
+  height: 100%;
+  background-color: $airsen-gray-50;
+  padding: 2rem;
+  color: $airsen-gray-900;
+
+  .error{
+    color: $airsen-error;
+  }
+
+  form{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .form-group{
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      input{
+        padding: 10px;
+        border: 1px solid $airsen-gray-200;
+        border-radius: 5px;
+        background-color: $airsen-gray-100;
+      }
+
+      textarea{
+        padding: 10px;
+        border: 1px solid $airsen-gray-200;
+        border-radius: 5px;
+        background-color: $airsen-gray-100;
+        width: 100%;
+        min-height: 200px;
+      }
+
+      select{
+        padding: 10px;
+        border: 1px solid $airsen-gray-200;
+        border-radius: 5px;
+        background-color: $airsen-gray-100;
+      }
+
+      input:focus{
+        outline: 2px solid $airsen-primary;
+      }
+
+      textarea:focus{
+        outline: 2px solid $airsen-primary;
+      }
+
+      select:focus{
+        outline: 2px solid $airsen-primary;
+      }
+    }
+
+    button{
+      width: fit-content;
+      padding: 10px 20px;
+      background: linear-gradient(to right, $airsen-primary, $airsen-primary-light);
+      color: $airsen-white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover{
+        font-size: 1em;
+    }
+  }
+}

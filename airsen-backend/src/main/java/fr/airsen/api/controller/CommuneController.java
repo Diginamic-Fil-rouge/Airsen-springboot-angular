@@ -16,13 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 /**
  * REST controller for managing French administrative communes.
- * 
+ *
  * Provides endpoints for accessing commune data both by department
  * and through global search functionality.
  */
@@ -41,7 +40,7 @@ public class CommuneController {
 
     /**
      * GET /departments/{departmentId}/communes
-     * 
+     *
      * Lists all communes belonging to a specific department.
      */
     @GetMapping("/departments/{departmentId}/communes")
@@ -62,19 +61,19 @@ public class CommuneController {
             @RequestParam(defaultValue = "20") @Positive int size,
             @Parameter(description = "Optional search term", example = "Paris")
             @RequestParam(required = false) @Size(min = 2, max = 50) String search) {
-        
-        log.info("Received request for communes in department: {} (page: {}, size: {}, search: '{}')", 
+
+        log.info("Received request for communes in department: {} (page: {}, size: {}, search: '{}')",
                 departmentId, page, size, search);
-        
+
         List<CommuneDTO> communes = communeService.getCommunesByDepartment(departmentId, page, size, search);
         log.info("Successfully retrieved {} communes for department: {}", communes.size(), departmentId);
-        
+
         return ResponseEntity.ok(communes);
     }
 
     /**
      * GET /communes/search
-     * 
+     *
      * Global search for communes across all departments.
      */
     @GetMapping("/communes/search")
@@ -96,12 +95,36 @@ public class CommuneController {
             @RequestParam("q") @Valid @Size(min = 2, max = 50) String query,
             @Parameter(description = "Maximum number of results", example = "10")
             @RequestParam(defaultValue = "10") @Positive int limit) {
-        
+
         log.info("Received global search request for communes: '{}' (limit: {})", query, limit);
-        
+
         List<CommuneDTO> communes = communeService.searchCommunes(query, limit);
         log.info("Successfully found {} communes matching query: '{}'", communes.size(), query);
-        
+
+        return ResponseEntity.ok(communes);
+    }
+
+    /**
+     * GET /communes/with-coordinates
+     *
+     * Returns all communes that have valid coordinates for map display.
+     * Used by interactive map component to render commune markers.
+     */
+    @GetMapping("/communes/with-coordinates")
+    @Operation(
+        summary = "Get all communes with coordinates",
+        description = "Retrieves all communes that have valid latitude and longitude coordinates. " +
+                     "Used for interactive map display to show commune markers with air quality data."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Communes with coordinates retrieved successfully")
+    })
+    public ResponseEntity<List<CommuneDTO>> getCommunesWithCoordinates() {
+        log.info("Fetching all communes with coordinates for map display");
+
+        List<CommuneDTO> communes = communeService.getAllCommunesWithCoordinates();
+        log.info("Successfully retrieved {} communes with coordinates", communes.size());
+
         return ResponseEntity.ok(communes);
     }
 }

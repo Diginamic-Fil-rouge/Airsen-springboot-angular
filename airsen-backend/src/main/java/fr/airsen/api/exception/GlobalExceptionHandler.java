@@ -341,6 +341,111 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles maximum favorites exceeded exceptions.
+     *
+     * This method is triggered when a user attempts to add more than 10 favorites.
+     * It returns a 400 Bad Request response with a clear error message.
+     *
+     * @param ex MaximumFavoritesExceededException containing error details
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 400 status and error message
+     */
+    @ExceptionHandler(MaximumFavoritesExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaximumFavoritesExceeded(
+            MaximumFavoritesExceededException ex, WebRequest request) {
+
+        logger.debug("Maximum favorites exceeded for request {}: {}",
+                request.getDescription(false), ex.getMessage());
+
+        Map<String, Object> errorResponse = createErrorResponse(
+                ex.getMessage(),
+                "MAXIMUM_FAVORITES_EXCEEDED",
+                HttpStatus.BAD_REQUEST
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
+     * Handles duplicate favorite exceptions.
+     *
+     * This method is triggered when a user attempts to favorite a commune that
+     * is already in their favorites list. It returns a 409 Conflict response.
+     *
+     * @param ex DuplicateFavoriteException containing error details
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 409 status and error message
+     */
+    @ExceptionHandler(DuplicateFavoriteException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateFavorite(
+            DuplicateFavoriteException ex, WebRequest request) {
+
+        logger.debug("Duplicate favorite for request {}: {}",
+                request.getDescription(false), ex.getMessage());
+
+        Map<String, Object> errorResponse = createErrorResponse(
+                ex.getMessage(),
+                "DUPLICATE_FAVORITE",
+                HttpStatus.CONFLICT
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handles forbidden access exceptions.
+     *
+     * This method is triggered when a user attempts to access resources they
+     * don't have permission for (e.g., accessing another user's favorites).
+     * It returns a 403 Forbidden response.
+     *
+     * @param ex ForbiddenException containing error details
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 403 status and error message
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(
+            ForbiddenException ex, WebRequest request) {
+
+        logger.warn("Forbidden access attempt for request {}: {}",
+                request.getDescription(false), ex.getMessage());
+
+        Map<String, Object> errorResponse = createErrorResponse(
+                ex.getMessage(),
+                "FORBIDDEN",
+                HttpStatus.FORBIDDEN
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    /**
+     * Handles resource not found exceptions.
+     *
+     * This method is triggered when a requested resource (user, commune, favorite)
+     * cannot be found in the database. It returns a 404 Not Found response.
+     *
+     * @param ex ResourceNotFoundException containing error details
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 404 status and error message
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFound(
+            ResourceNotFoundException ex, WebRequest request) {
+
+        logger.debug("Resource not found for request {}: {}",
+                request.getDescription(false), ex.getMessage());
+
+        Map<String, Object> errorResponse = createErrorResponse(
+                ex.getMessage(),
+                "RESOURCE_NOT_FOUND",
+                HttpStatus.NOT_FOUND
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
      * Creates a standardized error response map.
      * 
      * @param message error message

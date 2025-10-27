@@ -2,10 +2,24 @@
 spring:
   application:
     name: airsen-api
-  
+
   profiles:
     active: dev
-  
+
+  devtools:
+    restart:
+      enabled: true # Enable automatic restart
+      poll-interval: 2000 # Check for file changes every 2 seconds
+      quiet-period: 1000 # Wait 1 second after last change before restart
+      additional-paths:
+        - src/main/java # Monitor source directory
+      exclude: static/**,public/** # Don't restart on static file changes
+    livereload:
+      enabled: false # Disable LiveReload in Docker (browser refresh)
+    remote:
+      restart:
+        enabled: false # Disable remote restart for security
+
   # Database Configuration - MariaDB
   datasource:
     url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -18,7 +32,7 @@ spring:
       minimum-idle: 5
       idle-timeout: 300000
       max-lifetime: 1200000
-  
+
   # JPA Configuration
   jpa:
     open-in-view: false
@@ -32,7 +46,7 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
         format_sql: true
         use_sql_comments: true
-  
+
   # Redis Configuration
   data:
     redis:
@@ -44,7 +58,7 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
-  
+
   # Cache Configuration
   cache:
     type: redis
@@ -53,7 +67,18 @@ spring:
       cache-null-values: false
       use-key-prefix: true
       key-prefix: "airsen:"
-  
+
+  # Jackson JSON Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+      accept-single-value-as-array: true
+    default-property-inclusion: non_null
+    time-zone: Europe/Paris
+
   # Security Configuration
   security:
     jwt:
@@ -62,7 +87,7 @@ spring:
       refresh-expiration: 604800000 # 7 days
       clock-skew: 300 # 5 minutes tolerance
       issuer: airsen-api
-  
+
   # Email Configuration
   mail:
     host: smtp.gmail.com
@@ -116,12 +141,12 @@ external:
     password: ${ATMO_PASSWORD:}
     timeoutMs: 10000
     retryAttempts: 3
-  
+
   open-meteo:
     base-url: ${OPEN_METEO_URL}
-    timeout-ms: 5000
+    timeout-ms: 20000 # Increased to 15 seconds to handle slower external API responses
     retry-attempts: 3
-  
+
   insee-api:
     base-url: ${INSEE_API_URL}
     timeout-ms: 5000
@@ -139,10 +164,10 @@ springdoc:
 # Scheduling Configuration
 scheduling:
   atmo:
-    cron: ${ATMO_SCHEDULE_CRON:0 0 0 * * *}  # Default: midnight (00:00)
+    cron: ${ATMO_SCHEDULE_CRON:0 0 0 * * *} # Default: midnight (00:00)
     timezone: ${ATMO_SCHEDULE_TIMEZONE:Europe/Paris}
   weather:
-    cron: ${WEATHER_SCHEDULE_CRON:0 30 0 * * *}  # Default: 00:30 (staggered 30 minutes after ATMO)
+    cron: ${WEATHER_SCHEDULE_CRON:0 30 0 * * *} # Default: 00:30 (staggered 30 minutes after ATMO)
     timezone: ${WEATHER_SCHEDULE_TIMEZONE:Europe/Paris}
 
 # Custom application email settings
@@ -158,6 +183,13 @@ spring:
   config:
     activate:
       on-profile: dev
+
+  # DevTools + Redis compatibility settings
+  devtools:
+    restart:
+      # Prevent classloader issues with Redis cached objects
+      additional-exclude: "fr/airsen/api/external/dto/**,fr/airsen/api/entity/**"
+
   mail:
     properties:
       mail:
@@ -168,8 +200,10 @@ logging:
     root: INFO
     fr.airsen.api: DEBUG
     org.springframework.cache: DEBUG
-    org.springframework.data.redis: INFO
-    fr.airsen.api.config.RedisConfig: INFO
+    org.springframework.data.redis: DEBUG # Changed to DEBUG for better Redis troubleshooting
+    fr.airsen.api.config.RedisConfig: DEBUG # Changed to DEBUG to see serialization details
     fr.airsen.api.scheduler.CacheRefreshScheduler: INFO
     org.springframework.mail: DEBUG
     fr.airsen.api.service.NotificationService: DEBUG
+    reactor.core.publisher: INFO # Add reactive stream logging
+    fr.airsen.api.external.client: DEBUG # Add external API client logging

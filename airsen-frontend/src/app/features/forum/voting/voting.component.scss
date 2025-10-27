@@ -1,0 +1,38 @@
+@use 'src/assets/design-system.scss' as *;
+
+.vote-container{
+    display:flex;
+    align-items: center;
+    gap: 1rem;
+
+    .vote-button{
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: $airsen-gray-800;
+
+        .thumb-image{
+            width: 15px;
+            height: 15px;
+        }
+
+    }
+
+    .vote-button:hover{
+        transform: scale(1.2);
+        background-color:$airsen-accent;
+        color: $airsen-gray-100;
+        border-radius: 25%;
+        padding: 4px;
+    }
+    
+    .checked{
+        background-color:$airsen-accent;
+        color: $airsen-gray-100;
+        border-radius: 25%;
+        padding: 2px;
+    }
+}

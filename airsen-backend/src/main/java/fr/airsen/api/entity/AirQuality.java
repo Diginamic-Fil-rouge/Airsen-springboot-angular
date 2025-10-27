@@ -39,15 +39,15 @@ public class AirQuality {
 
     @Column(name = "no2")
     @Min(value = 0, message = "The NO2 must be greater than or equal to 0")
-    private double NO2;
+    private Integer NO2;
 
     @Column(name = "o3")
     @Min(value = 0, message = "The O3 must be greater than or equal to 0")
-    private double O3;
+    private Integer O3;
 
     @Column(name = "pm10")
     @Min(value = 0, message = "The PM10 must be greater than or equal to 0")
-    private double Pm10;
+    private Integer Pm10;
 
     @Column(name = "pm25")
     @Min(value = 0, message = "The PM25 must be greater than or equal to 0")
@@ -55,7 +55,7 @@ public class AirQuality {
 
     @Column(name = "so2")
     @Min(value = 0, message = "The SO2 must be greater than or equal to 0")
-    private double SO2;
+    private Integer SO2;
 
     @Column(name = "created_at")
     @PastOrPresent(message = "The created at date must be in the past or present")
@@ -64,13 +64,13 @@ public class AirQuality {
     /**
      * Alert histories triggered by this air quality measurement.
      */
-    @OneToMany(mappedBy = "airQuality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private java.util.List<AlertHistory> alertHistories;
+//    @OneToMany(mappedBy = "airQuality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private java.util.List<AlertHistory> alertHistories;
 
     public AirQuality() {
     }
 
-    public AirQuality(Commune commune, LocalDate measurementDate, Integer atmIndex, String atmoQual, String atmoColor, double NO2, double o3, double pm10, Integer pm25, double SO2, LocalDate createdAt) {
+    public AirQuality(Commune commune, LocalDate measurementDate, Integer atmIndex, String atmoQual, String atmoColor, Integer NO2, Integer o3, Integer pm10, Integer pm25, Integer SO2, LocalDate createdAt) {
         this.commune = commune;
         this.measurementDate = measurementDate;
         this.atmIndex = atmIndex;
@@ -132,27 +132,27 @@ public class AirQuality {
         this.atmoColor = atmoColor;
     }
 
-    public double getNO2() {
+    public Integer getNO2() {
         return NO2;
     }
 
-    public void setNO2(double NO2) {
+    public void setNO2(Integer NO2) {
         this.NO2 = NO2;
     }
 
-    public double getO3() {
+    public Integer getO3() {
         return O3;
     }
 
-    public void setO3(double o3) {
+    public void setO3(Integer o3) {
         O3 = o3;
     }
 
-    public double getPm10() {
+    public Integer getPm10() {
         return Pm10;
     }
 
-    public void setPm10(double pm10) {
+    public void setPm10(Integer pm10) {
         Pm10 = pm10;
     }
 
@@ -164,11 +164,11 @@ public class AirQuality {
         Pm25 = pm25;
     }
 
-    public double getSO2() {
+    public Integer getSO2() {
         return SO2;
     }
 
-    public void setSO2(double SO2) {
+    public void setSO2(Integer SO2) {
         this.SO2 = SO2;
     }
 
@@ -179,14 +179,14 @@ public class AirQuality {
     public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
     }
-
-    public java.util.List<AlertHistory> getAlertHistories() {
-        return alertHistories;
-    }
-
-    public void setAlertHistories(java.util.List<AlertHistory> alertHistories) {
-        this.alertHistories = alertHistories;
-    }
+//
+//    public java.util.List<AlertHistory> getAlertHistories() {
+//        return alertHistories;
+//    }
+//
+//    public void setAlertHistories(java.util.List<AlertHistory> alertHistories) {
+//        this.alertHistories = alertHistories;
+//    }
 
     // External API integration methods (aliases for compatibility)
     public Integer getAtmoIndex() {
@@ -213,44 +213,44 @@ public class AirQuality {
         this.atmoColor = color;
     }
 
-    public Double getNo2Concentration() {
+    public Integer getNo2Concentration() {
         return NO2;
     }
 
-    public void setNo2Concentration(Double no2) {
-        this.NO2 = no2 != null ? no2 : 0.0;
+    public void setNo2Concentration(Integer no2) {
+        this.NO2 = no2 != null ? no2 : 0;
     }
 
-    public Double getO3Concentration() {
+    public Integer getO3Concentration() {
         return O3;
     }
 
-    public void setO3Concentration(Double o3) {
-        this.O3 = o3 != null ? o3 : 0.0;
+    public void setO3Concentration(Integer o3) {
+        this.O3 = o3 != null ? o3 : 0;
     }
 
-    public Double getPm10Concentration() {
-        return (double) Pm10;
+    public Integer getPm10Concentration() {
+        return (Integer) Pm10;
     }
 
-    public void setPm10Concentration(Double pm10) {
-        this.Pm10 = pm10 != null ? pm10 : 0.0;
+    public void setPm10Concentration(Integer pm10) {
+        this.Pm10 = pm10 != null ? pm10 : 0;
     }
 
-    public Double getPm25Concentration() {
-        return Pm25 != null ? Pm25.doubleValue() : 0.0;
+    public Integer getPm25Concentration() {
+        return Pm25 != null ? Pm25.intValue() : 0;
     }
 
-    public void setPm25Concentration(Double pm25) {
+    public void setPm25Concentration(Integer pm25) {
         this.Pm25 = pm25 != null ? pm25.intValue() : 0;
     }
 
-    public Double getSo2Concentration() {
+    public Integer getSo2Concentration() {
         return SO2;
     }
 
-    public void setSo2Concentration(Double so2) {
-        this.SO2 = so2 != null ? so2 : 0.0;
+    public void setSo2Concentration(Integer so2) {
+        this.SO2 = so2 != null ? so2 : 0;
     }
 
     @Override
@@ -274,7 +274,7 @@ public class AirQuality {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof AirQuality that)) return false;
-        return Double.compare(NO2, that.NO2) == 0 && Double.compare(O3, that.O3) == 0 && Double.compare(Pm10, that.Pm10) == 0 && Double.compare(SO2, that.SO2) == 0 && Objects.equals(commune, that.commune) && Objects.equals(measurementDate, that.measurementDate) && Objects.equals(atmIndex, that.atmIndex) && Objects.equals(atmoQual, that.atmoQual) && Objects.equals(atmoColor, that.atmoColor) && Objects.equals(Pm25, that.Pm25);
+        return Objects.equals(NO2, that.NO2) && Objects.equals(O3, that.O3) && Objects.equals(Pm10, that.Pm10) && Objects.equals(SO2, that.SO2) && Objects.equals(commune, that.commune) && Objects.equals(measurementDate, that.measurementDate) && Objects.equals(atmIndex, that.atmIndex) && Objects.equals(atmoQual, that.atmoQual) && Objects.equals(atmoColor, that.atmoColor) && Objects.equals(Pm25, that.Pm25);
     }
 
     @Override

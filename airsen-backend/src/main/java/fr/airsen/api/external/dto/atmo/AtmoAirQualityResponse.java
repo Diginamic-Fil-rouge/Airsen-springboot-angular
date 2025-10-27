@@ -2,11 +2,10 @@ package fr.airsen.api.external.dto.atmo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDate;
 
 /**
  * Response DTO for ATMO air quality measurements.
- * 
+ *
  * Maps the ATMO France API GeoJSON response for air quality indices
  * and pollutant concentrations from the features.properties structure.
  */

@@ -10,6 +10,7 @@ export interface LoginResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
+  userId: number;
   userEmail: string;
   userFirstName: string;
   userLastName: string;
@@ -28,6 +29,10 @@ export interface AuthUser {
   commune?: string;
   department?: string;
   region?: string;
+  // Champs supplémentaires pour le profil
+  address?: string;
+  phone?: string;
+  bio?: string;
 }
 
 export interface RefreshTokenRequest {

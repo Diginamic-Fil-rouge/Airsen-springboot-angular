@@ -1,0 +1,307 @@
+<div class="profile-page">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-text">
+      <h1>Mon profil</h1>
+      <p>Gérez vos informations personnelles et préférences</p>
+    </div>
+    <button class="btn-outline" routerLink="/dashboard">
+      Retour au tableau de bord
+    </button>
+  </div>
+
+  <div class="grid">
+    <!-- Colonne gauche -->
+    <div class="sidebar-wrapper">
+      <div class="sidebar">
+        <div class="card text-center">
+          <div class="avatar-wrapper">
+            <div class="avatar initials-avatar">
+              {{ getInitials() }}
+            </div>
+          </div>
+
+          <h3>{{ formData.name }}</h3>
+          <p>{{ formData.email }}</p>
+
+          <div class="stats">
+            <div>
+              <strong>{{ userStats.discussions }}</strong>
+              <span>Discussions</span>
+            </div>
+            <div>
+              <strong>{{ userStats.likes }}</strong>
+              <span>J'aime</span>
+            </div>
+            <div>
+              <strong>{{ userStats.followers }}</strong>
+              <span>Abonnés</span>
+            </div>
+          </div>
+
+          <div class="badge">✅ Utilisateur vérifié</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne droite -->
+    <div class="content">
+      <!-- Conteneur boutons + cadre infos -->
+      <div class="tabs-and-card">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button
+            [class.active]="activeTab === 'profile'"
+            (click)="activeTab = 'profile'"
+          >
+            Profil
+          </button>
+          <button
+            [class.active]="activeTab === 'notifications'"
+            (click)="activeTab = 'notifications'"
+          >
+            Notifications
+          </button>
+          <button
+            [class.active]="activeTab === 'security'"
+            (click)="activeTab = 'security'"
+          >
+            Sécurité
+          </button>
+        </div>
+
+        <!-- Onglet Profil -->
+        <div *ngIf="activeTab === 'profile'" class="profile-card card">
+          <h2>Informations personnelles</h2>
+
+          <form (ngSubmit)="saveProfile()" class="form-grid">
+            <!-- Ligne 1 : Nom complet + Email -->
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="name">Nom complet</label>
+                <input
+                  [(ngModel)]="formData.name"
+                  name="name"
+                  id="name"
+                  maxlength="28"
+                  required
+                  #nameField="ngModel"
+                />
+
+                <!-- Compteur de caractères -->
+                <div class="char-counter">
+                  {{ formData.name?.length || 0 }}/28
+                </div>
+
+                <!-- Messages d’erreur -->
+                <div
+                  *ngIf="nameField.invalid && nameField.touched"
+                  class="error-message"
+                >
+                  <span *ngIf="nameField.errors?.['required']">
+                    Le nom complet est obligatoire.
+                  </span>
+                  <span *ngIf="nameField.errors?.['maxlength']">
+                    Le nom complet ne peut pas dépasser 22 caractères.
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Adresse e-mail</label>
+                <input
+                  [(ngModel)]="formData.email"
+                  name="email"
+                  id="email"
+                  type="email"
+                  readonly
+                  class="readonly-input"
+                />
+              </div>
+            </div>
+
+            <!-- Ligne 2 : Adresse -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="address">Adresse</label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  [(ngModel)]="formData.address"
+                  #address="ngModel"
+                  maxlength="200"
+                  placeholder="Votre adresse complète"
+                  required
+                />
+
+                <!-- Compteur de caractères -->
+                <div class="char-counter">
+                  {{ formData.address?.length || 0 }}/200
+                </div>
+
+                <!-- Message d'erreur -->
+                <div
+                  *ngIf="address.invalid && address.touched"
+                  class="error-message"
+                >
+                  <span *ngIf="address.errors?.['required']"
+                    >L’adresse est obligatoire.</span
+                  >
+                  <span *ngIf="address.errors?.['maxlength']">
+                    L’adresse ne peut pas dépasser 255 caractères.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ligne 3 : Téléphone -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="phone">Téléphone</label>
+                <input
+                  [(ngModel)]="formData.phone"
+                  name="phone"
+                  id="phone"
+                  maxlength="20"
+                  #phone="ngModel"
+                  required
+                  pattern="^[0-9]*$"
+                />
+                <div
+                  class="error-message"
+                  *ngIf="phone.errors && (phone.dirty || phone.touched)"
+                >
+                  <span *ngIf="phone.errors['required']"
+                    >Le téléphone est obligatoire.</span
+                  >
+                  <span *ngIf="phone.errors['pattern']"
+                    >Le téléphone ne doit contenir que des chiffres.</span
+                  >
+                  <span *ngIf="phone.errors['maxlength']"
+                    >Le téléphone ne peut pas dépasser 20 caractères.</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Ligne 4 : Bio -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="bio">Bio</label>
+                <textarea
+                  id="bio"
+                  name="bio"
+                  [(ngModel)]="formData.bio"
+                  #bio="ngModel"
+                  maxlength="500"
+                  rows="4"
+                  placeholder="Décrivez-vous (max 500 caractères)"
+                  required
+                ></textarea>
+
+                <!--  Compteur de caractères -->
+                <div class="char-counter">
+                  {{ formData.bio?.length || 0 }}/500
+                </div>
+
+                <!--  Message d'erreur -->
+                <div *ngIf="bio.invalid && bio.touched" class="error-message">
+                  <span *ngIf="bio.errors?.['required']"
+                    >La bio est obligatoire.</span
+                  >
+                  <span *ngIf="bio.errors?.['maxlength']">
+                    La bio ne peut pas dépasser 500 caractères.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ligne 5 : Bouton Sauvegarder -->
+            <div class="form-row button-row">
+              <button type="submit" class="btn-save">
+                Sauvegarder les modifications
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Onglet Notifications -->
+        <div
+          *ngIf="activeTab === 'notifications'"
+          class="card notifications-card"
+        >
+          <h2>Préférences de notification</h2>
+          <p class="notif-intro">
+            Choisissez comment vous souhaitez être notifié
+          </p>
+
+          <div class="notifications-list">
+            <div *ngFor="let key of notifications | keyvalue" class="notif-row">
+              <!-- <span class="notif-label">{{ key.key }}</span> -->
+              <div class="notif-labels">
+                <span class="notif-title">{{
+                  notificationLabels[key.key]?.title
+                }}</span>
+                <span class="notif-description">{{
+                  notificationLabels[key.key]?.description
+                }}</span>
+              </div>
+
+              <button
+                (click)="toggleNotificationKey(key.key)"
+                [class.active]="key.value"
+                [class.inactive]="!key.value"
+              >
+                {{ key.value ? "Activé" : "Désactivé" }}
+              </button>
+            </div>
+          </div>
+
+          <div class="notif-actions">
+            <button (click)="saveNotifications()" class="btn-save">
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+
+        <!-- Onglet Sécurité -->
+        <div *ngIf="activeTab === 'security'" class="card security-card">
+          <h2>Sécurité du compte</h2>
+          <p class="security-subtitle">
+            Gérez la sécurité et les paramètres de votre compte
+          </p>
+
+          <!-- Changer le mot de passe -->
+          <div class="security-section">
+            <div class="section-text">
+              <h3>Changer le mot de passe</h3>
+              <p class="section-description">
+                Mettez à jour votre mot de passe régulièrement pour la sécurité.
+              </p>
+            </div>
+            <button class="btn-outline-rounded">Modifier</button>
+          </div>
+
+          <!-- Authentification à deux facteurs -->
+          <div class="security-section">
+            <div class="section-text">
+              <h3>Authentification à deux facteurs</h3>
+              <p class="section-description">
+                Ajoutez une couche de sécurité supplémentaire à votre compte.
+              </p>
+            </div>
+            <button class="btn-outline-rounded">Configurer 2FA</button>
+          </div>
+
+          <!-- Zone de danger -->
+          <div class="security-section danger-zone">
+            <h3>Zone de danger</h3>
+            <p class="danger-text">Actions irréversibles sur votre compte</p>
+            <button class="btn-danger-rounded">🗑️ Supprimer le compte</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

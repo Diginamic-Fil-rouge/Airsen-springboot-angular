@@ -1,0 +1,76 @@
+<div class="page-container">
+  
+  @if (thread && !isLoading) {
+    <div class="thread-container">
+    <back-button route="/forum" textContent="Retour au forum"></back-button>
+    <div class="thread-content">
+      <div class="thread-infos">
+        <div class="thread-header">
+          <h1 class="title">{{ thread.title }}</h1>
+          <div class="action-buttons">
+            @if (currentUser?.id == thread.author?.id || currentUser?.role == 'ADMIN') {
+              <a class="edit-button" routerLink="/forum/edit/thread/{{ thread.id }}"
+                >Modifier</a
+              >
+              <button class="delete-button" (click)="toggleModal()">Supprimer</button>
+            }
+          </div>
+        </div>
+        <div class="thread-data">
+            <div class="author">
+              par
+              {{
+                thread.author?.firstName +
+                  " " +
+                  thread.author?.lastName
+              }}
+            </div>
+            •
+            <div class="last-activity">
+              {{ thread.lastMessageDate | date : "dd MMMM yyyy, HH:mm" }}
+            </div>
+            •
+            <div class="view-count">{{ thread.viewCount }} vues</div>
+        </div>
+      </div>
+      <p class="content">{{ thread.content }}</p>
+      <div class="separator"></div>
+      <div class="thread-data">
+        <thread-voting
+          [thread]="thread"
+          [voteCount]="thread.likeCount"
+        ></thread-voting>
+      </div>
+    </div>
+    <h3 class="message-count">
+      Réponses ({{ thread.messageCount }})
+    </h3>
+    <div class="messages-container">
+      @for (message of thread.messages; track $index) {
+        <forum-message [message]="message" (messageEvent)="refreshThread()" ></forum-message>
+      }
+    </div>
+    @if (currentUser) {
+    <app-add-message [thread]="thread" (newMessageEvent)="refreshThread()"></app-add-message>
+    }
+  </div>
+  }
+  @else {
+    <app-loader></app-loader>
+    }
+</div>
+
+@if(showModal){
+<div class="confirmation-modal">
+  <div class="modal-container">
+    <p>
+      Êtes-vous sûr de vouloir supprimer la discussion ? cette action est
+      définitive
+    </p>
+    <div class="modal-buttons">
+      <button class="danger" (click)="deleteThread()">Valider</button>
+      <button class="cancel" (click)="toggleModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+}

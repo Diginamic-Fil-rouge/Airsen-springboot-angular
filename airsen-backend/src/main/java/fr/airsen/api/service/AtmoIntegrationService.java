@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -119,7 +120,7 @@ public class AtmoIntegrationService {
      * @return Mono containing the air quality data as DTO
      */
     public Mono<Optional<AirQualityResponseDTO>> getAirQualityForCommune(String inseeCode) {
-        log.error(">>> DEBUG: Starting getAirQualityForCommune for: {}", inseeCode);
+        log.info("Starting getAirQualityForCommune for: {}", inseeCode);
         
         return atmoApiClient.getCurrentAirQuality(inseeCode)
             .flatMap(this::convertToAirQuality)
@@ -128,7 +129,7 @@ public class AtmoIntegrationService {
                     log.info("Attempting to save air quality data for commune: {} with measurement date: {}", 
                             inseeCode, airQuality.getMeasurementDate());
                     log.info("Air quality data: index={}, qualifier={}, color={}", 
-                            airQuality.getAtmoIndex(), airQuality.getQualifier(), airQuality.getColor());
+                            airQuality.getAtmIndex(), airQuality.getQualifier(), airQuality.getColor());
                     
                     // Check if data already exists for today
                     LocalDate measurementDate = airQuality.getMeasurementDate();
@@ -258,7 +259,7 @@ public class AtmoIntegrationService {
                     // Check if data already exists for today
                     LocalDate measurementDate = airQuality.getMeasurementDate();
                     Optional<AirQuality> existing = airQualityRepository
-                        .findByCommuneAndMeasurementDate(airQuality.getCommune(), measurementDate);
+                        .findByCommuneAndMeasurementDateWithEagerLoading(airQuality.getCommune(), measurementDate);
                     
                     if (existing.isPresent()) {
                         // Update existing record
@@ -320,31 +321,39 @@ public class AtmoIntegrationService {
 
             // Map pollutant codes directly from the ATMO API response
             if (atmoResponse.no2Code() != null) {
-                Double no2Conc = convertCodeToConcentration("NO2", atmoResponse.no2Code());
-                airQuality.setNO2(no2Conc);
-                log.info("Set NO2 concentration: {}", no2Conc);
+                Integer no2Conc = convertCodeToConcentration("NO2", atmoResponse.no2Code());
+                if (no2Conc != null) {
+                    airQuality.setNO2(no2Conc);
+                    log.info("Set NO2 concentration: {}", no2Conc);
+                }
             }
             if (atmoResponse.o3Code() != null) {
-                Double o3Conc = convertCodeToConcentration("O3", atmoResponse.o3Code());
-                airQuality.setO3(o3Conc);
-                log.info("Set O3 concentration: {}", o3Conc);
+                Integer o3Conc = convertCodeToConcentration("O3", atmoResponse.o3Code());
+                if (o3Conc != null) {
+                    airQuality.setO3(o3Conc);
+                    log.info("Set O3 concentration: {}", o3Conc);
+                }
             }
             if (atmoResponse.pm10Code() != null) {
-                Double pm10Conc = convertCodeToConcentration("PM10", atmoResponse.pm10Code());
-                airQuality.setPm10(pm10Conc);
-                log.info("Set PM10 concentration: {}", pm10Conc);
+                Integer pm10Conc = convertCodeToConcentration("PM10", atmoResponse.pm10Code());
+                if (pm10Conc != null) {
+                    airQuality.setPm10(pm10Conc);
+                    log.info("Set PM10 concentration: {}", pm10Conc);
+                }
             }
             if (atmoResponse.pm25Code() != null) {
-                Double pm25Concentration = convertCodeToConcentration("PM25", atmoResponse.pm25Code());
+                Integer pm25Concentration = convertCodeToConcentration("PM25", atmoResponse.pm25Code());
                 if (pm25Concentration != null) {
-                    airQuality.setPm25(pm25Concentration.intValue());
-                    log.info("Set PM25 concentration: {}", pm25Concentration.intValue());
+                    airQuality.setPm25(pm25Concentration);
+                    log.info("Set PM25 concentration: {}", pm25Concentration);
                 }
             }
             if (atmoResponse.so2Code() != null) {
-                Double so2Conc = convertCodeToConcentration("SO2", atmoResponse.so2Code());
-                airQuality.setSO2(so2Conc);
-                log.info("Set SO2 concentration: {}", so2Conc);
+                Integer so2Conc = convertCodeToConcentration("SO2", atmoResponse.so2Code());
+                if (so2Conc != null) {
+                    airQuality.setSO2(so2Conc);
+                    log.info("Set SO2 concentration: {}", so2Conc);
+                }
             }
 
             log.info("Successfully converted ATMO response to AirQuality entity for commune: {}", atmoResponse.communeInsee());
@@ -359,56 +368,56 @@ public class AtmoIntegrationService {
      * @param code the ATMO code (1-6)
      * @return approximate concentration in μg/m³
      */
-    private Double convertCodeToConcentration(String pollutant, Integer code) {
+    private Integer convertCodeToConcentration(String pollutant, Integer code) {
         if (code == null || code < 1 || code > 6) {
             return null;
         }
-        
+
         // Approximate concentration ranges based on ATMO indices
         return switch (pollutant.toUpperCase()) {
             case "NO2" -> switch (code) {
-                case 1 -> 20.0;   // Good
-                case 2 -> 40.0;   // Moderate  
-                case 3 -> 90.0;   // Unhealthy for sensitive
-                case 4 -> 120.0;  // Unhealthy
-                case 5 -> 230.0;  // Very unhealthy
-                case 6 -> 300.0;  // Hazardous
+                case 1 -> 20;     // Good
+                case 2 -> 40;     // Moderate
+                case 3 -> 90;     // Unhealthy for sensitive
+                case 4 -> 120;    // Unhealthy
+                case 5 -> 230;    // Very unhealthy
+                case 6 -> 300;    // Hazardous
                 default -> null;
             };
             case "O3" -> switch (code) {
-                case 1 -> 60.0;
-                case 2 -> 120.0;
-                case 3 -> 160.0;
-                case 4 -> 200.0;
-                case 5 -> 240.0;
-                case 6 -> 300.0;
+                case 1 -> 60;
+                case 2 -> 120;
+                case 3 -> 160;
+                case 4 -> 200;
+                case 5 -> 240;
+                case 6 -> 300;
                 default -> null;
             };
             case "PM10" -> switch (code) {
-                case 1 -> 20.0;
-                case 2 -> 40.0;
-                case 3 -> 50.0;
-                case 4 -> 100.0;
-                case 5 -> 150.0;
-                case 6 -> 200.0;
+                case 1 -> 20;
+                case 2 -> 40;
+                case 3 -> 50;
+                case 4 -> 100;
+                case 5 -> 150;
+                case 6 -> 200;
                 default -> null;
             };
             case "PM25" -> switch (code) {
-                case 1 -> 10.0;
-                case 2 -> 20.0;
-                case 3 -> 25.0;
-                case 4 -> 50.0;
-                case 5 -> 75.0;
-                case 6 -> 100.0;
+                case 1 -> 10;
+                case 2 -> 20;
+                case 3 -> 25;
+                case 4 -> 50;
+                case 5 -> 75;
+                case 6 -> 100;
                 default -> null;
             };
             case "SO2" -> switch (code) {
-                case 1 -> 50.0;
-                case 2 -> 100.0;
-                case 3 -> 200.0;
-                case 4 -> 350.0;
-                case 5 -> 500.0;
-                case 6 -> 750.0;
+                case 1 -> 50;
+                case 2 -> 100;
+                case 3 -> 200;
+                case 4 -> 350;
+                case 5 -> 500;
+                case 6 -> 750;
                 default -> null;
             };
             default -> null;

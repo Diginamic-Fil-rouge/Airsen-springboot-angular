@@ -1,0 +1,9 @@
+<div class="thread-container">
+    <div class="thread-infos">
+         <a routerLink="/forum/thread/{{ thread().id }}" class="title">{{ thread().title }}</a>
+        <div class="thread-category" style="background-color: {{ thread().category?.color ?? '' }};">{{ thread().category?.name ?? '' }}</div>
+    </div>
+    <div class="replies-count">{{ thread().messageCount }}</div>
+    <div class="view-count">{{ thread().viewCount }}</div>
+    <div class="activity">{{ thread().lastMessageDate | date: 'dd MMMM yyyy, HH:mm' }}</div>
+</div>

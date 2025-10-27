@@ -94,7 +94,12 @@ public class ForumThreadService {
     @Transactional(readOnly = true)
     public ForumThreadDTO findById(Long id) {
         // Use custom query with JOIN FETCH to eagerly load messages
-        return mapper.toDTO(forumThreadRepository.findByIdWithMessages(id).orElse(null));
+        ForumThread thread = forumThreadRepository.findByIdWithMessages(id).orElse(null);
+        if (thread != null) {
+            thread.setViewCount(thread.getViewCount() + 1);
+            forumThreadRepository.save(thread);
+        }
+        return mapper.toDTO(thread);
     }
 
     /**
@@ -205,10 +210,18 @@ public class ForumThreadService {
 
     @Transactional
     public void deleteThread(Long id) throws EntityNotFoundException {
-        ForumThread entityExists = forumThreadRepository.findById(id).orElse(null);
-        if (entityExists == null) {
-            throw new EntityNotFoundException("Failed to delete thread - Thread not found");
+        ForumThread thread = forumThreadRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Thread not found"));
+
+        // Remove from parent collections if they exist
+        if (thread.getAuthor() != null && thread.getAuthor().getThreads() != null) {
+            thread.getAuthor().getThreads().remove(thread);
         }
-        forumThreadRepository.deleteById(id);
+
+        if (thread.getCategory() != null && thread.getCategory().getThreads() != null) {
+            thread.getCategory().getThreads().remove(thread);
+        }
+
+        forumThreadRepository.delete(thread);
     }
 }

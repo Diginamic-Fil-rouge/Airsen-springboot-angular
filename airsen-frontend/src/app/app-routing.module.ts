@@ -6,11 +6,14 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 // Feature Components
-import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { MapComponent } from './features/map/map.component';
 import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
-import { CarteComponent } from './features/carte/carte.component';
 import { ForumComponent } from './features/forum/forum.component';
+import { ThreadDetailsComponent } from './features/forum/threads/threads-details/thread-details.component';
+import { AddThreadComponent } from './features/forum/threads/add-thread/add-thread.component';
+import { ProfileComponent } from './features/profile/profile.component';
+import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
 
 // Guards - commented out until they are properly implemented
 // import { AuthGuard } from './core/guards/auth.guard';
@@ -40,10 +43,13 @@ const routes: Routes = [
   },
 
   // Feature Routes (no guards for now to avoid compilation errors)
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'carte', component: CarteComponent },
+  { path: 'map', component: MapComponent },
   { path: 'forum', component: ForumComponent },
+  { path: 'forum/thread/:id', component: ThreadDetailsComponent },
+  { path: 'forum/add/thread', component: AddThreadComponent },
+  { path: 'profile', component: ProfileComponent,  }, // canActivate: [AuthGuard]
 
+  { path: 'forum/edit/thread/:id', component: EditThreadComponent },
   // 404 Not Found Route
   { path: '404', component: NotFoundComponent },
 
@@ -52,7 +58,7 @@ const routes: Routes = [
 
   // TODO: Implement these components and uncomment
   // { path: 'map', component: MapComponent, canActivate: [AuthGuard] },
-  // { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+
   // { path: 'favorites', component: FavoritesComponent, canActivate: [AuthGuard] },
   // { path: 'history', component: HistoryComponent, canActivate: [AuthGuard] },
   // { path: 'history/:commune', component: HistoryComponent, canActivate: [AuthGuard] },

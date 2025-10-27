@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -37,7 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Deletes users created before a certain date.
      * Used for data retention policy (1 year maximum).
-     * 
+     *
      * @param cutoffDate cutoff date for deletion
      * @return number of deleted users
      */
@@ -45,13 +46,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("DELETE FROM User u WHERE u.createdAt < :cutoffDate")
     int deleteByCreatedAtBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
 
-    // ==================== PROFILE UPDATE METHODS ====================
+    // PROFILE UPDATE METHODS
 
     @Modifying
     @Query("UPDATE User u SET u.firstName = :firstName, u.lastName = :lastName, u.address = :address WHERE u.id = :userId")
-    void updateUserProfile(@Param("userId") Long userId, 
-                          @Param("firstName") String firstName, 
-                          @Param("lastName") String lastName, 
+    void updateUserProfile(@Param("userId") Long userId,
+                          @Param("firstName") String firstName,
+                          @Param("lastName") String lastName,
                           @Param("address") String address);
 
     @Modifying
@@ -66,10 +67,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User u SET u.address = :address WHERE u.id = :userId")
     void updateAddress(@Param("userId") Long userId, @Param("address") String address);
 
-    // ==================== EMAIL MANAGEMENT METHODS ====================
+    // EMAIL MANAGEMENT METHODS
     /**
      * Checks if an email is already used by another user.
-     * 
+     *
      * @param email email to check
      * @param excludeUserId identifier of the user to exclude from verification
      * @return true if the email is already used by another user
@@ -77,12 +78,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email AND u.id != :excludeUserId")
     boolean isEmailTakenByOtherUser(@Param("email") String email, @Param("excludeUserId") Long excludeUserId);
 
-    // ==================== PASSWORD MANAGEMENT METHODS ====================
+    // PASSWORD MANAGEMENT METHODS
 
     /**
      * Updates a user's password.
      * Note: The password must already be encrypted before being passed to this method.
-     * 
+     *
      * @param userId user identifier
      * @param encryptedPassword new encrypted password
      */
@@ -94,61 +95,101 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Retrieves a user's encrypted password for verification.
      * Used to validate the old password during password change.
-     * 
+     *
      * @param userId user identifier
      * @return encrypted password or null if user does not exist
      */
     @Query("SELECT u.password FROM User u WHERE u.id = :userId")
     String findPasswordByUserId(@Param("userId") Long userId);
 
-    // ==================== BROADCAST NOTIFICATION METHODS ====================
+    // BROADCAST NOTIFICATION METHODS
 
     /**
      * Finds all active users with verified emails for broadcasting.
+     * Used for FRANCE-level notifications (all users).
      */
     @Query("SELECT DISTINCT u FROM User u WHERE u.isActive = true AND u.emailVerified = true")
     java.util.List<User> findAllActiveUsersWithVerifiedEmail();
 
     /**
-     * Finds users by region code through their alerts.
-     */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c JOIN c.department d JOIN d.region r " +
-           "WHERE u.isActive = true AND u.emailVerified = true AND r.regionCode = :regionCode")
-    java.util.List<User> findActiveUsersByRegionCode(@Param("regionCode") String regionCode);
-
-    /**
-     * Finds users by department code through their alerts.
-     */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c JOIN c.department d " +
-           "WHERE u.isActive = true AND u.emailVerified = true AND d.departmentCode = :departmentCode")
-    java.util.List<User> findActiveUsersByDepartmentCode(@Param("departmentCode") String departmentCode);
-
-    /**
-     * Finds users by commune code through their alerts.
-     */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.alerts a JOIN a.commune c " +
-           "WHERE u.isActive = true AND u.emailVerified = true AND c.inseeCode = :communeCode")
-    java.util.List<User> findActiveUsersByCommuneCode(@Param("communeCode") String communeCode);
-
-    /**
      * Finds users by region code through their favorite communes.
+     * Joins through UserFavorite (u.favorites) → Commune (f.commune) → Department → Region
      */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.favoris c JOIN c.department d JOIN d.region r " +
+    @Query("SELECT DISTINCT u FROM User u JOIN u.favorites f JOIN f.commune c JOIN c.department d JOIN d.region r " +
            "WHERE u.isActive = true AND u.emailVerified = true AND r.regionCode = :regionCode")
     java.util.List<User> findActiveUsersByFavoriteRegionCode(@Param("regionCode") String regionCode);
 
     /**
      * Finds users by department code through their favorite communes.
+     * Joins through UserFavorite (u.favorites) → Commune (f.commune) → Department
      */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.favoris c JOIN c.department d " +
+    @Query("SELECT DISTINCT u FROM User u JOIN u.favorites f JOIN f.commune c JOIN c.department d " +
            "WHERE u.isActive = true AND u.emailVerified = true AND d.departmentCode = :departmentCode")
     java.util.List<User> findActiveUsersByFavoriteDepartmentCode(@Param("departmentCode") String departmentCode);
 
     /**
      * Finds users by commune code through their favorite communes.
+     * Joins through UserFavorite (u.favorites) → Commune (f.commune)
      */
-    @Query("SELECT DISTINCT u FROM User u JOIN u.favoris c " +
+    @Query("SELECT DISTINCT u FROM User u JOIN u.favorites f JOIN f.commune c " +
            "WHERE u.isActive = true AND u.emailVerified = true AND c.inseeCode = :communeCode")
     java.util.List<User> findActiveUsersByFavoriteCommuneCode(@Param("communeCode") String communeCode);
 
+    // USER FAVORITES-BASED TARGETING
+    /**
+     * Find users who have favorites in a specific region.
+     *
+     * Users receive notifications for ALL their favorite locations.
+     *
+     * @param regionId Region identifier (e.g., 11 for Île-de-France)
+     * @return List of active users with at least one favorite in this region
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN u.favorites f
+        JOIN f.commune c
+        JOIN c.department d
+        WHERE d.region.id = :regionId
+        AND u.isActive = true
+        AND u.deletedAt IS NULL
+    """)
+    List<User> findUsersWithFavoritesInRegion(@Param("regionId") Long regionId);
+
+    /**
+     * Find users who have favorites in a specific department.
+     *
+     * Used by notification campaign fan-out to target users who favorited
+     * any commune in the specified department.
+     *
+     * @param departmentId Department identifier (e.g., 75 for Paris)
+     * @return List of active users with at least one favorite in this department
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN u.favorites f
+        JOIN f.commune c
+        WHERE c.department.id = :departmentId
+        AND u.isActive = true
+        AND u.deletedAt IS NULL
+    """)
+    List<User> findUsersWithFavoritesInDepartment(@Param("departmentId") Long departmentId);
+
+    /**
+     * Find users who have favorites in a specific commune.
+     *
+     * Used by notification campaign fan-out to target users who favorited
+     * a specific commune (identified by INSEE code).
+     *
+     * @param inseeCode Commune INSEE code (e.g., "75056" for Paris)
+     * @return List of active users who favorited this commune
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN u.favorites f
+        JOIN f.commune c
+        WHERE c.inseeCode = :inseeCode
+        AND u.isActive = true
+        AND u.deletedAt IS NULL
+    """)
+    List<User> findUsersWithFavoritesInCommune(@Param("inseeCode") String inseeCode);
 }

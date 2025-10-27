@@ -71,7 +71,7 @@ public class SecurityConfig {
                 
                 
                 // Forum endpoints - VISITOR can read, USER/ADMIN can write
-                .requestMatchers(HttpMethod.GET, "/forum/**").hasAnyRole("VISITOR", "USER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/forum/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/forum/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/forum/**").hasAnyRole("USER", "ADMIN") 
                 .requestMatchers(HttpMethod.DELETE, "/forum/**").hasAnyRole("USER", "ADMIN")

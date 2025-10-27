@@ -47,11 +47,17 @@ public class TestController {
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");
+        response.put("message", "Hot Reload is WORKING!");
         response.put("timestamp", LocalDateTime.now());
         response.put("service", "Airsen API");
         response.put("version", "1.0.0-SNAPSHOT");
         
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/hot-reload-test")
+    public ResponseEntity<String> hotReloadTest() {
+        return ResponseEntity.ok("Hot reload is working! Timestamp: " + System.currentTimeMillis());
     }
 
     /**

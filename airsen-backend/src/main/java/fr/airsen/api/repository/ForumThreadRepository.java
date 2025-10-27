@@ -54,7 +54,7 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> 
 
     /**
      * Find {@link ForumThread} by ID with messages eagerly loaded.
-     * 
+     *
      * @param id thread ID
      * @return Optional of {@link ForumThread} with messages loaded
      */
@@ -67,7 +67,7 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> 
 
     /**
      * Find {@link ForumThread} entities by {@link ForumCategory} with messages eagerly loaded.
-     * 
+     *
      * @param category {@link ForumCategory} entity
      * @return list of {@link ForumThread} entities with messages loaded
      */
@@ -83,6 +83,14 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> 
      * @param id id of the thread to delete
      */
     void deleteById(Long id);
+
+    /**
+     * Count threads created by a specific author.
+     *
+     * @param authorId author user ID
+     * @return number of threads created by the author
+     */
+    long countByAuthorId(Long authorId);
 
     /**
      * Find threads by category with pagination.

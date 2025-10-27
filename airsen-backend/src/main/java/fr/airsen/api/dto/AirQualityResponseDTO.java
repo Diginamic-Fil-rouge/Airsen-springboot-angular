@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 /**
  * DTO for air quality API responses.
- * 
+ *
  * Contains all necessary data to avoid Hibernate lazy loading issues
  * when passing data from service to controller layer.
  */
@@ -14,20 +14,20 @@ public record AirQualityResponseDTO(
     String communeName,
     String departmentName,
     String regionName,
-    
+
     // Air quality data
     LocalDate measurementDate,
     Integer atmoIndex,
     String qualifier,
     String color,
-    Double no2Concentration,
-    Double o3Concentration,
-    Double pm10Concentration,
-    Double pm25Concentration,
-    Double so2Concentration,
+    Integer no2Concentration,
+    Integer o3Concentration,
+    Integer pm10Concentration,
+    Integer pm25Concentration,
+    Integer so2Concentration,
     LocalDate createdAt
 ) {
-    
+
     /**
      * Creates a DTO from an AirQuality entity.
      * This should be called within a transactional context to avoid lazy loading issues.

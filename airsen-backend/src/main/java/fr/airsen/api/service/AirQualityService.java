@@ -23,7 +23,7 @@ import java.util.Optional;
 
 /**
  * Service for integrating ATMO air quality data with the application.
- * 
+ *
  * Handles data transformation, validation, and persistence
  * for air quality measurements from external ATMO API.
  */
@@ -36,37 +36,35 @@ public class AirQualityService {
     private final AtmoApiClient atmoApiClient;
     private final AirQualityRepository airQualityRepository;
     private final CommuneRepository communeRepository;
-    private final AlertProcessingService alertProcessingService;
 
     public AirQualityService(AtmoApiClient atmoApiClient,
                             AirQualityRepository airQualityRepository,
-                            CommuneRepository communeRepository,
-                            AlertProcessingService alertProcessingService) {
+                            CommuneRepository communeRepository)
+                            {
         this.atmoApiClient = atmoApiClient;
         this.airQualityRepository = airQualityRepository;
         this.communeRepository = communeRepository;
-        this.alertProcessingService = alertProcessingService;
     }
 
     /**
      * Updates air quality data for all tracked communes.
-     * 
+     *
      * This method is called by scheduled tasks to keep air quality data current.
-     * 
+     *
      * @return Mono<Void> indicating completion
      */
     @Scheduled(fixedRate = 3600000) // Every hour
     public Mono<Void> updateAllAirQualityData() {
         log.info("Starting scheduled air quality data update");
-        
+
         List<Commune> communes = communeRepository.findAll();
         log.info("Found {} communes to update", communes.size());
-        
+
         return Flux.fromIterable(communes)
-            .flatMap(commune -> 
+            .flatMap(commune ->
                 updateAirQualityForCommune(commune.getInseeCode())
-                    .onErrorContinue((error, commune_obj) -> 
-                        log.warn("Failed to update air quality for commune: {}", 
+                    .onErrorContinue((error, commune_obj) ->
+                        log.warn("Failed to update air quality for commune: {}",
                                commune.getInseeCode(), error)))
             .then()
             .doOnSuccess(v -> log.info("Completed scheduled air quality data update"))
@@ -75,24 +73,24 @@ public class AirQualityService {
 
     /**
      * Updates air quality data for a specific commune.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<AirQuality> containing the updated data
      */
     public Mono<AirQuality> updateAirQualityForCommune(String communeInseeCode) {
         log.info("Updating air quality data for commune: {}", communeInseeCode);
-        
+
         return atmoApiClient.getCurrentAirQuality(communeInseeCode)
             .map(this::mapToEntity)
             .flatMap(airQuality -> {
                 AirQuality saved = airQualityRepository.save(airQuality);
-                
+
                 // Trigger alert processing for the new data
-                alertProcessingService.processAirQualityUpdate(saved);
-                
-                log.info("Successfully updated air quality data for commune: {} with ATMO index: {}", 
+//                alertProcessingService.processAirQualityUpdate(saved);
+
+                log.info("Successfully updated air quality data for commune: {} with ATMO index: {}",
                         communeInseeCode, saved.getAtmoIndex());
-                
+
                 return Mono.just(saved);
             });
     }
@@ -143,31 +141,31 @@ public class AirQualityService {
 
     /**
      * Gets historical air quality data for a commune.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @param startDate start date for historical data
      * @param endDate end date for historical data
      * @return Flux<AirQuality> containing historical data
      */
-    public Flux<AirQuality> getHistoricalAirQuality(String communeInseeCode, 
-                                                   LocalDate startDate, 
+    public Flux<AirQuality> getHistoricalAirQuality(String communeInseeCode,
+                                                   LocalDate startDate,
                                                    LocalDate endDate) {
-        log.info("Fetching historical air quality data for commune: {} from {} to {}", 
+        log.info("Fetching historical air quality data for commune: {} from {} to {}",
                 communeInseeCode, startDate, endDate);
-        
+
         return atmoApiClient.getHistoricalAirQuality(communeInseeCode, startDate, endDate)
             .map(this::mapToEntity)
             .flatMap(airQuality -> {
                 AirQuality saved = airQualityRepository.save(airQuality);
                 return Mono.just(saved);
             })
-            .doOnComplete(() -> log.info("Completed historical data fetch for commune: {}", 
+            .doOnComplete(() -> log.info("Completed historical data fetch for commune: {}",
                                        communeInseeCode));
     }
 
     /**
      * Forces update of air quality data for a commune (bypasses cache).
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<AirQuality> containing the updated data
      */
@@ -178,18 +176,18 @@ public class AirQualityService {
 
     /**
      * Get daily air quality measurements for current date.
-     * 
+     *
      * Business logic concept from air_quality_service (commit 6be37b8),
      * implemented with reactive patterns and proper error handling.
-     * 
+     *
      * @return Flux of current day air quality data
      */
     public Flux<AirQuality> getAllDailyAirQualities() {
         LocalDate today = LocalDate.now();
         log.info("Fetching daily air quality data for date: {}", today);
-        
+
         return Flux.fromIterable(airQualityRepository.findByMeasurementDate(today))
-            .doOnNext(airQuality -> log.debug("Found air quality data for commune: {}", 
+            .doOnNext(airQuality -> log.debug("Found air quality data for commune: {}",
                                              airQuality.getCommune().getInseeCode()))
             .doOnComplete(() -> log.info("Completed daily air quality data fetch"))
             .onErrorResume(error -> {
@@ -200,7 +198,7 @@ public class AirQualityService {
 
     /**
      * Maps ATMO API response to AirQuality entity.
-     * 
+     *
      * @param response ATMO API response
      * @return AirQuality entity
      */
@@ -214,87 +212,99 @@ public class AirQualityService {
         airQuality.setAtmIndex(response.atmoIndex());
         airQuality.setAtmoQual(response.qualifier());
         airQuality.setAtmoColor(response.color());
-        
+
         // Map pollutant codes from ATMO API
         if (response.no2Code() != null) {
-            airQuality.setNO2(convertCodeToConcentration("NO2", response.no2Code()));
+            Integer no2Concentration = convertCodeToConcentration("NO2", response.no2Code());
+            if (no2Concentration != null) {
+                airQuality.setNO2(no2Concentration);
+            }
         }
         if (response.o3Code() != null) {
-            airQuality.setO3(convertCodeToConcentration("O3", response.o3Code()));
+            Integer o3Concentration = convertCodeToConcentration("O3", response.o3Code());
+            if (o3Concentration != null) {
+                airQuality.setO3(o3Concentration);
+            }
         }
         if (response.pm10Code() != null) {
-            airQuality.setPm10(convertCodeToConcentration("PM10", response.pm10Code()));
+            Integer pm10Concentration = convertCodeToConcentration("PM10", response.pm10Code());
+            if (pm10Concentration != null) {
+                airQuality.setPm10(pm10Concentration);
+            }
         }
         if (response.pm25Code() != null) {
-            Double pm25Concentration = convertCodeToConcentration("PM25", response.pm25Code());
+            Integer pm25Concentration = convertCodeToConcentration("PM25", response.pm25Code());
             if (pm25Concentration != null) {
-                airQuality.setPm25(pm25Concentration.intValue());
+                airQuality.setPm25(pm25Concentration);
             }
         }
         if (response.so2Code() != null) {
-            airQuality.setSO2(convertCodeToConcentration("SO2", response.so2Code()));
+            Integer so2Concentration = convertCodeToConcentration("SO2", response.so2Code());
+            if (so2Concentration != null) {
+                airQuality.setSO2(so2Concentration);
+            }
         }
-        
+
         return airQuality;
     }
 
     /**
-     * Converts ATMO pollutant codes to approximate concentrations.
-     * 
+     * Converts ATMO pollutant codes to approximate integer concentrations.
+     *
      * @param pollutant the pollutant type (NO2, O3, PM10, PM25, SO2)
      * @param code the ATMO code (1-6)
-     * @return approximate concentration in μg/m³
+     * @return approximate concentration in μg/m³ as Integer
      */
-    private Double convertCodeToConcentration(String pollutant, Integer code) {
+    private Integer convertCodeToConcentration(String pollutant, Integer code) {
         if (code == null || code < 1 || code > 6) {
             return null;
         }
-        
+
         // Approximate concentration ranges based on ATMO indices
         return switch (pollutant.toUpperCase()) {
             case "NO2" -> switch (code) {
-                case 1 -> 20.0;   // Good
-                case 2 -> 40.0;   // Moderate  
-                case 3 -> 90.0;   // Unhealthy for sensitive
-                case 4 -> 120.0;  // Unhealthy
-                case 5 -> 230.0;  // Very unhealthy
-                case 6 -> 300.0;  // Hazardous
+                case 1 -> 20;     // Good
+                case 2 -> 40;     // Moderate
+                case 3 -> 90;     // Unhealthy for sensitive
+                case 4 -> 120;    // Unhealthy
+                case 5 -> 230;    // Very unhealthy
+                case 6 -> 300;    // Hazardous
                 default -> null;
             };
             case "O3" -> switch (code) {
-                case 1 -> 60.0;
-                case 2 -> 120.0;
-                case 3 -> 160.0;
-                case 4 -> 200.0;
-                case 5 -> 240.0;
-                case 6 -> 300.0;
+                case 1 -> 60;
+                case 2 -> 120;
+                case 3 -> 160;
+                case 4 -> 200;
+                case 5 -> 240;
+                case 6 -> 300;
                 default -> null;
             };
             case "PM10" -> switch (code) {
-                case 1 -> 20.0;
-                case 2 -> 40.0;
-                case 3 -> 50.0;
-                case 4 -> 100.0;
-                case 5 -> 150.0;
-                case 6 -> 200.0;
+                case 1 -> 20;
+                case 2 -> 40;
+                case 3 -> 50;
+                case 4 -> 100;
+                case 5 -> 150;
+                case 6 -> 200;
                 default -> null;
             };
             case "PM25" -> switch (code) {
-                case 1 -> 10.0;
-                case 2 -> 20.0;
-                case 3 -> 25.0;
-                case 4 -> 50.0;
-                case 5 -> 75.0;
-                case 6 -> 100.0;
+                case 1 -> 10;
+                case 2 -> 20;
+                case 3 -> 25;
+                case 4 -> 50;
+                case 5 -> 75;
+                case 6 -> 100;
                 default -> null;
             };
             case "SO2" -> switch (code) {
-                case 1 -> 50.0;
-                case 2 -> 100.0;
-                case 3 -> 200.0;
-                case 4 -> 350.0;
-                case 5 -> 500.0;
-                case 6 -> 750.0;
+                case 1 -> 50;
+                case 2 -> 100;
+                case 3 -> 200;
+                case 4 -> 350;
+                case 5 -> 500;
+                case 6 -> 750;
                 default -> null;
             };
             default -> null;

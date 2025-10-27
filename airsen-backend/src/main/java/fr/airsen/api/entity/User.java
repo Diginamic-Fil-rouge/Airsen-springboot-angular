@@ -1,5 +1,6 @@
 package fr.airsen.api.entity;
 
+import fr.airsen.api.entity.enums.ProfileVisibility;
 import fr.airsen.api.entity.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -14,7 +15,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_user_email", columnList = "email", unique = true)
+    @Index(name = "idx_user_email", columnList = "email", unique = true),
+    @Index(name = "idx_user_deleted_at", columnList = "deleted_at")
 })
 @EntityListeners(AuditingEntityListener.class)
 public class User {
@@ -69,17 +71,62 @@ public class User {
 
     /**
      * Whether the user account is active.
-     * 
+     *
      * Inactive accounts cannot authenticate or access protected resources.
      * Administrators can suspend accounts by setting this value to false.
      */
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @ManyToMany
-    @JoinTable(name = "user_favorite", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "commune_id"))
-    private Set<Commune> favoris = new HashSet<>();
+    /**
+     * Profile visibility setting (GDPR privacy control).
+     *
+     * Controls how much information other users can see on the profile page:
+     * - HIDDEN: Profile page completely hidden (404 response)
+     * - USERNAME_ONLY: Only username/full name visible (default)
+     * - PUBLIC: Full profile information visible
+     *
+     * Defaults to USERNAME_ONLY as per GDPR Article 25 (privacy by default).
+     * Forum posts always show author name regardless of this setting.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "profile_visibility", nullable = false, length = 50)
+    private ProfileVisibility profileVisibility = ProfileVisibility.getDefaultVisibility();
 
+    /**
+     * Timestamp when user requested account deletion (GDPR soft delete).
+     *
+     * When set, the account enters a 30-day grace period before permanent deletion.
+     * During this period, the user can log in to cancel the deletion request.
+     * After 30 days, a scheduled job permanently deletes the account data.
+     *
+     * Forum content (threads/messages) is preserved with author name as per
+     * GDPR Article 17(3)(e) public interest exception for environmental discussions.
+     */
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    /**
+     * User-provided reason for account deletion (GDPR transparency).
+     *
+     * Optional text field capturing why the user requested deletion.
+     * Used for internal analytics to improve user retention.
+     * Maximum 500 characters.
+     */
+    @Column(name = "deletion_reason", length = 500)
+    @Size(max = 500, message = "Deletion reason cannot exceed 500 characters")
+    private String deletionReason;
+
+    /**
+     * User's favorite communes.
+     *
+     * One-to-Many relationship through UserFavorite join entity.
+     * Maximum 10 favorites enforced by business logic in service layer.
+     * Cascade ALL operations to automatically manage favorites lifecycle.
+     * Orphan removal ensures favorites are deleted when removed from collection.
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<UserFavorite> favorites = new HashSet<>();
 
     @OneToMany(mappedBy = "author")
     private List<ForumThread> threads;
@@ -90,8 +137,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ForumVote> votes;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Alert> alerts;
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private List<Alert> alerts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Notification> sentNotifications;
@@ -221,9 +268,9 @@ public class User {
     /**
      * Updates user profile with new information.
      * Only updates non-null and non-empty values.
-     * 
+     *
      * @param firstName new first name (can be null)
-     * @param lastName new last name (can be null) 
+     * @param lastName new last name (can be null)
      * @param address new address (can be null)
      */
     public void updateProfile(String firstName, String lastName, String address) {
@@ -271,7 +318,7 @@ public class User {
     /**
      * Updates user password.
      * Note: Password must be already encrypted before calling this method.
-     * 
+     *
      * @param encryptedPassword new encrypted password
      */
     public void updatePassword(String encryptedPassword) {
@@ -282,7 +329,7 @@ public class User {
 
     /**
      * Updates user email and resets verification status.
-     * 
+     *
      * @param newEmail new email address
      */
     public void updateEmail(String newEmail) {
@@ -295,11 +342,11 @@ public class User {
     /**
      * Checks if user profile is complete.
      * A profile is considered complete if both first name and last name are provided.
-     * 
+     *
      * @return true if profile is complete
      */
     public boolean isProfileComplete() {
-        return firstName != null && !firstName.trim().isEmpty() 
+        return firstName != null && !firstName.trim().isEmpty()
             && lastName != null && !lastName.trim().isEmpty();
     }
 
@@ -309,7 +356,7 @@ public class User {
 
     /**
      * Gets user's full name.
-     * 
+     *
      * @return full name (first + last) or email if names are not provided
      */
     public String getFullName() {
@@ -324,13 +371,83 @@ public class User {
         }
     }
 
-    public Set<Commune> getFavoris() {
-        return favoris;
+    // ==================== Favorites Management Business Methods ====================
+
+    /**
+     * Gets the user's favorite communes.
+     *
+     * @return Set of UserFavorite entities
+     */
+    public Set<UserFavorite> getFavorites() {
+        return favorites;
     }
 
-    public void setFavoris(Set<Commune> favoris) {
-        this.favoris = favoris;
+    public void setFavorites(Set<UserFavorite> favorites) {
+        this.favorites = favorites;
     }
+
+    /**
+     * Checks if user can add another favorite.
+     *
+     * Business Rule: Maximum 10 favorites per user.
+     *
+     * @return true if user has less than 10 favorites
+     */
+    public boolean canAddFavorite() {
+        return favorites.size() < 10;
+    }
+
+    /**
+     * Adds a favorite to the user's collection.
+     *
+     * Enforces maximum 10 favorites business rule.
+     * Establishes bidirectional relationship with UserFavorite entity.
+     *
+     * @param favorite UserFavorite entity to add
+     * @throws IllegalStateException if user already has 10 favorites
+     */
+    public void addFavorite(UserFavorite favorite) {
+        if (!canAddFavorite()) {
+            throw new IllegalStateException("Maximum 10 favorites per user exceeded");
+        }
+        favorites.add(favorite);
+        favorite.setUser(this);
+    }
+
+    /**
+     * Removes a favorite from the user's collection.
+     *
+     * Breaks bidirectional relationship with UserFavorite entity.
+     * Orphan removal will automatically delete the entity from database.
+     *
+     * @param favorite UserFavorite entity to remove
+     */
+    public void removeFavorite(UserFavorite favorite) {
+        favorites.remove(favorite);
+        favorite.setUser(null);
+    }
+
+    /**
+     * Checks if a specific commune is in user's favorites.
+     *
+     * @param communeInseeCode Commune INSEE code
+     * @return true if commune is favorited
+     */
+    public boolean hasFavorite(String communeInseeCode) {
+        return favorites.stream()
+                .anyMatch(fav -> fav.getCommune().getInseeCode().equals(communeInseeCode));
+    }
+
+    /**
+     * Gets count of user's favorites.
+     *
+     * @return Number of favorites (0-10)
+     */
+    public int getFavoriteCount() {
+        return favorites.size();
+    }
+
+    // ==================== End Favorites Management ====================
 
     public List<ForumThread> getThreads() {
         return threads;
@@ -356,14 +473,6 @@ public class User {
         this.votes = votes;
     }
 
-    public List<Alert> getAlerts() {
-        return alerts;
-    }
-
-    public void setAlerts(List<Alert> alerts) {
-        this.alerts = alerts;
-    }
-
     public List<Notification> getSentNotifications() {
         return sentNotifications;
     }
@@ -379,6 +488,200 @@ public class User {
     public void setReceivedNotifications(List<Notification> receivedNotifications) {
         this.receivedNotifications = receivedNotifications;
     }
+
+    public ProfileVisibility getProfileVisibility() {
+        return profileVisibility;
+    }
+
+    public void setProfileVisibility(ProfileVisibility profileVisibility) {
+        this.profileVisibility = profileVisibility;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public String getDeletionReason() {
+        return deletionReason;
+    }
+
+    public void setDeletionReason(String deletionReason) {
+        this.deletionReason = deletionReason;
+    }
+
+    // ==================== GDPR Privacy & Deletion Business Methods ====================
+
+    /**
+     * Gets the display name to show in forum posts and UI.
+     *
+     * Returns the user's full name (first + last) if available, otherwise falls back
+     * to email address. This method is used throughout the UI for consistent name display.
+     *
+     * Note: This method does NOT respect deletion status. For deleted
+     * users, use the preserved author name from ForumThread/ForumMessage entities instead.
+     *
+     * @return User's display name (full name or email)
+     */
+    public String getDisplayName() {
+        return getFullName();
+    }
+
+    /**
+     * Checks if this user's profile is publicly accessible.
+     *
+     * Returns true only if profile visibility is PUBLIC. This is used to determine
+     * whether to show full profile information (bio, address, badges, etc.).
+     *
+     * Profile Access Matrix:
+     * - HIDDEN → false (profile page returns 404)
+     * - USERNAME_ONLY → false (profile page shows only username)
+     * - PUBLIC → true (profile page shows all information)
+     *
+     * @return true if profile visibility is PUBLIC, false otherwise
+     */
+    public boolean isProfilePublic() {
+        return this.profileVisibility == ProfileVisibility.PUBLIC;
+    }
+
+    /**
+     * Checks if this user's profile has a clickable link.
+     *
+     * Returns true if profile visibility allows showing a profile link in forum posts
+     * or other UI locations. HIDDEN users do not get profile links.
+     *
+     * Business Rule: Deleted users (deletedAt != null) always return
+     * false, regardless of their previous visibility setting. Their profile links are
+     * permanently broken after deletion.
+     *
+     * @return true if profile link should be displayed, false if hidden or deleted
+     */
+    public boolean hasProfileLink() {
+        // Deleted users never have profile links
+        if (this.deletedAt != null) {
+            return false;
+        }
+        // Only HIDDEN visibility prevents profile links
+        return this.profileVisibility.isProfileAccessible();
+    }
+
+    /**
+     * Marks this user account for deletion (GDPR soft delete).
+     *
+     * Initiates a 30-day grace period before permanent deletion. During this period:
+     * - Account is set to inactive (isActive = false)
+     * - User cannot login or access protected resources
+     * - User can restore account by calling {@link #cancelDeletion()}
+     * - Deletion timestamp is recorded for grace period calculation
+     *
+     * After 30 days, a scheduled job will permanently delete the account while preserving
+     * forum content per GDPR Article 17(3)(e) public interest exception.
+     *
+     * @param reason Optional reason for deletion (for analytics), can be null
+     */
+    public void markForDeletion(String reason) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletionReason = reason;
+        this.isActive = false;  // Prevent login during grace period
+    }
+
+    /**
+     * Cancels a pending deletion request (restores account).
+     *
+     * Can only be called during the 30-day grace period. Clears the deletion timestamp
+     * and reason, and reactivates the account for login.
+     *
+     * Business Rule: If called after the grace period has expired,
+     * this method still restores the account (scheduled job may not have run yet). However,
+     * once the permanent deletion job has executed, this method has no effect as the User
+     * entity will no longer exist in the database.
+     */
+    public void cancelDeletion() {
+        this.deletedAt = null;
+        this.deletionReason = null;
+        this.isActive = true;  // Reactivate account
+    }
+
+    /**
+     * Checks if the 30-day deletion grace period has expired.
+     *
+     * Returns true if this user is marked for deletion (deletedAt != null) and more
+     * than 30 days have passed since the deletion request. This method is used by the
+     * scheduled deletion job to identify accounts ready for permanent deletion.
+     *
+     * Grace Period Logic:
+     * - If deletedAt is null → false (not marked for deletion)
+     * - If deletedAt + 30 days > now → false (still in grace period)
+     * - If deletedAt + 30 days <= now → true (ready for permanent deletion)
+     *
+     * @return true if grace period has expired, false if still within grace period or not deleted
+     */
+    public boolean isDeletionGracePeriodExpired() {
+        if (this.deletedAt == null) {
+            return false;
+        }
+        LocalDateTime gracePeriodEnd = this.deletedAt.plusDays(30);
+        return LocalDateTime.now().isAfter(gracePeriodEnd);
+    }
+
+    /**
+     * Checks if this user is marked for deletion (soft deleted).
+     *
+     * Returns true if the user has requested account deletion (deletedAt != null),
+     * regardless of whether the grace period has expired. This is used to prevent
+     * deleted users from accessing certain features during the grace period.
+     *
+     * @return true if user is marked for deletion, false otherwise
+     */
+    public boolean isMarkedForDeletion() {
+        return this.deletedAt != null;
+    }
+
+    /**
+     * Permanently deletes all personal data from this user account (GDPR compliance).
+     *
+     * This method is called by the scheduled deletion job after the 30-day grace period.
+     * It removes all personal information while keeping the User entity for forum author
+     * preservation (GDPR Article 17(3)(e) public interest exception).
+     *
+     * Data Retention Strategy:
+     * - Deleted: email, password, firstName, lastName, address,
+     *            telephone, bio, favorites (all personal data)
+     * - Preserved: id (for foreign key integrity), createdAt (for
+     *              historical context), role (for authorization checks)
+     * - Updated: isActive = false, profileVisibility = HIDDEN
+     *
+     * Forum Content Preservation: Before calling this method, the
+     * UserDeletionService must have already copied the user's display name to the
+     * authorName field in all ForumThread and ForumMessage entities. This preserves
+     * discussion context while anonymizing the author.
+     *
+     * Note: This method does NOT delete the User entity itself, as it
+     * must remain for foreign key integrity with forum content. The user becomes a
+     * "deleted user stub" with no personal data.
+     */
+    public void permanentlyDeletePersonalData() {
+        // Clear all personal information
+        this.email = "deleted_user_" + this.id + "@deleted.local";  // Unique placeholder to avoid unique constraint violations
+        this.password = "";  // Clear password hash
+        this.firstName = null;
+        this.lastName = null;
+        this.address = null;
+        this.telephone = null;
+        this.bio = null;
+
+        // Clear relationships with personal data
+        this.favorites.clear();
+
+        // Ensure account is inactive and hidden
+        this.isActive = false;
+        this.profileVisibility = ProfileVisibility.HIDDEN;
+    }
+
+    // ==================== End GDPR Business Methods ====================
 
     @Override
     public String toString() {
@@ -401,7 +704,7 @@ public class User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        
+
         User user = (User) o;
         return id != null && id.equals(user.id);
     }

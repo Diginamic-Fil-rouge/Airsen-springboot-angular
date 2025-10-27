@@ -1,0 +1,23 @@
+@use 'src/assets/design-system.scss' as *;
+
+  // map Content
+  .map-container {
+    width: 1200px;
+    min-height: 1200px;
+    display: flex;
+    flex-direction: column;
+    
+    .map-frame {
+      border: 2px solid $airsen-gray-300;
+      border-radius: 10px;
+      height: 100%;
+      width: 100%;
+      
+      #map {
+          height: 100%;
+          width: 100%;
+        }
+      }
+
+    }
+    

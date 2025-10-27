@@ -1,22 +1,15 @@
-# =============================================================================
 # JAVA / SPRING BOOT (BACKEND)
-# =============================================================================
 
 # Maven
-**/target/
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 .mvn/
-mvnw
-mvnw.cmd
+airsen-backend/target/
+airsen-backend/.mvn/wrapper/maven-wrapper.jar
+airsen-backend/mvnw
+airsen-backend/mvnw.cmd
+!airsen-backend/.mvn/wrapper/maven-wrapper.jar
 
-# Gradle
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 # Java
 *.class
@@ -50,6 +43,7 @@ out/
 .settings/
 bin/
 tmp/
+*.temp
 *.tmp
 *.bak
 *.swp
@@ -66,16 +60,13 @@ tmp/
 /nbdist/
 /.nb-gradle/
 
-# =============================================================================
-# NODE.JS / ANGULAR (FRONTEND)
-# =============================================================================
+# Angular
 
 # Node modules
 **/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 
 # Angular
 **/dist/
@@ -84,7 +75,6 @@ lerna-debug.log*
 .angular/
 
 # Package managers
-package-lock.json
 yarn.lock
 .pnpm-debug.log*
 
@@ -112,42 +102,24 @@ coverage/
 .out
 .storybook-out
 
-# =============================================================================
 # DATABASE
-# =============================================================================
-
-# Database files
-*.sqlite
-*.sqlite3
-*.db
-*.mdb
 
 # MariaDB & MySQL
 mariadb-data/
 mysql-data/
 
-# PostgreSQL
-postgres-data/
-
-# MongoDB
-mongo-data/
-
 # Redis dump files
 *.rdb
 redis-data/
 
-# Database migration files (development)
-**/migrations/dev/
-**/seeds/dev/
 
-# =============================================================================
 # DOCKER
-# =============================================================================
 
 # Docker volumes and data
 docker-data/
 **/data/
 volumes/
+.docker/
 
 # Maven cache directory (host-mounted)
 docker/maven-cache/
@@ -158,15 +130,12 @@ docker-compose.dev.yml
 docker-compose.prod.yml
 docker-compose.local.yml
 
-# Docker build context
-.dockerignore
 
-# =============================================================================
 # OPERATING SYSTEM
-# =============================================================================
 
 # macOS
 .DS_Store
+.DS_Store?
 .AppleDouble
 .LSOverride
 Icon
@@ -189,9 +158,7 @@ $RECYCLE.BIN/
 .directory
 .Trash-*
 
-# =============================================================================
 # LOGS AND TEMPORARY FILES
-# =============================================================================
 
 # Application logs
 logs/
@@ -204,6 +171,7 @@ tmp/
 temp/
 .tmp/
 .temp/
+*.sh
 
 # Cache directories
 .cache/
@@ -224,6 +192,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+junit/
 
 # JaCoCo (Java Code Coverage)
 **/target/site/jacoco/
@@ -244,8 +213,6 @@ local.db
 # Maven wrapper
 .mvn/wrapper/maven-wrapper.properties
 
-# Gradle wrapper
-gradle/wrapper/gradle-wrapper.properties
 
 # Build artifacts
 build-artifacts/
@@ -285,16 +252,6 @@ lib/external/
 *.rar
 *.tar
 *.zip
-
-# =============================================================================
-# REPOMIX OUTPUT (IF USED)
-# =============================================================================
-
-# Repomix output files
-repomix-output.txt
-repomix-output.md
-codebase-summary.*
-repo-summary.*
 
 # =============================================================================
 # CUSTOM PROJECT EXCLUSIONS
@@ -346,9 +303,6 @@ docs/
 !LICENSE.md
 
 
-# Project structure documentation
-dossier-conception-*.md
-
 
 # OpenAPI specifications (until finalized)
 openapi-spec.yaml
@@ -361,10 +315,13 @@ api-spec.json
 
 # Environment variables and secrets
 .env
-.env.development
+.env.prod
+.env.dev
 .env.test
+.env.local
 .env.production
 *.env
+*.env.local
 
 # Configuration files with sensitive data
 config/secrets/

@@ -152,4 +152,41 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
      */
     @Query("DELETE FROM AirQuality aq WHERE aq.createdAt < :cutoffDate")
     void deleteOldAirQualityData(@Param("cutoffDate") LocalDate cutoffDate);
+
+    /**
+     * Finds latest air quality data for a commune for export endpoint.
+     * 
+     * Optimized query for export/export-data endpoint that retrieves
+     * the most recent air quality measurement in a single query.
+     * 
+     * @param inseeCode commune INSEE code
+     * @return optional air quality data
+     */
+    @Query(value = "SELECT aq.* FROM air_quality aq " +
+                   "JOIN communes c ON aq.commune_id = c.id " +
+                   "WHERE c.insee_code = :inseeCode " +
+                   "ORDER BY aq.measurement_date DESC " +
+                   "LIMIT 1", 
+           nativeQuery = true)
+    Optional<AirQuality> findLatestExportDataByInseeCode(@Param("inseeCode") String inseeCode);
+
+    /**
+     * Finds air quality data for a commune within a date range for export endpoint.
+     * 
+     * Optimized query for export/historical-data endpoint that retrieves
+     * all air quality measurements within a date range in chronological order.
+     * 
+     * @param inseeCode commune INSEE code
+     * @param startDate start date (inclusive)
+     * @param endDate end date (inclusive)
+     * @return list of air quality data ordered by date
+     */
+    @Query("SELECT aq FROM AirQuality aq " +
+           "WHERE aq.commune.inseeCode = :inseeCode " +
+           "AND aq.measurementDate BETWEEN :startDate AND :endDate " +
+           "ORDER BY aq.measurementDate ASC")
+    List<AirQuality> findHistoricalExportDataByInseeCode(
+            @Param("inseeCode") String inseeCode,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }
