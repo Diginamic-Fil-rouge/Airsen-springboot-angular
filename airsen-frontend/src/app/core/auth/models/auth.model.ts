@@ -29,6 +29,10 @@ export interface AuthUser {
   commune?: string;
   department?: string;
   region?: string;
+  // Champs supplémentaires pour le profil
+  address?: string;
+  phone?: string;
+  bio?: string;
 }
 
 export interface RefreshTokenRequest {

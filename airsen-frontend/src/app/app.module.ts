@@ -49,6 +49,7 @@ import { MapViewComponent } from './features/map/map-view/map-view.component';
 import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 import { ForumComponent } from './features/forum/forum.component';
+import { ProfileComponent } from './features/profile/profile.component';
 
 // Layout Components
 import { HeaderComponent } from './layouts/components/header/header.component';
@@ -61,7 +62,6 @@ import { BreadcrumbComponent } from './shared/components/breadcrumb/breadcrumb.c
 // Page Components
 // import { HomeComponent } from './components/pages/home/home.component';
 // import { MapComponent } from './components/pages/map/map.component';
-// import { ProfileComponent } from './components/pages/profile/profile.component';
 // import { FavoritesComponent } from './components/pages/favorites/favorites.component';
 // import { HistoryComponent } from './components/pages/history/history.component';
 // import { ForumComponent } from './components/pages/forum/forum.component';
@@ -118,10 +118,10 @@ import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-t
     VotingComponent,
     LoaderComponent,
     BackButtonComponent,
+    ProfileComponent,
     // Page Components
     // HomeComponent,
     // MapComponent,
-    // ProfileComponent,
     // FavoritesComponent,
     // HistoryComponent,
     // ForumComponent,

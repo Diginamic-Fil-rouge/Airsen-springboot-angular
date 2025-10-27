@@ -1,0 +1,213 @@
+<div class="profile-page">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-text">
+      <h1>Mon profil</h1>
+      <p>Gérez vos informations personnelles et préférences</p>
+    </div>
+    <button class="btn-outline" routerLink="/dashboard">
+      Retour au tableau de bord
+    </button>
+  </div>
+
+  <div class="grid">
+    <!-- Colonne gauche -->
+    <div class="sidebar-wrapper">
+      <div class="sidebar">
+        <div class="card text-center">
+          <div class="avatar-wrapper">
+            <img
+              src="assets/placeholder-avatar.jpg"
+              class="avatar"
+              alt="Avatar"
+            />
+          </div>
+
+          <h3>{{ formData.name }}</h3>
+          <p>{{ formData.email }}</p>
+
+          <div class="stats">
+            <div>
+              <strong>{{ userStats.discussions }}</strong>
+              <span>Discussions</span>
+            </div>
+            <div>
+              <strong>{{ userStats.likes }}</strong>
+              <span>J'aime</span>
+            </div>
+            <div>
+              <strong>{{ userStats.followers }}</strong>
+              <span>Abonnés</span>
+            </div>
+          </div>
+
+          <div class="badge">✅ Utilisateur vérifié</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne droite -->
+    <div class="content">
+      <!-- Conteneur boutons + cadre infos -->
+      <div class="tabs-and-card">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button
+            [class.active]="activeTab === 'profile'"
+            (click)="activeTab = 'profile'"
+          >
+            Profil
+          </button>
+          <button
+            [class.active]="activeTab === 'notifications'"
+            (click)="activeTab = 'notifications'"
+          >
+            Notifications
+          </button>
+          <button
+            [class.active]="activeTab === 'security'"
+            (click)="activeTab = 'security'"
+          >
+            Sécurité
+          </button>
+        </div>
+
+        <!-- Onglet Profil -->
+        <div *ngIf="activeTab === 'profile'" class="profile-card card">
+          <h2>Informations personnelles</h2>
+
+          <form (ngSubmit)="saveProfile()" class="form-grid">
+            <!-- Ligne 1 : Nom complet + Email -->
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="name">Nom complet</label>
+                <input [(ngModel)]="formData.name" name="name" id="name" />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Adresse e-mail</label>
+                <input
+                  [(ngModel)]="formData.email"
+                  name="email"
+                  id="email"
+                  type="email"
+                />
+              </div>
+            </div>
+
+            <!-- Ligne 2 : Adresse -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="address">Adresse</label>
+                <input
+                  [(ngModel)]="formData.address"
+                  name="address"
+                  id="address"
+                />
+              </div>
+            </div>
+
+            <!-- Ligne 3 : Téléphone -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="phone">Téléphone</label>
+                <input [(ngModel)]="formData.phone" name="phone" id="phone" />
+              </div>
+            </div>
+
+            <!-- Ligne 4 : Bio -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="bio">Bio</label>
+                <input [(ngModel)]="formData.bio" name="bio" id="bio" />
+              </div>
+            </div>
+
+            <!-- Ligne 5 : Bouton Sauvegarder -->
+            <div class="form-row button-row">
+              <button type="submit" class="btn-save">
+                Sauvegarder les modifications
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Onglet Notifications -->
+        <div
+          *ngIf="activeTab === 'notifications'"
+          class="card notifications-card"
+        >
+          <h2>Préférences de notification</h2>
+          <p class="notif-intro">
+            Choisissez comment vous souhaitez être notifié
+          </p>
+
+          <div class="notifications-list">
+            <div *ngFor="let key of notifications | keyvalue" class="notif-row">
+              <!-- <span class="notif-label">{{ key.key }}</span> -->
+              <div class="notif-labels">
+                <span class="notif-title">{{
+                  notificationLabels[key.key]?.title
+                }}</span>
+                <span class="notif-description">{{
+                  notificationLabels[key.key]?.description
+                }}</span>
+              </div>
+
+              <button
+                (click)="toggleNotificationKey(key.key)"
+                [class.active]="key.value"
+                [class.inactive]="!key.value"
+              >
+                {{ key.value ? "Activé" : "Désactivé" }}
+              </button>
+            </div>
+          </div>
+
+          <div class="notif-actions">
+            <button (click)="saveNotifications()" class="btn-save">
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+
+        <!-- Onglet Sécurité -->
+        <div *ngIf="activeTab === 'security'" class="card security-card">
+          <h2>Sécurité du compte</h2>
+          <p class="security-subtitle">
+            Gérez la sécurité et les paramètres de votre compte
+          </p>
+
+          <!-- Changer le mot de passe -->
+          <div class="security-section">
+            <div class="section-text">
+              <h3>Changer le mot de passe</h3>
+              <p class="section-description">
+                Mettez à jour votre mot de passe régulièrement pour la sécurité.
+              </p>
+            </div>
+            <button class="btn-outline-rounded">Modifier</button>
+          </div>
+
+          <!-- Authentification à deux facteurs -->
+          <div class="security-section">
+            <div class="section-text">
+              <h3>Authentification à deux facteurs</h3>
+              <p class="section-description">
+                Ajoutez une couche de sécurité supplémentaire à votre compte.
+              </p>
+            </div>
+            <button class="btn-outline-rounded">Configurer 2FA</button>
+          </div>
+
+          <!-- Zone de danger -->
+          <div class="security-section danger-zone">
+            <h3>Zone de danger</h3>
+            <p class="danger-text">Actions irréversibles sur votre compte</p>
+            <button class="btn-danger-rounded">🗑️ Supprimer le compte</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
