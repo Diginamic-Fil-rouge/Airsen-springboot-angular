@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Weather } from '../models/weather.model';
 import { Commune } from '../models/commune.model';
+import { ExportDatas } from '../models/exportDatas.model';
 @Injectable({
   providedIn: 'root'
 })
@@ -28,6 +29,10 @@ export class GeographicService {
 
   searchCommunes(query: string): Observable<Commune[]> {
     return this.http.get<Commune[]>(`${this.apiUrl}/search`, { params: { q: query }});
+  }
+
+  getCommuneDatas(inseeCode: string | undefined): Observable<ExportDatas> {
+    return this.http.get<ExportDatas>(`${this.apiUrl}/${inseeCode}/export-data`);
   }
 
 }
