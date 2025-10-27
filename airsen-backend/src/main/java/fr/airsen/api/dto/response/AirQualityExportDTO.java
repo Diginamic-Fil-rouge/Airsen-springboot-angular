@@ -12,10 +12,10 @@ public record AirQualityExportDTO(
     Integer atmIndex,
     String atmoQual,
     String atmoColor,
-    Double no2,
-    Double o3,
-    Double pm10,
+    Integer no2,
+    Integer o3,
+    Integer pm10,
     Integer pm25,
-    Double so2,
+    Integer so2,
     LocalDateTime createdAt
 ) {}

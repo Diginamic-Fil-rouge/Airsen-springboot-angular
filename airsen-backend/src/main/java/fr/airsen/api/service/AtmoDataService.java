@@ -134,22 +134,34 @@ public class AtmoDataService {
 
                     // Map pollutant codes
                     if (atmoResponse.no2Code() != null) {
-                        airQuality.setNO2(convertCodeToConcentration("NO2", atmoResponse.no2Code()));
+                        Integer no2Conc = convertCodeToConcentration("NO2", atmoResponse.no2Code());
+                        if (no2Conc != null) {
+                            airQuality.setNO2(no2Conc);
+                        }
                     }
                     if (atmoResponse.o3Code() != null) {
-                        airQuality.setO3(convertCodeToConcentration("O3", atmoResponse.o3Code()));
+                        Integer o3Conc = convertCodeToConcentration("O3", atmoResponse.o3Code());
+                        if (o3Conc != null) {
+                            airQuality.setO3(o3Conc);
+                        }
                     }
                     if (atmoResponse.pm10Code() != null) {
-                        airQuality.setPm10(convertCodeToConcentration("PM10", atmoResponse.pm10Code()));
+                        Integer pm10Conc = convertCodeToConcentration("PM10", atmoResponse.pm10Code());
+                        if (pm10Conc != null) {
+                            airQuality.setPm10(pm10Conc);
+                        }
                     }
                     if (atmoResponse.pm25Code() != null) {
-                        Double pm25Concentration = convertCodeToConcentration("PM25", atmoResponse.pm25Code());
+                        Integer pm25Concentration = convertCodeToConcentration("PM25", atmoResponse.pm25Code());
                         if (pm25Concentration != null) {
-                            airQuality.setPm25(pm25Concentration.intValue());
+                            airQuality.setPm25(pm25Concentration);
                         }
                     }
                     if (atmoResponse.so2Code() != null) {
-                        airQuality.setSO2(convertCodeToConcentration("SO2", atmoResponse.so2Code()));
+                        Integer so2Conc = convertCodeToConcentration("SO2", atmoResponse.so2Code());
+                        if (so2Conc != null) {
+                            airQuality.setSO2(so2Conc);
+                        }
                     }
 
                     // Save to database
@@ -158,13 +170,13 @@ public class AtmoDataService {
     }
 
     /**
-     * Converts ATMO pollutant codes to approximate concentrations.
+     * Converts ATMO pollutant codes to approximate integer concentrations.
      *
      * @param pollutant the pollutant type (NO2, O3, PM10, PM25, SO2)
      * @param code      the ATMO code (1-6)
-     * @return approximate concentration in μg/m³
+     * @return approximate concentration in μg/m³ as Integer
      */
-    private Double convertCodeToConcentration(String pollutant, Integer code) {
+    private Integer convertCodeToConcentration(String pollutant, Integer code) {
         if (code == null || code < 1 || code > 6) {
             return null;
         }
@@ -173,48 +185,48 @@ public class AtmoDataService {
         // These are simplified mappings for demonstration purposes
         return switch (pollutant.toUpperCase()) {
             case "NO2" -> switch (code) {
-                case 1 -> 20.0;   // Good
-                case 2 -> 40.0;   // Moderate  
-                case 3 -> 90.0;   // Unhealthy for sensitive
-                case 4 -> 120.0;  // Unhealthy
-                case 5 -> 230.0;  // Very unhealthy
-                case 6 -> 300.0;  // Hazardous
+                case 1 -> 20;     // Good
+                case 2 -> 40;     // Moderate
+                case 3 -> 90;     // Unhealthy for sensitive
+                case 4 -> 120;    // Unhealthy
+                case 5 -> 230;    // Very unhealthy
+                case 6 -> 300;    // Hazardous
                 default -> null;
             };
             case "O3" -> switch (code) {
-                case 1 -> 60.0;
-                case 2 -> 120.0;
-                case 3 -> 160.0;
-                case 4 -> 200.0;
-                case 5 -> 240.0;
-                case 6 -> 300.0;
+                case 1 -> 60;
+                case 2 -> 120;
+                case 3 -> 160;
+                case 4 -> 200;
+                case 5 -> 240;
+                case 6 -> 300;
                 default -> null;
             };
             case "PM10" -> switch (code) {
-                case 1 -> 20.0;
-                case 2 -> 40.0;
-                case 3 -> 50.0;
-                case 4 -> 100.0;
-                case 5 -> 150.0;
-                case 6 -> 200.0;
+                case 1 -> 20;
+                case 2 -> 40;
+                case 3 -> 50;
+                case 4 -> 100;
+                case 5 -> 150;
+                case 6 -> 200;
                 default -> null;
             };
             case "PM25" -> switch (code) {
-                case 1 -> 10.0;
-                case 2 -> 20.0;
-                case 3 -> 25.0;
-                case 4 -> 50.0;
-                case 5 -> 75.0;
-                case 6 -> 100.0;
+                case 1 -> 10;
+                case 2 -> 20;
+                case 3 -> 25;
+                case 4 -> 50;
+                case 5 -> 75;
+                case 6 -> 100;
                 default -> null;
             };
             case "SO2" -> switch (code) {
-                case 1 -> 50.0;
-                case 2 -> 100.0;
-                case 3 -> 200.0;
-                case 4 -> 350.0;
-                case 5 -> 500.0;
-                case 6 -> 750.0;
+                case 1 -> 50;
+                case 2 -> 100;
+                case 3 -> 200;
+                case 4 -> 350;
+                case 5 -> 500;
+                case 6 -> 750;
                 default -> null;
             };
             default -> null;

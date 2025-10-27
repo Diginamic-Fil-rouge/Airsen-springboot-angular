@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Integration tests for ExportDataController.
- * 
+ *
  * Tests the export-data and historical-data endpoints with:
  * - Authentication and authorization
  * - Valid and invalid inputs
@@ -99,11 +99,11 @@ class ExportDataControllerIntegrationTest {
         testAirQuality.setAtmIndex(2);
         testAirQuality.setAtmoQual("Bon");
         testAirQuality.setAtmoColor("#50ccaa");
-        testAirQuality.setNO2(25.5);
-        testAirQuality.setO3(50.0);
-        testAirQuality.setPm10(30.0);
+        testAirQuality.setNO2(25);
+        testAirQuality.setO3(50);
+        testAirQuality.setPm10(30);
         testAirQuality.setPm25(15);
-        testAirQuality.setO3(60.0);
+        testAirQuality.setO3(60);
         testAirQuality.setCreatedAt(LocalDate.now());
         testAirQuality = airQualityRepository.save(testAirQuality);
 

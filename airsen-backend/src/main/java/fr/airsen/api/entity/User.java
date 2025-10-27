@@ -117,10 +117,16 @@ public class User {
     @Size(max = 500, message = "Deletion reason cannot exceed 500 characters")
     private String deletionReason;
 
-    @ManyToMany
-    @JoinTable(name = "user_favorite", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "commune_id"))
-    private Set<Commune> favoris = new HashSet<>();
-
+    /**
+     * User's favorite communes.
+     *
+     * One-to-Many relationship through UserFavorite join entity.
+     * Maximum 10 favorites enforced by business logic in service layer.
+     * Cascade ALL operations to automatically manage favorites lifecycle.
+     * Orphan removal ensures favorites are deleted when removed from collection.
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<UserFavorite> favorites = new HashSet<>();
 
     @OneToMany(mappedBy = "author")
     private List<ForumThread> threads;
@@ -365,13 +371,83 @@ public class User {
         }
     }
 
-    public Set<Commune> getFavoris() {
-        return favoris;
+    // ==================== Favorites Management Business Methods ====================
+
+    /**
+     * Gets the user's favorite communes.
+     *
+     * @return Set of UserFavorite entities
+     */
+    public Set<UserFavorite> getFavorites() {
+        return favorites;
     }
 
-    public void setFavoris(Set<Commune> favoris) {
-        this.favoris = favoris;
+    public void setFavorites(Set<UserFavorite> favorites) {
+        this.favorites = favorites;
     }
+
+    /**
+     * Checks if user can add another favorite.
+     *
+     * Business Rule: Maximum 10 favorites per user.
+     *
+     * @return true if user has less than 10 favorites
+     */
+    public boolean canAddFavorite() {
+        return favorites.size() < 10;
+    }
+
+    /**
+     * Adds a favorite to the user's collection.
+     *
+     * Enforces maximum 10 favorites business rule.
+     * Establishes bidirectional relationship with UserFavorite entity.
+     *
+     * @param favorite UserFavorite entity to add
+     * @throws IllegalStateException if user already has 10 favorites
+     */
+    public void addFavorite(UserFavorite favorite) {
+        if (!canAddFavorite()) {
+            throw new IllegalStateException("Maximum 10 favorites per user exceeded");
+        }
+        favorites.add(favorite);
+        favorite.setUser(this);
+    }
+
+    /**
+     * Removes a favorite from the user's collection.
+     *
+     * Breaks bidirectional relationship with UserFavorite entity.
+     * Orphan removal will automatically delete the entity from database.
+     *
+     * @param favorite UserFavorite entity to remove
+     */
+    public void removeFavorite(UserFavorite favorite) {
+        favorites.remove(favorite);
+        favorite.setUser(null);
+    }
+
+    /**
+     * Checks if a specific commune is in user's favorites.
+     *
+     * @param communeInseeCode Commune INSEE code
+     * @return true if commune is favorited
+     */
+    public boolean hasFavorite(String communeInseeCode) {
+        return favorites.stream()
+                .anyMatch(fav -> fav.getCommune().getInseeCode().equals(communeInseeCode));
+    }
+
+    /**
+     * Gets count of user's favorites.
+     *
+     * @return Number of favorites (0-10)
+     */
+    public int getFavoriteCount() {
+        return favorites.size();
+    }
+
+    // ==================== End Favorites Management ====================
 
     public List<ForumThread> getThreads() {
         return threads;
@@ -581,7 +657,7 @@ public class User {
      *
      * Data Retention Strategy:
      * - Deleted: email, password, firstName, lastName, address,
-     *            telephone, bio, favoris (all personal data)
+     *            telephone, bio, favorites (all personal data)
      * - Preserved: id (for foreign key integrity), createdAt (for
      *              historical context), role (for authorization checks)
      * - Updated: isActive = false, profileVisibility = HIDDEN
@@ -606,7 +682,7 @@ public class User {
         this.bio = null;
 
         // Clear relationships with personal data
-        this.favoris.clear();
+        this.favorites.clear();
 
         // Ensure account is inactive and hidden
         this.isActive = false;

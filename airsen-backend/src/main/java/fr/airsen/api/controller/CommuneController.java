@@ -16,13 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 /**
  * REST controller for managing French administrative communes.
- * 
+ *
  * Provides endpoints for accessing commune data both by department
  * and through global search functionality.
  */
@@ -41,7 +40,7 @@ public class CommuneController {
 
     /**
      * GET /departments/{departmentId}/communes
-     * 
+     *
      * Lists all communes belonging to a specific department.
      */
     @GetMapping("/departments/{departmentId}/communes")
@@ -62,13 +61,13 @@ public class CommuneController {
             @RequestParam(defaultValue = "20") @Positive int size,
             @Parameter(description = "Optional search term", example = "Paris")
             @RequestParam(required = false) @Size(min = 2, max = 50) String search) {
-        
-        log.info("Received request for communes in department: {} (page: {}, size: {}, search: '{}')", 
+
+        log.info("Received request for communes in department: {} (page: {}, size: {}, search: '{}')",
                 departmentId, page, size, search);
-        
+
         List<CommuneDTO> communes = communeService.getCommunesByDepartment(departmentId, page, size, search);
         log.info("Successfully retrieved {} communes for department: {}", communes.size(), departmentId);
-        
+
         return ResponseEntity.ok(communes);
     }
 

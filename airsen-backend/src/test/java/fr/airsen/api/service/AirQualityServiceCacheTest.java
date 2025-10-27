@@ -8,7 +8,6 @@ import fr.airsen.api.external.client.InseeApiClient;
 import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
 import fr.airsen.api.repository.*;
-import fr.airsen.api.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -69,54 +68,54 @@ class AirQualityServiceCacheTest {
     // Additional beans required by Spring Boot context
     @MockBean
     private WeatherService weatherService;
-    
+
     @MockBean
     private CommuneService communeService;
-    
+
     @MockBean
     private NotificationService notificationService;
-    
+
     @MockBean
     private JwtBlacklistService jwtBlacklistService;
 
     // All repositories
     @MockBean
     private UserRepository userRepository;
-    
+
     @MockBean
     private WeatherDataRepository weatherDataRepository;
-    
+
     @MockBean
     private RegionRepository regionRepository;
-    
+
     @MockBean
     private DepartmentRepository departmentRepository;
-    
+
     @MockBean
-    private AlertRepository alertRepository;
-    
+    private AlertSignalRepository alertSignalRepository;
+
     @MockBean
     private AlertHistoryRepository alertHistoryRepository;
-    
+
     @MockBean
     private NotificationRepository notificationRepository;
-    
+
     @MockBean
     private ForumCategoryRepository forumCategoryRepository;
-    
+
     @MockBean
     private ForumThreadRepository forumThreadRepository;
-    
+
     @MockBean
     private ForumMessageRepository forumMessageRepository;
-    
+
     @MockBean
     private ForumVoteRepository forumVoteRepository;
 
     // All external API clients
     @MockBean
     private InseeApiClient inseeApiClient;
-    
+
     @MockBean
     private OpenMeteoApiClient openMeteoApiClient;
 
@@ -414,13 +413,13 @@ class AirQualityServiceCacheTest {
         airQuality.setAtmoIndex(75);
         airQuality.setAtmoQual("Moderate");
         airQuality.setAtmoColor("#50ccaa");
-        airQuality.setPm25(15); // Integer, not double
-        airQuality.setPm10(25.0);
-        airQuality.setNO2(35.0);
-        airQuality.setO3(45.0);
-        airQuality.setSO2(10.0);
+        airQuality.setPm25(15);
+        airQuality.setPm10(25);
+        airQuality.setNO2(35);
+        airQuality.setO3(45);
+        airQuality.setSO2(10);
         airQuality.setMeasurementDate(LocalDate.now());
-        airQuality.setCreatedAt(LocalDate.now()); // LocalDate, not LocalDateTime
+        airQuality.setCreatedAt(LocalDate.now());
 
         return airQuality;
     }
