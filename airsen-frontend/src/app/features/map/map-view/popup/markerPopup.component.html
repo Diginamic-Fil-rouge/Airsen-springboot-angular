@@ -1,0 +1,5 @@
+<div class="popup-content">
+    <div class="commune-name">{{ commune?.name??"Commune inconnue" }}</div>
+    <p class="air-quality" style="color: {{commune?.color}};">Qualité de l'air : {{ commune?.qualifier??"Pas de données" }}</p>
+    <button (click)="onMore()">Plus de détails</button>
+</div>
