@@ -90,7 +90,6 @@ import { RouterModule } from '@angular/router';
 import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
 import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
 import { MapLegendComponent } from './features/map/map-view/legend/map-legend.component';
-import { MarkerPopupComponent } from './features/map/map-view/popup/markerPopup.component';
 
 @NgModule({
   declarations: [
@@ -108,7 +107,6 @@ import { MarkerPopupComponent } from './features/map/map-view/popup/markerPopup.
     MapComponent,
     MapViewComponent,
     MapLegendComponent,
-    MarkerPopupComponent,
     HomeComponent,
     NotFoundComponent,
     ForumComponent,
