@@ -137,8 +137,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ForumVote> votes;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Alert> alerts;
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private List<Alert> alerts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Notification> sentNotifications;
@@ -268,9 +268,9 @@ public class User {
     /**
      * Updates user profile with new information.
      * Only updates non-null and non-empty values.
-     * 
+     *
      * @param firstName new first name (can be null)
-     * @param lastName new last name (can be null) 
+     * @param lastName new last name (can be null)
      * @param address new address (can be null)
      */
     public void updateProfile(String firstName, String lastName, String address) {
@@ -318,7 +318,7 @@ public class User {
     /**
      * Updates user password.
      * Note: Password must be already encrypted before calling this method.
-     * 
+     *
      * @param encryptedPassword new encrypted password
      */
     public void updatePassword(String encryptedPassword) {
@@ -329,7 +329,7 @@ public class User {
 
     /**
      * Updates user email and resets verification status.
-     * 
+     *
      * @param newEmail new email address
      */
     public void updateEmail(String newEmail) {
@@ -342,11 +342,11 @@ public class User {
     /**
      * Checks if user profile is complete.
      * A profile is considered complete if both first name and last name are provided.
-     * 
+     *
      * @return true if profile is complete
      */
     public boolean isProfileComplete() {
-        return firstName != null && !firstName.trim().isEmpty() 
+        return firstName != null && !firstName.trim().isEmpty()
             && lastName != null && !lastName.trim().isEmpty();
     }
 
@@ -356,7 +356,7 @@ public class User {
 
     /**
      * Gets user's full name.
-     * 
+     *
      * @return full name (first + last) or email if names are not provided
      */
     public String getFullName() {
@@ -471,14 +471,6 @@ public class User {
 
     public void setVotes(List<ForumVote> votes) {
         this.votes = votes;
-    }
-
-    public List<Alert> getAlerts() {
-        return alerts;
-    }
-
-    public void setAlerts(List<Alert> alerts) {
-        this.alerts = alerts;
     }
 
     public List<Notification> getSentNotifications() {
@@ -712,7 +704,7 @@ public class User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        
+
         User user = (User) o;
         return id != null && id.equals(user.id);
     }

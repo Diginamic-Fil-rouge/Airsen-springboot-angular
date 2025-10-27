@@ -64,8 +64,8 @@ public class AirQuality {
     /**
      * Alert histories triggered by this air quality measurement.
      */
-    @OneToMany(mappedBy = "airQuality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private java.util.List<AlertHistory> alertHistories;
+//    @OneToMany(mappedBy = "airQuality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private java.util.List<AlertHistory> alertHistories;
 
     public AirQuality() {
     }
@@ -179,14 +179,14 @@ public class AirQuality {
     public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
     }
-
-    public java.util.List<AlertHistory> getAlertHistories() {
-        return alertHistories;
-    }
-
-    public void setAlertHistories(java.util.List<AlertHistory> alertHistories) {
-        this.alertHistories = alertHistories;
-    }
+//
+//    public java.util.List<AlertHistory> getAlertHistories() {
+//        return alertHistories;
+//    }
+//
+//    public void setAlertHistories(java.util.List<AlertHistory> alertHistories) {
+//        this.alertHistories = alertHistories;
+//    }
 
     // External API integration methods (aliases for compatibility)
     public Integer getAtmoIndex() {

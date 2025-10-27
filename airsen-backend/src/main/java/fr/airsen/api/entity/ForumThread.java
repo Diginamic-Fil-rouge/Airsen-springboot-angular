@@ -8,14 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * This entity represents a thread in the forum. It is linked to a {@link ForumCategory } entity.
- *
- * GDPR Author Preservation: When a user is deleted (GDPR right to erasure),
- * their forum threads are preserved under GDPR Article 17(3)(e) public interest exception for
- * environmental discussions. The author relationship is set to null, but the authorName field
- * preserves the original author's display name for discussion context.
- */
+
 @Entity
 @Table(name = "forum_threads", indexes = {
     @Index(name = "idx_thread_author_deleted", columnList = "author_deleted")
@@ -29,10 +22,6 @@ public class ForumThread {
 
     /**
      * The author of this forum thread.
-     *
-     * GDPR Compliance: This field is nullable to support author preservation
-     * after user deletion. When a user is deleted (GDPR right to erasure), this field is set to
-     * null, but the authorName field preserves the original author's display name.
      *
      * Business Rules:
      * - If author != null → active user, use author.getDisplayName() for display
@@ -63,9 +52,6 @@ public class ForumThread {
      * When a user is deleted, their display name is copied to this field before the author
      * relationship is set to null. This preserves discussion context while respecting the
      * user's right to erasure.
-     *
-     * GDPR Article 17(3)(e): Forum content serves public interest for
-     * environmental discussions, so author names are preserved even after user deletion.
      *
      * Example Values: "Marie Dupont", "Jean Martin", "user@example.com"
      * (falls back to email if user had no first/last name)

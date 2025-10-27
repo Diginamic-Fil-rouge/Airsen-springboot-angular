@@ -76,9 +76,9 @@ public class Commune {
     /**
      * Air quality alerts monitoring this commune.
      */
-    @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Set<Alert> alerts = new HashSet<>();
+//    @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @JsonIgnore
+//    private Set<Alert> alerts = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
@@ -215,14 +215,14 @@ public class Commune {
     public int getFavoriteCount() {
         return favoritedBy != null ? favoritedBy.size() : 0;
     }
-
-    public Set<Alert> getAlerts() {
-        return alerts;
-    }
-
-    public void setAlerts(Set<Alert> alerts) {
-        this.alerts = alerts;
-    }
+//
+//    public Set<Alert> getAlerts() {
+//        return alerts;
+//    }
+//
+//    public void setAlerts(Set<Alert> alerts) {
+//        this.alerts = alerts;
+//    }
 
     // External API integration methods
     public void setArea(Double area) {

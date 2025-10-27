@@ -1,6 +1,7 @@
 package fr.airsen.api.entity;
 
 import fr.airsen.api.entity.enums.NotificationChannel;
+import fr.airsen.api.entity.enums.NotificationDeliveryStatus;
 import fr.airsen.api.entity.enums.NotificationType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -9,18 +10,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-/**
- * Entity representing user notification system.
- * 
- * This entity manages notifications sent to users through various channels,
- * currently limited to email delivery as per business requirements.
- */
 @Entity
 @Table(name = "notifications", indexes = {
     @Index(name = "idx_notification_user_id", columnList = "user_id"),
     @Index(name = "idx_notification_receiver_id", columnList = "user_id_receiver"),
     @Index(name = "idx_notification_send_status", columnList = "send_status"),
-    @Index(name = "idx_notification_created_date", columnList = "created_date")
+    @Index(name = "idx_notification_created_date", columnList = "created_date"),
+    @Index(name = "idx_notification_campaign_delivery", columnList = "campaign_id, delivery_status")
 })
 @EntityListeners(AuditingEntityListener.class)
 public class Notification {
@@ -39,6 +35,18 @@ public class Notification {
     @JoinColumn(name = "user_id_receiver", nullable = false)
     @NotNull(message = "Receiver user is required for notification")
     private User userReceiver;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "campaign_id",
+        foreignKey = @ForeignKey(name = "fk_notification_campaign")
+    )
+    private NotificationCampaign campaign;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_status", nullable = false, length = 50)
+    @NotNull(message = "Delivery status is required")
+    private NotificationDeliveryStatus deliveryStatus = NotificationDeliveryStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false)
@@ -78,11 +86,12 @@ public class Notification {
         this.readStatus = false;
         this.notificationType = NotificationType.EMAIL;
         this.sendChannel = NotificationChannel.EMAIL;
+        this.deliveryStatus = NotificationDeliveryStatus.PENDING;
     }
 
     /**
      * Constructor with main parameters.
-     * 
+     *
      * @param user sender of the notification
      * @param userReceiver receiver of the notification
      * @param title notification title
@@ -98,20 +107,19 @@ public class Notification {
 
     /**
      * Constructor with notification type.
-     * 
+     *
      * @param user sender of the notification
      * @param userReceiver receiver of the notification
      * @param title notification title
      * @param message notification content
      * @param notificationType delivery method
      */
-    public Notification(User user, User userReceiver, String title, String message, 
+    public Notification(User user, User userReceiver, String title, String message,
                        NotificationType notificationType) {
         this(user, userReceiver, title, message);
         this.notificationType = notificationType;
     }
 
-    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -135,6 +143,22 @@ public class Notification {
 
     public void setUserReceiver(User userReceiver) {
         this.userReceiver = userReceiver;
+    }
+
+    public NotificationCampaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(NotificationCampaign campaign) {
+        this.campaign = campaign;
+    }
+
+    public NotificationDeliveryStatus getDeliveryStatus() {
+        return deliveryStatus;
+    }
+
+    public void setDeliveryStatus(NotificationDeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
     }
 
     public NotificationType getNotificationType() {
@@ -210,48 +234,59 @@ public class Notification {
         this.readStatus = true;
         this.sentDate = LocalDateTime.now();
         this.errorMessage = null;
+        this.deliveryStatus = NotificationDeliveryStatus.SENT;
     }
 
     /**
      * Marks this notification as failed with an error message.
-     * 
+     *
      * @param errorMessage description of the delivery failure
      */
     public void markAsFailed(String errorMessage) {
         this.readStatus = false;
         this.errorMessage = errorMessage;
         this.sentDate = null;
+        this.deliveryStatus = NotificationDeliveryStatus.FAILED;
     }
 
     /**
      * Checks if this notification has failed to send.
-     * 
+     *
      * @return true if the notification failed to send
      */
     public boolean hasFailed() {
-        return !readStatus && errorMessage != null && !errorMessage.trim().isEmpty();
+        return deliveryStatus == NotificationDeliveryStatus.FAILED;
     }
 
     /**
      * Checks if this notification is pending delivery.
-     * 
+     *
      * @return true if the notification is pending
      */
     public boolean isPending() {
-        return !readStatus && (errorMessage == null || errorMessage.trim().isEmpty());
+        return deliveryStatus == NotificationDeliveryStatus.PENDING;
+    }
+
+    /**
+     * Checks if this notification was successfully sent.
+     *
+     * @return true if the notification was sent successfully
+     */
+    public boolean wasSent() {
+        return deliveryStatus == NotificationDeliveryStatus.SENT;
     }
 
     /**
      * Validates that the notification has valid email delivery configuration.
-     * 
+     *
      * @return true if email delivery is properly configured
      */
     public boolean isValidForEmailDelivery() {
-        return userReceiver != null && 
-               userReceiver.getEmail() != null && 
+        return userReceiver != null &&
+               userReceiver.getEmail() != null &&
                !userReceiver.getEmail().trim().isEmpty() &&
                userReceiver.getEmailVerified() &&
-               (notificationType == NotificationType.EMAIL || 
+               (notificationType == NotificationType.EMAIL ||
                 notificationType == NotificationType.EMAIL_AND_PUSH);
     }
 
@@ -261,14 +296,14 @@ public class Notification {
 
     /**
      * Creates a summary of this notification for logging.
-     * 
+     *
      * @return notification summary
      */
     public String getSummary() {
         String recipientInfo = userReceiver != null ? userReceiver.getEmail() : "Unknown recipient";
         String statusInfo = readStatus ? "Read" : "Unread";
-        
-        return String.format("Notification[%d]: '%s' to %s (%s)", 
+
+        return String.format("Notification[%d]: '%s' to %s (%s)",
                            id, title, recipientInfo, statusInfo);
     }
 
@@ -288,7 +323,7 @@ public class Notification {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        
+
         Notification that = (Notification) o;
         return id != null && id.equals(that.id);
     }

@@ -1,7 +1,9 @@
 package fr.airsen.api.repository;
 
 import fr.airsen.api.entity.Notification;
+import fr.airsen.api.entity.NotificationCampaign;
 import fr.airsen.api.entity.enums.NotificationChannel;
+import fr.airsen.api.entity.enums.NotificationDeliveryStatus;
 import fr.airsen.api.entity.enums.NotificationType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +25,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds notifications sent by a specific user.
-     * 
+     *
      * @param userId sender user identifier
      * @param pageable pagination parameters
      * @return page of notifications sent by the user
@@ -34,7 +36,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Finds unread notifications for a user.
      * Unread notifications are those with readStatus = false.
-     * 
+     *
      * @param userId recipient user identifier
      * @param pageable pagination parameters
      * @return page of unread notifications
@@ -44,7 +46,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds notifications by read status.
-     * 
+     *
      * @param readStatus read/unread status
      * @param pageable pagination parameters
      * @return page of notifications with the specified status
@@ -54,7 +56,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Finds pending notifications for processing.
      * Pending notifications have readStatus = false and no error message.
-     * 
+     *
      * @return list of pending notifications
      */
     @Query("SELECT n FROM Notification n WHERE n.readStatus = false AND (n.errorMessage IS NULL OR n.errorMessage = '') ORDER BY n.createdDate ASC")
@@ -63,7 +65,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Finds failed notifications for retry processing.
      * Failed notifications have readStatus = false and an error message.
-     * 
+     *
      * @return list of failed notifications
      */
     @Query("SELECT n FROM Notification n WHERE n.readStatus = false AND n.errorMessage IS NOT NULL AND n.errorMessage != '' ORDER BY n.createdDate DESC")
@@ -71,7 +73,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds notifications by delivery channel.
-     * 
+     *
      * @param channel notification delivery channel
      * @param pageable pagination parameters
      * @return page of notifications using the specified channel
@@ -80,7 +82,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds notifications by type.
-     * 
+     *
      * @param notificationType notification type
      * @param pageable pagination parameters
      * @return page of notifications of the specified type
@@ -89,7 +91,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds notifications within a date range.
-     * 
+     *
      * @param startDate start of date range
      * @param endDate end of date range
      * @param pageable pagination parameters
@@ -102,7 +104,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds notifications for a user within a date range.
-     * 
+     *
      * @param userId recipient user identifier
      * @param startDate start of date range
      * @param endDate end of date range
@@ -117,7 +119,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds recent notifications for a user.
-     * 
+     *
      * @param userId recipient user identifier
      * @param since date from which to find notifications
      * @return list of recent notifications
@@ -127,7 +129,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Counts unread notifications for a user.
-     * 
+     *
      * @param userId recipient user identifier
      * @return count of unread notifications
      */
@@ -136,7 +138,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Counts successful notifications for a user.
-     * 
+     *
      * @param userId recipient user identifier
      * @return count of successful notifications
      */
@@ -145,7 +147,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Counts failed notifications for a user.
-     * 
+     *
      * @param userId recipient user identifier
      * @return count of failed notifications
      */
@@ -154,7 +156,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Counts notifications by read status.
-     * 
+     *
      * @param readStatus read/unread status
      * @return count of notifications with the specified status
      */
@@ -162,7 +164,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Marks a notification as successfully sent.
-     * 
+     *
      * @param notificationId notification identifier
      * @param sentDate date when notification was sent
      */
@@ -172,7 +174,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Marks a notification as failed with an error message.
-     * 
+     *
      * @param notificationId notification identifier
      * @param errorMessage error description
      */
@@ -182,7 +184,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Updates notification delivery status.
-     * 
+     *
      * @param notificationId notification identifier
      * @param readStatus new read status
      */
@@ -193,7 +195,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Marks all notifications for a user as read.
      * Used when user marks all notifications as read.
-     * 
+     *
      * @param userId recipient user identifier
      */
     @Modifying
@@ -203,7 +205,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Deletes notifications older than a specified date.
      * Used for data retention policies.
-     * 
+     *
      * @param cutoffDate date before which notifications should be deleted
      * @return number of deleted notifications
      */
@@ -214,7 +216,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Deletes all notifications for a user.
      * Used when user account is deleted.
-     * 
+     *
      * @param userId user identifier
      * @return number of deleted notifications
      */
@@ -225,7 +227,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Finds notification delivery statistics within a date range.
      * Returns aggregated data for reporting.
-     * 
+     *
      * @param startDate start of date range
      * @param endDate end of date range
      * @return list of statistics [readStatus, count]
@@ -236,7 +238,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Finds notification type statistics within a date range.
-     * 
+     *
      * @param startDate start of date range
      * @param endDate end of date range
      * @return list of statistics [notificationType, count]
@@ -248,7 +250,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Finds notifications that need email delivery.
      * Used by email service to process notifications.
-     * 
+     *
      * @return list of notifications requiring email delivery
      */
     @Query("SELECT n FROM Notification n WHERE n.readStatus = false AND n.sendChannel = 'EMAIL' AND (n.errorMessage IS NULL OR n.errorMessage = '') ORDER BY n.createdDate ASC")
@@ -256,10 +258,46 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Checks if a user has valid email for notification delivery.
-     * 
+     *
      * @param userId user identifier
      * @return true if user has verified email
      */
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.id = :userId AND u.emailVerified = true AND u.email IS NOT NULL AND u.email != ''")
     boolean isUserEmailValid(@Param("userId") Long userId);
+
+    /**
+     * Finds notifications belonging to a campaign.
+     *
+     * @param campaign notification campaign
+     * @param pageable pagination parameters
+     * @return page of notifications for the campaign
+     */
+    Page<Notification> findByCampaign(NotificationCampaign campaign, Pageable pageable);
+
+    /**
+     * Finds notifications by campaign and delivery status.
+     *
+     * @param campaign notification campaign
+     * @param status delivery status
+     * @return list of notifications matching criteria
+     */
+    List<Notification> findByCampaignAndDeliveryStatus(NotificationCampaign campaign, NotificationDeliveryStatus status);
+
+    /**
+     * Counts notifications by campaign and delivery status.
+     *
+     * @param campaign notification campaign
+     * @param status delivery status
+     * @return count of notifications matching criteria
+     */
+    Long countByCampaignAndDeliveryStatus(NotificationCampaign campaign, NotificationDeliveryStatus status);
+
+    /**
+     * Finds notifications by campaign ID and multiple delivery statuses.
+     *
+     * @param campaignId campaign identifier
+     * @param statuses list of delivery statuses to filter by
+     * @return list of notifications matching criteria
+     */
+    List<Notification> findAllByCampaignIdAndDeliveryStatusIn(Long campaignId, List<NotificationDeliveryStatus> statuses);
 }

@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.airsen.api.external.config.AtmoApiConfig;
 import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
 import fr.airsen.api.external.dto.atmo.AtmoGeoJsonResponse;
+import fr.airsen.api.external.dto.atmo.PollutionEpisodeDTO;
 import fr.airsen.api.external.exception.AtmoApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.retry.annotation.Backoff;
@@ -21,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Client for ATMO France API integration.
@@ -226,6 +229,48 @@ public class AtmoApiClient {
             .doOnError(error -> log.error("Failed to fetch historical air quality for commune: {}", 
                                         communeInseeCode, error))
             .timeout(Duration.ofMillis(config.getTimeoutMs() * 2));
+    }
+
+    /**
+     * Retrieves active pollution episodes from ATMO France API.
+     * 
+     * Fetches all currently active pollution episodes across all regions where
+     * the end date is on or after today. Results are cached for 1 hour to minimize
+     * API calls while maintaining data freshness.
+     * 
+     * @return List of active pollution episodes
+     */
+    @Retryable(value = {AtmoApiException.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000))
+    @Cacheable(value = "atmo:episodes", unless = "#result == null || #result.isEmpty()")
+    public List<PollutionEpisodeDTO> getPollutionEpisodes() {
+        log.info("Fetching active pollution episodes from ATMO API");
+        
+        try {
+            return getJwtToken()
+                .flatMapMany(token -> webClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                        .path("/api/v2/episodes")
+                        .queryParam("isActive", "true")
+                        .queryParam("endDate_gte", LocalDate.now().toString())
+                        .build())
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, response -> 
+                        Mono.error(new AtmoApiException("Client error: " + response.statusCode())))
+                    .onStatus(HttpStatusCode::is5xxServerError, response -> 
+                        Mono.error(new AtmoApiException("Server error: " + response.statusCode())))
+                    .bodyToFlux(PollutionEpisodeDTO.class))
+                .collectList()
+                .doOnSuccess(episodes -> log.info("Successfully fetched {} pollution episodes", episodes.size()))
+                .doOnError(error -> log.error("Failed to fetch pollution episodes from ATMO API", error))
+                .onErrorReturn(new java.util.ArrayList<>())
+                .timeout(Duration.ofMillis(config.getTimeoutMs()))
+                .block();
+        } catch (Exception e) {
+            log.error("Exception while fetching pollution episodes: {}", e.getMessage(), e);
+            return new java.util.ArrayList<>();
+        }
     }
 
 }
