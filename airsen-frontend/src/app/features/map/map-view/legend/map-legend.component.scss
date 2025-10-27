@@ -1,0 +1,17 @@
+@use 'src/assets/design-system.scss' as *;
+
+.legend-container{
+    width: fit-content;
+    height:fit-content;
+    background-color: $airsen-gray-50;
+    border-radius: 8px;
+    border: 1px solid $airsen-gray-300;
+    padding: 20px;
+    color: $airsen-gray-800;
+    opacity: 0.8;
+    
+    img{
+        width: 16px;
+        height: 16px;
+    }
+}

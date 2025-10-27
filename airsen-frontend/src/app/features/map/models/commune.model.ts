@@ -6,5 +6,8 @@ export interface Commune {
     regionCode: string,
     population: number,
     latitude: number,
-    longitude: number
+    longitude: number,
+    qualifier: string,
+    color: string,
+    atmoIndex: number
 }
