@@ -49,11 +49,14 @@ public class AirQualityService {
     /**
      * Updates air quality data for all tracked communes.
      *
-     * This method is called by scheduled tasks to keep air quality data current.
+     * NOTE: This method is NO LONGER scheduled automatically to prevent rate limiting.
+     * Use CacheAwareTieredScheduler for intelligent, tiered cache refresh instead.
+     * This method is kept for manual invocation or testing purposes only.
      *
      * @return Mono<Void> indicating completion
+     * @deprecated Use CacheAwareTieredScheduler for scheduled updates (population-based tiers)
      */
-    @Scheduled(fixedRate = 3600000) // Every hour
+    // @Scheduled(fixedRate = 3600000) // DISABLED: Replaced by CacheAwareTieredScheduler
     public Mono<Void> updateAllAirQualityData() {
         log.info("Starting scheduled air quality data update");
 

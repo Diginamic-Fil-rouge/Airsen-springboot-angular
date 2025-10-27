@@ -1,136 +1,116 @@
-<div class="dashboard-container">
-  <!-- Loading Spinner -->
+<div class="dashboard-page">
   <div *ngIf="isLoading" class="loading-container">
     <mat-spinner diameter="50"></mat-spinner>
-    <p>Loading dashboard...</p>
+    <p>Loading your dashboard...</p>
   </div>
 
-  <!-- Dashboard Content -->
-  <div *ngIf="!isLoading && currentUser" class="dashboard-content">
-    <!-- Header Section -->
-    <header class="dashboard-header">
-      <div class="header-content">
-        <div class="user-info">
-          <div class="user-avatar">
-            {{ getUserInitials() }}
-          </div>
-          <div class="user-details">
-            <h1>{{ getGreeting() }}, {{ currentUser.firstName }}!</h1>
-            <p class="subtitle">Welcome to your Airsen Dashboard</p>
-          </div>
-        </div>
-
-        <div class="header-actions">
-          <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
-            <mat-icon>account_circle</mat-icon>
-          </button>
-          <mat-menu #userMenu="matMenu">
-            <div class="user-menu-header">
-              <p class="user-name">{{ getUserFullName() }}</p>
-              <p class="user-email">{{ currentUser.email }}</p>
-              <mat-chip class="role-chip">{{ getRoleDisplay() }}</mat-chip>
-            </div>
-            <mat-divider></mat-divider>
-            <button mat-menu-item (click)="navigateTo('/profile')">
-              <mat-icon>person</mat-icon>
-              <span>Profile</span>
-            </button>
-            <button mat-menu-item (click)="navigateTo('/settings')">
-              <mat-icon>settings</mat-icon>
-              <span>Settings</span>
-            </button>
-            <mat-divider></mat-divider>
-            <button mat-menu-item (click)="logout()">
-              <mat-icon>logout</mat-icon>
-              <span>Logout</span>
-            </button>
-          </mat-menu>
+  <ng-container *ngIf="!isLoading && currentUser">
+    <section class="welcome-card">
+      <div class="welcome-details">
+        <div class="welcome-avatar">{{ avatarInitials }}</div>
+        <div class="welcome-text">
+          <p class="welcome-greeting">Welcome back, {{ welcomeName }}!</p>
+          <p class="welcome-meta">
+            {{ currentDateTime | date:'fullDate' }} · {{ currentDateTime | date:'shortTime' }}
+          </p>
         </div>
       </div>
-    </header>
-
-    <!-- Welcome Card -->
-    <section class="welcome-section">
-      <mat-card class="welcome-card">
-        <mat-card-content>
-          <div class="welcome-content">
-            <div class="welcome-text">
-              <h2>Welcome to Airsen</h2>
-              <p>
-                Access real-time environmental data, join community discussions,
-                and stay informed about air quality in your region.
-              </p>
-            </div>
-            <mat-icon class="welcome-icon">eco</mat-icon>
-          </div>
-        </mat-card-content>
-      </mat-card>
+      <button class="cta-primary" type="button" (click)="handleQuickAction('map')">
+        Check Air Quality Map Now
+      </button>
     </section>
 
-    <!-- Navigation Cards Grid -->
-    <section class="navigation-section">
-      <h2 class="section-title">Quick Access</h2>
-      <div class="navigation-grid">
-        <mat-card
-          *ngFor="let card of navigationCards"
-          class="navigation-card"
-          [class]="'card-' + card.color"
-          (click)="navigateTo(card.route)"
-        >
-          <mat-card-content>
-            <div class="card-icon">
-              <mat-icon [color]="card.color">{{ card.icon }}</mat-icon>
-            </div>
-            <h3>{{ card.title }}</h3>
-            <p>{{ card.description }}</p>
-            <button mat-icon-button class="card-arrow">
-              <mat-icon>arrow_forward</mat-icon>
+    <section class="quick-actions">
+      <button
+        class="quick-card"
+        type="button"
+        *ngFor="let action of quickActions"
+        (click)="handleQuickAction(action.action)"
+      >
+        <div class="quick-icon">
+          <mat-icon>{{ action.icon }}</mat-icon>
+          <span class="quick-badge" *ngIf="action.badge">{{ action.badge }}</span>
+        </div>
+        <h3 class="quick-title">{{ action.title }}</h3>
+        <p class="quick-subtitle">{{ action.subtitle }}</p>
+      </button>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="alerts-section">
+        <div class="section-header">
+          <h2>Alert Summary</h2>
+          <div class="section-actions">
+            <button type="button" class="link-button" (click)="handleQuickAction('alerts')">
+              View all alerts
             </button>
-          </mat-card-content>
-        </mat-card>
+            <button type="button" class="link-button" (click)="filterAlertsByFavorites()">
+              Favorites
+            </button>
+          </div>
+        </div>
+        <ul class="alert-list">
+          <li class="alert-item" *ngFor="let alert of recentAlerts">
+            <div class="alert-icon" [ngClass]="alert.severity">
+              <mat-icon>{{ alert.icon }}</mat-icon>
+            </div>
+            <div class="alert-body">
+              <div class="alert-header">
+                <span class="alert-title">{{ alert.title }}</span>
+                <span class="alert-status" [ngClass]="alert.status">
+                  {{ alert.status | titlecase }}
+                </span>
+              </div>
+              <div class="alert-location">{{ alert.location }}</div>
+              <div class="alert-time">{{ alert.timestamp }}</div>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <aside class="stats-panel">
+        <h2>Your Activity</h2>
+        <div class="stats-list">
+          <div class="stat-item">
+            <span class="stat-label">Favorite indicators monitored</span>
+            <span class="stat-value">{{ userStats.favoriteIndicators }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Personalized alerts received</span>
+            <span class="stat-value">{{ userStats.alertsReceived }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Last export</span>
+            <span class="stat-value">{{ userStats.lastExport }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Forum posts</span>
+            <span class="stat-value">{{ userStats.forumPosts }}</span>
+          </div>
+        </div>
+        <div class="progress-card">
+          <div class="progress-top">
+            <span>Profile completed</span>
+            <span>{{ userStats.profileCompletion }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="userStats.profileCompletion"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="cta-banner">
+      <div class="cta-content">
+        <h3>See Today's Trends</h3>
+        <p>Compare daily patterns and share insights with your community.</p>
       </div>
+      <button class="cta-secondary" type="button" (click)="goToHistoricData()">
+        See Today’s Trends
+      </button>
     </section>
+  </ng-container>
 
-    <!-- Quick Stats Section (Placeholder for future implementation) -->
-    <section class="stats-section">
-      <h2 class="section-title">Quick Stats</h2>
-      <div class="stats-grid">
-        <mat-card class="stat-card">
-          <mat-card-content>
-            <mat-icon color="primary">location_on</mat-icon>
-            <h3>Saved Locations</h3>
-            <p class="stat-value">0</p>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="stat-card">
-          <mat-card-content>
-            <mat-icon color="accent">notifications</mat-icon>
-            <h3>Active Alerts</h3>
-            <p class="stat-value">0</p>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="stat-card">
-          <mat-card-content>
-            <mat-icon color="primary">forum</mat-icon>
-            <h3>Forum Posts</h3>
-            <p class="stat-value">0</p>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="stat-card">
-          <mat-card-content>
-            <mat-icon color="accent">visibility</mat-icon>
-            <h3>Days Active</h3>
-            <p class="stat-value">1</p>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </section>
-  </div>
-
-  <!-- Error State -->
   <div *ngIf="!isLoading && !currentUser" class="error-container">
     <mat-icon>error_outline</mat-icon>
     <h2>Unable to load dashboard</h2>

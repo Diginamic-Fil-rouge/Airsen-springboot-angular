@@ -1,143 +1,82 @@
 <!-- Main Header Navigation - Simplified Design -->
-<header class="header-toolbar"
-[ngClass]="{ 'header--logged-in': isAuthenticated }"
->
+<header class="header-toolbar" [ngClass]="{ 'header--logged-in': isAuthenticated }">
   <div class="header-container">
-    <!-- Logo and Brand -->
-    <div class="logo-section" routerLink="/" style="cursor: pointer;">
-      <mat-icon class="logo-icon">eco</mat-icon>
+    <div class="logo-section" routerLink="/home" style="cursor: pointer;">
+      <img
+        class="logo-image"
+        src="assets/images/airsen-logo.png"
+        alt="Airsen logo"
+      />
     </div>
 
-    <!-- Navigation Menu (Always visible - simplified) -->
     <nav class="nav-menu">
-      <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
-        Accueil
+      <a routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+        Homepage
       </a>
-      @if (currentUser){
+      <ng-container *ngIf="isAuthenticated; else publicLinks">
         <a routerLink="/map" routerLinkActive="active-link">
-          Carte
+          Map
         </a>
-      }
-      <a routerLink="/forum" routerLinkActive="active-link">
-        Forum
-      </a>
+        <a routerLink="/profile" routerLinkActive="active-link">
+          Profile
+        </a>
+        <a routerLink="/forum" routerLinkActive="active-link">
+          Forum
+        </a>
+        <a
+          [routerLink]="['/map']"
+          [queryParams]="{ view: 'history' }"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          Historic Data
+        </a>
+      </ng-container>
     </nav>
 
-    <!-- Spacer -->
+    <ng-template #publicLinks>
+      <a routerLink="/forum" routerLinkActive="active-link">
+        Community
+      </a>
+    </ng-template>
+
     <span class="spacer"></span>
 
-    <!-- User Menu (Authenticated) - Simplified -->
-    <div class="user-section" *ngIf="isAuthenticated && currentUser">
-      <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
-        <mat-icon>person</mat-icon>
-        <span class="user-name">{{ userDisplayName }}</span>
-      </button>
-    </div>
+    <ng-container *ngIf="isAuthenticated; else guestActions">
+      <div class="header-actions">
+        <button
+          class="header-button icon-button"
+          type="button"
+          [matBadge]="unreadNotifications"
+          [matBadgeHidden]="!unreadNotifications"
+          matBadgeColor="warn"
+          aria-label="Notifications"
+          (click)="navigateToAlerts()"
+        >
+          <mat-icon>notifications</mat-icon>
+        </button>
 
-    <!-- Login Button (Not Authenticated) - Single Button -->
-    <div class="login-section" *ngIf="!isAuthenticated">
-      <button mat-button (click)="navigateToLogin()" class="login-button">
-        Se connecter
-      </button>
-    </div>
+        <button
+          class="header-button avatar-button"
+          type="button"
+          (click)="navigateToProfile()"
+          [attr.aria-label]="'Open profile for ' + userDisplayName"
+        >
+          <span class="user-avatar">{{ userInitials }}</span>
+        </button>
 
-    <!-- Mobile Menu Button -->
-    <button mat-icon-button class="mobile-menu-button" [matMenuTriggerFor]="mobileMenu">
-      <mat-icon>menu</mat-icon>
-    </button>
+        <button class="header-button logout-button" type="button" (click)="onLogout()">
+          Logout
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-template #guestActions>
+      <div class="login-section">
+        <button mat-button (click)="navigateToLogin()" class="login-button">
+          Connexion
+        </button>
+      </div>
+    </ng-template>
   </div>
 </header>
-
-<!-- User Dropdown Menu -->
-<mat-menu #userMenu="matMenu" class="user-dropdown">
-  <button mat-menu-item (click)="navigateToProfile()">
-    <mat-icon>person</mat-icon>
-    <span>Mon profil</span>
-  </button>
-
-  <button mat-menu-item routerLink="/dashboard">
-    <mat-icon>dashboard</mat-icon>
-    <span>Tableau de bord</span>
-  </button>
-
-  <button mat-menu-item *ngIf="isAdmin" routerLink="/admin">
-    <mat-icon>admin_panel_settings</mat-icon>
-    <span>Administration</span>
-  </button>
-
-  <button mat-menu-item (click)="onLogout()">
-    <mat-icon>logout</mat-icon>
-    <span>Se déconnecter</span>
-  </button>
-</mat-menu>
-
-<!-- Notifications Menu -->
-<mat-menu #notificationMenu="matMenu" class="notification-dropdown">
-  <div class="notification-header">
-    <h3>Notifications</h3>
-    <button mat-icon-button>
-      <mat-icon>settings</mat-icon>
-    </button>
-  </div>
-  <mat-divider></mat-divider>
-  <div class="notification-list">
-    <div class="notification-item">
-      <mat-icon class="notification-icon warning">warning</mat-icon>
-      <div class="notification-content">
-        <p class="notification-title">Alerte qualité de l'air</p>
-        <p class="notification-message">Indice élevé détecté à Paris</p>
-        <span class="notification-time">Il y a 5 min</span>
-      </div>
-    </div>
-    <!-- More notification items would be loaded dynamically -->
-  </div>
-  <mat-divider></mat-divider>
-  <button mat-menu-item routerLink="/notifications">
-    <span>Voir toutes les notifications</span>
-  </button>
-</mat-menu>
-
-<!-- Mobile Menu -->
-<mat-menu #mobileMenu="matMenu" class="mobile-dropdown">
-  <div *ngIf="isAuthenticated">
-    <button mat-menu-item routerLink="/dashboard">
-      <mat-icon>dashboard</mat-icon>
-      <span>Tableau de bord</span>
-    </button>
-    <button mat-menu-item routerLink="/map">
-      <mat-icon>map</mat-icon>
-      <span>Carte</span>
-    </button>
-    <button mat-menu-item routerLink="/favorites">
-      <mat-icon>favorite</mat-icon>
-      <span>Favoris</span>
-    </button>
-    <button mat-menu-item routerLink="/history">
-      <mat-icon>history</mat-icon>
-      <span>Historique</span>
-    </button>
-    <button mat-menu-item routerLink="/forum">
-      <mat-icon>forum</mat-icon>
-      <span>Forum</span>
-    </button>
-    <mat-divider></mat-divider>
-    <button mat-menu-item (click)="navigateToProfile()">
-      <mat-icon>person</mat-icon>
-      <span>Mon profil</span>
-    </button>
-    <button mat-menu-item (click)="onLogout()">
-      <mat-icon>logout</mat-icon>
-      <span>Se déconnecter</span>
-    </button>
-  </div>
-  <div *ngIf="!isAuthenticated">
-    <button mat-menu-item (click)="navigateToLogin()">
-      <mat-icon>login</mat-icon>
-      <span>Se connecter</span>
-    </button>
-    <button mat-menu-item (click)="navigateToRegister()">
-      <mat-icon>person_add</mat-icon>
-      <span>S'inscrire</span>
-    </button>
-  </div>
-</mat-menu>

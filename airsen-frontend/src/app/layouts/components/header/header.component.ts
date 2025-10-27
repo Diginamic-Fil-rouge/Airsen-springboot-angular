@@ -16,6 +16,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @Input() isAuthenticated = false;
 
   currentUser: AuthUser | null = null;
+  unreadNotifications = 0;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -24,6 +25,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isAuth => {
+        if (isAuth) {
+          this.loadNotificationPreview();
+        } else {
+          this.unreadNotifications = 0;
+        }
+      });
+
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
@@ -57,15 +68,42 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/auth/login']);
   }
 
-  navigateToRegister(): void {
-    this.router.navigate(['/auth/register']);
+  navigateToAlerts(): void {
+    this.router.navigate(['/map'], {
+      queryParams: { view: 'alerts' }
+    });
   }
 
   get userDisplayName(): string {
     return this.currentUser ? `${this.currentUser.firstName} ${this.currentUser.lastName}` : '';
   }
 
+  get userInitials(): string {
+    if (!this.currentUser) {
+      return 'AA';
+    }
+
+    const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? '';
+    const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? '';
+    let initials = `${first}${last}`.replace(/\s+/g, '');
+
+    if (!initials) {
+      return 'AA';
+    }
+
+    if (initials.length === 1) {
+      return `${initials}${initials}`;
+    }
+
+    return initials.slice(0, 2);
+  }
+
   get isAdmin(): boolean {
     return this.authService.isAdmin();
+  }
+
+  private loadNotificationPreview(): void {
+    // Placeholder implementation until notifications are wired up
+    this.unreadNotifications = 3;
   }
 }

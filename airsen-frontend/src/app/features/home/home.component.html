@@ -1,141 +1,62 @@
-<div class="home-page">
-  <!-- Hero Section -->
+<div class="home-public">
   <section class="hero">
-    <div class="container">
-      <div class="badge">
-        <span class="badge-dot"></span>
-        Données fiables et actualisées en continu
-      </div>
-
-      <h1 class="hero-title">Environmental Information Exchange Platform</h1>
-
+    <div class="hero-container">
+      <span class="hero-tagline">Plateforme citoyenne pour une qualité de l'air maîtrisée</span>
+      <h1 class="hero-title">Respirez mieux avec Airsen</h1>
       <p class="hero-subtitle">
-        Surveillez la qualité de l'air en temps réel grâce à notre réseau de capteurs<br>
-        communautaires. Participez à la protection de votre environnement et de votre<br>
-        santé.
+        Découvrez un espace dédié à la protection de l'environnement et à l'action locale.
+        Connectez-vous pour suivre ce qui se passe près de chez vous.
       </p>
-
-      <div class="search-container">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Entrez votre commune..."
-        />
-        <button class="search-btn">
-          <span class="search-icon">🔍</span>
-        </button>
+      <div class="hero-actions">
+        <button class="btn-primary" (click)="goToLogin()">Connect to check air quality near you</button>
       </div>
-
-      <button class="btn-cta">
-        Découvrir les données →
-      </button>
+      <p class="hero-note">
+        L'accès aux cartes, aux alertes personnalisées et aux données détaillées est réservé aux membres connectés.
+      </p>
     </div>
   </section>
 
-  <!-- Stats Section -->
-  <section class="stats">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-number">1,247</div>
-          <div class="stat-label">Utilisateurs actifs</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">50+</div>
-          <div class="stat-label">Villes surveillées</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">24/7</div>
-          <div class="stat-label">Surveillance continue</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features">
-    <div class="container">
-      <h2 class="section-title">Fonctionnalités principales</h2>
+  <section class="feature-preview">
+    <div class="feature-container">
+      <h2 class="section-title">Ce qui vous attend une fois connecté</h2>
       <p class="section-subtitle">
-        Découvrez tous les outils à votre disposition pour surveiller et comprendre la<br>
-        qualité de l'air
+        Visualisez la plateforme sans dévoiler de données en direct. Chaque carte illustre les services disponibles après authentification.
       </p>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon blue">
-            <span>📍</span>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <mat-icon>notifications_active</mat-icon>
           </div>
-          <h3 class="feature-title">Carte interactive</h3>
+          <h3 class="feature-title">Get real-time environmental alerts</h3>
           <p class="feature-description">
-            Visualisez la qualité de l'air en temps réel sur une carte interactive avec tous les capteurs de votre région.
+            Recevez des notifications personnalisées dès que les niveaux de pollution changent dans votre zone.
           </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon blue">
-            <span>🔔</span>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <mat-icon>map</mat-icon>
           </div>
-          <h3 class="feature-title">Alertes personnalisées</h3>
+          <h3 class="feature-title">Access maps and historic data</h3>
           <p class="feature-description">
-            Recevez des notifications instantanées lorsque la qualité de l'air se dégrade dans votre zone.
+            Explorez des cartes interactives et les tendances passées pour comprendre l'évolution de la qualité de l'air.
           </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon orange">
-            <span>👥</span>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <mat-icon>groups</mat-icon>
           </div>
-          <h3 class="feature-title">Forum communauté</h3>
+          <h3 class="feature-title">Join the eco-community forum</h3>
           <p class="feature-description">
-            Échangez avec d'autres utilisateurs, partagez vos observations et participez aux discussions.
+            Partagez des conseils et coordonnez des actions locales avec les citoyens engagés de votre territoire.
           </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon purple">
-            <span>📥</span>
-          </div>
-          <h3 class="feature-title">Export de données</h3>
-          <p class="feature-description">
-            Téléchargez les données historiques et actuelles pour vos propres analyses et recherches.
-          </p>
-        </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- Testimonials Section -->
-  <section class="testimonials">
-    <div class="container">
-      <div class="testimonials-content">
-        <div class="testimonials-left">
-          <h2 class="testimonials-heading">From our<br>community.</h2>
-          <p class="testimonials-subtext">
-            Here's what other subscribers had to say about Production Online.
-          </p>
-          <div class="testimonials-nav">
-            <button class="nav-arrow">‹</button>
-            <button class="nav-arrow">›</button>
-          </div>
-        </div>
-
-        <div class="testimonials-right">
-          <div class="testimonial-card">
-            <div class="quote-icon">"</div>
-            <p class="testimonial-text">
-              "Production Online has helped me become a better musician and producer than I ever thought possible."
-            </p>
-            <div class="testimonial-author">
-              <div class="author-avatar">KW</div>
-              <div class="author-info">
-                <div class="author-name">Kyle Weznick</div>
-                <div class="author-title">Media Director, Turn Around Music Group</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <section class="learn-more">
+    <a routerLink="/about/mission" class="learn-more-link">
+      Learn more about the platform →
+    </a>
   </section>
 </div>

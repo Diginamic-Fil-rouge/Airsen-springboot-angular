@@ -84,7 +84,6 @@ import { ThreadDetailsComponent } from './features/forum/threads/threads-details
 import { VotingComponent } from './features/forum/voting/voting.component';
 import { LoaderComponent } from './shared/components/loader/loader.component';
 import { BackButtonComponent } from './shared/components/backButton/back-button.component';
-import { AsyncPipe, DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
@@ -108,6 +107,7 @@ import { MapLegendComponent } from './features/map/map-view/legend/map-legend.co
     MapViewComponent,
     MapLegendComponent,
     HomeComponent,
+    DashboardComponent,
     NotFoundComponent,
     ForumComponent,
     CategoryComponent,
@@ -136,10 +136,8 @@ import { MapLegendComponent } from './features/map/map-view/legend/map-legend.co
     // SearchBarComponent
   ],
   imports: [
-    AsyncPipe,
     BrowserModule,
     CommonModule,
-    DatePipe,
     ReactiveFormsModule,
     FormsModule,
     RouterModule,
