@@ -10,8 +10,8 @@ export class WeatherService {
   private readonly apiUrl = `${environment.apiUrl}/api/v1/weather`;
   private http = inject(HttpClient);
 
-  getCurrentWeather(inseeCode: string): Observable<any>{
-    return this.http.get(`${this.apiUrl}/current/${inseeCode}`);
+  getCurrentWeather(inseeCode: string): Observable<Weather>{
+    return this.http.get<Weather>(`${this.apiUrl}/current/${inseeCode}`);
   }
 
 }
