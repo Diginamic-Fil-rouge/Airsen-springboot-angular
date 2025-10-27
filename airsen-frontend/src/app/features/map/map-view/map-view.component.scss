@@ -2,7 +2,7 @@
 
   // map Content
   .map-container {
-    width: 1200px;
+    width: 100%;
     min-height: 1200px;
     display: flex;
     flex-direction: column;
@@ -12,10 +12,18 @@
       border-radius: 10px;
       height: 100%;
       width: 100%;
-      
+      position: relative;
+
       #map {
           height: 100%;
           width: 100%;
+        }
+
+        app-map-legend{
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          z-index: 9000;
         }
       }
 
