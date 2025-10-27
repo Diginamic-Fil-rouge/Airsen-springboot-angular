@@ -1,20 +1,39 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import { AuthService } from '@/auth/services/auth.service';
 import { AuthUser } from '@/auth/models/auth.model';
 
-/**
- * DashboardComponent - Main landing page after authentication
- *
- * Features:
- * - Display authenticated user information
- * - Access to environmental data features
- * - Quick navigation to main app sections
- * - User profile management
- * - Logout functionality
- */
+type QuickActionKey = 'map' | 'alerts' | 'forum' | 'favorites' | 'export';
+
+interface QuickActionCard {
+  title: string;
+  subtitle: string;
+  icon: string;
+  action: QuickActionKey;
+  badge?: string;
+}
+
+interface AlertSummaryItem {
+  id: number;
+  title: string;
+  location: string;
+  severity: 'low' | 'medium' | 'high';
+  status: 'active' | 'unread' | 'resolved';
+  icon: string;
+  timestamp: string;
+}
+
+interface UserStatsSnapshot {
+  favoriteIndicators: number;
+  alertsReceived: number;
+  lastExport: string;
+  forumPosts: number;
+  profileCompletion: number;
+}
+
 @Component({
   standalone: false,
   selector: 'app-dashboard',
@@ -22,72 +41,146 @@ import { AuthUser } from '@/auth/models/auth.model';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-
   currentUser: AuthUser | null = null;
   isLoading = true;
-  private destroy$ = new Subject<void>();
+  currentDateTime = new Date();
 
-  // Navigation cards for dashboard
-  navigationCards = [
+  quickActions: QuickActionCard[] = [];
+  recentAlerts: AlertSummaryItem[] = [
     {
-      title: 'Air Quality',
-      icon: 'air',
-      description: 'View real-time air quality data',
-      route: '/air-quality',
-      color: 'primary'
+      id: 1,
+      title: 'PM2.5 levels rising',
+      location: 'Lyon · 5e arrondissement',
+      severity: 'high',
+      status: 'active',
+      icon: 'warning',
+      timestamp: '15 minutes ago'
     },
     {
-      title: 'Weather',
-      icon: 'wb_sunny',
-      description: 'Check weather conditions',
-      route: '/weather',
-      color: 'accent'
+      id: 2,
+      title: 'Ozone threshold exceeded',
+      location: 'Paris · 15e arrondissement',
+      severity: 'medium',
+      status: 'unread',
+      icon: 'error_outline',
+      timestamp: '45 minutes ago'
     },
     {
-      title: 'Map',
-      icon: 'map',
-      description: 'Explore environmental data on map',
-      route: '/map',
-      color: 'primary'
-    },
-    {
-      title: 'Forum',
-      icon: 'forum',
-      description: 'Join community discussions',
-      route: '/forum',
-      color: 'accent'
-    },
-    {
-      title: 'Alerts',
-      icon: 'notifications',
-      description: 'Manage your alert preferences',
-      route: '/alerts',
-      color: 'warn'
-    },
-    {
-      title: 'Profile',
-      icon: 'person',
-      description: 'Update your profile settings',
-      route: '/profile',
-      color: 'primary'
+      id: 3,
+      title: 'Pollution alert resolved',
+      location: 'Marseille · Vieux-Port',
+      severity: 'low',
+      status: 'resolved',
+      icon: 'check_circle',
+      timestamp: '2 hours ago'
     }
   ];
 
+  userStats: UserStatsSnapshot = {
+    favoriteIndicators: 5,
+    alertsReceived: 18,
+    lastExport: '12 March 2024',
+    forumPosts: 9,
+    profileCompletion: 82
+  };
+
+  forumUnreadCount = 2;
+
+  private destroy$ = new Subject<void>();
+  private clockIntervalId: ReturnType<typeof setInterval> | null = null;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
   ngOnInit(): void {
-    this.loadUserData();
+    this.subscribeToUser();
+    this.startClock();
+    this.buildQuickActions();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+
+    if (this.clockIntervalId) {
+      clearInterval(this.clockIntervalId);
+    }
   }
 
-  /**
-   * Load current user data from AuthService
-   */
-  private loadUserData(): void {
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/auth/login']),
+      error: () => this.router.navigate(['/auth/login'])
+    });
+  }
+
+  handleQuickAction(action: QuickActionKey): void {
+    switch (action) {
+      case 'map':
+        this.router.navigate(['/map']);
+        break;
+      case 'alerts':
+        this.router.navigate(['/map'], {
+          queryParams: { view: 'alerts' }
+        });
+        break;
+      case 'forum':
+        this.router.navigate(['/forum']);
+        break;
+      case 'favorites':
+        this.router.navigate(['/profile'], {
+          queryParams: { tab: 'favorites' }
+        });
+        break;
+      case 'export':
+        this.router.navigate(['/profile'], {
+          queryParams: { tab: 'exports' }
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
+  filterAlertsByFavorites(): void {
+    this.router.navigate(['/map'], {
+      queryParams: { view: 'alerts', scope: 'favorites' }
+    });
+  }
+
+  goToHistoricData(): void {
+    this.router.navigate(['/map'], {
+      queryParams: { view: 'history' }
+    });
+  }
+
+  get welcomeName(): string {
+    return this.currentUser?.firstName || 'there';
+  }
+
+  get avatarInitials(): string {
+    if (!this.currentUser) {
+      return 'AA';
+    }
+
+    const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? '';
+    const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? '';
+    let initials = `${first}${last}`.replace(/\s+/g, '');
+
+    if (!initials) {
+      return 'AA';
+    }
+
+    if (initials.length === 1) {
+      return `${initials}${initials}`;
+    }
+
+    return initials.slice(0, 2);
+  }
+
+  private subscribeToUser(): void {
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -102,69 +195,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Navigate to specified route
-   */
-  navigateTo(route: string): void {
-    this.router.navigate([route]);
+  private startClock(): void {
+    this.currentDateTime = new Date();
+    this.clockIntervalId = setInterval(() => {
+      this.currentDateTime = new Date();
+    }, 60000);
   }
 
-  /**
-   * Handle user logout
-   */
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
-  }
+  private buildQuickActions(): void {
+    const actionableAlerts = this.recentAlerts.filter(alert => alert.status === 'active' || alert.status === 'unread').length;
 
-  /**
-   * Get user initials for avatar
-   */
-  getUserInitials(): string {
-    if (!this.currentUser) {
-      return '?';
-    }
-
-    const firstInitial = this.currentUser.firstName?.charAt(0).toUpperCase() || '';
-    const lastInitial = this.currentUser.lastName?.charAt(0).toUpperCase() || '';
-
-    return `${firstInitial}${lastInitial}`;
-  }
-
-  /**
-   * Get greeting based on time of day
-   */
-  getGreeting(): string {
-    const hour = new Date().getHours();
-
-    if (hour < 12) {
-      return 'Good Morning';
-    } else if (hour < 18) {
-      return 'Good Afternoon';
-    } else {
-      return 'Good Evening';
-    }
-  }
-
-  /**
-   * Get user's full name
-   */
-  getUserFullName(): string {
-    if (!this.currentUser) {
-      return 'User';
-    }
-
-    return `${this.currentUser.firstName} ${this.currentUser.lastName}`;
-  }
-
-  /**
-   * Get role display name
-   */
-  getRoleDisplay(): string {
-    if (!this.currentUser) {
-      return '';
-    }
-
-    return this.currentUser.role.charAt(0) + this.currentUser.role.slice(1).toLowerCase();
+    this.quickActions = [
+      {
+        title: 'View Map',
+        subtitle: 'Jump to live air quality layers.',
+        icon: 'map',
+        action: 'map'
+      },
+      {
+        title: 'My Notifications & Alerts',
+        subtitle: `${actionableAlerts} new alerts waiting`,
+        icon: 'notifications_active',
+        action: 'alerts',
+        badge: actionableAlerts ? `${actionableAlerts}` : undefined
+      },
+      {
+        title: 'Go to Forum',
+        subtitle: `${this.forumUnreadCount} threads need your reply`,
+        icon: 'forum',
+        action: 'forum',
+        badge: this.forumUnreadCount ? `${this.forumUnreadCount}` : undefined
+      },
+      {
+        title: 'My Favorites',
+        subtitle: `${this.userStats.favoriteIndicators} indicators saved`,
+        icon: 'favorite',
+        action: 'favorites',
+        badge: this.userStats.favoriteIndicators ? `${this.userStats.favoriteIndicators}` : undefined
+      },
+      {
+        title: 'Export History',
+        subtitle: `Last export: ${this.userStats.lastExport}`,
+        icon: 'download',
+        action: 'export'
+      }
+    ];
   }
 }

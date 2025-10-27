@@ -1,95 +1,47 @@
 <footer class="app-footer">
-  <div class="footer-container">
-    <!-- Footer Top Section -->
-    <div class="footer-top">
-      <div class="footer-column">
-        <div class="footer-brand">
-          <mat-icon class="brand-icon">air</mat-icon>
+  <ng-container *ngIf="!isAuthenticated; else authenticatedFooter">
+    <div class="footer-container">
+      <div class="footer-branding">
+        <img
+          class="brand-logo"
+          src="assets/images/airsen-logo.png"
+          alt="Airsen logo"
+        />
+        <span class="brand-name">Airsen</span>
+      </div>
+      <nav class="footer-links" aria-label="Liens de bas de page">
+        <a routerLink="/legal/privacy" class="footer-link">Privacy</a>
+        <span class="separator">•</span>
+        <a routerLink="/legal/terms" class="footer-link">Terms</a>
+        <span class="separator">•</span>
+        <a routerLink="/contact" class="footer-link">Contact</a>
+      </nav>
+    </div>
+  </ng-container>
+
+  <ng-template #authenticatedFooter>
+    <div class="footer-container footer-container--auth">
+      <div class="footer-branding">
+        <img
+          class="brand-logo"
+          src="assets/images/airsen-logo.png"
+          alt="Airsen logo"
+        />
+        <div class="brand-text">
           <span class="brand-name">Airsen</span>
-        </div>
-        <p class="footer-description">
-          Plateforme d'information environnementale pour les citoyens français.
-          Surveillez la qualité de l'air et les conditions météorologiques en temps réel.
-        </p>
-        <div class="social-links">
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="social-link">
-            <mat-icon>public</mat-icon>
-          </a>
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="social-link">
-            <mat-icon>facebook</mat-icon>
-          </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="social-link">
-            <mat-icon>business</mat-icon>
-          </a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="social-link">
-            <mat-icon>code</mat-icon>
-          </a>
+          <span class="eco-statement">Acting together for cleaner cities</span>
         </div>
       </div>
 
-      <div class="footer-column">
-        <h3>Fonctionnalités</h3>
-        <ul>
-          <li><a routerLink="/dashboard">Tableau de bord</a></li>
-          <li><a routerLink="/map">Carte interactive</a></li>
-          <li><a routerLink="/favorites">Favoris</a></li>
-          <li><a routerLink="/history">Historique</a></li>
-          <li><a routerLink="/forum">Forum</a></li>
-          <li><a routerLink="/alerts">Alertes</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-column">
-        <h3>À propos</h3>
-        <ul>
-          <li><a routerLink="/about">À propos d'Airsen</a></li>
-          <li><a routerLink="/about/mission">Notre mission</a></li>
-          <li><a routerLink="/about/data-sources">Sources de données</a></li>
-          <li><a routerLink="/about/team">L'équipe</a></li>
-          <li><a routerLink="/partners">Partenaires</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-column">
-        <h3>Aide & Support</h3>
-        <ul>
-          <li><a routerLink="/help">Centre d'aide</a></li>
-          <li><a routerLink="/documentation">Documentation</a></li>
-          <li><a routerLink="/faq">Questions fréquentes</a></li>
-          <li><a routerLink="/contact">Nous contacter</a></li>
-          <li><a routerLink="/feedback">Envoyer un retour</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-column">
-        <h3>Légal</h3>
-        <ul>
-          <li><a routerLink="/legal/terms">Conditions d'utilisation</a></li>
-          <li><a routerLink="/legal/privacy">Confidentialité</a></li>
-          <li><a routerLink="/legal/cookies">Gestion des cookies</a></li>
-          <li><a routerLink="/legal/accessibility">Accessibilité: WCAG 2.1 AA</a></li>
-          <li><a routerLink="/legal/licenses">Licences</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Footer Bottom Section -->
-    <div class="footer-bottom">
-      <div class="footer-bottom-left">
-        <p class="copyright">
-          © {{ currentYear }} Airsen. Tous droits réservés.
-        </p>
-        <p class="made-with">
-          Fait avec <mat-icon class="heart-icon">favorite</mat-icon> pour l'environnement
-        </p>
-      </div>
-      <div class="footer-bottom-right">
-        <a routerLink="/sitemap" class="footer-link">Plan du site</a>
+      <nav class="footer-links" aria-label="Liens de bas de page authentifiés">
+        <a routerLink="/legal/privacy" class="footer-link">Privacy</a>
         <span class="separator">•</span>
-        <a routerLink="/legal/rgpd" class="footer-link">RGPD</a>
+        <a routerLink="/legal/terms" class="footer-link">Terms</a>
         <span class="separator">•</span>
-        <a routerLink="/api-status" class="footer-link">Statut de l'API</a>
-      </div>
+        <a routerLink="/contact" class="footer-link">Contact</a>
+        <span class="separator">•</span>
+        <a routerLink="/legal/accessibility" class="footer-link">Accessibility</a>
+      </nav>
     </div>
-  </div>
+  </ng-template>
 </footer>

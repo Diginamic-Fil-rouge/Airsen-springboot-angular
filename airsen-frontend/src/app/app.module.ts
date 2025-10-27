@@ -84,13 +84,13 @@ import { ThreadDetailsComponent } from './features/forum/threads/threads-details
 import { VotingComponent } from './features/forum/voting/voting.component';
 import { LoaderComponent } from './shared/components/loader/loader.component';
 import { BackButtonComponent } from './shared/components/backButton/back-button.component';
-import { AsyncPipe, DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
 import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
 import { MapLegendComponent } from './features/map/map-view/legend/map-legend.component';
 import { MarkerPopupComponent } from './features/map/map-view/popup/markerPopup.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
@@ -110,6 +110,7 @@ import { MarkerPopupComponent } from './features/map/map-view/popup/markerPopup.
     MapLegendComponent,
     MarkerPopupComponent,
     HomeComponent,
+    DashboardComponent,
     NotFoundComponent,
     ForumComponent,
     CategoryComponent,
@@ -138,10 +139,8 @@ import { MarkerPopupComponent } from './features/map/map-view/popup/markerPopup.
     // SearchBarComponent
   ],
   imports: [
-    AsyncPipe,
     BrowserModule,
     CommonModule,
-    DatePipe,
     ReactiveFormsModule,
     FormsModule,
     RouterModule,

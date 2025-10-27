@@ -14,6 +14,7 @@ import { ThreadDetailsComponent } from './features/forum/threads/threads-details
 import { AddThreadComponent } from './features/forum/threads/add-thread/add-thread.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
 
 // Guards - commented out until they are properly implemented
 // import { AuthGuard } from './core/guards/auth.guard';
@@ -44,6 +45,7 @@ const routes: Routes = [
 
   // Feature Routes (no guards for now to avoid compilation errors)
   { path: 'map', component: MapComponent },
+  { path: 'dashboard', component: DashboardComponent },
   { path: 'forum', component: ForumComponent },
   { path: 'forum/thread/:id', component: ThreadDetailsComponent },
   { path: 'forum/add/thread', component: AddThreadComponent },

@@ -1,17 +1,43 @@
 @use 'src/assets/design-system.scss' as *;
 
-.legend-container{
-    width: fit-content;
-    height:fit-content;
-    background-color: $airsen-gray-50;
-    border-radius: 8px;
-    border: 1px solid $airsen-gray-300;
-    padding: 20px;
-    color: $airsen-gray-800;
-    opacity: 0.8;
-    
-    img{
-        width: 16px;
-        height: 16px;
-    }
+.legend-container {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 220px;
+  background-color: rgba($airsen-gray-50, 0.95);
+  border-radius: 12px;
+  border: 1px solid $airsen-gray-300;
+  padding: 1.25rem;
+  color: $airsen-gray-800;
+  box-shadow: 0 12px 32px rgba(18, 38, 54, 0.18);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 1001;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: $airsen-gray-900;
+  }
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
+
+  @include breakpoint("sm") {
+    width: 260px;
+  }
 }
