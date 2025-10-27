@@ -1,6 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { AuthService } from "../../core/auth/services/auth.service";
 import { AuthUser } from "../../core/auth/models/auth.model";
+import { UserProfileService } from "./services/user-profile.service";
+import { UserDTO } from "./models/user.model";
+import { UpdateUserProfileRequest } from "./models/update-user-profile-request.model";
+
 
 @Component({
   selector: "app-profile",
@@ -54,35 +58,59 @@ export class ProfileComponent implements OnInit {
 
   activeTab: "profile" | "notifications" | "security" = "profile";
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService,  private userProfileService: UserProfileService) {}
 
   ngOnInit(): void {
-    const currentUser = this.authService.getCurrentUser();
-
-    this.user = currentUser ?? {
-      id: 0,
-      firstName: "",
-      lastName: "",
-      email: "",
-      role: "USER",
-      address: "",
-      phone: "",
-      bio: "",
-    };
-
-    this.formData = {
-      name: `${this.user.firstName} ${this.user.lastName}`,
-      email: this.user.email,
-      address: this.user.address || "",
-      phone: this.user.phone || "",
-      bio: this.user.bio || "",
-    };
-  }
+  this.userProfileService.getProfile().subscribe({
+    next: (user: UserDTO) => {
+      this.formData = {
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        address: user.address || "",
+        phone: user.telephone || "",
+        bio: user.bio || "",
+      };
+    },
+    error: (err) => {
+      console.error("Erreur lors de la récupération du profil :", err);
+      alert("Impossible de récupérer le profil.");
+      // fallback temporaire
+      this.formData = {
+        name: "",
+        email: "",
+        address: "",
+        phone: "",
+        bio: "",
+      };
+    }
+  });
+}
 
   saveProfile() {
-    console.log("Profil sauvegardé:", this.formData);
-    alert("Profil sauvegardé (simulation)");
-  }
+  // Séparer le nom complet en firstName / lastName
+  const [firstName, ...rest] = this.formData.name.split(" ");
+  const lastName = rest.join(" ") || "";
+
+  const updateData: UpdateUserProfileRequest = {
+    firstName,
+    lastName,
+    address: this.formData.address,
+    telephone: this.formData.phone,
+    bio: this.formData.bio,
+  };
+
+  this.userProfileService.updateProfile(updateData).subscribe({
+    next: (updatedUser) => {
+      alert("Profil sauvegardé avec succès !");
+      console.log("Profil mis à jour :", updatedUser);
+    },
+    error: (err) => {
+      console.error("Erreur lors de la sauvegarde du profil :", err);
+      alert("Erreur lors de la sauvegarde du profil.");
+    }
+  });
+}
+
 
   toggleNotification(key: keyof typeof this.notifications) {
     this.notifications[key] = !this.notifications[key];
@@ -97,4 +125,12 @@ export class ProfileComponent implements OnInit {
     console.log("Notifications sauvegardées :", this.notifications);
     alert("Notifications sauvegardées (simulation)");
   }
+
+  getInitials(): string {
+  if (!this.formData.name) return "";
+  const names = this.formData.name.trim().split(" ");
+  const initials = names.map(n => n[0].toUpperCase()).slice(0, 2).join("");
+  return initials;
+}
+
 }

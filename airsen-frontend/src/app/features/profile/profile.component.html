@@ -16,11 +16,9 @@
       <div class="sidebar">
         <div class="card text-center">
           <div class="avatar-wrapper">
-            <img
-              src="assets/placeholder-avatar.jpg"
-              class="avatar"
-              alt="Avatar"
-            />
+            <div class="avatar initials-avatar">
+              {{ getInitials() }}
+            </div>
           </div>
 
           <h3>{{ formData.name }}</h3>
@@ -81,7 +79,32 @@
             <div class="form-row two-cols">
               <div class="form-group">
                 <label for="name">Nom complet</label>
-                <input [(ngModel)]="formData.name" name="name" id="name" />
+                <input
+                  [(ngModel)]="formData.name"
+                  name="name"
+                  id="name"
+                  maxlength="28"
+                  required
+                  #nameField="ngModel"
+                />
+
+                <!-- Compteur de caractères -->
+                <div class="char-counter">
+                  {{ formData.name?.length || 0 }}/28
+                </div>
+
+                <!-- Messages d’erreur -->
+                <div
+                  *ngIf="nameField.invalid && nameField.touched"
+                  class="error-message"
+                >
+                  <span *ngIf="nameField.errors?.['required']">
+                    Le nom complet est obligatoire.
+                  </span>
+                  <span *ngIf="nameField.errors?.['maxlength']">
+                    Le nom complet ne peut pas dépasser 22 caractères.
+                  </span>
+                </div>
               </div>
 
               <div class="form-group">
@@ -91,6 +114,8 @@
                   name="email"
                   id="email"
                   type="email"
+                  readonly
+                  class="readonly-input"
                 />
               </div>
             </div>
@@ -100,10 +125,33 @@
               <div class="form-group full-width">
                 <label for="address">Adresse</label>
                 <input
-                  [(ngModel)]="formData.address"
-                  name="address"
+                  type="text"
                   id="address"
+                  name="address"
+                  [(ngModel)]="formData.address"
+                  #address="ngModel"
+                  maxlength="200"
+                  placeholder="Votre adresse complète"
+                  required
                 />
+
+                <!-- Compteur de caractères -->
+                <div class="char-counter">
+                  {{ formData.address?.length || 0 }}/200
+                </div>
+
+                <!-- Message d'erreur -->
+                <div
+                  *ngIf="address.invalid && address.touched"
+                  class="error-message"
+                >
+                  <span *ngIf="address.errors?.['required']"
+                    >L’adresse est obligatoire.</span
+                  >
+                  <span *ngIf="address.errors?.['maxlength']">
+                    L’adresse ne peut pas dépasser 255 caractères.
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -111,7 +159,29 @@
             <div class="form-row">
               <div class="form-group full-width">
                 <label for="phone">Téléphone</label>
-                <input [(ngModel)]="formData.phone" name="phone" id="phone" />
+                <input
+                  [(ngModel)]="formData.phone"
+                  name="phone"
+                  id="phone"
+                  maxlength="20"
+                  #phone="ngModel"
+                  required
+                  pattern="^[0-9]*$"
+                />
+                <div
+                  class="error-message"
+                  *ngIf="phone.errors && (phone.dirty || phone.touched)"
+                >
+                  <span *ngIf="phone.errors['required']"
+                    >Le téléphone est obligatoire.</span
+                  >
+                  <span *ngIf="phone.errors['pattern']"
+                    >Le téléphone ne doit contenir que des chiffres.</span
+                  >
+                  <span *ngIf="phone.errors['maxlength']"
+                    >Le téléphone ne peut pas dépasser 20 caractères.</span
+                  >
+                </div>
               </div>
             </div>
 
@@ -119,7 +189,31 @@
             <div class="form-row">
               <div class="form-group full-width">
                 <label for="bio">Bio</label>
-                <input [(ngModel)]="formData.bio" name="bio" id="bio" />
+                <textarea
+                  id="bio"
+                  name="bio"
+                  [(ngModel)]="formData.bio"
+                  #bio="ngModel"
+                  maxlength="500"
+                  rows="4"
+                  placeholder="Décrivez-vous (max 500 caractères)"
+                  required
+                ></textarea>
+
+                <!--  Compteur de caractères -->
+                <div class="char-counter">
+                  {{ formData.bio?.length || 0 }}/500
+                </div>
+
+                <!--  Message d'erreur -->
+                <div *ngIf="bio.invalid && bio.touched" class="error-message">
+                  <span *ngIf="bio.errors?.['required']"
+                    >La bio est obligatoire.</span
+                  >
+                  <span *ngIf="bio.errors?.['maxlength']">
+                    La bio ne peut pas dépasser 500 caractères.
+                  </span>
+                </div>
               </div>
             </div>
 
