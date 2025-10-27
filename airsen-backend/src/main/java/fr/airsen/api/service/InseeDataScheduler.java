@@ -51,8 +51,8 @@ public class InseeDataScheduler {
                     // Use existing CommuneService business logic to save
                     return communeService.saveInseeDataToDatabase(inseeResponse);
                 })
-                .doOnNext(communeDTO -> log.debug("Successfully synced commune: {} ({})", 
-                        communeDTO.getName(), communeDTO.getInseeCode()))
+                .doOnNext(communeDTO -> log.debug("Successfully synced commune: {} ({})",
+                        communeDTO.name(), communeDTO.inseeCode()))
                 .doOnError(error -> log.error("Failed to sync commune data", error))
                 .doOnComplete(() -> log.info("=== Completed yearly INSEE data synchronization ==="))
                 .subscribe();
