@@ -124,7 +124,12 @@ export class MapViewComponent implements AfterViewInit {
       return;
     }
 
-    let icon: any = this.getIcon(commune.atmoIndex);
+    let icon: any = L.icon({
+    iconUrl: `assets/images/marker-${commune.atmoIndex}.png`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [-3, -76]
+  });
 
     const marker = L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map);
 
@@ -132,54 +137,6 @@ export class MapViewComponent implements AfterViewInit {
       this.onMarkerClick.emit(commune);
     });
   }
-
-/**
- * Returns a Leaflet icon based on the given atmoIndex.
- * The icon urls are mapped as follows:
- * - atmoIndex 1: assets/images/marker-bon.png
- * - atmoIndex 2: assets/images/marker-moyen.png
- * - atmoIndex 3: assets/images/marker-dégradé.png
- * - atmoIndex 4: assets/images/marker-mauvais.png
- * - atmoIndex 5: assets/images/marker-très-mauvais.png
- * - atmoIndex 6: assets/images/marker-extrêmement-mauvais.png
- * - default: assets/images/marker-undefined.png
- * @param {number} atmoIndex - Air quality index
- * @returns {L.Icon} - Leaflet icon
- */
-  getIcon(atmoIndex: number) {
-  let iconUrl: string;
-
-  switch (atmoIndex) {
-    case 1:
-      iconUrl = "assets/images/marker-bon.png";
-      break;
-    case 2:
-      iconUrl = "assets/images/marker-moyen.png";
-      break;
-    case 3:
-      iconUrl = "assets/images/marker-dégradé.png";
-      break;
-    case 4:
-      iconUrl = "assets/images/marker-mauvais.png";
-      break;
-    case 5:
-      iconUrl = "assets/images/marker-très-mauvais.png";
-      break;
-    case 6:
-      iconUrl = "assets/images/marker-extrêmement-mauvais.png";
-      break;
-    default:
-      iconUrl = "assets/images/marker-undefined.png";
-      break;
-  }
-
-  return L.icon({
-    iconUrl: iconUrl,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [-3, -76]
-  });
-}
 
 /**
  * Zooms the map to the given latitude and longitude at the given zoom level.
