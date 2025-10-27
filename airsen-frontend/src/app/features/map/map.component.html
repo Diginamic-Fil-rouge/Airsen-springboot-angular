@@ -1,11 +1,54 @@
-<div class="page-container">
+<div class="page-container" (click)="closeSearchResults()">
   <!-- Loading Spinner -->
   @if (isLoading){
   <div class="loading-container">
     <mat-spinner diameter="50"></mat-spinner>
     <p>Chargement de la carte...</p>
   </div>
-  } @if (!isLoading && currentUser){
+  }
+  <div class="search-bar">
+    <div class="search-input">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"
+        data-lov-id="src/pages/Map.tsx:57:16"
+        data-lov-name="Search"
+        data-component-path="src/pages/Map.tsx"
+        data-component-line="57"
+        data-component-file="Map.tsx"
+        data-component-name="Search"
+        data-component-content="%7B%22className%22%3A%22absolute%20left-3%20top-1%2F2%20transform%20-translate-y-1%2F2%20text-muted-foreground%20w-4%20h-4%22%7D"
+      >
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input
+        type="text"
+        placeholder="Rechercher une ville"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+      />
+    </div>
+    <div
+      class="search-results"
+      style="display: {{ (searchResults | async) == null ? 'none' : 'block' }}"
+    >
+      <ul>
+        @for (result of (searchResults | async); track $index){
+        <li (click)="onSearchResultClicked(result)">{{ result.name }} ({{ result.departmentCode }})</li>
+        }
+      </ul>
+    </div>
+  </div>
+  @if (!isLoading && currentUser){
   <div class="page-content">
     <div class="favorites-container">
       <h2>
@@ -36,14 +79,69 @@
       </h2>
     </div>
     <!-- Map Content -->
-    <app-map-view></app-map-view>
-    <div class="map-datas">
-      <h2>Données environnementales</h2>
-      <h3>Qualité de l'air</h3>
-      <h3>Météo</h3>
-      <h3>Géo</h3>
-    </div>
+    <app-map-view
+      (onMarkerClick)="clickEvent($event, 'LATEST')"
+      (anchorLinkClicked)="goToAnchor()"
+      [communes]="communes"
+      [communeClicked]="communeClicked"
+    ></app-map-view>
   </div>
+  <div class="map-datas" id="map-datas">
+      @if (communeClicked){
+      <div class="datas-header">
+        <h2>Données environnementales de {{ communeClicked.name }}</h2>
+        <p>
+          Population :
+          {{ communeClicked.population | number }}
+          habitants
+        </p>
+      </div>
+
+      @if (dataErrors){
+      <p class="error error-text">
+        Erreurs lors du chargement des données environnementales:
+      </p>
+      <ul>
+        @for (error of dataErrors; track $index){
+        <li class="error">{{ error }}</li>
+        }
+      </ul>
+      } @if (!isLoadingDatas && !dataErrors){
+      <div
+        class="commune-air-quality"
+        style="background-color: {{ airQualityClicked.airQuality.color }}"
+      >
+        <h3>Qualité de l'air</h3>
+        @if (airQualityClicked){
+        <p>Niveau de qualité : {{ airQualityClicked.airQuality.qualifier }}</p>
+        <p>PM10 : {{ airQualityClicked.airQuality.pollutants.PM10 }} μg/m3</p>
+        <p>PM2.5 : {{ airQualityClicked.airQuality.pollutants.PM2_5 }} μg/m3</p>
+        <p>O3 : {{ airQualityClicked.airQuality.pollutants.O3 }} μg/m3</p>
+        <p>NO2 : {{ airQualityClicked.airQuality.pollutants.NO2 }} μg/m3</p>
+        <p>SO2 : {{ airQualityClicked.airQuality.pollutants.SO2 }} μg/m3</p>
+        @if (airQualityClicked.lastUpdated){ Date du dernier prélèvement :
+        {{ airQualityClicked.lastUpdated | date }}
+        } }
+      </div>
+      <div class="commune-weather">
+        <h3>Météo</h3>
+        @if (weatherClicked){ Température : {{ weatherClicked.temperature }} °C
+        <p>Humidité : {{ weatherClicked.humidity }} %</p>
+        <p>Vitesse du vent : {{ weatherClicked.windSpeed }} m/s</p>
+        <p>Direction du vent : {{ weatherClicked.windDirection }}°</p>
+        }
+      </div>
+      } @else if (isLoadingDatas) {
+      <div class="loading-container">
+        <p>Chargement des données environnementales...</p>
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+      } } @else {
+      <h2>
+        Cliquez sur une commune pour afficher ses données environnementales
+      </h2>
+      }
+    </div>
   }
 
   <!-- Error State -->
@@ -51,7 +149,10 @@
   <div class="error-container">
     <mat-icon>error_outline</mat-icon>
     <h2>Impossible de charger la carte</h2>
-    <p>Cela peut être dû à un dysfonctionnement interne ou une erreur de connexion</p>
+    <p>
+      Cela peut être dû à un dysfonctionnement interne ou une erreur de
+      connexion
+    </p>
     <button mat-raised-button color="primary" (click)="logout()">
       Retour au Login
     </button>

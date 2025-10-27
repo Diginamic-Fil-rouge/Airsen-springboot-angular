@@ -2,7 +2,7 @@ export interface AirQuality {
     id: number;
     communeInseeCode: string,
     communeName: string,
-    departementName: string,
+    departmentName: string,
     regionName: string,
     measurementDate: Date,
     atmoIndex: number,

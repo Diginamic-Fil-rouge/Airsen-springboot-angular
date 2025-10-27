@@ -71,6 +71,53 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
     List<Commune> findByDepartmentIdAsList(@Param("departmentId") Long departmentId, Pageable pageable);
 
     /**
+     * Finds communes by department with latest air quality data.
+     *
+     * @param departmentId department identifier
+     * @param pageable pagination parameters
+     * @return list of object arrays: [Commune, atmoIndex, qualifier, color]
+     */
+    @Query("SELECT c, aq.atmIndex, aq.atmoQual, aq.atmoColor " +
+           "FROM Commune c " +
+           "LEFT JOIN c.airQuality aq " +
+           "WHERE c.department.id = :departmentId " +
+           "AND (aq.measurementDate = (" +
+           "    SELECT MAX(aq2.measurementDate) " +
+           "    FROM AirQuality aq2 " +
+           "    WHERE aq2.commune.id = c.id" +
+           ") OR aq IS NULL) " +
+           "ORDER BY c.name ASC")
+    List<Object[]> findByDepartmentIdWithLatestAirQuality(
+        @Param("departmentId") Long departmentId,
+        Pageable pageable
+    );
+
+    /**
+     * Searches communes by name with latest air quality data.
+     *
+     * @param departmentId department identifier
+     * @param search search term for commune name (case-insensitive)
+     * @param pageable pagination parameters
+     * @return list of object arrays: [Commune, atmoIndex, qualifier, color]
+     */
+    @Query("SELECT c, aq.atmIndex, aq.atmoQual, aq.atmoColor " +
+           "FROM Commune c " +
+           "LEFT JOIN c.airQuality aq " +
+           "WHERE c.department.id = :departmentId " +
+           "AND LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "AND (aq.measurementDate = (" +
+           "    SELECT MAX(aq2.measurementDate) " +
+           "    FROM AirQuality aq2 " +
+           "    WHERE aq2.commune.id = c.id" +
+           ") OR aq IS NULL) " +
+           "ORDER BY c.name ASC")
+    List<Object[]> findByDepartmentIdAndNameWithLatestAirQuality(
+        @Param("departmentId") Long departmentId,
+        @Param("search") String search,
+        Pageable pageable
+    );
+
+    /**
      * Searches communes by name or INSEE code with relevance-based ordering.
      *
      * Ordering priority:
@@ -185,6 +232,24 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
            "AND c.latitude <> 0 AND c.longitude <> 0 " +
            "AND c.latitude BETWEEN 41 AND 51 AND c.longitude BETWEEN -5 AND 10")
     List<Commune> findCommunesWithCoordinates();
+
+    /**
+     * Gets communes with valid coordinates and latest air quality data for map display.
+     *
+     * @return list of object arrays containing [Commune entity, atmoIndex, qualifier, color]
+     */
+    @Query("SELECT c, aq.atmIndex, aq.atmoQual, aq.atmoColor " +
+           "FROM Commune c " +
+           "LEFT JOIN c.airQuality aq " +
+           "WHERE c.latitude IS NOT NULL AND c.longitude IS NOT NULL " +
+           "AND c.latitude <> 0 AND c.longitude <> 0 " +
+           "AND c.latitude BETWEEN 41 AND 51 AND c.longitude BETWEEN -5 AND 10 " +
+           "AND (aq.measurementDate = (" +
+           "    SELECT MAX(aq2.measurementDate) " +
+           "    FROM AirQuality aq2 " +
+           "    WHERE aq2.commune.id = c.id" +
+           ") OR aq IS NULL)")
+    List<Object[]> findCommunesWithCoordinatesAndAirQuality();
 
     /**
      * Finds communes by department ID (for external API integration).
