@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { Commune, ExportData } from '@/core/models';
+import { Commune, CommuneDatas, ExportData } from '@/core/models';
 @Injectable({
   providedIn: 'root'
 })
@@ -29,8 +29,12 @@ export class GeographicService {
     return this.http.get<Commune[]>(`${this.apiUrl}/search`, { params: { q: query }});
   }
 
-  getCommuneDatas(inseeCode: string | undefined): Observable<ExportData> {
+  getCommuneExportDatas(inseeCode: string | undefined): Observable<ExportData> {
     return this.http.get<ExportData>(`${this.apiUrl}/${inseeCode}/export-data`);
+  }
+
+  getCommuneDatas(inseeCode: string | undefined): Observable<CommuneDatas> {
+    return this.http.get<CommuneDatas>(`${this.apiUrl}/${inseeCode}/detail`);
   }
 
 }
