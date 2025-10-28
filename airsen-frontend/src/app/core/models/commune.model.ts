@@ -6,7 +6,9 @@ export interface Commune {
   population?: number;
   latitude?: number;
   longitude?: number;
-  department: Department;
+  departmentCode?: string;
+  regionCode?: string;
+  department?: Department;
 }
 
 export interface Department {
