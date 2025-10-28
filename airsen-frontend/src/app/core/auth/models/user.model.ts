@@ -1,50 +1,81 @@
-// User Model based on backend User entity
+import { Commune } from '../../models/commune.model';
+
+/**
+ * Core User model representing authenticated user with profile information
+ * Maps to backend User entity
+ */
 export interface User {
   id: number;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
-  postalAddress: string;
-  postalCode: string;
-  city: string;
+  telephone?: string;
+  address?: string;
+  bio?: string;
+  avatarUrl?: string;
   role: UserRole;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  commune?: Commune;
-  department?: Department;
-  region?: Region;
 }
 
+/**
+ * User role enumeration for authorization
+ * VISITOR: Public access, no authentication required
+ * USER: Authenticated user with standard permissions
+ * ADMIN: Administrative user with elevated permissions
+ */
 export enum UserRole {
-  VISITOR = 'VISITOR',
-  USER = 'USER', 
-  ADMIN = 'ADMIN'
+  VISITOR = "VISITOR",
+  USER = "USER",
+  ADMIN = "ADMIN",
 }
 
+/**
+ * Request model for user registration
+ */
 export interface UserRegistrationRequest {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
-  postalAddress: string;
-  postalCode: string;
-  city: string;
+  telephone?: string;
+  address?: string;
 }
 
+/**
+ * Request model for updating user profile
+ */
 export interface UserUpdateRequest {
   firstName?: string;
   lastName?: string;
-  postalAddress?: string;
-  postalCode?: string;
-  city?: string;
+  email?: string;
+  telephone?: string;
+  address?: string;
+  bio?: string;
+  avatarUrl?: string;
 }
 
+/**
+ * Request model for changing user password
+ */
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+/**
+ * User profile with extended information including preferences
+ */
 export interface UserProfile extends User {
   favoriteCommunes: Commune[];
   notificationPreferences: NotificationPreference[];
 }
 
+/**
+ * User notification preferences configuration
+ */
 export interface NotificationPreference {
   id: number;
   userId: number;
@@ -54,36 +85,12 @@ export interface NotificationPreference {
   scope: NotificationScope;
 }
 
+/**
+ * Enumeration for notification scope (geographic coverage)
+ */
 export enum NotificationScope {
-  COMMUNE = 'COMMUNE',
-  DEPARTMENT = 'DEPARTMENT',
-  REGION = 'REGION',
-  FRANCE = 'FRANCE'
-}
-
-// Geographic entities for user location association
-export interface Region {
-  id: number;
-  code: string;
-  name: string;
-}
-
-export interface Department {
-  id: number;
-  code: string;
-  name: string;
-  regionId: number;
-  region?: Region;
-}
-
-export interface Commune {
-  id: number;
-  inseeCode: string;
-  name: string;
-  postalCode: string;
-  latitude: number;
-  longitude: number;
-  population: number;
-  departmentId: number;
-  department?: Department;
+  COMMUNE = "COMMUNE",
+  DEPARTMENT = "DEPARTMENT",
+  REGION = "REGION",
+  FRANCE = "FRANCE",
 }

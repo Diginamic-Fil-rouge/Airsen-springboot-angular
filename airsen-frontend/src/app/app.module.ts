@@ -47,10 +47,8 @@ import { RegisterComponent } from './features/auth/register/register.component';
 import { MapComponent } from './features/map/map.component';
 import { MapViewComponent } from './features/map/map-view/map-view.component';
 import { HomeComponent } from './features/home/home.component';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 import { ForumComponent } from './features/forum/forum.component';
-import { ProfileComponent } from './features/profile/profile.component';
 
 // Layout Components
 import { HeaderComponent } from './layouts/components/header/header.component';
@@ -108,7 +106,6 @@ import { MapLegendComponent } from './features/map/map-view/legend/map-legend.co
     MapViewComponent,
     MapLegendComponent,
     HomeComponent,
-    DashboardComponent,
     NotFoundComponent,
     ForumComponent,
     CategoryComponent,
@@ -121,7 +118,6 @@ import { MapLegendComponent } from './features/map/map-view/legend/map-legend.co
     VotingComponent,
     LoaderComponent,
     BackButtonComponent,
-    ProfileComponent,
     // Page Components
     // HomeComponent,
     // MapComponent,

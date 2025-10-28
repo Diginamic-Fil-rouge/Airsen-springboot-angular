@@ -75,9 +75,3 @@ export interface PasswordResetConfirmRequest {
   newPassword: string;
   confirmPassword: string;
 }
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}

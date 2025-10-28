@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UserDTO } from "../models/user.model";
 import { UpdateUserProfileRequest } from "../models/update-user-profile-request.model";
+import { User } from '@/auth/models/user.model';
 
 
 // DTO pour changer le mot de passe
@@ -21,13 +21,13 @@ export class UserProfileService {
   constructor(private http: HttpClient) {}
 
   // Récupérer le profil de l'utilisateur connecté
-  getProfile(): Observable<UserDTO> {
-    return this.http.get<UserDTO>(`${this.apiUrl}/profile`);
+  getProfile(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/profile`);
   }
 
   // Mettre à jour les informations du profil
-  updateProfile(data: UpdateUserProfileRequest): Observable<UserDTO> {
-    return this.http.put<UserDTO>(`${this.apiUrl}/profile`, data);
+  updateProfile(data: UpdateUserProfileRequest): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/profile`, data);
   }
 
   // Changer le mot de passe

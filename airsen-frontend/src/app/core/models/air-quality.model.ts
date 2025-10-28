@@ -1,5 +1,19 @@
-// Air Quality Models based on ATMO France API and backend AirQuality entity
+export interface AirQualityData {
+  inseeCode: string;
+  commune: string;
+  aqi: number;
+  aqiLabel: string;
+  aqiColor: string;
+  pm25?: number;
+  pm10?: number;
+  o3?: number;
+  no2?: number;
+  timestamp: Date;
+}
 
+/**
+ * Detailed air quality measurements with individual pollutants
+ */
 export interface AirQuality {
   id: number;
   communeId: number;
@@ -24,20 +38,10 @@ export interface AirQuality {
 
 export enum AirQualityLevel {
   GOOD = 'GOOD',
-  MODERATE = 'MODERATE', 
+  MODERATE = 'MODERATE',
   POOR = 'POOR',
   VERY_POOR = 'VERY_POOR',
   UNKNOWN = 'UNKNOWN'
-}
-
-export interface AirQualityIndicator {
-  pollutant: string;
-  value: number;
-  unit: string;
-  quality: AirQualityLevel;
-  color: string;
-  icon: string;
-  description: string;
 }
 
 export interface AirQualityHistory {
@@ -56,50 +60,6 @@ export interface AirQualityHistory {
   };
 }
 
-export interface AirQualityAlert {
-  id: number;
-  alertLevel: AlertLevel;
-  pollutant: string;
-  threshold: number;
-  currentValue: number;
-  location: string;
-  scope: AlertScope;
-  message: string;
-  isActive: boolean;
-  startTime: Date;
-  endTime?: Date;
-  createdAt: Date;
-}
-
-export enum AlertLevel {
-  INFO = 'INFO',
-  WARNING = 'WARNING',
-  ALERT = 'ALERT',
-  EMERGENCY = 'EMERGENCY'
-}
-
-export enum AlertScope {
-  COMMUNE = 'COMMUNE',
-  DEPARTMENT = 'DEPARTMENT', 
-  REGION = 'REGION',
-  NATIONAL = 'NATIONAL'
-}
-
-export interface AirQualityExportRequest {
-  communeId: number;
-  startDate: Date;
-  endDate: Date;
-  format: ExportFormat;
-  indicators: string[];
-}
-
-export enum ExportFormat {
-  PDF = 'PDF',
-  CSV = 'CSV',
-  EXCEL = 'EXCEL'
-}
-
-// For chart visualization
 export interface AirQualityChartData {
   labels: string[];
   datasets: {
@@ -111,7 +71,6 @@ export interface AirQualityChartData {
   }[];
 }
 
-// For map visualization  
 export interface AirQualityMapData {
   latitude: number;
   longitude: number;

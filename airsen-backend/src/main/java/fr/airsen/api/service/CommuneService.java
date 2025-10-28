@@ -1,19 +1,18 @@
 package fr.airsen.api.service;
 
 import fr.airsen.api.dto.CommuneDTO;
-import fr.airsen.api.entity.Commune;
-import fr.airsen.api.entity.Department;
-import fr.airsen.api.entity.Region;
-import fr.airsen.api.external.client.InseeApiClient;
-import fr.airsen.api.external.dto.insee.InseeCommuneResponse;
-import fr.airsen.api.repository.CommuneRepository;
-import fr.airsen.api.repository.DepartmentRepository;
-import fr.airsen.api.repository.RegionRepository;
+import fr.airsen.api.dto.response.CommuneDetailResponse;
+import fr.airsen.api.entity.*;
 import fr.airsen.api.exception.ResourceNotFoundException;
+import fr.airsen.api.external.client.AtmoApiClient;
+import fr.airsen.api.external.client.InseeApiClient;
+import fr.airsen.api.external.client.OpenMeteoApiClient;
+import fr.airsen.api.external.dto.insee.InseeCommuneResponse;
+import fr.airsen.api.mapper.CommuneDetailMapper;
+import fr.airsen.api.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
-// import org.springframework.cache.annotation.Cacheable; // Temporarily disabled
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +23,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,16 +34,31 @@ public class CommuneService {
     private final CommuneRepository communeRepository;
     private final DepartmentRepository departmentRepository;
     private final RegionRepository regionRepository;
+    private final AirQualityRepository airQualityRepository;
+    private final WeatherDataRepository weatherDataRepository;
     private final InseeApiClient inseeApiClient;
+    private final AtmoApiClient atmoApiClient;
+    private final OpenMeteoApiClient openMeteoApiClient;
+    private final CommuneDetailMapper communeDetailMapper;
 
     public CommuneService(CommuneRepository communeRepository,
                          DepartmentRepository departmentRepository,
                          RegionRepository regionRepository,
-                         InseeApiClient inseeApiClient) {
+                         AirQualityRepository airQualityRepository,
+                         WeatherDataRepository weatherDataRepository,
+                         InseeApiClient inseeApiClient,
+                         AtmoApiClient atmoApiClient,
+                         OpenMeteoApiClient openMeteoApiClient,
+                         CommuneDetailMapper communeDetailMapper) {
         this.communeRepository = communeRepository;
         this.departmentRepository = departmentRepository;
         this.regionRepository = regionRepository;
+        this.airQualityRepository = airQualityRepository;
+        this.weatherDataRepository = weatherDataRepository;
         this.inseeApiClient = inseeApiClient;
+        this.atmoApiClient = atmoApiClient;
+        this.openMeteoApiClient = openMeteoApiClient;
+        this.communeDetailMapper = communeDetailMapper;
     }
 
     @Transactional(readOnly = true)
@@ -579,10 +594,11 @@ public class CommuneService {
      * Only processes communes in the provided list (respects limit parameter).
      * Updates database for future requests.
      *
+     * Note: This private method inherits the transaction from the calling public method.
+     *
      * @param communes list of communes to check and enrich
      * @return enriched list with coordinates
      */
-    @Transactional
     private List<CommuneDTO> enrichCoordinatesIfMissing(List<CommuneDTO> communes) {
         if (communes == null || communes.isEmpty()) {
             return communes;
@@ -630,5 +646,71 @@ public class CommuneService {
         }
 
         return enrichedCommunes;
+    }
+
+    /**
+     * Gets detailed commune information with integrated environmental data.
+     */
+    @Transactional(readOnly = true)
+    public CommuneDetailResponse getCommuneDetailWithEnvironmentalData(String inseeCode) {
+        log.info("Fetching commune detail with environmental data for INSEE code: {}", inseeCode);
+
+        // Step 1: Validate INSEE code format
+        if (inseeCode == null || !inseeCode.matches("\\d{5}")) {
+            log.warn("Invalid INSEE code format: {}", inseeCode);
+            throw new IllegalArgumentException("INSEE code must be exactly 5 digits");
+        }
+
+        // Step 2: Fetch commune from database with eager loading (single query)
+        Commune commune = communeRepository.findByInseeCodeWithEagerLoading(inseeCode)
+            .orElseThrow(() -> {
+                log.error("Commune not found for INSEE code: {}", inseeCode);
+                return new ResourceNotFoundException("Commune not found with INSEE code: " + inseeCode);
+            });
+
+        log.info("Found commune: {} ({}) - Department: {}, Region: {}",
+            commune.getName(),
+            commune.getInseeCode(),
+            commune.getDepartment() != null ? commune.getDepartment().getName() : "N/A",
+            commune.getDepartment() != null && commune.getDepartment().getRegion() != null
+                ? commune.getDepartment().getRegion().getName() : "N/A"
+        );
+
+        // Step 3: Fetch latest air quality from database
+        Optional<AirQuality> airQualityOpt = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
+        AirQuality airQuality = airQualityOpt.orElse(null);
+
+        if (airQuality != null) {
+            log.debug("Found air quality data for {}: ATMO index={}, date={}",
+                inseeCode, airQuality.getAtmoIndex(), airQuality.getMeasurementDate());
+        } else {
+            log.warn("No air quality data found in database for commune: {}", inseeCode);
+        }
+
+        // Step 4: Fetch latest weather data from database
+        Optional<WeatherData> weatherOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(inseeCode);
+        WeatherData weather = weatherOpt.orElse(null);
+
+        if (weather != null) {
+            log.debug("Found weather data for {}: temp={}°C, date={}",
+                inseeCode, weather.getTemperature(), weather.getMeasurementDate());
+        } else {
+            log.warn("No weather data found in database for commune: {}", inseeCode);
+        }
+
+        // Step 5: Build response DTO using MapStruct mapper
+        CommuneDetailResponse response = communeDetailMapper.toCommuneDetailResponse(
+            commune,
+            airQuality,
+            weather
+        );
+
+        log.info("Successfully retrieved commune detail for {} from database (air quality: {}, weather: {})",
+            inseeCode,
+            airQuality != null ? "available" : "unavailable",
+            weather != null ? "available" : "unavailable"
+        );
+
+        return response;
     }
 }

@@ -7,13 +7,11 @@ import { AuthService } from "@/auth/services/auth.service";
 import { AuthUser } from "@/auth/models/auth.model";
 import * as L from "leaflet";
 import { GeographicService } from "./services/geographic.service";
-import { Commune } from "./models/commune.model";
 import { WeatherService } from "./services/weather.service";
-import { Weather } from "./models/weather.model";
 import { AirQualityService } from "./services/air-quality.service";
-import { AirQuality } from "./models/airQuality.model";
 import { FavoritesService } from '../favorites/services/favorites.service';
 import { NgClass } from '@angular/common';
+import { Commune, Weather, AirQuality } from "@/core/models";
 
 @Component({
   standalone: false,
@@ -44,7 +42,7 @@ export class MapComponent implements OnInit, OnDestroy {
   dataErrors: string[] | null = null;
 
   searchQuery: string = "";
-  searchResults =  new Observable<Commune[]>();
+  searchResults: Commune[] | null = null;
 
   ngOnInit(): void {
     this.loadUserData();
@@ -65,7 +63,14 @@ export class MapComponent implements OnInit, OnDestroy {
    * and assigns the result to the searchResults observable.
    */
   onSearchInput(){
-    this.searchResults = this.geographicService.searchCommunes(this.searchQuery);
+    this.geographicService.searchCommunes(this.searchQuery).subscribe({
+      next: (communes) => {
+        this.searchResults = communes;
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 
   /**
@@ -77,7 +82,7 @@ export class MapComponent implements OnInit, OnDestroy {
    */
   onSearchResultClicked(commune: Commune){
     this.searchQuery = '';
-    this.searchResults = new Observable<Commune[]>();
+    this.searchResults = null;
     this.communeSearched = commune;
     this.clickEvent(commune, "NEW");
   }
@@ -87,7 +92,7 @@ export class MapComponent implements OnInit, OnDestroy {
    * This is used to clear the search results when the user wants to go back to the original map view.
    */
   closeSearchResults(){
-    this.searchResults = new Observable<Commune[]>();
+    this.searchResults = null;
   }
 
   /**

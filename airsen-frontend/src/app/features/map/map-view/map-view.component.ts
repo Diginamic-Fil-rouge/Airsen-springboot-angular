@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, input, inject, Output, EventEmitter, ViewContainerRef, Injector, ComponentRef, createComponent } from '@angular/core';
 import * as L from 'leaflet';
 import { Observable } from 'rxjs';
-import { Commune } from '../models/commune.model';
+import { Commune, CommuneWithAirQuality } from '@/core/models';
 import { GeographicService } from '../services/geographic.service';
 import { FavoritesService } from '../../favorites/services/favorites.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
@@ -81,34 +81,31 @@ export class MapViewComponent implements AfterViewInit {
     }
 
     if (this.communeSearched()) {
-      let communeData: Commune = {
-        id: 0,
-        inseeCode: '',
-        name: '',
-        departmentCode: '',
-        regionCode: '',
-        population: 0,
-        latitude: 0,
-        longitude: 0,
-        qualifier: '',
-        color: '',
-        atmoIndex: 0
-      };
       this.geographicService.getCommuneDatas(this.communeSearched()?.inseeCode).subscribe({
         next: (data) => {
-          communeData.inseeCode = data.commune.inseeCode;
-          communeData.name = data.commune.name;
-          communeData.departmentCode = data.commune.department.departmentCode;
-          communeData.regionCode = data.commune.department.region.regionCode;
-          communeData.population = data.commune.population;
-          communeData.latitude = data.commune.latitude;
-          communeData.longitude = data.commune.longitude;
-          communeData.qualifier = data.airQuality?.atmoQual;
-          communeData.color = data.airQuality?.atmoColor;
-          communeData.atmoIndex = data.airQuality?.atmIndex;
+          const communeData: CommuneWithAirQuality = {
+            id: 0,
+            inseeCode: data.inseeCode,
+            name: data.commune,
+            population: 0,
+            latitude: 0,
+            longitude: 0,
+            department: {
+              id: 0,
+              code: '',
+              name: ''
+            },
+            currentAirQuality: data.airQuality?.measurements.length ? {
+              atmoIndex: data.airQuality.measurements[0].aqi,
+              qualifier: data.airQuality.measurements[0].aqiLabel,
+              color: ''
+            } : undefined
+          };
           console.log("communeData : ", communeData);
-          this.addMarkerToMap(communeData, null);
-          this.zoomOnMap([communeData.latitude, communeData.longitude], 11);
+          this.addMarkerToMap(communeData);
+          if (communeData.latitude && communeData.longitude) {
+            this.zoomOnMap([communeData.latitude, communeData.longitude], 11);
+          }
         },
         error: (error) => {
           console.error('Error fetching commune data:', error);
@@ -145,15 +142,19 @@ export class MapViewComponent implements AfterViewInit {
   /**
    * Adds a marker to the map for the given commune.
    * The marker is displayed at the commune's latitude and longitude,
-   * and its icon is determined by the commune's atmoIndex.
+   * and its icon is determined by the commune's air quality index.
    * When the marker is clicked, emits the onMarkerClick event with the commune,
    * and opens a popup displaying the commune's data.
    * @param commune The commune data to add to the map.
    */
-  addMarkerToMap(commune: any, prefix: string | null) {
+  addMarkerToMap(commune: Commune | CommuneWithAirQuality | any, prefix: string | null) {
     if (!commune.latitude || !commune.longitude) {
       return;
     }
+
+    const atmoIndex = 'currentAirQuality' in commune
+      ? commune.currentAirQuality?.atmoIndex || 0
+      : commune.atmoIndex || 0;
 
     let icon: any = L.icon({
       iconUrl: `assets/images/${prefix ? prefix + '-' : ''}marker-${commune.atmoIndex}.png`,
