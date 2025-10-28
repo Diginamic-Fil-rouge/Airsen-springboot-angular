@@ -44,7 +44,12 @@
       <ul>
         @for (result of searchResults; track $index){
         <li (click)="onSearchResultClicked(result)">
-          {{ result.name }} ({{ result.departmentCode || result.department?.code || result.department?.name || 'N/A' }})
+          {{ result.name }} ({{
+            result.departmentCode ||
+              result.department?.code ||
+              result.department?.name ||
+              "N/A"
+          }})
         </li>
         }
       </ul>
@@ -96,34 +101,33 @@
               ></path>
             </svg>
           </button>
+          <button class="export-button" title="Exporter les données en PDF">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-download w-4 h-4 mr-2"
+              data-lov-id="src/pages/Map.tsx:107:22"
+              data-lov-name="Download"
+              data-component-path="src/pages/Map.tsx"
+              data-component-line="107"
+              data-component-file="Map.tsx"
+              data-component-name="Download"
+              data-component-content="%7B%22className%22%3A%22w-4%20h-4%20mr-2%22%7D"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" x2="12" y1="15" y2="3"></line>
+            </svg>
+          </button>
         </span>
       </h2>
-      <button class="export-button">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-download w-4 h-4 mr-2"
-          data-lov-id="src/pages/Map.tsx:107:22"
-          data-lov-name="Download"
-          data-component-path="src/pages/Map.tsx"
-          data-component-line="107"
-          data-component-file="Map.tsx"
-          data-component-name="Download"
-          data-component-content="%7B%22className%22%3A%22w-4%20h-4%20mr-2%22%7D"
-        >
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" x2="12" y1="15" y2="3"></line>
-        </svg>
-        Exporter les données en PDF
-      </button>
       <p>
         Population :
         {{ communeClicked.population | number }}
@@ -133,55 +137,11 @@
 
     @if (!isLoadingDatas){
 
-    <div
-      class="commune-air-quality"
-      style="border: 4px solid {{
-        airQualityClicked?.airQuality.color ?? 'none'
-      }};"
-    >
-      <h3>Qualité de l'air</h3>
-      @if (airQualityClicked){
-      <p class="quality-level">
-        Niveau de qualité : {{ airQualityClicked.airQuality.qualifier }}
-        <img
-          src="assets/images/marker-{{
-            airQualityClicked.airQuality.atmoIndex
-          }}.png"
-          alt="Marqueur {{ airQualityClicked.airQuality.qualifier }}"
-        />
-      </p>
-      <span>
-        <div>PM10 <div class="small">(Particules fines de moins de 10 microns)</div> :</div> <div>{{ airQualityClicked.airQuality.pollutants.PM10 }} μg/m3</div>
-      </span>
-      <span>
-        <div>PM2.5 <div class="small">(Particules fines de moins de 2.5 microns)</div> :</div> <div>{{ airQualityClicked.airQuality.pollutants.PM2_5 }} μg/m3</div>
-      </span>
-      <span>
-        <div>O3 <div class="small">(Ozone)</div> :</div> <div>{{ airQualityClicked.airQuality.pollutants.O3 }} μg/m3</div>
-      </span>
-      <span>
-        <div>NO2 <div class="small">(Dioxyde de Nitrogen)</div> :</div> <div>{{ airQualityClicked.airQuality.pollutants.NO2 }} μg/m3</div>
-      </span>
-      <span>
-        <div>SO2 <div class="small">(Dioxyde de Soufre)</div> :</div> <div>{{ airQualityClicked.airQuality.pollutants.SO2 }} μg/m3</div>
-      </span>
-      @if (airQualityClicked.lastUpdated){ Date du dernier prélèvement :
-      {{ airQualityClicked.lastUpdated | date }}
-      } } @else{
-      <p>Pas de données de qualité de l'air pour la commune sélectionnée</p>
-      }
-    </div>
-    <div class="commune-weather">
-      <h3>Météo</h3>
-      @if (weatherClicked){
-      <p>Température : {{ weatherClicked.temperature }} °C</p>
-      <p>Humidité : {{ weatherClicked.humidity }} %</p>
-      <p>Vitesse du vent : {{ weatherClicked.windSpeed }} m/s</p>
-      <p>Direction du vent : {{ weatherClicked.windDirection }}°</p>
-      } @else{
-      <p>Pas de données metéorologiques pour la commune sélectionnée</p>
-      }
-    </div>
+    <app-map-datas
+      [airQualityClicked]="airQualityClicked"
+      [weatherClicked]="weatherClicked"
+    ></app-map-datas>
+    
     } @else if (isLoadingDatas) {
     <div class="loading-container">
       <p>Chargement des données environnementales...</p>
