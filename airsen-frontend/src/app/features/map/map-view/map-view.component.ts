@@ -1,17 +1,28 @@
-import { Component, AfterViewInit, input, inject, Output, EventEmitter, ViewContainerRef, Injector, ComponentRef, createComponent } from '@angular/core';
-import * as L from 'leaflet';
-import { Observable } from 'rxjs';
-import { Commune, CommuneWithAirQuality } from '@/core/models';
-import { GeographicService } from '../services/geographic.service';
-import { FavoritesService } from '../../favorites/services/favorites.service';
-import { AuthService } from '../../../core/auth/services/auth.service';
-import { AuthUser } from '@/app/core/auth/models/auth.model';
+import {
+  Component,
+  AfterViewInit,
+  input,
+  inject,
+  Output,
+  EventEmitter,
+  ViewContainerRef,
+  Injector,
+  ComponentRef,
+  createComponent,
+} from "@angular/core";
+import * as L from "leaflet";
+import { Observable } from "rxjs";
+import { Commune, CommuneWithAirQuality } from "@/core/models";
+import { GeographicService } from "../services/geographic.service";
+import { FavoritesService } from "../../favorites/services/favorites.service";
+import { AuthService } from "../../../core/auth/services/auth.service";
+import { AuthUser } from "@/app/core/auth/models/auth.model";
 
 @Component({
   standalone: false,
-  selector: 'app-map-view',
-  templateUrl: './map-view.component.html',
-  styleUrls: ['./map-view.component.scss']
+  selector: "app-map-view",
+  templateUrl: "./map-view.component.html",
+  styleUrls: ["./map-view.component.scss"],
 })
 export class MapViewComponent implements AfterViewInit {
   private map: any;
@@ -24,10 +35,7 @@ export class MapViewComponent implements AfterViewInit {
   communeSearched = input<Commune | null>();
   @Output() onMarkerClick = new EventEmitter<any>();
 
-  constructor(
-    private viewContainerRef: ViewContainerRef,
-    private injector: Injector
-  ) { }
+  constructor(private viewContainerRef: ViewContainerRef, private injector: Injector) {}
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -48,16 +56,16 @@ export class MapViewComponent implements AfterViewInit {
    * copyright notice.
    */
   private initMap(): void {
-    this.map = L.map('map', {
+    this.map = L.map("map", {
       // coordinates of France
       center: [47.0, 1.5231],
-      zoom: 6
+      zoom: 6,
     });
 
-    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
       minZoom: 3,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     });
 
     tiles.addTo(this.map);
@@ -66,14 +74,14 @@ export class MapViewComponent implements AfterViewInit {
   /**
    * Initializes the markers on the map.
    * If the markers have not been initialized yet, it fetches the communes from the input observable and adds a marker to the map for each commune.
-   * If a commune has been clicked, it fetches the commune data from the geographic service and adds a marker to the map for the commune.
+   * If a commune has been searched, adds a marker for it and zooms to its location using its existing coordinates.
    * The markers are only initialized once, and then the function does nothing.
    */
   initMarkers() {
     if (!this.markersInitialized) {
-      this.communes()?.forEach(communes => {
+      this.communes()?.forEach((communes) => {
         console.log("commune : ", communes);
-        communes.forEach(commune => {
+        communes.forEach((commune) => {
           this.addMarkerToMap(commune, null);
         });
       });
@@ -81,44 +89,50 @@ export class MapViewComponent implements AfterViewInit {
     }
 
     if (this.communeSearched()) {
-      this.geographicService.getCommuneDatas(this.communeSearched()?.inseeCode).subscribe({
-        next: (data) => {
-          const communeData: CommuneWithAirQuality = {
-            id: 0,
-            inseeCode: data.inseeCode,
-            name: data.commune,
-            population: 0,
-            latitude: 0,
-            longitude: 0,
-            department: {
-              id: 0,
-              code: '',
-              name: ''
-            },
-            currentAirQuality: data.airQuality?.measurements.length ? {
-              atmoIndex: data.airQuality.measurements[0].aqi,
-              qualifier: data.airQuality.measurements[0].aqiLabel,
-              color: ''
-            } : undefined
-          };
-          console.log("communeData : ", communeData);
-          this.addMarkerToMap(communeData, null);
-          if (communeData.latitude && communeData.longitude) {
+      const searchedCommune = this.communeSearched();
+
+      if (searchedCommune && searchedCommune.latitude && searchedCommune.longitude) {
+        this.geographicService.getCommuneDatas(searchedCommune.inseeCode).subscribe({
+          next: (data) => {
+            const communeData: CommuneWithAirQuality = {
+              id: searchedCommune.id,
+              inseeCode: searchedCommune.inseeCode,
+              name: searchedCommune.name,
+              population: searchedCommune.population || 0,
+              latitude: searchedCommune.latitude,
+              longitude: searchedCommune.longitude,
+              department: searchedCommune.department || {
+                id: 0,
+                code: "",
+                name: "",
+              },
+              currentAirQuality: data.airQuality?.measurements.length
+                ? {
+                    atmoIndex: data.airQuality.measurements[0].aqi,
+                    qualifier: data.airQuality.measurements[0].aqiLabel,
+                    color: "",
+                  }
+                : undefined,
+            };
+            console.log("communeData : ", communeData);
+            this.addMarkerToMap(communeData, null);
             this.zoomOnMap([communeData.latitude, communeData.longitude], 11);
-          }
-        },
-        error: (error) => {
-          console.error('Error fetching commune data:', error);
-        }
-      });
+          },
+          error: (error) => {
+            console.error("Error fetching commune data:", error);
+          },
+        });
+      } else {
+        console.warn("Searched commune does not have coordinates:", searchedCommune);
+      }
     }
   }
 
-/**
- * Initializes the favorite communes on the map.
- * Fetches the favorite communes for the current user and adds a marker to the map for each favorite commune.
- * If the favorite communes cannot be fetched, logs an error message to the console.
- */
+  /**
+   * Initializes the favorite communes on the map.
+   * Fetches the favorite communes for the current user and adds a marker to the map for each favorite commune.
+   * If the favorite communes cannot be fetched, logs an error message to the console.
+   */
   initFavorites() {
     const currentUser: AuthUser | null = this.authService.getCurrentUser();
 
@@ -132,11 +146,10 @@ export class MapViewComponent implements AfterViewInit {
           // });
         },
         error: (error) => {
-          console.error('Error fetching favorite communes:', error);
-        }
+          console.error("Error fetching favorite communes:", error);
+        },
       });
     }
-
   }
 
   /**
@@ -152,20 +165,19 @@ export class MapViewComponent implements AfterViewInit {
       return;
     }
 
-    const atmoIndex = 'currentAirQuality' in commune
-      ? commune.currentAirQuality?.atmoIndex || 0
-      : commune.atmoIndex || 0;
+    const atmoIndex =
+      "currentAirQuality" in commune ? commune.currentAirQuality?.atmoIndex || 0 : commune.atmoIndex || 0;
 
     let icon: any = L.icon({
-      iconUrl: `assets/images/${prefix ? prefix + '-' : ''}marker-${commune.atmoIndex}.png`,
+      iconUrl: `assets/images/${prefix ? prefix + "-" : ""}marker-${commune.atmoIndex}.png`,
       iconSize: [20, 20],
       iconAnchor: [10, 10],
-      popupAnchor: [-3, -76]
+      popupAnchor: [-3, -76],
     });
 
     const marker = L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map);
 
-    marker.on('click', () => {
+    marker.on("click", () => {
       this.onMarkerClick.emit(commune);
     });
   }
@@ -178,5 +190,4 @@ export class MapViewComponent implements AfterViewInit {
   zoomOnMap(latLng: any, zoomLevel: number) {
     this.map.setView(latLng, zoomLevel);
   }
-
 }
