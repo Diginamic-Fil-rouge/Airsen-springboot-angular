@@ -2,8 +2,8 @@ import { Component, OnInit } from "@angular/core";
 import { AuthService } from "../../core/auth/services/auth.service";
 import { AuthUser } from "../../core/auth/models/auth.model";
 import { UserProfileService } from "./services/user-profile.service";
-import { UserDTO } from "./models/user.model";
 import { UpdateUserProfileRequest } from "./models/update-user-profile-request.model";
+import { User } from "@/auth/models/user.model";
 
 
 @Component({
@@ -62,7 +62,7 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
   this.userProfileService.getProfile().subscribe({
-    next: (user: UserDTO) => {
+    next: (user: User) => {
       this.formData = {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,

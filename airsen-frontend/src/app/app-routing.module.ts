@@ -1,85 +1,74 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
 
 // Auth Components
-import { LoginComponent } from './features/auth/login/login.component';
-import { RegisterComponent } from './features/auth/register/register.component';
+import { LoginComponent } from "./features/auth/login/login.component";
+import { RegisterComponent } from "./features/auth/register/register.component";
 
 // Feature Components
-import { MapComponent } from './features/map/map.component';
-import { HomeComponent } from './features/home/home.component';
-import { NotFoundComponent } from './features/not-found/not-found.component';
-import { ForumComponent } from './features/forum/forum.component';
-import { ThreadDetailsComponent } from './features/forum/threads/threads-details/thread-details.component';
-import { AddThreadComponent } from './features/forum/threads/add-thread/add-thread.component';
-import { ProfileComponent } from './features/profile/profile.component';
-import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { MapComponent } from "./features/map/map.component";
+import { HomeComponent } from "./features/home/home.component";
+import { NotFoundComponent } from "./features/not-found/not-found.component";
+import { ForumComponent } from "./features/forum/forum.component";
+import { ThreadDetailsComponent } from "./features/forum/threads/threads-details/thread-details.component";
+import { AddThreadComponent } from "./features/forum/threads/add-thread/add-thread.component";
+import { EditThreadComponent } from "./features/forum/threads/edit-thread/edit-thread.component";
 
-// Guards - commented out until they are properly implemented
-// import { AuthGuard } from './core/guards/auth.guard';
-// import { GuestGuard } from './core/guards/guest.guard';
-
-// TODO: Implement these components
-// import { HomeComponent } from './components/pages/home/home.component';
-// import { MapComponent } from './components/pages/map/map.component';
-// import { ProfileComponent } from './components/pages/profile/profile.component';
-// import { FavoritesComponent } from './components/pages/favorites/favorites.component';
-// import { HistoryComponent } from './components/pages/history/history.component';
-// import { ForumComponent } from './components/pages/forum/forum.component';
-// import { NotificationsComponent } from './components/pages/notifications/notifications.component';
+// Guards
+import { AuthGuard } from "./core/guards/auth.guard";
 
 const routes: Routes = [
-  // Public Routes
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent },
+  // Default redirect to dashboard (authenticated landing page)
+  { path: "", redirectTo: "/dashboard", pathMatch: "full" },
 
-  // Auth Routes (no guards for now to avoid compilation errors)
+  // Public Routes (no authentication required)
+  { path: "home", component: HomeComponent },
+
+  // Auth Routes (login, register - no guards here)
   {
-    path: 'auth',
+    path: "auth",
     children: [
-      { path: 'login', component: LoginComponent },
-      { path: 'register', component: RegisterComponent }
-    ]
+      { path: "login", component: LoginComponent },
+      { path: "register", component: RegisterComponent },
+    ],
   },
 
-  // Feature Routes (no guards for now to avoid compilation errors)
-  { path: 'map', component: MapComponent },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'forum', component: ForumComponent },
-  { path: 'forum/thread/:id', component: ThreadDetailsComponent },
-  { path: 'forum/add/thread', component: AddThreadComponent },
-  { path: 'profile', component: ProfileComponent,  }, // canActivate: [AuthGuard]
+  // Protected Routes (lazy loaded with AuthGuard)
+  {
+    path: "dashboard",
+    loadChildren: () => import("./features/dashboard/dashboard.module").then((m) => m.DashboardModule),
+    canActivate: [AuthGuard],
+  },
 
-  { path: 'forum/edit/thread/:id', component: EditThreadComponent },
-  // 404 Not Found Route
-  { path: '404', component: NotFoundComponent },
+  {
+    path: "profile",
+    loadChildren: () => import("./features/profile/profile.module").then((m) => m.ProfileModule),
+    canActivate: [AuthGuard],
+  },
 
-  // Wildcard route - must be last
-  { path: '**', component: NotFoundComponent },
+  // Protected Feature Routes
+  { path: "map", component: MapComponent, canActivate: [AuthGuard] },
 
-  // TODO: Implement these components and uncomment
-  // { path: 'map', component: MapComponent, canActivate: [AuthGuard] },
+  // Forum Routes
+  { path: "forum", component: ForumComponent },
+  { path: "forum/thread/:id", component: ThreadDetailsComponent },
+  { path: "forum/add/thread", component: AddThreadComponent },
+  { path: "forum/edit/thread/:id", component: EditThreadComponent },
 
-  // { path: 'favorites', component: FavoritesComponent, canActivate: [AuthGuard] },
-  // { path: 'history', component: HistoryComponent, canActivate: [AuthGuard] },
-  // { path: 'history/:commune', component: HistoryComponent, canActivate: [AuthGuard] },
-  // { path: 'forum', component: ForumComponent, canActivate: [AuthGuard] },
-  // { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
-  
-  // Lazy Loading for Forum Module (optional for future expansion)
-  // {
-  //   path: 'forum',
-  //   loadChildren: () => import('./modules/forum/forum.module').then(m => m.ForumModule),
-  //   canActivate: [AuthGuard]
-  // }
+  // Error Handling Routes
+  { path: "404", component: NotFoundComponent },
+
+  // Wildcard route - must be LAST to catch unmapped URLs
+  { path: "**", component: NotFoundComponent },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, {
-    enableTracing: false, // Set to true for debugging
-    scrollPositionRestoration: 'top'
-  })],
-  exports: [RouterModule]
+  imports: [
+    RouterModule.forRoot(routes, {
+      enableTracing: false, // Set to true for debugging
+      scrollPositionRestoration: "top",
+    }),
+  ],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

@@ -7,11 +7,9 @@ import { AuthService } from "@/auth/services/auth.service";
 import { AuthUser } from "@/auth/models/auth.model";
 import * as L from "leaflet";
 import { GeographicService } from "./services/geographic.service";
-import { Commune } from "./models/commune.model";
 import { WeatherService } from "./services/weather.service";
-import { Weather } from "./models/weather.model";
 import { AirQualityService } from "./services/air-quality.service";
-import { AirQuality } from "./models/airQuality.model";
+import { Commune, Weather, AirQuality } from "@/core/models";
 
 @Component({
   standalone: false,

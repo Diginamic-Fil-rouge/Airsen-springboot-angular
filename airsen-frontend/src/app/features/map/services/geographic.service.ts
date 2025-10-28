@@ -2,9 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { Weather } from '../models/weather.model';
-import { Commune } from '../models/commune.model';
-import { ExportDatas } from '../models/exportDatas.model';
+import { Commune, ExportData } from '@/core/models';
 @Injectable({
   providedIn: 'root'
 })
@@ -15,7 +13,7 @@ export class GeographicService {
   getCommunesWithCoordinatesAndMinPop(): Observable<Commune[]>{
     let communes = this.http.get<Commune[]>(`${this.apiUrl}/with-coordinates`);
      return communes.pipe(
-      map(communes => communes.filter(commune => commune.population >= 100000))
+      map(communes => communes.filter(commune => (commune.population ?? 0) >= 100000))
     );
   }
 
@@ -31,8 +29,8 @@ export class GeographicService {
     return this.http.get<Commune[]>(`${this.apiUrl}/search`, { params: { q: query }});
   }
 
-  getCommuneDatas(inseeCode: string | undefined): Observable<ExportDatas> {
-    return this.http.get<ExportDatas>(`${this.apiUrl}/${inseeCode}/export-data`);
+  getCommuneDatas(inseeCode: string | undefined): Observable<ExportData> {
+    return this.http.get<ExportData>(`${this.apiUrl}/${inseeCode}/export-data`);
   }
 
 }

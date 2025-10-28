@@ -1,43 +1,38 @@
-// Favorite Models - User's saved locations and indicators
+import { Commune } from './commune.model';
 
+/**
+ * User favorite commune model
+ * Represents a saved/bookmarked commune for quick access to environmental data
+ */
 export interface UserFavorite {
   id: number;
-  userId: number;
-  communeId: number;
-  commune: {
+  user: {
     id: number;
-    name: string;
-    postalCode: string;
-    department: string;
-    region: string;
   };
-  displayName: string;
-  isDefault: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  commune: Commune;
+  addedAt: Date;
 }
 
+/**
+ * Request model for creating a favorite
+ */
 export interface CreateFavoriteRequest {
-  communeId: number;
-  displayName?: string;
-  isDefault?: boolean;
+  inseeCode: string;
 }
 
-export interface UpdateFavoriteRequest {
-  displayName?: string;
-  isDefault?: boolean;
-}
-
+/**
+ * Response model for favorite operations with enriched data
+ */
 export interface FavoriteWithData extends UserFavorite {
   currentAirQuality?: {
-    globalIndex: number;
-    globalQuality: string;
-    lastUpdate: Date;
+    aqi: number;
+    aqiLabel: string;
+    aqiColor: string;
+    timestamp: Date;
   };
   currentWeather?: {
     temperature: number;
     weatherDescription: string;
-    icon: string;
-    lastUpdate: Date;
+    timestamp: Date;
   };
 }

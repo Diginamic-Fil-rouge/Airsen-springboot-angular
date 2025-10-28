@@ -44,7 +44,7 @@
       <ul>
         @for (result of (searchResults | async); track $index){
         <li (click)="onSearchResultClicked(result)">
-          {{ result.name }} ({{ result.departmentCode }})
+          {{ result.name }} ({{ result.department?.code || result.department?.name || 'N/A' }})
         </li>
         }
       </ul>

@@ -1,42 +1,26 @@
-// Commune and Geographic Models based on INSEE data
 
 export interface Commune {
   id: number;
   inseeCode: string;
   name: string;
-  postalCode: string;
-  latitude: number;
-  longitude: number;
-  population: number;
-  area: number;
-  density: number;
-  departmentId: number;
-  department?: Department;
-  currentAirQuality?: AirQuality;
-  currentWeather?: WeatherData;
+  population?: number;
+  latitude?: number;
+  longitude?: number;
+  department: Department;
 }
 
 export interface Department {
   id: number;
   code: string;
   name: string;
-  regionId: number;
+  regionId?: number;
   region?: Region;
-  communes?: Commune[];
-  communeCount: number;
-  population: number;
-  area: number;
 }
 
 export interface Region {
   id: number;
   code: string;
   name: string;
-  departments?: Department[];
-  departmentCount: number;
-  communeCount: number;
-  population: number;
-  area: number;
 }
 
 export interface CommuneSearchRequest {
@@ -81,19 +65,15 @@ export interface CommuneDetails extends Commune {
   };
 }
 
-// Import from air-quality and weather models to avoid circular dependency
-interface AirQuality {
-  id: number;
-  communeId: number;
-  globalIndex: number;
-  globalQuality: string;
-  measurementDate: Date;
-}
-
-interface WeatherData {
-  id: number;
-  communeId: number;
-  temperature: number;
-  weatherDescription: string;
-  measurementDate: Date;
+/**
+ * Extended commune interface with current air quality data
+ * Used for map display and visualization where air quality indicators
+ * need to be shown alongside geographic information
+ */
+export interface CommuneWithAirQuality extends Commune {
+  currentAirQuality?: {
+    atmoIndex: number;
+    qualifier: string;
+    color: string;
+  };
 }
