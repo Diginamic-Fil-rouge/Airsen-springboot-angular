@@ -4,6 +4,9 @@ import { AuthUser } from "../../core/auth/models/auth.model";
 import { UserProfileService } from "./services/user-profile.service";
 import { UserDTO } from "./models/user.model";
 import { UpdateUserProfileRequest } from "./models/update-user-profile-request.model";
+import { MatDialog } from '@angular/material/dialog';
+import { ProfileDialogComponent } from './profile-dialog.component';
+
 
 
 @Component({
@@ -58,7 +61,11 @@ export class ProfileComponent implements OnInit {
 
   activeTab: "profile" | "notifications" | "security" = "profile";
 
-  constructor(private authService: AuthService,  private userProfileService: UserProfileService) {}
+  constructor(
+    private authService: AuthService,  
+    private userProfileService: UserProfileService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
   this.userProfileService.getProfile().subscribe({
@@ -87,6 +94,28 @@ export class ProfileComponent implements OnInit {
 }
 
   saveProfile() {
+  // Vérification du format du téléphone avant de lancer la requête
+  const phonePattern = /^[0-9]*$/;
+  if (!phonePattern.test(this.formData.phone)) {
+    this.dialog.open(ProfileDialogComponent, {
+      data: {
+        title: 'Erreur',
+        message: 'Le numéro de téléphone ne doit contenir que des chiffres.',
+      },
+    });
+    return; // stope la sauvegarde ici
+  }
+  // Vérifie que le téléphone a au moins 10 caractères
+  if (this.formData.phone.length < 10) {
+    this.dialog.open(ProfileDialogComponent, {
+      data: {
+        title: 'Erreur',
+        message: 'Le numéro de téléphone doit comporter au moins 10 chiffres.',
+      },
+    });
+    return;
+  }
+
   // Séparer le nom complet en firstName / lastName
   const [firstName, ...rest] = this.formData.name.split(" ");
   const lastName = rest.join(" ") || "";
@@ -101,15 +130,26 @@ export class ProfileComponent implements OnInit {
 
   this.userProfileService.updateProfile(updateData).subscribe({
     next: (updatedUser) => {
-      alert("Profil sauvegardé avec succès !");
+      this.dialog.open(ProfileDialogComponent, {
+        data: {
+          title: 'Succès',
+          message: 'Profil sauvegardé avec succès !'
+        }
+      });
       console.log("Profil mis à jour :", updatedUser);
     },
     error: (err) => {
+      this.dialog.open(ProfileDialogComponent, {
+        data: {
+          title: 'Erreur',
+          message: 'Erreur lors de la sauvegarde du profil.'
+        }
+      });
       console.error("Erreur lors de la sauvegarde du profil :", err);
-      alert("Erreur lors de la sauvegarde du profil.");
     }
   });
 }
+
 
 
   toggleNotification(key: keyof typeof this.notifications) {

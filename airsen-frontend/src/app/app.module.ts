@@ -51,6 +51,8 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 import { ForumComponent } from './features/forum/forum.component';
 import { ProfileComponent } from './features/profile/profile.component';
+import { ProfileDialogComponent } from './features/profile/profile-dialog.component';
+
 
 // Layout Components
 import { HeaderComponent } from './layouts/components/header/header.component';
@@ -122,6 +124,7 @@ import { MapLegendComponent } from './features/map/map-view/legend/map-legend.co
     LoaderComponent,
     BackButtonComponent,
     ProfileComponent,
+    ProfileDialogComponent
     // Page Components
     // HomeComponent,
     // MapComponent,

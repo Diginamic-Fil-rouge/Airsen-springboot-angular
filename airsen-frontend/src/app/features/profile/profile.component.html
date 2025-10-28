@@ -83,14 +83,14 @@
                   [(ngModel)]="formData.name"
                   name="name"
                   id="name"
-                  maxlength="28"
+                  maxlength="40"
                   required
                   #nameField="ngModel"
                 />
 
                 <!-- Compteur de caractères -->
                 <div class="char-counter">
-                  {{ formData.name?.length || 0 }}/28
+                  {{ formData.name?.length || 0 }}/40
                 </div>
 
                 <!-- Messages d’erreur -->
@@ -102,7 +102,7 @@
                     Le nom complet est obligatoire.
                   </span>
                   <span *ngIf="nameField.errors?.['maxlength']">
-                    Le nom complet ne peut pas dépasser 22 caractères.
+                    Le nom complet ne peut pas dépasser 40 caractères.
                   </span>
                 </div>
               </div>
@@ -163,7 +163,7 @@
                   [(ngModel)]="formData.phone"
                   name="phone"
                   id="phone"
-                  maxlength="20"
+                  maxlength="12"
                   #phone="ngModel"
                   required
                   pattern="^[0-9]*$"
@@ -179,7 +179,7 @@
                     >Le téléphone ne doit contenir que des chiffres.</span
                   >
                   <span *ngIf="phone.errors['maxlength']"
-                    >Le téléphone ne peut pas dépasser 20 caractères.</span
+                    >Le téléphone ne peut pas dépasser 12 caractères.</span
                   >
                 </div>
               </div>
