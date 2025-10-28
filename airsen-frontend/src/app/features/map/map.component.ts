@@ -168,6 +168,12 @@ export class MapComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Handles the event when the favorite button is clicked.
+   * If the commune is currently a favorite, removes the favorite.
+   * If the commune is not currently a favorite, adds the favorite.
+   * @param commune The Commune object of the clicked favorite button.
+   */
   onFavoriteButtonClicked(commune: Commune){
     if (this.communeClickedIsFavorite) {
       this.removeFavorite();
@@ -176,6 +182,11 @@ export class MapComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Adds the currently clicked commune to the user's favorites.
+   * If the favorite is successfully added, sets the communeClickedIsFavorite flag to true.
+   * If there is an error while adding the favorite, logs the error to the console.
+   */
   addFavorite(){
     this.favoriteService.addFavorite(this.currentUser?.id, this.communeClicked?.inseeCode).subscribe({
       next: (data) => {
@@ -187,6 +198,12 @@ export class MapComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  /**
+   * Removes the currently clicked commune from the user's favorites.
+   * If the favorite is successfully removed, sets the communeClickedIsFavorite flag to false.
+   * If there is an error while removing the favorite, logs the error to the console.
+   */
   removeFavorite(){
     this.favoriteService.removeFavorite(this.currentUser?.id, this.communeClicked?.inseeCode).subscribe({
       next: () => {
