@@ -79,3 +79,30 @@ export interface CommuneWithAirQuality extends Commune {
     color: string;
   };
 }
+
+export interface CommuneDatas{
+  inseeCode: string;
+  name: string;
+  departmentCode: string;
+  departmentName: string;
+  regionCode: string;
+  regionName: string;
+  latitude: number;
+  longitude: number;
+  population: number;
+  airQuality: {
+    atmoIndex: number;
+    qualifier: string;
+    color: string;
+    pollutants: {
+      no2: number;
+      o3: number;
+      pm10: number;
+      pm25: number;
+      so2: number;
+    };
+    measurementDate: string;
+    source: string;
+    updateDate: string;
+  };
+}
