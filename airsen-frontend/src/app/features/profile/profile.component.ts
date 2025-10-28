@@ -17,7 +17,8 @@ import { ProfileDialogComponent } from './profile-dialog.component';
 export class ProfileComponent implements OnInit {
   user!: AuthUser;
   formData = {
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     address: "",
     phone: "",
@@ -49,14 +50,13 @@ export class ProfileComponent implements OnInit {
     description: "Recevoir un résumé hebdomadaire de la qualité de l'air"
   }
 };
-
-
-  userStats = {
-    joinDate: "Mars 2024",
-    discussions: 23,
-    likes: 145,
-    followers: 67,
-  };
+  // En attente de MAJ du backend 
+  // userStats = {
+  //   joinDate: "Mars 2024",
+  //   discussions: 23,
+  //   likes: 145,
+  //   followers: 67,
+  // };
 
   activeTab: "profile" | "notifications" | "security" = "profile";
 
@@ -70,7 +70,8 @@ export class ProfileComponent implements OnInit {
   this.userProfileService.getProfile().subscribe({
     next: (user: User) => {
       this.formData = {
-        name: `${user.firstName} ${user.lastName}`,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
         email: user.email,
         address: user.address || "",
         phone: user.telephone || "",
@@ -82,7 +83,8 @@ export class ProfileComponent implements OnInit {
       alert("Impossible de récupérer le profil.");
       // fallback temporaire
       this.formData = {
-        name: "",
+        firstName: "",
+        lastName: "",
         email: "",
         address: "",
         phone: "",
@@ -115,13 +117,9 @@ export class ProfileComponent implements OnInit {
     return;
   }
 
-  // Séparer le nom complet en firstName / lastName
-  const [firstName, ...rest] = this.formData.name.split(" ");
-  const lastName = rest.join(" ") || "";
-
   const updateData: UpdateUserProfileRequest = {
-    firstName,
-    lastName,
+    firstName: this.formData.firstName,
+    lastName: this.formData.lastName,
     address: this.formData.address,
     telephone: this.formData.phone,
     bio: this.formData.bio,
@@ -166,10 +164,9 @@ export class ProfileComponent implements OnInit {
   }
 
   getInitials(): string {
-  if (!this.formData.name) return "";
-  const names = this.formData.name.trim().split(" ");
-  const initials = names.map(n => n[0].toUpperCase()).slice(0, 2).join("");
-  return initials;
+  const first = this.formData.firstName || "";
+  const last = this.formData.lastName || "";
+  return (first[0] || "") + (last[0] || "");
 }
 
 }
