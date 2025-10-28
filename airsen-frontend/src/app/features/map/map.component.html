@@ -39,10 +39,10 @@
     </div>
     <div
       class="search-results"
-      style="display: {{ (searchResults | async) == null ? 'none' : 'block' }}"
+      style="display: {{ searchResults == null ? 'none' : 'block' }}"
     >
       <ul>
-        @for (result of (searchResults | async); track $index){
+        @for (result of searchResults; track $index){
         <li (click)="onSearchResultClicked(result)">
           {{ result.name }} ({{ result.department?.code || result.department?.name || 'N/A' }})
         </li>
