@@ -16,9 +16,29 @@
       <div class="sidebar">
         <div class="card text-center">
           <div class="avatar-wrapper">
-            <div class="avatar initials-avatar">
-              {{ getInitials() }}
+            <!-- Avatar cliquable uniquement -->
+            <div class="avatar" (click)="onAvatarClick()">
+              <img
+                *ngIf="avatarUrl; else initials"
+                [src]="avatarUrl"
+                alt="Avatar utilisateur"
+              />
+              <ng-template #initials>{{ getInitials() }}</ng-template>
+
+              <!-- Icône appareil photo avec + -->
+              <div class="avatar-overlay">
+                <i class="material-icons">add_a_photo</i>
+              </div>
             </div>
+
+            <!-- Input file caché -->
+            <input
+              type="file"
+              accept="image/*"
+              id="fileInput"
+              (change)="onAvatarSelected($event)"
+              hidden
+            />
           </div>
 
           <h3>{{ formData.firstName }}</h3>
@@ -77,7 +97,6 @@
           <h2>Informations personnelles</h2>
 
           <form (ngSubmit)="saveProfile()" class="form-grid">
-
             <!-- Ligne 1 : Prénom + Nom -->
             <div class="form-row two-cols">
               <!-- Prénom -->
