@@ -3,6 +3,9 @@ import * as L from 'leaflet';
 import { Observable } from 'rxjs';
 import { Commune } from '../models/commune.model';
 import { GeographicService } from '../services/geographic.service';
+import { FavoritesService } from '../../favorites/services/favorites.service';
+import { AuthService } from '../../../core/auth/services/auth.service';
+import { AuthUser } from '@/app/core/auth/models/auth.model';
 
 @Component({
   standalone: false,
@@ -12,10 +15,12 @@ import { GeographicService } from '../services/geographic.service';
 })
 export class MapViewComponent implements AfterViewInit {
   private map: any;
-  private geographicService = inject(GeographicService)
-
+  private geographicService = inject(GeographicService);
+  private favoriteService = inject(FavoritesService);
+  private authService = inject(AuthService);
   markersInitialized = false;
   communes = input<Observable<Commune[]>>();
+  favoriteCommunes: Commune[] | null = null;
   communeSearched = input<Commune | null>();
   @Output() onMarkerClick = new EventEmitter<any>();
 
@@ -26,21 +31,22 @@ export class MapViewComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initMap();
+    this.initFavorites();
   }
 
   ngOnChanges() {
     this.initMarkers();
   }
 
-/**
- * Initializes the Leaflet map with France's coordinates
- * and adds a tile layer to display OpenStreetMap tiles.
- * The map is centered on France with a zoom level of 7.
- * The tile layer is configured to display tiles from OpenStreetMap
- * with a maximum zoom level of 18 and a minimum zoom level of 3.
- * The attribution for the tile layer is set to the OpenStreetMap
- * copyright notice.
- */
+  /**
+   * Initializes the Leaflet map with France's coordinates
+   * and adds a tile layer to display OpenStreetMap tiles.
+   * The map is centered on France with a zoom level of 7.
+   * The tile layer is configured to display tiles from OpenStreetMap
+   * with a maximum zoom level of 18 and a minimum zoom level of 3.
+   * The attribution for the tile layer is set to the OpenStreetMap
+   * copyright notice.
+   */
   private initMap(): void {
     this.map = L.map('map', {
       // coordinates of France
@@ -68,7 +74,7 @@ export class MapViewComponent implements AfterViewInit {
       this.communes()?.forEach(communes => {
         console.log("commune : ", communes);
         communes.forEach(commune => {
-          this.addMarkerToMap(commune);
+          this.addMarkerToMap(commune, null);
         });
       });
       this.markersInitialized = true;
@@ -101,7 +107,7 @@ export class MapViewComponent implements AfterViewInit {
           communeData.color = data.airQuality?.atmoColor;
           communeData.atmoIndex = data.airQuality?.atmIndex;
           console.log("communeData : ", communeData);
-          this.addMarkerToMap(communeData);
+          this.addMarkerToMap(communeData, null);
           this.zoomOnMap([communeData.latitude, communeData.longitude], 11);
         },
         error: (error) => {
@@ -109,6 +115,31 @@ export class MapViewComponent implements AfterViewInit {
         }
       });
     }
+  }
+
+/**
+ * Initializes the favorite communes on the map.
+ * Fetches the favorite communes for the current user and adds a marker to the map for each favorite commune.
+ * If the favorite communes cannot be fetched, logs an error message to the console.
+ */
+  initFavorites() {
+    const currentUser: AuthUser | null = this.authService.getCurrentUser();
+
+    if (currentUser) {
+      this.favoriteService.getUserFavorites(currentUser.id).subscribe({
+        next: (data) => {
+          // data.forEach(favorite => this.geographicService)
+          // this.favoriteCommunes = data;
+          // this.favoriteCommunes.forEach(commune => {
+          //   this.addMarkerToMap(commune, 'favorite');
+          // });
+        },
+        error: (error) => {
+          console.error('Error fetching favorite communes:', error);
+        }
+      });
+    }
+
   }
 
   /**
@@ -119,17 +150,17 @@ export class MapViewComponent implements AfterViewInit {
    * and opens a popup displaying the commune's data.
    * @param commune The commune data to add to the map.
    */
-  addMarkerToMap(commune: any) {
+  addMarkerToMap(commune: any, prefix: string | null) {
     if (!commune.latitude || !commune.longitude) {
       return;
     }
 
     let icon: any = L.icon({
-    iconUrl: `assets/images/marker-${commune.atmoIndex}.png`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [-3, -76]
-  });
+      iconUrl: `assets/images/${prefix ? prefix + '-' : ''}marker-${commune.atmoIndex}.png`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [-3, -76]
+    });
 
     const marker = L.marker([commune.latitude, commune.longitude], { icon: icon }).addTo(this.map);
 
@@ -138,13 +169,13 @@ export class MapViewComponent implements AfterViewInit {
     });
   }
 
-/**
- * Zooms the map to the given latitude and longitude at the given zoom level.
- * @param {any} latLng - The latitude and longitude to zoom to.
- * @param {number} zoomLevel - The zoom level to use.
- */
-zoomOnMap(latLng: any, zoomLevel: number){
-  this.map.setView(latLng, zoomLevel);
-}
+  /**
+   * Zooms the map to the given latitude and longitude at the given zoom level.
+   * @param {any} latLng - The latitude and longitude to zoom to.
+   * @param {number} zoomLevel - The zoom level to use.
+   */
+  zoomOnMap(latLng: any, zoomLevel: number) {
+    this.map.setView(latLng, zoomLevel);
+  }
 
 }

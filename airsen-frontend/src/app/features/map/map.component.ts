@@ -12,6 +12,8 @@ import { WeatherService } from "./services/weather.service";
 import { Weather } from "./models/weather.model";
 import { AirQualityService } from "./services/air-quality.service";
 import { AirQuality } from "./models/airQuality.model";
+import { FavoritesService } from '../favorites/services/favorites.service';
+import { NgClass } from '@angular/common';
 
 @Component({
   standalone: false,
@@ -24,7 +26,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private geographicService = inject(GeographicService);
   private weatherService = inject(WeatherService);
   private airQualityService = inject(AirQualityService);
-
+  private favoriteService = inject(FavoritesService);
   private router = inject(Router);
 
   currentUser: AuthUser | null = null;
@@ -32,6 +34,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   communeClicked: Commune | null = null;
+  communeClickedIsFavorite: boolean = false;
   communeSearched: Commune | null = null;
   airQualityClicked: any | null = null;
   weatherClicked: Weather | null = null;
@@ -73,7 +76,7 @@ export class MapComponent implements OnInit, OnDestroy {
    * @param commune The Commune object of the clicked search result.
    */
   onSearchResultClicked(commune: Commune){
-    this.searchQuery = commune.name;
+    this.searchQuery = '';
     this.searchResults = new Observable<Commune[]>();
     this.communeSearched = commune;
     this.clickEvent(commune, "NEW");
@@ -115,6 +118,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
     // Reset state for new commune
     this.communeClicked = commune;
+    this.communeClickedIsFavorite = false;
     this.weatherClicked = null;
     this.airQualityClicked = null;
     this.dataErrors = null;
@@ -128,6 +132,15 @@ export class MapComponent implements OnInit, OnDestroy {
         firstValueFrom(this.weatherService.getCurrentWeather(commune.inseeCode)).catch(() => null),
         type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)).catch(() => null) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)).catch(() => null),
       ]);
+
+      this.favoriteService.checkIfIsFavorite(this.currentUser?.id, commune.inseeCode).subscribe({
+        next: (data) => {
+          this.communeClickedIsFavorite = data.isFavorited;
+        },
+        error: (error) => {
+          console.error("Error checking if commune is favorite:", error);
+        }
+      });
 
       console.log("Weather data received:", weather);
       console.log("Air quality data received:", airQuality);
@@ -155,11 +168,34 @@ export class MapComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Navigate to specified route
-   */
-  navigateTo(route: string): void {
-    this.router.navigate([route]);
+  onFavoriteButtonClicked(commune: Commune){
+    if (this.communeClickedIsFavorite) {
+      this.removeFavorite();
+    } else {
+      this.addFavorite();
+    }
+  }
+
+  addFavorite(){
+    this.favoriteService.addFavorite(this.currentUser?.id, this.communeClicked?.inseeCode).subscribe({
+      next: (data) => {
+        this.communeClickedIsFavorite = true;
+      },
+      error: (error) => {
+        console.error("Error adding favorite:", error);
+      }
+    });
+  }
+
+  removeFavorite(){
+    this.favoriteService.removeFavorite(this.currentUser?.id, this.communeClicked?.inseeCode).subscribe({
+      next: () => {
+        this.communeClickedIsFavorite = false;
+      },
+      error: (error) => {
+        console.error("Error removing favorite:", error);
+      }
+    });
   }
 
   /**
