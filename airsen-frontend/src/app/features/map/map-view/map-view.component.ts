@@ -102,7 +102,7 @@ export class MapViewComponent implements AfterViewInit {
             } : undefined
           };
           console.log("communeData : ", communeData);
-          this.addMarkerToMap(communeData);
+          this.addMarkerToMap(communeData, null);
           if (communeData.latitude && communeData.longitude) {
             this.zoomOnMap([communeData.latitude, communeData.longitude], 11);
           }
