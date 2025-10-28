@@ -13,6 +13,18 @@ export interface UserFavorite {
   addedAt: Date;
 }
 
+export interface Favorite{
+    communeInseeCode: string,
+    communeName: string,
+    departmentName: string,
+    regionName: string,
+    addedAt: Date
+}
+
+export interface FavoriteCheckResponse {
+    isFavorited: boolean
+}
+
 /**
  * Request model for creating a favorite
  */
