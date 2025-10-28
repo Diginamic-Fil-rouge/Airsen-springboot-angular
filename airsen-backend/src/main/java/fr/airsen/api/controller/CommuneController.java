@@ -1,6 +1,7 @@
 package fr.airsen.api.controller;
 
 import fr.airsen.api.dto.CommuneDTO;
+import fr.airsen.api.dto.response.CommuneDetailResponse;
 import fr.airsen.api.service.CommuneService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -126,5 +128,62 @@ public class CommuneController {
         log.info("Successfully retrieved {} communes with coordinates", communes.size());
 
         return ResponseEntity.ok(communes);
+    }
+
+    /**
+     * GET /communes/{inseeCode}/detail
+     *
+     * Retrieves comprehensive commune information enriched with real-time environmental data.
+     */
+    @GetMapping("/communes/{inseeCode}/detail")
+    @Operation(
+        summary = "Get commune detail with environmental data",
+        description = "Retrieves comprehensive commune information including geographic data, " +
+                     "current air quality from ATMO France, and current weather from Open-Meteo. " +
+                     "External API calls are executed in parallel. Gracefully handles API failures " +
+                     "by returning partial data (commune information is always available)."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Commune detail retrieved successfully with available environmental data"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid INSEE code format (must be exactly 5 digits)"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Commune not found with the provided INSEE code"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error during data aggregation"
+        )
+    })
+    public ResponseEntity<CommuneDetailResponse> getCommuneDetail(
+            @Parameter(
+                description = "INSEE code of the commune (5-digit unique identifier). " +
+                             "Examples: '75056' (Paris), '13055' (Marseille), '69123' (Lyon)",
+                example = "75056",
+                required = true
+            )
+            @PathVariable
+            @Valid
+            @Pattern(regexp = "\\d{5}", message = "INSEE code must be exactly 5 digits")
+            String inseeCode) {
+
+        log.info("Received request for commune detail with environmental data: {}", inseeCode);
+
+        CommuneDetailResponse response = communeService.getCommuneDetailWithEnvironmentalData(inseeCode);
+
+        log.info("Successfully retrieved commune detail for {}: {} with air quality={}, weather={}",
+            inseeCode,
+            response.name(),
+            response.airQuality() != null ? "available" : "unavailable",
+            response.weather() != null ? "available" : "unavailable"
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
