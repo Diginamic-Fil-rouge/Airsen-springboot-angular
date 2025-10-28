@@ -88,6 +88,7 @@ import { RouterModule } from '@angular/router';
 import { AddMessageComponent } from './features/forum/messages/add-message/add-message.component';
 import { EditThreadComponent } from './features/forum/threads/edit-thread/edit-thread.component';
 import { MapLegendComponent } from './features/map/map-view/legend/map-legend.component';
+import { MapDatasComponent } from './features/map/datas/map-datas.component';
 
 @NgModule({
   declarations: [
@@ -105,6 +106,7 @@ import { MapLegendComponent } from './features/map/map-view/legend/map-legend.co
     MapComponent,
     MapViewComponent,
     MapLegendComponent,
+    MapDatasComponent,
     HomeComponent,
     NotFoundComponent,
     ForumComponent,
