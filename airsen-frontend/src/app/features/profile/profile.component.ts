@@ -164,10 +164,57 @@ export class ProfileComponent implements OnInit {
     alert("Notifications sauvegardées (simulation)");
   }
 
-  getInitials(): string {
-  const first = this.formData.firstName || "";
-  const last = this.formData.lastName || "";
-  return (first[0] || "") + (last[0] || "");
+//   getInitials(): string {
+//   const first = this.formData.firstName || "";
+//   const last = this.formData.lastName || "";
+//   return (first[0] || "") + (last[0] || "");
+// }
+
+avatarUrl: string | null = null;
+
+onAvatarClick(): void {
+  const fileInput = document.querySelector<HTMLInputElement>('#fileInput');
+  fileInput?.click();
 }
+
+onAvatarSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+
+    // Vérification basique du type de fichier
+    if (!file.type.startsWith('image/')) {
+      this.dialog.open(ProfileDialogComponent, {
+        data: {
+          title: 'Erreur',
+          message: 'Veuillez sélectionner une image valide (jpg, png, etc.)'
+        }
+      });
+      return;
+    }
+
+    // Lecture du fichier pour affichage immédiat
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.avatarUrl = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+
+    // TODO : tu pourras plus tard envoyer ce fichier au backend ici
+  }
+}
+
+// Utilitaire : garder tes initiales si aucune image
+getInitials(): string {
+  const initials = [
+    this.formData.firstName?.charAt(0),
+    this.formData.lastName?.charAt(0)
+  ]
+    .filter(Boolean)
+    .join('')
+    .toUpperCase();
+  return initials || '?';
+}
+
 
 }
