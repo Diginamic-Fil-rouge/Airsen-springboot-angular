@@ -1,7 +1,7 @@
 <div class="page-container">
     <back-button route="/forum/thread/{{(thread$ | async)?.id}}" textContent="Retour au post"></back-button>
     <h2>Modifier la discussion</h2>
-    @if (errors$ != []) {
+    @if (errors$.length > 0) {
         @for (error of errors$ ; track $index) {
             <p class="error">{{ error }}</p>
         }
@@ -9,11 +9,11 @@
     <form>
         <div class="form-group">
             <label for="title">Titre *</label>
-            <input type="text" id="title" name="title" [(ngModel)]="title" placeholder="Entrez un titre descriptif..." value="{{(thread$ | async)?.title}}"/>
+            <input type="text" id="title" name="title" [ngClass]="{'input-error' : errors$.length > 0 && title === ''}" [(ngModel)]="title" placeholder="Entrez un titre descriptif..." value="{{(thread$ | async)?.title}}"/>
         </div>
         <div class="form-group">
             <label for="category">Catégorie *</label>
-            <select id="category" name="category" [(ngModel)]="categoryId">
+            <select id="category" name="category" [ngClass]="{'input-error' : errors$.length > 0 && categoryId === 0}" [(ngModel)]="categoryId">
                 @for (category of categories$ | async; track $index) {
                     <option [value]="category.id" selected="{{(thread$ | async)?.category?.id == category.id}}">
                         {{ category.name }}
@@ -23,7 +23,7 @@
         </div>
         <div class="form-group">
             <label for="content">Contenu *</label>
-            <textarea id="content" name="content" [(ngModel)]="content" placeholder="Décrivez votre sujet en détails..." value="{{(thread$ | async)?.content}}"></textarea>
+            <textarea id="content" name="content" [ngClass]="{'input-error' : errors$.length > 0 && content === ''}" [(ngModel)]="content" placeholder="Décrivez votre sujet en détails..." value="{{(thread$ | async)?.content}}"></textarea>
         </div>
         <p>* Champs obligatoires</p>
         <button type="submit" (click)="updateThread()">Modifier la discussion</button>

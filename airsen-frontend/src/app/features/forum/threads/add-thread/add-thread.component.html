@@ -1,7 +1,7 @@
 <div class="page-container">
     <back-button route="/forum" textContent="Retour au forum"></back-button>
     <h2>Créer une nouvelle discussion</h2>
-    @if (errors$ != []) {
+    @if (errors$.length > 0) {
         @for (error of errors$ ; track $index) {
             <p class="error">{{ error }}</p>
         }
@@ -9,11 +9,11 @@
     <form>
         <div class="form-group">
             <label for="title">Titre *</label>
-            <input type="text" id="title" name="title" [(ngModel)]="title" placeholder="Entrez un titre descriptif..."/>
+            <input type="text" id="title" name="title" [ngClass]="{'input-error' : errors$.length > 0 && title === ''}" [(ngModel)]="title" placeholder="Entrez un titre descriptif..."/>
         </div>
         <div class="form-group">
             <label for="category">Catégorie *</label>
-            <select id="category" name="category" [(ngModel)]="categoryId">
+            <select id="category" name="category" [(ngModel)]="categoryId" [ngClass]="{'input-error' : errors$.length > 0 && categoryId === 0}">
                 <option value="0">Sélectionnez une catégorie</option>
                 @for (category of categories$ | async; track $index) {
                     <option [value]="category.id">
@@ -24,7 +24,7 @@
         </div>
         <div class="form-group">
             <label for="content">Contenu *</label>
-            <textarea id="content" name="content" [(ngModel)]="content" placeholder="Décrivez votre sujet en détails..."></textarea>
+            <textarea id="content" name="content" [ngClass]="{'input-error' : errors$.length > 0 && content === ''}" [(ngModel)]="content" placeholder="Décrivez votre sujet en détails..."></textarea>
         </div>
         <p>* Champs obligatoires</p>
         <button type="submit" (click)="createThread()">Publier la discussion</button>
