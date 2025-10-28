@@ -139,11 +139,14 @@ export class MapViewComponent implements AfterViewInit {
     if (currentUser) {
       this.favoriteService.getUserFavorites(currentUser.id).subscribe({
         next: (data) => {
-          // data.forEach(favorite => this.geographicService)
-          // this.favoriteCommunes = data;
-          // this.favoriteCommunes.forEach(commune => {
-          //   this.addMarkerToMap(commune, 'favorite');
-          // });
+          data.forEach(favorite => this.geographicService.getCommuneDatas(favorite.communeInseeCode).subscribe({
+            next: (data) => {
+              this.addMarkerToMap(data, 'favorite');
+            },
+            error: (error) => {
+              console.error('Error fetching favorite commune data:', error);
+            }
+          }))
         },
         error: (error) => {
           console.error("Error fetching favorite communes:", error);
