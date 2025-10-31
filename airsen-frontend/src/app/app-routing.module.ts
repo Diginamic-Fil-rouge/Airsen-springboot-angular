@@ -1,74 +1,91 @@
-import { NgModule } from "@angular/core";
-import { RouterModule, Routes } from "@angular/router";
-
-// Auth Components
-import { LoginComponent } from "./features/auth/login/login.component";
-import { RegisterComponent } from "./features/auth/register/register.component";
-
-// Feature Components
-import { MapComponent } from "./features/map/map.component";
-import { HomeComponent } from "./features/home/home.component";
-import { NotFoundComponent } from "./features/not-found/not-found.component";
-import { ForumComponent } from "./features/forum/forum.component";
-import { ThreadDetailsComponent } from "./features/forum/threads/threads-details/thread-details.component";
-import { AddThreadComponent } from "./features/forum/threads/add-thread/add-thread.component";
-import { EditThreadComponent } from "./features/forum/threads/edit-thread/edit-thread.component";
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 // Guards
-import { AuthGuard } from "./core/guards/auth.guard";
+import { AuthGuard } from './core/auth/guards/auth.guard';
+import { GuestGuard } from './core/auth/guards/guest.guard';
 
+// Components (only NotFoundComponent - not lazy loaded)
+import { NotFoundComponent } from './features/not-found/not-found.component';
+
+/**
+ * AppRoutingModule - Lazy-loaded routing configuration for AIRSEN
+ *
+ * This module implements lazy loading for all feature modules to optimize
+ * initial bundle size and improve application performance.
+ */
 const routes: Routes = [
-  // Default redirect to dashboard (authenticated landing page)
-  { path: "", redirectTo: "/dashboard", pathMatch: "full" },
+  // Default route - redirect to home
+  {
+    path: '',
+    redirectTo: '/home',
+    pathMatch: 'full'
+  },
 
   // Public Routes (no authentication required)
-  { path: "home", component: HomeComponent },
-
-  // Auth Routes (login, register - no guards here)
   {
-    path: "auth",
-    children: [
-      { path: "login", component: LoginComponent },
-      { path: "register", component: RegisterComponent },
-    ],
+    path: 'home',
+    loadChildren: () => import('./features/home/home.module').then(m => m.HomeModule)
+  },
+  {
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule),
+    canActivate: [GuestGuard] // Prevent authenticated users from login/register
   },
 
-  // Protected Routes (lazy loaded with AuthGuard)
+  // Map Route (public - anyone can view air quality data)
   {
-    path: "dashboard",
-    loadChildren: () => import("./features/dashboard/dashboard.module").then((m) => m.DashboardModule),
-    canActivate: [AuthGuard],
+    path: 'map',
+    loadChildren: () => import('./features/map/map.module').then(m => m.MapModule)
   },
 
+  // Protected Routes (require authentication with AuthGuard)
   {
-    path: "profile",
-    loadChildren: () => import("./features/profile/profile.module").then((m) => m.ProfileModule),
-    canActivate: [AuthGuard],
+    path: 'dashboard',
+    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'profile',
+    loadChildren: () => import('./features/profile/profile.module').then(m => m.ProfileModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'forum',
+    loadChildren: () => import('./features/forum/forum.module').then(m => m.ForumModule),
+    canActivate: [AuthGuard]
   },
 
-  // Protected Feature Routes
-  { path: "map", component: MapComponent, canActivate: [AuthGuard] },
-
-  // Forum Routes
-  { path: "forum", component: ForumComponent },
-  { path: "forum/thread/:id", component: ThreadDetailsComponent },
-  { path: "forum/add/thread", component: AddThreadComponent },
-  { path: "forum/edit/thread/:id", component: EditThreadComponent },
+  // Admin Routes (uncomment when AdminModule is created)
+  // {
+  //   path: 'admin',
+  //   loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
+  //   canActivate: [AuthGuard, RoleGuard],
+  //   data: { roles: ['ADMIN'] }
+  // },
 
   // Error Handling Routes
-  { path: "404", component: NotFoundComponent },
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
 
-  // Wildcard route - must be LAST to catch unmapped URLs
-  { path: "**", component: NotFoundComponent },
+  // Wildcard route - must be LAST to catch all unmapped URLs
+  {
+    path: '**',
+    component: NotFoundComponent
+  }
 ];
 
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      enableTracing: false, // Set to true for debugging
-      scrollPositionRestoration: "top",
-    }),
+      enableTracing: false, // Set to true for debugging routes
+      scrollPositionRestoration: 'top', // Scroll to top on route change
+      anchorScrolling: 'enabled', // Enable anchor scrolling (#section)
+      onSameUrlNavigation: 'reload' // Reload component on same URL navigation
+    })
   ],
-  exports: [RouterModule],
+  exports: [RouterModule]
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

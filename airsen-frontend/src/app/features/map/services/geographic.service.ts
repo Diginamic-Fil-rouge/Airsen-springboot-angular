@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { Commune, CommuneDatas, ExportData } from '@/core/models';
+import { Commune, CommuneDatas, ExportData } from '@/shared/models';
 @Injectable({
   providedIn: 'root'
 })

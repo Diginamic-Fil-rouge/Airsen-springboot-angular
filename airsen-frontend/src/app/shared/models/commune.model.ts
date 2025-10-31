@@ -41,8 +41,6 @@ export interface CommuneSearchResult {
 export interface CommuneDetails extends Commune {
   demographics: {
     population: number;
-    density: number;
-    area: number;
   };
   airQualityStats: {
     averageIndex: number;

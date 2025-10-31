@@ -9,10 +9,11 @@ import {
   Injector,
   ComponentRef,
   createComponent,
+  effect,
 } from "@angular/core";
 import * as L from "leaflet";
 import { Observable } from "rxjs";
-import { Commune, CommuneWithAirQuality } from "@/core/models";
+import { Commune, CommuneWithAirQuality } from "@/shared/models";
 import { GeographicService } from "../services/geographic.service";
 import { FavoritesService } from "../../favorites/services/favorites.service";
 import { AuthService } from "../../../core/auth/services/auth.service";
@@ -35,15 +36,27 @@ export class MapViewComponent implements AfterViewInit {
   communeSearched = input<Commune | null>();
   @Output() onMarkerClick = new EventEmitter<any>();
 
-  constructor(private viewContainerRef: ViewContainerRef, private injector: Injector) {}
+  constructor(private viewContainerRef: ViewContainerRef, private injector: Injector) {
+    // Set up effects to react to signal input changes
+    effect(() => {
+      const communes = this.communes();
+      if (communes) {
+        this.initMarkers();
+      }
+    });
+
+    effect(() => {
+      const searchedCommune = this.communeSearched();
+      if (searchedCommune) {
+        this.initMarkers();
+      }
+    });
+  }
+
 
   ngAfterViewInit(): void {
     this.initMap();
     this.initFavorites();
-  }
-
-  ngOnChanges() {
-    this.initMarkers();
   }
 
   /**
@@ -106,11 +119,11 @@ export class MapViewComponent implements AfterViewInit {
                 code: "",
                 name: "",
               },
-              currentAirQuality: data.airQuality?.measurements.length
+              currentAirQuality: data.airQuality
                 ? {
-                    atmoIndex: data.airQuality.measurements[0].aqi,
-                    qualifier: data.airQuality.measurements[0].aqiLabel,
-                    color: "",
+                    atmoIndex: data.airQuality.atmoIndex,
+                    qualifier: data.airQuality.qualifier,
+                    color: data.airQuality.color,
                   }
                 : undefined,
             };
@@ -168,11 +181,24 @@ export class MapViewComponent implements AfterViewInit {
       return;
     }
 
-    const atmoIndex =
-      "currentAirQuality" in commune ? commune.currentAirQuality?.atmoIndex || 0 : commune.atmoIndex || 0;
+    // Determine atmoIndex from various possible sources
+    let atmoIndex = 0;
+
+    // Check for currentAirQuality (from CommuneWithAirQuality)
+    if ("currentAirQuality" in commune && commune.currentAirQuality) {
+      atmoIndex = commune.currentAirQuality.atmoIndex;
+    }
+    // Check for airQuality directly (from CommuneDatas/favorites)
+    else if ("airQuality" in commune && commune.airQuality) {
+      atmoIndex = commune.airQuality.atmoIndex;
+    }
+    // Fallback to commune.atmoIndex if available
+    else if ("atmoIndex" in commune) {
+      atmoIndex = commune.atmoIndex;
+    }
 
     let icon: any = L.icon({
-      iconUrl: `assets/images/${prefix ? prefix + "-" : ""}marker-${commune.atmoIndex}.png`,
+      iconUrl: `assets/images/${prefix ? prefix + "-" : ""}marker-${atmoIndex}.png`,
       iconSize: [20, 20],
       iconAnchor: [10, 10],
       popupAnchor: [-3, -76],

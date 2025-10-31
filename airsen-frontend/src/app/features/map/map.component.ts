@@ -11,7 +11,7 @@ import { WeatherService } from "./services/weather.service";
 import { AirQualityService } from "./services/air-quality.service";
 import { FavoritesService } from '../favorites/services/favorites.service';
 import { NgClass } from '@angular/common';
-import { Commune, Weather, AirQuality } from "@/core/models";
+import { Commune, Weather, AirQuality } from "@/shared/models";
 
 @Component({
   standalone: false,
