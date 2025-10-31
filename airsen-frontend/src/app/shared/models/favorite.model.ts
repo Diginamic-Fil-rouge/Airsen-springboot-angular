@@ -1,9 +1,6 @@
 import { Commune } from './commune.model';
 
-/**
- * User favorite commune model
- * Represents a saved/bookmarked commune for quick access to environmental data
- */
+
 export interface UserFavorite {
   id: number;
   user: {
