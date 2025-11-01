@@ -1,0 +1,45 @@
+.info-form-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+    }
+
+    mat-form-field {
+      flex: 1;
+      min-width: 200px;
+    }
+  }
+
+  .full-width {
+    width: 100%;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+
+    button {
+      min-width: 120px;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}

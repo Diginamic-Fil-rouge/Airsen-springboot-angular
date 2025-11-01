@@ -1,29 +1,42 @@
 import { NgModule } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
 import { ProfileRoutingModule } from "./profile-routing.module";
-import { ProfileComponent } from "./profile.component";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatButtonModule } from "@angular/material/button";
-import { MatSlideToggleModule } from "@angular/material/slide-toggle";
-import { MatTabsModule } from "@angular/material/tabs";
-import { MatCardModule } from "@angular/material/card";
-import { MatIconModule } from "@angular/material/icon";
+import { SharedModule } from "@/shared/shared.module";
 
+// Container Component
+import { ProfileComponent } from "./profile.component";
+
+// Child Components
+import { InfoFormComponent } from "./components/info-form/info-form.component";
+import { ChangePasswordComponent } from "./components/change-password/change-password.component";
+import { NotificationToggleComponent } from "./components/notification-toggle/notification-toggle.component";
+
+/**
+ * ProfileModule - User Profile Management Feature Module
+ *
+ * This module implements the refactored profile feature with:
+ * - ProfileComponent: Smart container with mat-tab-group
+ * - InfoFormComponent: Personal information editing
+ * - ChangePasswordComponent: Password change with strength validation
+ * - NotificationToggleComponent: Notification preferences (localStorage)
+ *
+ * Architecture:
+ * - Event-driven child-parent communication
+ * - Reactive forms with custom validators
+ * - MatSnackBar for user feedback (no modal dialogs)
+ * - Initials-based avatar (no image upload)
+ */
 @NgModule({
-  declarations: [ProfileComponent],
+  declarations: [
+    // Container
+    ProfileComponent,
+    // Child Components
+    InfoFormComponent,
+    ChangePasswordComponent,
+    NotificationToggleComponent
+  ],
   imports: [
-    CommonModule,
-    FormsModule,
     ProfileRoutingModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSlideToggleModule,
-    MatTabsModule,
-    MatCardModule,
-    MatIconModule
+    SharedModule 
   ],
 })
 export class ProfileModule {}

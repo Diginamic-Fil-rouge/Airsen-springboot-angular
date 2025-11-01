@@ -1,219 +1,257 @@
-import { Component, OnInit } from "@angular/core";
-import { AuthService } from "../../core/auth/services/auth.service";
-import { AuthUser } from "../../core/auth/models/auth.model";
-import { UserProfileService } from "./services/user-profile.service";
-import { UpdateUserProfileRequest } from "./models/update-user-profile-request.model";
-import { User } from "@/auth/models/user.model";
-import { MatDialog } from '@angular/material/dialog';
-import { ProfileDialogComponent } from './profile-dialog.component';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { AuthService } from '@/core/auth/services/auth.service';
+import { AlertService } from '@/core/services/alert.service';
+import { UserProfileService } from './services/user-profile.service';
+import { AuthUser } from '@/core/auth/models/auth.model';
+import {
+  UserProfile,
+  UpdateProfileRequest,
+  ChangePasswordRequest,
+  NotificationSettings
+} from '@/shared/models/profile.model';
+import { CampaignNotification } from '@/shared/models';
 
+/**
+ * ProfileComponent - User Profile Management (Refactored)
+ *
+ * Smart container component orchestrating 3 child components:
+ * - Tab 1 (Informations personnelles): InfoFormComponent
+ * - Tab 2 (Sécurité): ChangePasswordComponent
+ * - Tab 3 (Notifications): Received notifications + NotificationToggleComponent
+ *
+ * Architecture:
+ * - Uses Angular Material mat-tab-group for tab management
+ * - Event-driven: Listens to child component events
+ * - RxJS: Proper subscription management with takeUntil
+ * - Feedback: MatSnackBar for success/error messages (no modal dialogs)
+ */
 @Component({
-  selector: "app-profile",
-  templateUrl: "./profile.component.html",
-  styleUrls: ["./profile.component.scss"],
   standalone: false,
+  selector: 'app-profile',
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent implements OnInit {
-  user!: AuthUser;
-  formData = {
-    firstName: "",
-    lastName: "",
-    email: "",
-    address: "",
-    phone: "",
-    bio: "",
-  };
+export class ProfileComponent implements OnInit, OnDestroy {
+  currentUser: AuthUser | null = null;
+  userProfile: UserProfile | null = null;
+  receivedNotifications: CampaignNotification[] = [];
 
-  notifications: Record<string, boolean> = {
-    emailAlerts: true,
-    emergencyAlerts: true,
-    forumReplies: true,
-    weeklyReport: false,
-  };
+  isLoadingProfile = true;
+  isLoadingNotifications = true;
+  isUpdatingProfile = false;
+  isChangingPassword = false;
 
-  notificationLabels: Record<keyof typeof this.notifications, { title: string; description: string }> = {
-  emailAlerts: {
-    title: "Alertes e-mail",
-    description: "Recevoir des alertes environnementales par e-mail"
-  },
-  emergencyAlerts: {
-    title: "Alertes d'urgence",
-    description: "Alertes immédiates en cas de risque environnemental élevé"
-  },
-  forumReplies: {
-    title: "Réponses du forum",
-    description: "Être notifié des réponses à vos discussions"
-  },
-  weeklyReport: {
-    title: "Rapport hebdomadaire",
-    description: "Recevoir un résumé hebdomadaire de la qualité de l'air"
-  }
-};
-  // En attente de MAJ du backend 
-  // userStats = {
-  //   joinDate: "Mars 2024",
-  //   discussions: 23,
-  //   likes: 145,
-  //   followers: 67,
-  // };
-
-  activeTab: "profile" | "notifications" | "security" = "profile";
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private authService: AuthService,  
+    private authService: AuthService,
+    private alertService: AlertService,
     private userProfileService: UserProfileService,
-    private dialog: MatDialog
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
-  this.userProfileService.getProfile().subscribe({
-    next: (user: User) => {
-      this.formData = {
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        email: user.email,
-        address: user.address || "",
-        phone: user.telephone || "",
-        bio: user.bio || "",
-      };
-    },
-    error: (err) => {
-      console.error("Erreur lors de la récupération du profil :", err);
-      alert("Impossible de récupérer le profil.");
-      // fallback temporaire
-      this.formData = {
-        firstName: "",
-        lastName: "",
-        email: "",
-        address: "",
-        phone: "",
-        bio: "",
-      };
-    }
-  });
-}
+    this.loadCurrentUser();
+  }
 
-  saveProfile() {
-  // Vérification du format du téléphone avant de lancer la requête
-  const phonePattern = /^[0-9]*$/;
-  if (!phonePattern.test(this.formData.phone)) {
-    this.dialog.open(ProfileDialogComponent, {
-      data: {
-        title: 'Erreur',
-        message: 'Le numéro de téléphone ne doit contenir que des chiffres.',
-      },
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Loads current authenticated user and their profile.
+   */
+  private loadCurrentUser(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (user) => {
+          this.currentUser = user;
+          if (user) {
+            this.loadUserProfile();
+            this.loadReceivedNotifications(user.id);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading current user:', error);
+          this.showError('Erreur lors du chargement de l\'utilisateur');
+          this.isLoadingProfile = false;
+        }
+      });
+  }
+
+  /**
+   * Loads user profile from backend.
+   */
+  private loadUserProfile(): void {
+    this.isLoadingProfile = true;
+
+    this.userProfileService.getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (profile) => {
+          this.userProfile = profile;
+          this.isLoadingProfile = false;
+        },
+        error: (error) => {
+          console.error('Error loading user profile:', error);
+          this.showError('Impossible de charger le profil');
+          this.isLoadingProfile = false;
+        }
+      });
+  }
+
+  /**
+   * Loads notifications received by user (admin broadcasts).
+   */
+  private loadReceivedNotifications(userId: number): void {
+    this.isLoadingNotifications = true;
+
+    this.alertService.getUserNotifications(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (notifications) => {
+          this.receivedNotifications = notifications;
+          this.isLoadingNotifications = false;
+        },
+        error: (error) => {
+          console.error('Error loading notifications:', error);
+          // Don't show error - notifications tab will show empty state
+          this.isLoadingNotifications = false;
+        }
+      });
+  }
+
+  /**
+   * Handles profile update event from InfoFormComponent.
+   */
+  onProfileUpdate(updateRequest: UpdateProfileRequest): void {
+    if (!this.currentUser) return;
+
+    this.isUpdatingProfile = true;
+
+    this.userProfileService.updateProfile(updateRequest)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.isUpdatingProfile = false;
+
+          if (response.success && response.user) {
+            this.userProfile = response.user;
+            this.showSuccess('Profil mis à jour avec succès !');
+          } else {
+            this.showError(response.error || 'Erreur lors de la mise à jour du profil');
+          }
+        },
+        error: (error) => {
+          this.isUpdatingProfile = false;
+          console.error('Error updating profile:', error);
+          this.showError('Erreur lors de la sauvegarde du profil');
+        }
+      });
+  }
+
+  /**
+   * Handles password change event from ChangePasswordComponent.
+   */
+  onPasswordChange(changeRequest: ChangePasswordRequest): void {
+    if (!this.currentUser) return;
+
+    this.isChangingPassword = true;
+
+    this.userProfileService.changePassword(changeRequest)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.isChangingPassword = false;
+
+          if (response.success) {
+            this.showSuccess('Mot de passe modifié avec succès !');
+            // Optionally force re-login for security
+            // this.authService.logout();
+          } else {
+            this.showError(response.error || 'Erreur lors du changement de mot de passe');
+          }
+        },
+        error: (error) => {
+          this.isChangingPassword = false;
+          console.error('Error changing password:', error);
+
+          // Handle specific error messages from backend
+          if (error.status === 401) {
+            this.showError('Mot de passe actuel incorrect');
+          } else if (error.status === 400) {
+            this.showError('Le nouveau mot de passe ne respecte pas les critères de sécurité');
+          } else {
+            this.showError('Erreur lors du changement de mot de passe');
+          }
+        }
+      });
+  }
+
+  /**
+   * Handles notification settings change from NotificationToggleComponent.
+   * Settings are stored in localStorage (no backend call needed).
+   */
+  onNotificationSettingsChange(settings: NotificationSettings): void {
+    console.log('Notification settings updated:', settings);
+    this.showSuccess('Préférences de notification enregistrées');
+  }
+
+  /**
+   * Gets user initials for avatar display (e.g., "SP" for "Sarah Pham").
+   */
+  get userInitials(): string {
+    if (!this.userProfile) return 'AA';
+
+    const first = this.userProfile.firstName?.trim().charAt(0).toUpperCase() || '';
+    const last = this.userProfile.lastName?.trim().charAt(0).toUpperCase() || '';
+    const initials = `${first}${last}`.trim();
+
+    return initials || 'AA';
+  }
+
+  /**
+   * Gets user full name.
+   */
+  get userFullName(): string {
+    if (!this.userProfile) return 'Utilisateur';
+    return `${this.userProfile.firstName} ${this.userProfile.lastName}`;
+  }
+
+  /**
+   * Gets count of unread notifications.
+   */
+  get unreadNotificationCount(): number {
+    return this.receivedNotifications.filter(n => n.status === 'PENDING').length;
+  }
+
+  /**
+   * Shows success message using MatSnackBar.
+   */
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Fermer', {
+      duration: 3000,
+      panelClass: ['success-snackbar'],
+      horizontalPosition: 'end',
+      verticalPosition: 'top'
     });
-    return; // stope la sauvegarde ici
   }
-  // Vérifie que le téléphone a au moins 10 caractères
-  if (this.formData.phone.length < 10) {
-    this.dialog.open(ProfileDialogComponent, {
-      data: {
-        title: 'Erreur',
-        message: 'Le numéro de téléphone doit comporter au moins 10 chiffres.',
-      },
+
+  /**
+   * Shows error message using MatSnackBar.
+   */
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Fermer', {
+      duration: 5000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'end',
+      verticalPosition: 'top'
     });
-    return;
   }
-
-  const updateData: UpdateUserProfileRequest = {
-    firstName: this.formData.firstName,
-    lastName: this.formData.lastName,
-    address: this.formData.address,
-    telephone: this.formData.phone,
-    bio: this.formData.bio,
-  };
-
-  this.userProfileService.updateProfile(updateData).subscribe({
-    next: (updatedUser) => {
-      this.dialog.open(ProfileDialogComponent, {
-        data: {
-          title: 'Succès',
-          message: 'Profil sauvegardé avec succès !'
-        }
-      });
-      console.log("Profil mis à jour :", updatedUser);
-    },
-    error: (err) => {
-      this.dialog.open(ProfileDialogComponent, {
-        data: {
-          title: 'Erreur',
-          message: 'Erreur lors de la sauvegarde du profil.'
-        }
-      });
-      console.error("Erreur lors de la sauvegarde du profil :", err);
-    }
-  });
-}
-
-
-
-  toggleNotification(key: keyof typeof this.notifications) {
-    this.notifications[key] = !this.notifications[key];
-  }
-
-  // Wrapper pour contourner le problème de cast dans le template
-  toggleNotificationKey(key: string) {
-    this.toggleNotification(key as keyof typeof this.notifications);
-  }
-
-  saveNotifications() {
-    console.log("Notifications sauvegardées :", this.notifications);
-    alert("Notifications sauvegardées (simulation)");
-  }
-
-//   getInitials(): string {
-//   const first = this.formData.firstName || "";
-//   const last = this.formData.lastName || "";
-//   return (first[0] || "") + (last[0] || "");
-// }
-
-avatarUrl: string | null = null;
-
-onAvatarClick(): void {
-  const fileInput = document.querySelector<HTMLInputElement>('#fileInput');
-  fileInput?.click();
-}
-
-onAvatarSelected(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  if (input.files && input.files[0]) {
-    const file = input.files[0];
-
-    // Vérification basique du type de fichier
-    if (!file.type.startsWith('image/')) {
-      this.dialog.open(ProfileDialogComponent, {
-        data: {
-          title: 'Erreur',
-          message: 'Veuillez sélectionner une image valide (jpg, png, etc.)'
-        }
-      });
-      return;
-    }
-
-    // Lecture du fichier pour affichage immédiat
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.avatarUrl = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-
-    // TODO : tu pourras plus tard envoyer ce fichier au backend ici
-  }
-}
-
-// Utilitaire : garder tes initiales si aucune image
-getInitials(): string {
-  const initials = [
-    this.formData.firstName?.charAt(0),
-    this.formData.lastName?.charAt(0)
-  ]
-    .filter(Boolean)
-    .join('')
-    .toUpperCase();
-  return initials || '?';
-}
-
-
 }

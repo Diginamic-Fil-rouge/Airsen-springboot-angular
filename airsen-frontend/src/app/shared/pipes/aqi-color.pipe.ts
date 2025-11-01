@@ -33,6 +33,7 @@ export class AqiColorPipe implements PipeTransform {
   transform(value: number | null | undefined): string {
     if (value === null || value === undefined) {
       return '#CCCCCC';
+    }
 
     if (value <= 50) {
       return '#00E400'; // Green - Good

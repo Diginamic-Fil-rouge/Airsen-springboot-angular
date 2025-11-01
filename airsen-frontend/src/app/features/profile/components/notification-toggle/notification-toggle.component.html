@@ -1,0 +1,111 @@
+<div class="notification-toggle-container">
+  <div class="notification-header">
+    <h3>Préférences de notification</h3>
+    <p class="description">Gérez comment vous souhaitez recevoir les notifications</p>
+  </div>
+
+  <div class="notification-settings">
+    <!-- Email Alerts Toggle -->
+    <div class="notification-item">
+      <div class="notification-info">
+        <div class="notification-title">
+          <mat-icon>email</mat-icon>
+          <span>Alertes par email</span>
+        </div>
+        <p class="notification-description">
+          Recevoir les alertes environnementales diffusées par les administrateurs
+        </p>
+      </div>
+      <mat-slide-toggle
+        [checked]="settings.emailAlerts"
+        (change)="onEmailAlertsChange($event.checked)"
+        color="primary"
+      ></mat-slide-toggle>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Browser Notifications Toggle -->
+    <div class="notification-item">
+      <div class="notification-info">
+        <div class="notification-title">
+          <mat-icon>notifications</mat-icon>
+          <span>Notifications du navigateur</span>
+        </div>
+        <p class="notification-description">
+          Afficher les notifications push dans votre navigateur (fonctionnalité future)
+        </p>
+      </div>
+      <mat-slide-toggle
+        [checked]="settings.browserNotifications"
+        (change)="onBrowserNotificationsChange($event.checked)"
+        color="primary"
+        [disabled]="!('Notification' in window)"
+      ></mat-slide-toggle>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Forum Replies Toggle -->
+    <div class="notification-item">
+      <div class="notification-info">
+        <div class="notification-title">
+          <mat-icon>forum</mat-icon>
+          <span>Réponses du forum</span>
+        </div>
+        <p class="notification-description">
+          Être notifié quand quelqu'un répond à vos messages sur le forum
+        </p>
+      </div>
+      <mat-slide-toggle
+        [checked]="settings.forumReplies"
+        (change)="onForumRepliesChange($event.checked)"
+        color="primary"
+      ></mat-slide-toggle>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Favorite Alerts Toggle -->
+    <div class="notification-item">
+      <div class="notification-info">
+        <div class="notification-title">
+          <mat-icon>favorite</mat-icon>
+          <span>Alertes des favoris</span>
+        </div>
+        <p class="notification-description">
+          Être notifié des alertes environnementales pour vos communes favorites (fonctionnalité future)
+        </p>
+      </div>
+      <mat-slide-toggle
+        [checked]="settings.favoriteAlerts"
+        (change)="onFavoriteAlertsChange($event.checked)"
+        color="primary"
+      ></mat-slide-toggle>
+    </div>
+  </div>
+
+  <!-- Reset Button -->
+  <div class="notification-actions">
+    <button
+      mat-stroked-button
+      color="warn"
+      (click)="resetToDefaults()"
+    >
+      <mat-icon>restore</mat-icon>
+      Réinitialiser aux valeurs par défaut
+    </button>
+  </div>
+
+  <!-- Last Updated Info -->
+  <div class="notification-footer">
+    <p class="last-updated">
+      <mat-icon>schedule</mat-icon>
+      Dernière mise à jour : {{ settings.updatedAt | date:'dd/MM/yyyy à HH:mm' }}
+    </p>
+    <p class="storage-info">
+      <mat-icon>info</mat-icon>
+      Les préférences sont stockées localement sur votre navigateur
+    </p>
+  </div>
+</div>
