@@ -5,15 +5,14 @@
  * Supports pulse and shimmer animations.
  */
 
-@use '../../../../styles/variables' as *;
-@use '../../../../styles/mixins' as *;
+@use '../../../../styles/design-system' as *;
 
 // ============================================================================
 // Base Skeleton Styles
 // ============================================================================
 
 .skeleton-loader {
-  background-color: $color-gray-200;
+  background-color: $airsen-gray-200;
   border-radius: $radius-md;
   display: block;
   min-height: 16px;
@@ -38,10 +37,10 @@
 @keyframes skeleton-pulse {
   0%,
   100% {
-    background-color: $color-gray-200;
+    background-color: $airsen-gray-200;
   }
   50% {
-    background-color: $color-gray-300;
+    background-color: $airsen-gray-300;
   }
 }
 
@@ -52,9 +51,9 @@
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    $color-gray-200 0%,
-    $color-gray-100 50%,
-    $color-gray-200 100%
+    $airsen-gray-200 0%,
+    $airsen-gray-100 50%,
+    $airsen-gray-200 100%
   );
   background-size: 200% 100%;
   background-position: 100% 0;
@@ -117,7 +116,7 @@
 
   // Space between lines
   & > .skeleton-loader:not(:last-child) {
-    margin-bottom: $spacing-sm;
+    margin-bottom: $space-2;
   }
 
   // Last line is usually shorter
@@ -131,19 +130,19 @@
 // ============================================================================
 
 .skeleton-card {
-  @include card($spacing-lg);
+  @include card();
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
+  gap: $space-6;
 
   // Remove card shadow on skeleton
   box-shadow: $shadow-sm;
-  border: $border-width solid $color-gray-100;
+  border: 1px solid $airsen-gray-100;
 
   .skeleton-card-header {
     display: flex;
     align-items: flex-start;
-    gap: $spacing-md;
+    gap: $space-4;
 
     .skeleton-loader {
       flex-shrink: 0;
@@ -157,7 +156,7 @@
   .skeleton-card-body {
     display: flex;
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: $space-2;
 
     & > .skeleton-loader {
       height: 16px;
@@ -170,7 +169,7 @@
 
   .skeleton-card-footer {
     display: flex;
-    gap: $spacing-md;
+    gap: $space-4;
     margin-top: auto;
 
     & > .skeleton-loader {
@@ -186,11 +185,11 @@
 
 @include respond-max(sm) {
   .skeleton-card {
-    padding: $spacing-md;
-    gap: $spacing-md;
+    padding: $space-4;
+    gap: $space-4;
 
     .skeleton-card-header {
-      gap: $spacing-sm;
+      gap: $space-2;
 
       .skeleton-loader {
         width: 40px;
@@ -223,7 +222,7 @@
   .skeleton-pulse,
   .skeleton-shimmer {
     animation: none;
-    background-color: $color-gray-200;
+    background-color: $airsen-gray-200;
     background-image: none;
   }
 
@@ -235,20 +234,20 @@
 // Dark mode support (if implemented)
 @media (prefers-color-scheme: dark) {
   .skeleton-loader {
-    background-color: $color-gray-700;
+    background-color: $airsen-gray-700;
   }
 
   .skeleton-pulse {
     // Pulse animation handled in keyframes above
-    background-color: $color-gray-700;
+    background-color: $airsen-gray-700;
   }
 
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      $color-gray-700 0%,
-      $color-gray-600 50%,
-      $color-gray-700 100%
+      $airsen-gray-700 0%,
+      $airsen-gray-600 50%,
+      $airsen-gray-700 100%
     );
   }
 }

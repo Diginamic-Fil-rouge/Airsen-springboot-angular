@@ -1,29 +1,22 @@
 @use 'sass:color';
-
-$primary-green: #2d6a4f;
-$accent-green: #52b788;
-$background-soft: #f5fbf7;
-$text-primary: #1f2933;
-$text-secondary: #52606d;
-$white: #ffffff;
-$border-color: #d8e2dc;
+@use '../../../styles/design-system' as *;
 
 .home-public {
   display: flex;
   flex-direction: column;
-  gap: 4rem;
-  background-color: $white;
+  gap: $space-16;
+  background-color: $airsen-white;
 }
 
 .hero {
-  background: linear-gradient(180deg, $background-soft 0%, $white 100%);
-  padding: 5rem 0 4rem;
+  background: linear-gradient(180deg, $airsen-gray-50 0%, $airsen-white 100%);
+  padding: $space-20 0 $space-16;
 }
 
 .hero-container {
-  max-width: 960px;
+  max-width: $container-md;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 $space-6;
   text-align: center;
 }
 
@@ -31,123 +24,127 @@ $border-color: #d8e2dc;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem 1rem;
-  border-radius: 999px;
-  background-color: color.change($accent-green, $alpha: 0.1);
-  color: $primary-green;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  padding: $space-2 $space-4;
+  border-radius: $radius-full;
+  background-color: color.change($airsen-primary-light, $alpha: 0.1);
+  color: $airsen-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  letter-spacing: $letter-spacing-wide;
   text-transform: uppercase;
 }
 
 .hero-title {
-  margin: 1.75rem 0 1rem;
-  font-size: clamp(2.25rem, 5vw, 3.25rem);
-  font-weight: 700;
-  color: $text-primary;
-  letter-spacing: -0.02em;
+  margin: $space-6 0 $space-4;
+  font-size: clamp(2.25rem, 5vw, $font-size-3xl);
+  font-weight: $font-weight-bold;
+  color: $airsen-gray-900;
+  letter-spacing: $letter-spacing-tight;
 }
 
 .hero-subtitle {
-  margin: 0 auto 2rem;
-  max-width: 640px;
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: $text-secondary;
+  margin: 0 auto $space-8;
+  max-width: $container-sm;
+  font-size: $font-size-lg;
+  line-height: $line-height-relaxed;
+  color: $airsen-gray-600;
 }
 
 .hero-actions {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
+  gap: $space-4;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: $space-6;
 }
 
 .btn-primary {
   min-width: 200px;
-  padding: 0.9rem 1.75rem;
-  border-radius: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: $space-3 $space-6;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: $transition-all;
   border: none;
-  background-color: $primary-green;
-  color: $white;
-  box-shadow: 0 10px 24px rgba(45, 106, 79, 0.18);
+  background-color: $airsen-primary;
+  color: $airsen-white;
+  box-shadow: $shadow-md;
 
   &:hover {
     transform: translateY(-2px);
-    background-color: color.scale($primary-green, $lightness: -8%);
-    box-shadow: 0 14px 32px rgba(45, 106, 79, 0.22);
+    background-color: color.scale($airsen-primary, $lightness: -8%);
+    box-shadow: $shadow-lg;
+  }
+
+  &:focus {
+    @include focus-ring();
   }
 }
 
 .hero-note {
   margin: 0 auto;
-  max-width: 540px;
-  font-size: 0.95rem;
-  color: $text-secondary;
-  line-height: 1.6;
+  max-width: $container-sm;
+  font-size: $font-size-sm;
+  color: $airsen-gray-600;
+  line-height: $line-height-relaxed;
 }
 
 .feature-preview {
-  padding: 0 0 1rem;
+  padding: 0 0 $space-4;
 }
 
 .feature-container {
-  max-width: 1100px;
+  max-width: $container-lg;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 $space-6;
   text-align: center;
 }
 
 .section-title {
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
-  font-weight: 700;
-  color: $text-primary;
-  margin: 0 0 1rem;
-  letter-spacing: -0.01em;
+  font-size: clamp($font-size-2xl, 3vw, $font-size-3xl);
+  font-weight: $font-weight-bold;
+  color: $airsen-gray-900;
+  margin: 0 0 $space-4;
+  letter-spacing: $letter-spacing-tight;
 }
 
 .section-subtitle {
-  font-size: 1rem;
-  color: $text-secondary;
-  margin: 0 auto 3rem;
-  max-width: 640px;
-  line-height: 1.7;
+  font-size: $font-size-base;
+  color: $airsen-gray-600;
+  margin: 0 auto $space-12;
+  max-width: $container-sm;
+  line-height: $line-height-relaxed;
 }
 
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  gap: $space-8;
 
-  @media (max-width: 992px) {
+  @include breakpoint(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: $breakpoint-md) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: $breakpoint-sm) {
     grid-template-columns: 1fr;
   }
 }
 
 .feature-card {
-  background-color: $white;
-  border: 1px solid $border-color;
-  border-radius: 1.25rem;
-  padding: 2rem 1.75rem;
+  @include card();
+  border: 1px solid $airsen-gray-200;
   text-align: left;
-  box-shadow: 0 20px 45px rgba(18, 38, 54, 0.06);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
   min-height: 240px;
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 28px 60px rgba(18, 38, 54, 0.12);
+    box-shadow: $shadow-xl;
   }
 }
 
@@ -157,10 +154,10 @@ $border-color: #d8e2dc;
   justify-content: center;
   width: 56px;
   height: 56px;
-  border-radius: 16px;
-  background: color.change($accent-green, $alpha: 0.15);
-  color: $primary-green;
-  margin-bottom: 1.5rem;
+  border-radius: $radius-xl;
+  background: color.change($airsen-primary-light, $alpha: 0.15);
+  color: $airsen-primary;
+  margin-bottom: $space-6;
 
   mat-icon {
     font-size: 28px;
@@ -170,21 +167,21 @@ $border-color: #d8e2dc;
 }
 
 .feature-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: $text-primary;
-  margin: 0 0 0.75rem;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $airsen-gray-800;
+  margin: 0 0 $space-3;
 }
 
 .feature-description {
   margin: 0;
-  color: $text-secondary;
-  font-size: 0.95rem;
-  line-height: 1.7;
+  color: $airsen-gray-600;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
 }
 
 .learn-more {
-  padding: 0 0 4rem;
+  padding: 0 0 $space-16;
   display: flex;
   justify-content: center;
 }
@@ -192,19 +189,23 @@ $border-color: #d8e2dc;
 .learn-more-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: $primary-green;
+  gap: $space-2;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $airsen-primary;
   text-decoration: none;
-  padding: 0.75rem 1.25rem;
-  border-radius: 999px;
-  background-color: color.change($accent-green, $alpha: 0.1);
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  padding: $space-3 $space-5;
+  border-radius: $radius-full;
+  background-color: color.change($airsen-primary-light, $alpha: 0.1);
+  transition: $transition-all;
 
   &:hover {
-    background-color: color.change($accent-green, $alpha: 0.18);
+    background-color: color.change($airsen-primary-light, $alpha: 0.18);
     transform: translateY(-2px);
+  }
+
+  &:focus {
+    @include focus-ring();
   }
 }
 

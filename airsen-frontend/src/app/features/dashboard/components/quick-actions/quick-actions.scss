@@ -1,11 +1,7 @@
 @use 'sass:color';
+@use '../../../../../styles/design-system' as *;
 
-$primary-green: #2d6a4f;
-$accent-green: #52b788;
-$text-primary: #1f2933;
-$text-secondary: #52606d;
-$white: #ffffff;
-$border-color: #d8e2dc;
+// Use design system variables directly - no local duplicates
 
 .quick-actions {
   display: grid;
@@ -14,8 +10,8 @@ $border-color: #d8e2dc;
 }
 
 .quick-card {
-  background-color: $white;
-  border: 1px solid $border-color;
+  background-color: $airsen-white;
+  border: 1px solid $airsen-gray-200;
   border-radius: 1.25rem;
   padding: 1.75rem;
   box-shadow: 0 16px 35px rgba(18, 38, 54, 0.06);
@@ -25,7 +21,7 @@ $border-color: #d8e2dc;
   gap: 1rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-align: left;
-  color: $text-primary;
+  color: $airsen-gray-900;
   font-family: inherit;
   appearance: none;
 
@@ -46,7 +42,7 @@ $border-color: #d8e2dc;
     font-size: 1.75rem;
     width: 1.75rem;
     height: 1.75rem;
-    color: $primary-green;
+    color: $airsen-primary;
   }
 }
 
@@ -56,8 +52,8 @@ $border-color: #d8e2dc;
   justify-content: center;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
-  background-color: color.change($accent-green, $alpha: 0.2);
-  color: $primary-green;
+  background-color: color.change($airsen-primary-light, $alpha: 0.2);
+  color: $airsen-primary;
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -66,13 +62,13 @@ $border-color: #d8e2dc;
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: $text-primary;
+  color: $airsen-gray-900;
 }
 
 .quick-subtitle {
   margin: 0;
   font-size: 0.95rem;
-  color: $text-secondary;
+  color: $airsen-gray-600;
   line-height: 1.5;
 }
 

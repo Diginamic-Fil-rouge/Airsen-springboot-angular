@@ -1,12 +1,5 @@
 @use 'sass:color';
-
-$primary-green: #2d6a4f;
-$accent-green: #52b788;
-$background-soft: #f5fbf7;
-$text-primary: #1f2933;
-$text-secondary: #52606d;
-$white: #ffffff;
-$border-color: #d8e2dc;
+@use '../../../styles/design-system' as *;
 
 .dashboard-page {
   max-width: 1200px;
@@ -26,7 +19,7 @@ $border-color: #d8e2dc;
   gap: 1rem;
 
   p {
-    color: $text-secondary;
+    color: $airsen-gray-600;
     font-size: 1rem;
   }
 }
@@ -37,7 +30,7 @@ $border-color: #d8e2dc;
   align-items: center;
   gap: 1rem;
   text-align: center;
-  color: $text-secondary;
+  color: $airsen-gray-600;
   padding: 4rem 1.5rem;
 
   mat-icon {
@@ -49,13 +42,13 @@ $border-color: #d8e2dc;
 
   h2 {
     margin: 0;
-    color: $text-primary;
+    color: $airsen-gray-900;
   }
 }
 
 .welcome-card {
-  background-color: $white;
-  border: 1px solid $border-color;
+  background-color: $airsen-white;
+  border: 1px solid $airsen-gray-200;
   border-radius: 1.75rem;
   padding: 2.5rem 3rem;
   display: flex;
@@ -81,8 +74,8 @@ $border-color: #d8e2dc;
   width: 4rem;
   height: 4rem;
   border-radius: 1.2rem;
-  background: linear-gradient(135deg, $primary-green, color.scale($primary-green, $lightness: -10%));
-  color: $white;
+  background: linear-gradient(135deg, $airsen-primary, color.scale($airsen-primary, $lightness: -10%));
+  color: $airsen-white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,21 +94,21 @@ $border-color: #d8e2dc;
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color: $text-primary;
+  color: $airsen-gray-900;
   letter-spacing: -0.015em;
 }
 
 .welcome-meta {
   margin: 0;
   font-size: 0.95rem;
-  color: $text-secondary;
+  color: $airsen-gray-600;
 }
 
 .cta-primary {
   padding: 0.85rem 1.75rem;
   border-radius: 999px;
-  background: $primary-green;
-  color: $white;
+  background: $airsen-primary;
+  color: $airsen-white;
   border: none;
   font-weight: 600;
   font-size: 1rem;
@@ -125,7 +118,7 @@ $border-color: #d8e2dc;
 
   &:hover {
     transform: translateY(-2px);
-    background-color: color.scale($primary-green, $lightness: -6%);
+    background-color: color.scale($airsen-primary, $lightness: -6%);
     box-shadow: 0 18px 40px rgba(45, 106, 79, 0.25);
   }
 }
@@ -147,7 +140,7 @@ app-air-quality-widget {
 
 .cta-banner {
   background: linear-gradient(135deg, rgba(45, 106, 79, 0.12), rgba(45, 106, 79, 0.05));
-  border: 1px solid color.change($accent-green, $alpha: 0.25);
+  border: 1px solid color.change($airsen-primary-light, $alpha: 0.25);
   border-radius: 1.75rem;
   padding: 2rem 2.5rem;
   display: flex;
@@ -170,29 +163,29 @@ app-air-quality-widget {
     margin: 0;
     font-size: 1.4rem;
     font-weight: 700;
-    color: $text-primary;
+    color: $airsen-gray-900;
   }
 
   p {
     margin: 0;
     font-size: 0.95rem;
-    color: $text-secondary;
+    color: $airsen-gray-600;
   }
 }
 
 .cta-secondary {
   padding: 0.75rem 1.5rem;
   border-radius: 999px;
-  border: 1px solid $primary-green;
-  background-color: $white;
-  color: $primary-green;
+  border: 1px solid $airsen-primary;
+  background-color: $airsen-white;
+  color: $airsen-primary;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background-color: $primary-green;
-    color: $white;
+    background-color: $airsen-primary;
+    color: $airsen-white;
     transform: translateY(-2px);
   }
 }
