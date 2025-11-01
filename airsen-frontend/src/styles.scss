@@ -1,27 +1,5 @@
-/* Global Styles for Airsen - Air Quality Monitoring Platform */
-
-/* ============================================================================
-   SCSS System Structure
-   ============================================================================
-
-   1. Variables - Color palettes, spacing, typography, shadows
-   2. Mixins - Reusable functions for responsive, interactive states
-   3. Theme - AQI color schemes and badge/indicator styles
-   4. Material - Angular Material component customizations
-   5. Base - Global styles, typography, utilities
-*/
-
-// ============================================================================
-// Import SCSS System Files
-// ============================================================================
-
-@use 'styles/variables';
-@use 'styles/mixins';
-@use 'styles/theme';
-
-/* ============================================================================
-   Angular Material Theme & Components
-   ============================================================================ */
+// Import Design System
+@use 'styles/design-system' as *;
 
 // Import Material component customizations
 @use 'styles/material-components';
@@ -35,45 +13,45 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: 'Roboto', sans-serif;
-  background-color: #f5f5f5;
+  background-color: $airsen-gray-50;
 }
 
 /* Air Quality Indicators Colors */
 .air-quality-good {
-  color: #4caf50;
-  background-color: #e8f5e8;
+  color: $airsen-green-good;
+  background-color: lighten($airsen-green-good, 45%);
 }
 
 .air-quality-moderate {
-  color: #ff9800;
-  background-color: #fff3e0;
+  color: $airsen-yellow-moderate;
+  background-color: lighten($airsen-yellow-moderate, 35%);
 }
 
 .air-quality-poor {
-  color: #f44336;
-  background-color: #ffebee;
+  color: $airsen-red-unhealthy;
+  background-color: lighten($airsen-red-unhealthy, 35%);
 }
 
 .air-quality-very-poor {
-  color: #9c27b0;
-  background-color: #f3e5f5;
+  color: $airsen-purple-very;
+  background-color: lighten($airsen-purple-very, 40%);
 }
 
 /* Weather Icons Colors */
 .weather-sunny {
-  color: #ffc107;
+  color: $airsen-yellow-moderate;
 }
 
 .weather-cloudy {
-  color: #607d8b;
+  color: $airsen-gray-600;
 }
 
 .weather-rainy {
-  color: #2196f3;
+  color: $airsen-secondary;
 }
 
 .weather-stormy {
-  color: #673ab7;
+  color: $airsen-purple-very;
 }
 
 /* Utility Classes */
@@ -136,21 +114,21 @@ html, body {
 
 .simple-spinner {
   padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  font-size: 16px;
+  background: $airsen-white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-md;
+  font-size: $font-size-base;
 }
 
 /* Error Messages */
 .error-message {
-  color: #f44336;
+  color: $airsen-error;
   font-size: 14px;
   margin-top: 8px;
 }
 
 .success-message {
-  color: #4caf50;
+  color: $airsen-success;
   font-size: 14px;
   margin-top: 8px;
 }
@@ -174,7 +152,7 @@ html, body {
   .chart-container {
     height: 300px;
   }
-  
+
   .map-container {
     height: 400px;
   }
