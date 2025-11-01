@@ -1,21 +1,10 @@
 @use 'sass:color';
+@use '../../../../../styles/design-system' as *;
 
-$primary-green: #2d6a4f;
-$text-primary: #1f2933;
-$text-secondary: #52606d;
-$white: #ffffff;
-$border-color: #d8e2dc;
-$background-soft: #f5fbf7;
-$good-color: #00E400;
-$moderate-color: #FFFF00;
-$unhealthy-sensitive-color: #FF7E00;
-$unhealthy-color: #FF0000;
-$very-unhealthy-color: #8F3F97;
-$hazardous-color: #7E0023;
 
 .air-quality-widget {
-  background-color: $white;
-  border: 1px solid $border-color;
+  background-color: $airsen-white;
+  border: 1px solid $airsen-gray-200;
   border-radius: 1.5rem;
   padding: 2rem;
   box-shadow: 0 20px 45px rgba(18, 38, 54, 0.06);
@@ -38,14 +27,14 @@ $hazardous-color: #7E0023;
   justify-content: center;
   gap: 1rem;
   text-align: center;
-  color: $text-secondary;
+  color: $airsen-gray-600;
   flex: 1;
 
   mat-icon {
     font-size: 3rem;
     width: 3rem;
     height: 3rem;
-    color: #f04438;
+    color: $airsen-red-unhealthy;
   }
 }
 
@@ -56,7 +45,7 @@ $hazardous-color: #7E0023;
   justify-content: center;
   gap: 1rem;
   text-align: center;
-  color: $text-secondary;
+  color: $airsen-gray-600;
   flex: 1;
 
   mat-icon {
@@ -83,7 +72,7 @@ $hazardous-color: #7E0023;
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
-    color: $text-primary;
+    color: $airsen-gray-900;
   }
 }
 
@@ -93,16 +82,16 @@ $hazardous-color: #7E0023;
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border: 1px solid $border-color;
+  border: 1px solid $airsen-gray-200;
   border-radius: 0.5rem;
-  background-color: $white;
-  color: $text-secondary;
+  background-color: $airsen-white;
+  color: $airsen-gray-600;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover:not([disabled]) {
-    border-color: $primary-green;
-    color: $primary-green;
+    border-color: $airsen-primary;
+    color: $airsen-primary;
   }
 
   &[disabled] {
@@ -131,7 +120,7 @@ $hazardous-color: #7E0023;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $text-primary;
+  color: $airsen-gray-900;
   font-weight: 700;
   font-size: 1.5rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
@@ -156,17 +145,17 @@ $hazardous-color: #7E0023;
 .aqi-label {
   font-size: 1.1rem;
   font-weight: 600;
-  color: $text-primary;
+  color: $airsen-gray-900;
 }
 
 .commune-name {
   font-size: 0.95rem;
-  color: $text-secondary;
+  color: $airsen-gray-600;
 }
 
 .last-updated {
   font-size: 0.8rem;
-  color: $text-secondary;
+  color: $airsen-gray-600;
   opacity: 0.8;
 }
 
@@ -180,35 +169,35 @@ $hazardous-color: #7E0023;
   height: 0.5rem;
   border-radius: 0.25rem;
   overflow: hidden;
-  background-color: $border-color;
+  background-color: $airsen-gray-200;
 }
 
 .scale-item {
   flex: 1;
   font-size: 0;
-  
+
   &.good {
-    background-color: $good-color;
+    background-color: $airsen-green-good;
   }
-  
+
   &.moderate {
-    background-color: $moderate-color;
+    background-color: $airsen-yellow-moderate;
   }
-  
+
   &.unhealthy-sensitive {
-    background-color: $unhealthy-sensitive-color;
+    background-color: $airsen-orange-sensitive;
   }
-  
+
   &.unhealthy {
-    background-color: $unhealthy-color;
+    background-color: $airsen-red-unhealthy;
   }
-  
+
   &.very-unhealthy {
-    background-color: $very-unhealthy-color;
+    background-color: $airsen-purple-very;
   }
-  
+
   &.hazardous {
-    background-color: $hazardous-color;
+    background-color: $airsen-maroon-hazardous;
   }
 }
 

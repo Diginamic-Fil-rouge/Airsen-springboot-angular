@@ -1,16 +1,11 @@
 @use 'sass:color';
+@use '../../../../../styles/design-system' as *;
 
-$primary-green: #2d6a4f;
-$accent-green: #52b788;
-$background-soft: #f5fbf7;
-$text-primary: #1f2933;
-$text-secondary: #52606d;
-$white: #ffffff;
-$border-color: #d8e2dc;
+// Use design system variables directly - no local duplicates
 
 .stats-panel {
-  background-color: $white;
-  border: 1px solid $border-color;
+  background-color: $airsen-white;
+  border: 1px solid $airsen-gray-200;
   border-radius: 1.5rem;
   padding: 2rem;
   box-shadow: 0 20px 45px rgba(18, 38, 54, 0.06);
@@ -22,7 +17,7 @@ $border-color: #d8e2dc;
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
-    color: $text-primary;
+    color: $airsen-gray-900;
   }
 }
 
@@ -37,7 +32,7 @@ $border-color: #d8e2dc;
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 0;
-  border-bottom: 1px dashed $border-color;
+  border-bottom: 1px dashed $airsen-gray-200;
 
   &:last-child {
     border-bottom: none;
@@ -51,24 +46,24 @@ $border-color: #d8e2dc;
     border-radius: 0.5rem;
 
     &:hover {
-      background-color: color.change($accent-green, $alpha: 0.08);
+      background-color: color.change($airsen-primary-light, $alpha: 0.08);
     }
   }
 }
 
 .stat-label {
   font-size: 0.95rem;
-  color: $text-secondary;
+  color: $airsen-gray-600;
 }
 
 .stat-value {
   font-size: 1.1rem;
   font-weight: 600;
-  color: $text-primary;
+  color: $airsen-gray-900;
 }
 
 .progress-card {
-  background-color: $background-soft;
+  background-color: $airsen-gray-50;
   border-radius: 1.25rem;
   padding: 1.5rem;
   display: flex;
@@ -81,20 +76,20 @@ $border-color: #d8e2dc;
   justify-content: space-between;
   font-weight: 600;
   font-size: 0.95rem;
-  color: $text-primary;
+  color: $airsen-gray-900;
 }
 
 .progress-bar {
   height: 0.65rem;
   border-radius: 999px;
-  background-color: $border-color;
+  background-color: $airsen-gray-200;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(135deg, $primary-green, color.scale($primary-green, $lightness: 10%));
+  background: linear-gradient(135deg, $airsen-primary, color.scale($airsen-primary, $lightness: 10%));
   transition: width 0.3s ease;
 }
 

@@ -1,10 +1,13 @@
+@use 'sass:color';
+@use 'sass:map';
+
 // =============================================================================
 // COLOR SYSTEM
 // =============================================================================
 
 // Air Quality Scale Colors (European Index Standards)
 $airsen-green-good: #4CAF50 !default;        // 0-50: Bon
-$airsen-yellow-moderate: #FFC107 !default;   // 51-100: Moyen  
+$airsen-yellow-moderate: #FFC107 !default;   // 51-100: Moyen
 $airsen-orange-sensitive: #FF9800 !default;  // 101-150: Dégradé
 $airsen-red-unhealthy: #F44336 !default;     // 151-200: Mauvais
 $airsen-purple-very: #9C27B0 !default;       // 201-300: Très mauvais
@@ -41,6 +44,32 @@ $airsen-success: #4CAF50 !default;          // Success states
 $airsen-warning: #FF9800 !default;          // Warnings
 $airsen-error: #F44336 !default;            // Errors
 $airsen-info: #2196F3 !default;             // Information
+
+// AQI Color Aliases (for backward compatibility with _variables.scss)
+$aqi-good: $airsen-green-good !default;
+$aqi-good-lighter: color.adjust($airsen-green-good, $lightness: 45%) !default;
+$aqi-good-hover: color.adjust($airsen-green-good, $lightness: -10%) !default;
+$aqi-good-border: color.adjust($airsen-green-good, $lightness: 10%) !default;
+
+$aqi-moderate: $airsen-yellow-moderate !default;
+$aqi-moderate-lighter: color.adjust($airsen-yellow-moderate, $lightness: 35%) !default;
+$aqi-moderate-hover: color.adjust($airsen-yellow-moderate, $lightness: -10%) !default;
+$aqi-moderate-border: $airsen-yellow-moderate !default;
+$aqi-moderate-text: $airsen-gray-900 !default;
+
+$aqi-unhealthy-sensitive: $airsen-orange-sensitive !default;
+$aqi-unhealthy-sensitive-lighter: color.adjust($airsen-orange-sensitive, $lightness: 35%) !default;
+
+$aqi-unhealthy: $airsen-red-unhealthy !default;
+$aqi-unhealthy-lighter: color.adjust($airsen-red-unhealthy, $lightness: 35%) !default;
+$aqi-unhealthy-hover: color.adjust($airsen-red-unhealthy, $lightness: -10%) !default;
+$aqi-unhealthy-border: color.adjust($airsen-red-unhealthy, $lightness: 10%) !default;
+$aqi-unhealthy-text: $airsen-white !default;
+
+$aqi-very-unhealthy: $airsen-purple-very !default;
+$aqi-very-unhealthy-lighter: color.adjust($airsen-purple-very, $lightness: 40%) !default;
+
+$aqi-hazardous: $airsen-maroon-hazardous !default;
 
 // Color Maps for programmatic access
 $air-quality-colors: (
@@ -376,10 +405,21 @@ $badge-font-weight: $font-weight-medium !default;
 // MIXINS
 // =============================================================================
 
-// Responsive breakpoint mixin
+// Responsive breakpoint mixin (min-width)
 @mixin breakpoint($size) {
-  @if map-has-key($breakpoints, $size) {
-    @media (min-width: map-get($breakpoints, $size)) {
+  @if map.has-key($breakpoints, $size) {
+    @media (min-width: map.get($breakpoints, $size)) {
+      @content;
+    }
+  } @else {
+    @warn "Unknown breakpoint: #{$size}";
+  }
+}
+
+// Responsive breakpoint mixin (max-width)
+@mixin respond-max($size) {
+  @if map.has-key($breakpoints, $size) {
+    @media (max-width: map.get($breakpoints, $size) - 1px) {
       @content;
     }
   } @else {
@@ -499,4 +539,462 @@ $badge-font-weight: $font-weight-medium !default;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+// Multiline text truncation (clamp lines)
+@mixin multiline-truncate($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Aspect ratio container (for images, videos)
+@mixin aspect-ratio($width: 1, $height: 1) {
+  position: relative;
+  padding-bottom: calc(($height / $width) * 100%);
+
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Absolute centering (position: absolute)
+@mixin absolute-center($z-index: null) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  @if $z-index {
+    z-index: $z-index;
+  }
+}
+
+// Custom scrollbar styling (webkit only)
+@mixin custom-scrollbar($thumb-bg: $airsen-gray-300, $track-bg: $airsen-gray-100) {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track-bg;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-bg;
+    border-radius: $radius-full;
+
+    &:hover {
+      background: $airsen-gray-400;
+    }
+  }
+}
+
+// Hardware acceleration mixin
+@mixin gpu-acceleration {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+// =============================================================================
+// CSS CUSTOM PROPERTIES (for runtime theming)
+// =============================================================================
+
+:root {
+  // AQI Colors
+  --aqi-good: #{$airsen-green-good};
+  --aqi-moderate: #{$airsen-yellow-moderate};
+  --aqi-sensitive: #{$airsen-orange-sensitive};
+  --aqi-unhealthy: #{$airsen-red-unhealthy};
+  --aqi-very-unhealthy: #{$airsen-purple-very};
+  --aqi-hazardous: #{$airsen-maroon-hazardous};
+
+  // Brand Colors
+  --color-primary: #{$airsen-primary};
+  --color-primary-light: #{$airsen-primary-light};
+  --color-primary-dark: #{$airsen-primary-dark};
+  --color-secondary: #{$airsen-secondary};
+  --color-accent: #{$airsen-accent};
+
+  // Grays
+  --color-gray-50: #{$airsen-gray-50};
+  --color-gray-100: #{$airsen-gray-100};
+  --color-gray-200: #{$airsen-gray-200};
+  --color-gray-300: #{$airsen-gray-300};
+  --color-gray-500: #{$airsen-gray-500};
+  --color-gray-700: #{$airsen-gray-700};
+  --color-gray-900: #{$airsen-gray-900};
+
+  // Spacing
+  --space-xs: #{$space-1};
+  --space-sm: #{$space-2};
+  --space-md: #{$space-4};
+  --space-lg: #{$space-6};
+  --space-xl: #{$space-8};
+
+  // Shadows
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+
+  // Border Radius
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-full: #{$radius-full};
+
+  // Transitions
+  --transition-fast: #{$duration-fast};
+  --transition-normal: #{$duration-normal};
+  --transition-slow: #{$duration-slow};
+}
+
+// =============================================================================
+// AQI THEME CLASSES
+// =============================================================================
+
+// AQI Badge Variants
+.aqi-badge-good {
+  display: inline-block;
+  padding: $space-1 $space-4;
+  background-color: $airsen-green-good;
+  color: $airsen-white;
+  border-radius: $badge-border-radius;
+  font-size: $badge-font-size;
+  font-weight: $badge-font-weight;
+  box-shadow: $shadow-sm;
+  transition: $transition-all;
+
+  &:hover {
+    background-color: color.adjust($airsen-green-good, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.aqi-badge-moderate {
+  display: inline-block;
+  padding: $space-1 $space-4;
+  background-color: $airsen-yellow-moderate;
+  color: $airsen-gray-900;
+  border-radius: $badge-border-radius;
+  font-size: $badge-font-size;
+  font-weight: $badge-font-weight;
+  box-shadow: $shadow-sm;
+  transition: $transition-all;
+
+  &:hover {
+    background-color: color.adjust($airsen-yellow-moderate, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.aqi-badge-sensitive {
+  display: inline-block;
+  padding: $space-1 $space-4;
+  background-color: $airsen-orange-sensitive;
+  color: $airsen-white;
+  border-radius: $badge-border-radius;
+  font-size: $badge-font-size;
+  font-weight: $badge-font-weight;
+  box-shadow: $shadow-sm;
+  transition: $transition-all;
+
+  &:hover {
+    background-color: color.adjust($airsen-orange-sensitive, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.aqi-badge-unhealthy {
+  display: inline-block;
+  padding: $space-1 $space-4;
+  background-color: $airsen-red-unhealthy;
+  color: $airsen-white;
+  border-radius: $badge-border-radius;
+  font-size: $badge-font-size;
+  font-weight: $badge-font-weight;
+  box-shadow: $shadow-sm;
+  transition: $transition-all;
+
+  &:hover {
+    background-color: color.adjust($airsen-red-unhealthy, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.aqi-badge-very-unhealthy {
+  display: inline-block;
+  padding: $space-1 $space-4;
+  background-color: $airsen-purple-very;
+  color: $airsen-white;
+  border-radius: $badge-border-radius;
+  font-size: $badge-font-size;
+  font-weight: $badge-font-weight;
+  box-shadow: $shadow-sm;
+  transition: $transition-all;
+
+  &:hover {
+    background-color: color.adjust($airsen-purple-very, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.aqi-badge-hazardous {
+  display: inline-block;
+  padding: $space-1 $space-4;
+  background-color: $airsen-maroon-hazardous;
+  color: $airsen-white;
+  border-radius: $badge-border-radius;
+  font-size: $badge-font-size;
+  font-weight: $badge-font-weight;
+  box-shadow: $shadow-sm;
+  transition: $transition-all;
+
+  &:hover {
+    background-color: color.adjust($airsen-maroon-hazardous, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+// AQI Indicator Dots
+.aqi-indicator-good {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-full;
+  background-color: $airsen-green-good;
+  display: inline-block;
+  box-shadow: 0 0 0 3px color.adjust($airsen-green-good, $lightness: 40%);
+}
+
+.aqi-indicator-moderate {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-full;
+  background-color: $airsen-yellow-moderate;
+  display: inline-block;
+  box-shadow: 0 0 0 3px color.adjust($airsen-yellow-moderate, $lightness: 30%);
+}
+
+.aqi-indicator-sensitive {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-full;
+  background-color: $airsen-orange-sensitive;
+  display: inline-block;
+  box-shadow: 0 0 0 3px color.adjust($airsen-orange-sensitive, $lightness: 30%);
+}
+
+.aqi-indicator-unhealthy {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-full;
+  background-color: $airsen-red-unhealthy;
+  display: inline-block;
+  box-shadow: 0 0 0 3px color.adjust($airsen-red-unhealthy, $lightness: 30%);
+}
+
+.aqi-indicator-very-unhealthy {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-full;
+  background-color: $airsen-purple-very;
+  display: inline-block;
+  box-shadow: 0 0 0 3px color.adjust($airsen-purple-very, $lightness: 30%);
+}
+
+.aqi-indicator-hazardous {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-full;
+  background-color: $airsen-maroon-hazardous;
+  display: inline-block;
+  box-shadow: 0 0 0 3px color.adjust($airsen-maroon-hazardous, $lightness: 30%);
+}
+
+// AQI Background Utility Classes
+.aqi-bg-good {
+  background-color: color.adjust($airsen-green-good, $lightness: 45%);
+  border-left: 4px solid $airsen-green-good;
+}
+
+.aqi-bg-moderate {
+  background-color: color.adjust($airsen-yellow-moderate, $lightness: 35%);
+  border-left: 4px solid $airsen-yellow-moderate;
+}
+
+.aqi-bg-sensitive {
+  background-color: color.adjust($airsen-orange-sensitive, $lightness: 35%);
+  border-left: 4px solid $airsen-orange-sensitive;
+}
+
+.aqi-bg-unhealthy {
+  background-color: color.adjust($airsen-red-unhealthy, $lightness: 35%);
+  border-left: 4px solid $airsen-red-unhealthy;
+}
+
+.aqi-bg-very-unhealthy {
+  background-color: color.adjust($airsen-purple-very, $lightness: 40%);
+  border-left: 4px solid $airsen-purple-very;
+}
+
+.aqi-bg-hazardous {
+  background-color: color.adjust($airsen-maroon-hazardous, $lightness: 45%);
+  border-left: 4px solid $airsen-maroon-hazardous;
+}
+
+// AQI Text Color Utility Classes
+.aqi-text-good {
+  color: $airsen-green-good;
+  font-weight: $font-weight-semibold;
+}
+
+.aqi-text-moderate {
+  color: $airsen-yellow-moderate;
+  font-weight: $font-weight-semibold;
+}
+
+.aqi-text-sensitive {
+  color: $airsen-orange-sensitive;
+  font-weight: $font-weight-semibold;
+}
+
+.aqi-text-unhealthy {
+  color: $airsen-red-unhealthy;
+  font-weight: $font-weight-semibold;
+}
+
+.aqi-text-very-unhealthy {
+  color: $airsen-purple-very;
+  font-weight: $font-weight-semibold;
+}
+
+.aqi-text-hazardous {
+  color: $airsen-maroon-hazardous;
+  font-weight: $font-weight-semibold;
+}
+
+// AQI Gradient Classes
+.aqi-gradient-good {
+  background: linear-gradient(135deg, $airsen-green-good 0%, color.adjust($airsen-green-good, $lightness: 10%) 100%);
+  color: white;
+}
+
+.aqi-gradient-moderate {
+  background: linear-gradient(135deg, $airsen-yellow-moderate 0%, color.adjust($airsen-yellow-moderate, $lightness: 10%) 100%);
+  color: $airsen-gray-900;
+}
+
+.aqi-gradient-sensitive {
+  background: linear-gradient(135deg, $airsen-orange-sensitive 0%, color.adjust($airsen-orange-sensitive, $lightness: 10%) 100%);
+  color: white;
+}
+
+.aqi-gradient-unhealthy {
+  background: linear-gradient(135deg, $airsen-red-unhealthy 0%, color.adjust($airsen-red-unhealthy, $lightness: 10%) 100%);
+  color: white;
+}
+
+.aqi-gradient-very-unhealthy {
+  background: linear-gradient(135deg, $airsen-purple-very 0%, color.adjust($airsen-purple-very, $lightness: 10%) 100%);
+  color: white;
+}
+
+.aqi-gradient-hazardous {
+  background: linear-gradient(135deg, $airsen-maroon-hazardous 0%, color.adjust($airsen-maroon-hazardous, $lightness: 10%) 100%);
+  color: white;
+}
+
+// AQI Scale/Gradient Bar
+.aqi-scale {
+  height: 24px;
+  border-radius: $radius-full;
+  background: linear-gradient(
+    to right,
+    $airsen-green-good 0%,
+    $airsen-yellow-moderate 16.67%,
+    $airsen-orange-sensitive 33.33%,
+    $airsen-red-unhealthy 50%,
+    $airsen-purple-very 66.67%,
+    $airsen-maroon-hazardous 100%
+  );
+  box-shadow: $shadow-md;
+}
+
+// AQI Status Box Container
+.aqi-status-box {
+  padding: $space-6;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  transition: $transition-all;
+
+  &.pulse {
+    animation: aqi-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+// AQI Label with Level
+.aqi-label {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-2 $space-4;
+  border-radius: $radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  white-space: nowrap;
+}
+
+// =============================================================================
+// ANIMATIONS
+// =============================================================================
+
+@keyframes aqi-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+}
+
+// =============================================================================
+// RESPONSIVE ADJUSTMENTS FOR AQI COMPONENTS
+// =============================================================================
+
+@media (max-width: $breakpoint-sm) {
+  .aqi-badge-good,
+  .aqi-badge-moderate,
+  .aqi-badge-sensitive,
+  .aqi-badge-unhealthy,
+  .aqi-badge-very-unhealthy,
+  .aqi-badge-hazardous {
+    padding: $space-1 $space-2;
+    font-size: $font-size-xs;
+  }
+
+  .aqi-status-box {
+    padding: $space-4;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .aqi-label {
+    flex-wrap: wrap;
+  }
 }
