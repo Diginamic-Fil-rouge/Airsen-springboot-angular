@@ -1,7 +1,7 @@
 <div class="dashboard-page">
   <div *ngIf="isLoading" class="loading-container">
     <mat-spinner diameter="50"></mat-spinner>
-    <p>Loading your dashboard...</p>
+    <p>Chargement de votre tableau de bord...</p>
   </div>
 
   <ng-container *ngIf="!isLoading && currentUser">
@@ -9,114 +9,63 @@
       <div class="welcome-details">
         <div class="welcome-avatar">{{ avatarInitials }}</div>
         <div class="welcome-text">
-          <p class="welcome-greeting">Welcome back, {{ welcomeName }}!</p>
+          <p class="welcome-greeting">Bon retour, {{ welcomeName }} !</p>
           <p class="welcome-meta">
             {{ currentDateTime | date:'fullDate' }} · {{ currentDateTime | date:'shortTime' }}
           </p>
         </div>
       </div>
-      <button class="cta-primary" type="button" (click)="handleQuickAction('map')">
-        Check Air Quality Map Now
+      <button class="cta-primary" type="button" (click)="onQuickAction('map')">
+Consulter la Carte de la Qualité de l'Air Maintenant
       </button>
     </section>
 
-    <section class="quick-actions">
-      <button
-        class="quick-card"
-        type="button"
-        *ngFor="let action of quickActions"
-        (click)="handleQuickAction(action.action)"
-      >
-        <div class="quick-icon">
-          <mat-icon>{{ action.icon }}</mat-icon>
-          <span class="quick-badge" *ngIf="action.badge">{{ action.badge }}</span>
-        </div>
-        <h3 class="quick-title">{{ action.title }}</h3>
-        <p class="quick-subtitle">{{ action.subtitle }}</p>
-      </button>
-    </section>
+    <app-quick-actions
+      [actions]="quickActions"
+      (actionClick)="onQuickAction($event)"
+    ></app-quick-actions>
 
     <div class="dashboard-grid">
-      <section class="alerts-section">
-        <div class="section-header">
-          <h2>Alert Summary</h2>
-          <div class="section-actions">
-            <button type="button" class="link-button" (click)="handleQuickAction('alerts')">
-              View all alerts
-            </button>
-            <button type="button" class="link-button" (click)="filterAlertsByFavorites()">
-              Favorites
-            </button>
-          </div>
-        </div>
-        <ul class="alert-list">
-          <li class="alert-item" *ngFor="let alert of recentAlerts">
-            <div class="alert-icon" [ngClass]="alert.severity">
-              <mat-icon>{{ alert.icon }}</mat-icon>
-            </div>
-            <div class="alert-body">
-              <div class="alert-header">
-                <span class="alert-title">{{ alert.title }}</span>
-                <span class="alert-status" [ngClass]="alert.status">
-                  {{ alert.status | titlecase }}
-                </span>
-              </div>
-              <div class="alert-location">{{ alert.location }}</div>
-              <div class="alert-time">{{ alert.timestamp }}</div>
-            </div>
-          </li>
-        </ul>
-      </section>
+      <app-alert-summary
+        [alerts]="recentAlerts"
+        [showPagination]="false"
+        [showFavoritesFilter]="true"
+        (alertClick)="onAlertClick($event)"
+        (viewAllAlerts)="onViewAllAlerts()"
+        (filterByFavorites)="onFilterAlertsByFavorites()"
+      ></app-alert-summary>
 
-      <aside class="stats-panel">
-        <h2>Your Activity</h2>
-        <div class="stats-list">
-          <div class="stat-item">
-            <span class="stat-label">Favorite indicators monitored</span>
-            <span class="stat-value">{{ userStats.favoriteIndicators }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Personalized alerts received</span>
-            <span class="stat-value">{{ userStats.alertsReceived }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Last export</span>
-            <span class="stat-value">{{ userStats.lastExport }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Forum posts</span>
-            <span class="stat-value">{{ userStats.forumPosts }}</span>
-          </div>
-        </div>
-        <div class="progress-card">
-          <div class="progress-top">
-            <span>Profile completed</span>
-            <span>{{ userStats.profileCompletion }}%</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="userStats.profileCompletion"></div>
-          </div>
-        </div>
-      </aside>
+      <app-stats-panel
+        [stats]="userStats"
+        [showProgressBar]="true"
+        (statClick)="onStatClick($event)"
+      ></app-stats-panel>
     </div>
+
+    <app-air-quality-widget
+      *ngIf="currentUser.commune"
+      [communeCode]="currentUser.commune"
+      [showRefreshButton]="true"
+      [autoRefreshInterval]="15"
+    ></app-air-quality-widget>
 
     <section class="cta-banner">
       <div class="cta-content">
-        <h3>See Today's Trends</h3>
-        <p>Compare daily patterns and share insights with your community.</p>
+        <h3>Voir les Tendances du Jour</h3>
+        <p>Comparez les modèles quotidiens et partagez vos insights avec votre communauté.</p>
       </div>
       <button class="cta-secondary" type="button" (click)="goToHistoricData()">
-        See Today’s Trends
+Voir les Tendances du Jour
       </button>
     </section>
   </ng-container>
 
   <div *ngIf="!isLoading && !currentUser" class="error-container">
     <mat-icon>error_outline</mat-icon>
-    <h2>Unable to load dashboard</h2>
-    <p>Please try logging in again</p>
+    <h2>Impossible de charger le tableau de bord</h2>
+    <p>Veuillez réessayer de vous connecter</p>
     <button mat-raised-button color="primary" (click)="logout()">
-      Back to Login
+      Retour à la Connexion
     </button>
   </div>
 </div>

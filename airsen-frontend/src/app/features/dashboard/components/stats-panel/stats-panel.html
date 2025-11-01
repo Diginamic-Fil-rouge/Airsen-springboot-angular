@@ -1,0 +1,27 @@
+<aside class="stats-panel">
+  <h2>Votre Activité</h2>
+  <div class="stats-list">
+    <div 
+      *ngFor="let statKey of statKeys" 
+      class="stat-item"
+      [class.clickable]="isStatClickable(statKey)"
+      (click)="onStatClick(statKey)"
+    >
+      <span class="stat-label">{{ statLabels[statKey] }}</span>
+      <span class="stat-value">{{ stats[statKey] }}</span>
+    </div>
+  </div>
+  
+  <div *ngIf="showProgressBar" class="progress-card">
+    <div class="progress-top">
+      <span>Profil complété</span>
+      <span>{{ stats.profileCompletion }}%</span>
+    </div>
+    <div class="progress-bar">
+      <div 
+        class="progress-fill" 
+        [style.width.%]="getProgressPercentage(stats.profileCompletion)"
+      ></div>
+    </div>
+  </div>
+</aside>
