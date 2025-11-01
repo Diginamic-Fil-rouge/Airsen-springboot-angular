@@ -1,72 +1,37 @@
-<!-- Main Header Navigation - Simplified Design -->
+<!-- Main Header Navigation - Dark Design with Logo and User Actions -->
 <header class="header-toolbar" [ngClass]="{ 'header--logged-in': isAuthenticated }">
   <div class="header-container">
-    <div class="logo-section" routerLink="/home" style="cursor: pointer;">
-      <img
-        class="logo-image"
-        src="assets/images/airsen-logo.png"
-        alt="Airsen logo"
-      />
+    <!-- Logo Section -->
+    <div class="logo-section" routerLink="/home" *ngIf="isAuthenticated">
+      <span class="logo-text">AIRSEN Logo</span>
     </div>
-
-    <nav class="nav-menu">
-      <a routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
-        Homepage
-      </a>
-      <ng-container *ngIf="isAuthenticated; else publicLinks">
-        <a routerLink="/map" routerLinkActive="active-link">
-          Map
-        </a>
-        <a routerLink="/profile" routerLinkActive="active-link">
-          Profile
-        </a>
-        <a routerLink="/forum" routerLinkActive="active-link">
-          Forum
-        </a>
-        <a
-          [routerLink]="['/map']"
-          [queryParams]="{ view: 'history' }"
-          routerLinkActive="active-link"
-          [routerLinkActiveOptions]="{ exact: false }"
-        >
-          Historic Data
-        </a>
-      </ng-container>
-    </nav>
-
-    <ng-template #publicLinks>
-      <a routerLink="/forum" routerLinkActive="active-link">
-        Community
-      </a>
-    </ng-template>
 
     <span class="spacer"></span>
 
+    <!-- User Actions Section -->
     <ng-container *ngIf="isAuthenticated; else guestActions">
       <div class="header-actions">
-        <button
-          class="header-button icon-button"
-          type="button"
-          [matBadge]="unreadNotifications"
-          [matBadgeHidden]="!unreadNotifications"
-          matBadgeColor="warn"
-          aria-label="Notifications"
+        <!-- Username Display -->
+        <span class="user-name">{{ userInitials }}</span>
+
+        <!-- Unread Notifications Badge -->
+        <span
+          class="notification-badge"
+          [attr.aria-label]="'You have ' + unreadNotifications + ' unread notifications'"
           (click)="navigateToAlerts()"
         >
-          <mat-icon>notifications</mat-icon>
-        </button>
+          [{{ unreadNotifications }}]
+        </span>
 
+        <!-- Settings Icon Button -->
         <button
-          class="header-button avatar-button"
+          class="header-button settings-button"
           type="button"
           (click)="navigateToProfile()"
           [attr.aria-label]="'Open profile for ' + userDisplayName"
+          title="Settings"
         >
-          <span class="user-avatar">{{ userInitials }}</span>
-        </button>
-
-        <button class="header-button logout-button" type="button" (click)="onLogout()">
-          Logout
+          <mat-icon>settings</mat-icon>
         </button>
       </div>
     </ng-container>

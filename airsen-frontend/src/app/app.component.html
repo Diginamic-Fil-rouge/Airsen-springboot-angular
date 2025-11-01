@@ -8,26 +8,26 @@
     </div>
   </div>
 
-  <!-- Header Navigation -->
-  <app-header
-    *ngIf="shouldShowNavigation"
-    [isAuthenticated]="isAuthenticated">
-  </app-header>
+  <!-- Sidebar Navigation (Authenticated Pages Only) -->
+  <app-sidebar *ngIf="isAuthenticated"></app-sidebar>
 
-  <!-- Main Content Area -->
-  <div class="main-content" [class.with-nav]="shouldShowNavigation">
-    <!-- Content Wrapper (Sidebar hidden for clean design) -->
-    <div class="content-wrapper">
-      <!-- Router Outlet -->
-      <div class="content-area">
-        <router-outlet></router-outlet>
-      </div>
+  <!-- Main Layout Wrapper -->
+  <div class="main-layout" [class.authenticated]="isAuthenticated">
+    <!-- Header Navigation (Public Pages) -->
+    <app-header
+      *ngIf="shouldShowNavigation && !isAuthenticated"
+      [isAuthenticated]="isAuthenticated">
+    </app-header>
+
+    <!-- Main Content Area -->
+    <div class="main-content" [class.with-sidebar]="isAuthenticated" [class.with-nav]="shouldShowNavigation">
+      <router-outlet></router-outlet>
     </div>
-  </div>
 
-  <!-- Footer -->
-  <app-footer
-    *ngIf="shouldShowNavigation"
-    class="footer">
-  </app-footer>
+    <!-- Footer (Public Pages) -->
+    <app-footer
+      *ngIf="shouldShowNavigation && !isAuthenticated"
+      class="footer">
+    </app-footer>
+  </div>
 </div>

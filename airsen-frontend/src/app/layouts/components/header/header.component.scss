@@ -1,9 +1,9 @@
 // Header Component Styles - Airsen Platform
-// Clean, minimal design matching reference image exactly
+// Dark design with logo and user actions matching wireframe
 
 .header-toolbar {
-  background: white;
-  border-bottom: 1px solid hsl(0, 0%, 92%);
+  background: #2c2c3c;
+  border-bottom: 1px solid #3c3c4c;
   box-shadow: none;
   position: sticky;
   top: 0;
@@ -18,12 +18,12 @@
 .header-container {
   display: flex;
   align-items: center;
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 1rem 3rem;
+  padding: 0.75rem 1.5rem;
 
   @media (max-width: 768px) {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
   }
 }
 
@@ -31,55 +31,27 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin-right: 4rem;
+  margin-right: auto;
   transition: opacity 0.2s ease;
 
   &:hover {
-    opacity: 0.7;
+    opacity: 0.8;
   }
 
-  .logo-image {
-    width: 2.5rem;
-    height: auto;
+  .logo-text {
+    color: white;
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
   @media (max-width: 768px) {
-    margin-right: 1.5rem;
+    margin-right: 1rem;
 
-    .logo-image {
-      width: 2rem;
+    .logo-text {
+      font-size: 0.9rem;
     }
-  }
-}
-
-.nav-menu {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;
-
-  a {
-    color: hsl(0, 0%, 25%);
-    font-weight: 400;
-    font-size: 1rem;
-    text-decoration: none;
-    transition: color 0.2s ease;
-    white-space: nowrap;
-    padding: 0.5rem 0;
-    position: relative;
-    letter-spacing: -0.01em;
-
-    &:hover {
-      color: hsl(0, 0%, 10%);
-    }
-
-    &.active-link {
-      color: hsl(0, 0%, 10%);
-      font-weight: 500;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    display: none;
   }
 }
 
@@ -93,15 +65,18 @@
 
   .login-button {
     padding: 0.5rem 1.25rem;
-    color: hsl(0, 0%, 25%);
+    color: white;
     font-weight: 400;
     font-size: 0.95rem;
     transition: all 0.2s ease;
     border-radius: 0.5rem;
     letter-spacing: -0.01em;
+    background: transparent;
+    border: none;
+    cursor: pointer;
 
     &:hover {
-      background-color: hsl(0, 0%, 97%);
+      background-color: rgba(255, 255, 255, 0.1);
     }
   }
 
@@ -113,81 +88,81 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 
   @media (max-width: 1024px) {
-    display: none;
+    gap: 1rem;
+  }
+}
+
+.user-name {
+  color: white;
+  font-weight: 500;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
+}
+
+.notification-badge {
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  letter-spacing: -0.01em;
+
+  &:hover {
+    color: #a8d5ff;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
   }
 }
 
 .header-button {
-  height: 2.75rem;
-  min-width: 2.75rem;
+  height: 2.2rem;
+  width: 2.2rem;
   border-radius: 999px;
-  border: 1px solid hsl(0, 0%, 88%);
-  background-color: hsl(0, 0%, 98%);
-  color: hsl(0, 0%, 20%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 500;
+  font-size: 0.9rem;
   letter-spacing: -0.01em;
   cursor: pointer;
-  padding: 0 1.35rem;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  padding: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background-color: hsl(0, 0%, 94%);
-    border-color: hsl(0, 0%, 82%);
-    color: hsl(0, 0%, 12%);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
   }
 
   &:focus-visible {
-    outline: 2px solid hsl(140, 55%, 45%);
+    outline: 2px solid #a8d5ff;
     outline-offset: 2px;
   }
-}
-
-.icon-button {
-  padding: 0;
-  width: 2.75rem;
-  position: relative;
 
   mat-icon {
-    font-size: 1.4rem;
-    width: 1.4rem;
-    height: 1.4rem;
-  }
-
-  ::ng-deep .mat-badge-content {
-    font-weight: 600;
+    font-size: 1.2rem;
+    width: 1.2rem;
+    height: 1.2rem;
   }
 }
 
-.user-avatar {
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, hsl(140, 55%, 45%), hsl(140, 55%, 35%));
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 1.05rem;
-}
-
-.avatar-button {
+.settings-button {
   padding: 0;
-  width: 2.75rem;
-}
-
-.logout-button {
-  padding: 0 1.5rem;
+  width: 2.2rem;
 }
 
 // Accessibility

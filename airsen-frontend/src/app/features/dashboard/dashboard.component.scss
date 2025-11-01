@@ -48,51 +48,54 @@
 
 .welcome-card {
   background-color: $airsen-white;
-  border: 1px solid $airsen-gray-200;
-  border-radius: 1.75rem;
-  padding: 2.5rem 3rem;
+  border: none;
+  border-radius: 2rem;
+  padding: 2rem 3rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
-  box-shadow: 0 20px 45px rgba(18, 38, 54, 0.08);
+  gap: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
-    padding: 2rem;
+    padding: 1.75rem;
+    gap: 1.75rem;
   }
 }
 
 .welcome-details {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.75rem;
+  flex: 1;
 }
 
 .welcome-avatar {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 1.2rem;
-  background: linear-gradient(135deg, $airsen-primary, color.scale($airsen-primary, $lightness: -10%));
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, $airsen-primary, color.scale($airsen-primary, $lightness: -8%));
   color: $airsen-white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
 }
 
 .welcome-text {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
 .welcome-greeting {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 700;
   color: $airsen-gray-900;
   letter-spacing: -0.015em;
@@ -100,26 +103,38 @@
 
 .welcome-meta {
   margin: 0;
-  font-size: 0.95rem;
-  color: $airsen-gray-600;
+  font-size: 0.9rem;
+  color: $airsen-gray-500;
+  font-weight: 400;
 }
 
 .cta-primary {
-  padding: 0.85rem 1.75rem;
+  padding: 0.75rem 2rem;
   border-radius: 999px;
   background: $airsen-primary;
   color: $airsen-white;
   border: none;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  box-shadow: 0 15px 30px rgba(45, 106, 79, 0.18);
+  box-shadow: 0 12px 28px rgba(45, 106, 79, 0.2);
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
     transform: translateY(-2px);
     background-color: color.scale($airsen-primary, $lightness: -6%);
-    box-shadow: 0 18px 40px rgba(45, 106, 79, 0.25);
+    box-shadow: 0 16px 36px rgba(45, 106, 79, 0.28);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    white-space: normal;
   }
 }
 

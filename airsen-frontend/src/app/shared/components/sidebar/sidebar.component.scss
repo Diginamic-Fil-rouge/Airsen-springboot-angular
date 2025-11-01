@@ -1,0 +1,400 @@
+@use 'sass:color';
+@use '../../../../styles/design-system' as *;
+
+// Sidebar Container
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: $sidebar-width;
+  background: linear-gradient(180deg, $airsen-gray-100 0%, $airsen-gray-50 100%);
+  box-shadow: $shadow-md;
+  display: flex;
+  flex-direction: column;
+  transition: width $duration-slow $ease-in-out;
+  z-index: $z-index-fixed;
+  overflow: hidden;
+
+  &.collapsed {
+    width: $sidebar-width-collapsed;
+
+    .nav-label,
+    .sidebar-footer {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .nav-item {
+      justify-content: center;
+      padding: $space-2;
+    }
+
+    .nav-badge {
+      display: none;
+    }
+
+    .nav-divider {
+      display: none;
+    }
+  }
+}
+
+// Header Section (Logo and Hamburger Menu)
+
+.sidebar-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-4;
+  border-bottom: 1px solid $airsen-gray-200;
+  gap: $space-3;
+  min-height: 70px;
+
+  // Logo Section
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: $space-2;
+    flex: 1;
+    transition: opacity $duration-normal $ease-in-out,
+                visibility $duration-normal $ease-in-out;
+
+    .logo-image {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $airsen-primary;
+      white-space: nowrap;
+    }
+  }
+
+  // Hamburger Button
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: $transition-all;
+    flex-shrink: 0;
+
+    &:hover {
+      background: $airsen-gray-100;
+      border-radius: $radius-md;
+    }
+
+    &:focus {
+      @include focus-ring();
+    }
+  }
+
+  .hamburger-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 24px;
+    height: 24px;
+
+    span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background-color: $airsen-gray-800;
+      border-radius: 2px;
+      transition: all $duration-normal $ease-in-out;
+    }
+  }
+
+  // Collapsed state - centered hamburger button
+  &.collapsed {
+    justify-content: center;
+
+    .hamburger-btn {
+      margin: 0;
+    }
+  }
+}
+
+// Navigation
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: $space-4 0;
+  @include custom-scrollbar();
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 $space-3;
+
+  &.nav-list-bottom {
+    margin-top: auto;
+    border-top: 1px solid $airsen-gray-200;
+    padding-top: $space-3;
+  }
+}
+
+.nav-item-wrapper {
+  margin-bottom: $space-1;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.nav-divider {
+  height: 1px;
+  background-color: $airsen-gray-200;
+  margin: $space-3 $space-3 $space-2 $space-3;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 $space-3;
+  margin-bottom: $space-1;
+  border-radius: $radius-md;
+  color: $airsen-gray-700;
+  text-decoration: none;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: $transition-all;
+  cursor: pointer;
+  position: relative;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .nav-label {
+    flex: 1;
+    white-space: nowrap;
+    transition: opacity $duration-normal $ease-in-out,
+                visibility $duration-normal $ease-in-out;
+  }
+
+  .nav-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    background-color: $airsen-error;
+    color: $airsen-white;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background-color: $airsen-gray-100;
+    color: $airsen-primary;
+  }
+
+  &.active {
+    background-color: $airsen-primary;
+    color: $airsen-white;
+
+    .nav-badge {
+      background-color: $airsen-white;
+      color: $airsen-error;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 80%;
+      background-color: $airsen-white;
+      border-radius: 0 $radius-sm $radius-sm 0;
+    }
+  }
+
+  &.nav-logout-btn {
+    background: transparent;
+    border: none;
+    text-align: left;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Footer Section (Version Info)
+
+.sidebar-footer {
+  padding: $space-3 $space-3;
+  border-top: 1px solid $airsen-gray-200;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  transition: opacity $duration-normal $ease-in-out,
+              visibility $duration-normal $ease-in-out;
+
+  p {
+    margin: 0;
+    font-size: $font-size-xs;
+    color: $airsen-gray-500;
+    text-align: center;
+  }
+
+  .version-info {
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-700;
+  }
+
+  .copyright {
+    font-size: $font-size-xs;
+    color: $airsen-gray-400;
+  }
+
+  .sidebar-size {
+    font-size: $font-size-xs;
+    color: $airsen-gray-400;
+  }
+}
+
+// Backdrop (for mobile overlay)
+
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: $z-index-modal-backdrop - 10;
+  animation: fadeIn $duration-normal $ease-in-out;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Responsive Design
+// Tablet and below: Sidebar becomes overlay
+@include respond-max(lg) {
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: $z-index-modal - 5;
+
+    &:not(.collapsed) {
+      transform: translateX(0);
+    }
+  }
+
+  .sidebar-toggle {
+    display: none; // Hide toggle button on mobile, use backdrop to close
+  }
+}
+
+// Mobile: Wider sidebar overlay
+@include respond-max(md) {
+  .sidebar {
+    width: $sidebar-width-mobile;
+    box-shadow: $shadow-xl;
+
+    &.collapsed {
+      width: $sidebar-width-mobile;
+    }
+  }
+}
+
+// Small mobile: Full width sidebar
+@include respond-max(sm) {
+  .sidebar {
+    width: 100%;
+
+    &.collapsed {
+      width: 100%;
+    }
+  }
+
+  .sidebar-header {
+    padding: $space-4;
+    min-height: 100px;
+
+    .user-avatar {
+      width: 56px;
+      height: 56px;
+
+      .avatar-initial {
+        font-size: $font-size-xl;
+      }
+    }
+  }
+
+  .nav-section {
+    padding: 0 $space-3;
+  }
+
+  .sidebar-footer {
+    padding: $space-4;
+  }
+}
+
+// Accessibility
+
+// Keyboard navigation focus styles
+.nav-item:focus-visible {
+  @include focus-ring();
+  outline-offset: 2px;
+}
+
+.logout-btn:focus-visible {
+  @include focus-ring();
+}
+
+.sidebar-toggle:focus-visible {
+  @include focus-ring();
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar-header .user-info,
+  .section-title,
+  .nav-item,
+  .nav-item span,
+  .logout-btn span,
+  .sidebar-credit,
+  .sidebar-toggle,
+  .sidebar-backdrop {
+    transition: none;
+    animation: none;
+  }
+}

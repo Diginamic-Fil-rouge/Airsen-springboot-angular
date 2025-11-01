@@ -14,7 +14,6 @@ import { AppRoutingModule } from './app-routing.module';
 // Layout Components (always loaded - required for app shell)
 import { HeaderComponent } from './layouts/components/header/header.component';
 import { FooterComponent } from './layouts/components/footer/footer.component';
-import { SidebarComponent } from './layouts/components/sidebar/sidebar.component';
 
 // Error Page (always loaded - needed for wildcard route)
 import { NotFoundComponent } from './features/not-found/not-found.component';
@@ -35,8 +34,9 @@ import { authInterceptorFn } from './core/interceptors/auth.interceptor';
  * - AppComponent: Root application component
  * - HeaderComponent: Top navigation bar (always visible)
  * - FooterComponent: Bottom footer (always visible)
- * - SidebarComponent: Side navigation drawer
  * - NotFoundComponent: 404 error page (needed for wildcard route)
+ *
+ * Note: SidebarComponent is now in SharedModule for better reusability
  *
  * All feature components are lazy-loaded:
  * - AuthModule: /auth (login, register)
@@ -55,10 +55,10 @@ import { authInterceptorFn } from './core/interceptors/auth.interceptor';
     // Layout Components (always loaded for app shell)
     HeaderComponent,
     FooterComponent,
-    SidebarComponent,
     // Error Page (needed for wildcard route)
     NotFoundComponent
     // NO FEATURE COMPONENTS - all lazy-loaded via routing
+    // SidebarComponent moved to SharedModule for reusability
   ],
   imports: [
     BrowserModule,
