@@ -238,7 +238,11 @@ export class AuthService {
     this.errorSubject.next(error);
   }
 
-  private clearError(): void {
+  /**
+   * Clear current error message
+   * Useful for clearing errors when user starts typing or interacting with forms
+   */
+  clearError(): void {
     this.errorSubject.next(null);
   }
 
