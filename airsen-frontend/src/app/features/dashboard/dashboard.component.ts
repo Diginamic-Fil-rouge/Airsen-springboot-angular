@@ -9,34 +9,10 @@ import { AlertService } from '@/core/services/alert.service';
 import { FavoritesService } from '@/features/favorites/services/favorites.service';
 import { CampaignNotification, NotificationDeliveryStatus } from '@/shared/models';
 import { Favorite } from '@/shared/models';
-
-type QuickActionKey = 'map' | 'alerts' | 'forum' | 'favorites' | 'export';
-
-interface QuickActionCard {
-  title: string;
-  subtitle: string;
-  icon: string;
-  action: QuickActionKey;
-  badge?: string;
-}
-
-interface AlertSummaryItem {
-  id: number;
-  title: string;
-  location: string;
-  severity: 'low' | 'medium' | 'high';
-  status: 'pending' | 'sent' | 'failed';
-  icon: string;
-  timestamp: string;
-}
-
-interface UserStatsSnapshot {
-  favoriteIndicators: number;
-  alertsReceived: number;
-  lastExport: string;
-  forumPosts: number;
-  profileCompletion: number;
-}
+import { QuickActionCard, QuickActionKey } from './models/quick-action';
+import { AlertSummaryItem } from './models/alert-summary';
+import { UserStatsSnapshot } from './models/user-stats';
+import { StatClickEvent } from './components/stats-panel/stats-panel';
 
 @Component({
   standalone: false,
@@ -87,6 +63,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Event handlers for child components
+  onQuickAction(action: QuickActionKey): void {
+    this.handleQuickAction(action);
+  }
+
+  onAlertClick(alertId: number): void {
+    this.router.navigate(['/map'], {
+      queryParams: { view: 'alerts', alertId }
+    });
+  }
+
+  onViewAllAlerts(): void {
+    this.router.navigate(['/map'], {
+      queryParams: { view: 'alerts' }
+    });
+  }
+
+  onFilterAlertsByFavorites(): void {
+    this.router.navigate(['/map'], {
+      queryParams: { view: 'alerts', scope: 'favorites' }
+    });
+  }
+
+  onStatClick(event: StatClickEvent): void {
+    this.handleStatClick(event);
+  }
+
   logout(): void {
     this.authService.logout().subscribe({
       next: () => this.router.navigate(['/auth/login']),
@@ -94,7 +97,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  handleQuickAction(action: QuickActionKey): void {
+  goToHistoricData(): void {
+    this.router.navigate(['/map'], {
+      queryParams: { view: 'history' }
+    });
+  }
+
+  // Getters for template
+  get welcomeName(): string {
+    return this.currentUser?.firstName || 'là';
+  }
+
+  get avatarInitials(): string {
+    if (!this.currentUser) {
+      return 'AA';
+    }
+
+    const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? '';
+    const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? '';
+    let initials = `${first}${last}`.replace(/\s+/g, '');
+
+    if (!initials) {
+      return 'AA';
+    }
+
+    if (initials.length === 1) {
+      return `${initials}${initials}`;
+    }
+
+    return initials.slice(0, 2);
+  }
+
+  retryLoad(): void {
+    if (this.currentUser) {
+      this.loadDashboardData(this.currentUser.id);
+    }
+  }
+
+  // Private methods
+  private handleQuickAction(action: QuickActionKey): void {
     switch (action) {
       case 'map':
         this.router.navigate(['/map']);
@@ -122,40 +163,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  filterAlertsByFavorites(): void {
-    this.router.navigate(['/map'], {
-      queryParams: { view: 'alerts', scope: 'favorites' }
-    });
-  }
-
-  goToHistoricData(): void {
-    this.router.navigate(['/map'], {
-      queryParams: { view: 'history' }
-    });
-  }
-
-  get welcomeName(): string {
-    return this.currentUser?.firstName || 'there';
-  }
-
-  get avatarInitials(): string {
-    if (!this.currentUser) {
-      return 'AA';
+  private handleStatClick(event: StatClickEvent): void {
+    switch (event.statKey) {
+      case 'favoriteIndicators':
+        this.router.navigate(['/profile'], {
+          queryParams: { tab: 'favorites' }
+        });
+        break;
+      case 'alertsReceived':
+        this.router.navigate(['/map'], {
+          queryParams: { view: 'alerts' }
+        });
+        break;
+      case 'forumPosts':
+        this.router.navigate(['/forum']);
+        break;
+      default:
+        break;
     }
-
-    const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? '';
-    const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? '';
-    let initials = `${first}${last}`.replace(/\s+/g, '');
-
-    if (!initials) {
-      return 'AA';
-    }
-
-    if (initials.length === 1) {
-      return `${initials}${initials}`;
-    }
-
-    return initials.slice(0, 2);
   }
 
   private subscribeToUser(): void {
@@ -172,7 +197,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading user data:', error);
-          this.error = 'Failed to load user data';
+          this.error = 'Échec du chargement des données utilisateur';
           this.isLoading = false;
         }
       });
@@ -210,7 +235,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading dashboard data:', error);
-          this.error = 'Failed to load dashboard data';
+          this.error = 'Échec du chargement des données du tableau de bord';
           this.isLoading = false;
         }
       });
@@ -247,7 +272,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   private extractTitleFromNotification(notification: CampaignNotification): string {
     // Assuming campaignTitle exists in backend response (check actual API response)
-    return `Environmental Alert #${notification.campaignId}`;
+    return `Alerte Environnementale #${notification.campaignId}`;
   }
 
   /**
@@ -306,19 +331,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-  }
-
-  /**
-   * Retry loading dashboard data after error.
-   */
-  retryLoad(): void {
-    if (this.currentUser) {
-      this.loadDashboardData(this.currentUser.id);
-    }
+    if (diffMins < 1) return 'À l\'instant';
+    if (diffMins < 60) return `Il y a ${diffMins} minute${diffMins > 1 ? 's' : ''}`;
+    if (diffHours < 24) return `Il y a ${diffHours} heure${diffHours > 1 ? 's' : ''}`;
+    return `Il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`;
   }
 
   private startClock(): void {
@@ -336,39 +352,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.quickActions = [
       {
-        title: 'View Map',
-        subtitle: 'Jump to live air quality layers.',
+        title: 'Voir la Carte',
+        subtitle: 'Accéder aux couches de qualité de l\'air en temps réel.',
         icon: 'map',
         action: 'map'
       },
       {
-        title: 'My Notifications & Alerts',
+        title: 'Mes Notifications & Alertes',
         subtitle: actionableAlerts > 0
-          ? `${actionableAlerts} new alert${actionableAlerts > 1 ? 's' : ''} waiting`
-          : 'No new alerts',
+          ? `${actionableAlerts} nouvelle${actionableAlerts > 1 ? 's' : ''} alerte${actionableAlerts > 1 ? 's' : ''} en attente`
+          : 'Aucune nouvelle alerte',
         icon: 'notifications_active',
         action: 'alerts',
         badge: actionableAlerts ? `${actionableAlerts}` : undefined
       },
       {
-        title: 'Go to Forum',
+        title: 'Aller au Forum',
         subtitle: this.forumUnreadCount > 0
-          ? `${this.forumUnreadCount} thread${this.forumUnreadCount > 1 ? 's' : ''} need your reply`
-          : 'No unread threads',
+          ? `${this.forumUnreadCount} discussion${this.forumUnreadCount > 1 ? 's' : ''} nécessite${this.forumUnreadCount > 1 ? 'nt' : ''} votre réponse`
+          : 'Aucune discussion non lue',
         icon: 'forum',
         action: 'forum',
         badge: this.forumUnreadCount ? `${this.forumUnreadCount}` : undefined
       },
       {
-        title: 'My Favorites',
-        subtitle: `${this.userStats.favoriteIndicators} indicator${this.userStats.favoriteIndicators !== 1 ? 's' : ''} saved`,
+        title: 'Mes Favoris',
+        subtitle: `${this.userStats.favoriteIndicators} indicateur${this.userStats.favoriteIndicators !== 1 ? 's' : ''} enregistré${this.userStats.favoriteIndicators !== 1 ? 's' : ''}`,
         icon: 'favorite',
         action: 'favorites',
         badge: this.userStats.favoriteIndicators ? `${this.userStats.favoriteIndicators}` : undefined
       },
       {
-        title: 'Export History',
-        subtitle: `Last export: ${this.userStats.lastExport}`,
+        title: 'Historique d\'Export',
+        subtitle: `Dernier export : ${this.userStats.lastExport}`,
         icon: 'download',
         action: 'export'
       }

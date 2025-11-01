@@ -1,0 +1,62 @@
+<section class="alerts-section">
+  <div class="section-header">
+    <h2>Résumé des Alertes</h2>
+    <div class="section-actions">
+      <button type="button" class="link-button" (click)="onViewAllAlerts()">
+        Voir toutes les alertes
+      </button>
+      <button 
+        *ngIf="showFavoritesFilter" 
+        type="button" 
+        class="link-button" 
+        (click)="onFilterByFavorites()"
+      >
+        Favoris
+      </button>
+    </div>
+  </div>
+  
+  <ul class="alert-list">
+    <li 
+      class="alert-item" 
+      *ngFor="let alert of paginatedAlerts"
+      (click)="onAlertClick(alert.id)"
+    >
+      <div class="alert-icon" [ngClass]="alert.severity">
+        <mat-icon>{{ alert.icon }}</mat-icon>
+      </div>
+      <div class="alert-body">
+        <div class="alert-header">
+          <span class="alert-title">{{ alert.title }}</span>
+          <span class="alert-status" [ngClass]="alert.status">
+            {{ alert.status | titlecase }}
+          </span>
+        </div>
+        <div class="alert-location">{{ alert.location }}</div>
+        <div class="alert-time">{{ alert.timestamp }}</div>
+      </div>
+    </li>
+  </ul>
+
+  <div *ngIf="showPagination && totalPages > 1" class="pagination">
+    <button 
+      type="button" 
+      class="pagination-button"
+      [disabled]="!hasPreviousPage"
+      (click)="previousPage()"
+    >
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <span class="pagination-info">
+      Page {{ currentPage }} sur {{ totalPages }}
+    </span>
+    <button 
+      type="button" 
+      class="pagination-button"
+      [disabled]="!hasNextPage"
+      (click)="nextPage()"
+    >
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+</section>

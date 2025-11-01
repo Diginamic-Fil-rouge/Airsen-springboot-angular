@@ -1,0 +1,61 @@
+<div class="air-quality-widget">
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-button color="primary" (click)="refreshData()">
+      Réessayer
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading && !error && airQuality" class="air-quality-content">
+    <div class="widget-header">
+      <h3>Qualité de l'Air</h3>
+      <button 
+        *ngIf="showRefreshButton" 
+        type="button" 
+        class="refresh-button"
+        (click)="refreshData()"
+        [disabled]="isLoading"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+
+    <div class="air-quality-main">
+      <div 
+        class="aqi-indicator"
+        [style.background-color]="aqiColor"
+      >
+        <span class="aqi-value">{{ aqiValue }}</span>
+      </div>
+      
+      <div class="air-quality-details">
+        <div class="aqi-label">{{ aqiLabel }}</div>
+        <div class="commune-name">{{ communeName }}</div>
+        <div class="last-updated">
+          Mis à jour {{ lastUpdated | date:'shortTime' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="air-quality-footer">
+      <div class="aqi-scale">
+        <div class="scale-item good">0-50</div>
+        <div class="scale-item moderate">51-100</div>
+        <div class="scale-item unhealthy-sensitive">101-150</div>
+        <div class="scale-item unhealthy">151-200</div>
+        <div class="scale-item very-unhealthy">201-300</div>
+        <div class="scale-item hazardous">300+</div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && !airQuality" class="no-data-container">
+    <mat-icon>location_off</mat-icon>
+    <p>Aucune donnée de qualité de l'air disponible</p>
+  </div>
+</div>
