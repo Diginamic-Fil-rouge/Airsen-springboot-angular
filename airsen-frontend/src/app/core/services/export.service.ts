@@ -83,7 +83,6 @@ export class ExportService {
           inseeCode: data.inseeCode,
           exportType: request.exportType,
           format: request.format,
-          fileName: fileName,
           fileSize: fileSize,
           createdAt: new Date()
         };
