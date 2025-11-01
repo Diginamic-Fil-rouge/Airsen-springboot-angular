@@ -7,6 +7,8 @@ import { AlertSummaryComponent } from "./components/alert-summary/alert-summary"
 import { StatsPanelComponent } from "./components/stats-panel/stats-panel";
 import { AirQualityWidgetComponent } from "./components/air-quality-widget/air-quality-widget";
 import { SharedModule } from '@/shared/shared.module';
+import { BaseChartDirective } from "ng2-charts";
+import { AirQualityChartComponent } from "./components/air-quality-chart/air-quality-chart.component";
 
 @NgModule({
   declarations: [
@@ -14,12 +16,14 @@ import { SharedModule } from '@/shared/shared.module';
     QuickActionsComponent,
     AlertSummaryComponent,
     StatsPanelComponent,
-    AirQualityWidgetComponent
+    AirQualityWidgetComponent,
+    AirQualityChartComponent
   ],
   imports: [
     CommonModule,
     DashboardRoutingModule,
-    SharedModule  // Provides Material modules, pipes, and shared components
+    SharedModule,  
+    BaseChartDirective
   ],
 })
 export class DashboardModule {}

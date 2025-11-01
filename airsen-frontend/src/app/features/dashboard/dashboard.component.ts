@@ -13,12 +13,24 @@ import { QuickActionCard, QuickActionKey } from './models/quick-action';
 import { AlertSummaryItem } from './models/alert-summary';
 import { UserStatsSnapshot } from './models/user-stats';
 import { StatClickEvent } from './components/stats-panel/stats-panel';
+import {
+  fadeInAnimation,
+  slideUpAnimation,
+  listStaggerAnimation,
+  dashboardWidgetAnimation,
+} from '@/shared/animations/animations';
 
 @Component({
   standalone: false,
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
+  animations: [
+    fadeInAnimation,
+    slideUpAnimation,
+    listStaggerAnimation,
+    dashboardWidgetAnimation,
+  ],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: AuthUser | null = null;
