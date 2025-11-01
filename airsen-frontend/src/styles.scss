@@ -1,6 +1,25 @@
 /* Global Styles for Airsen - Air Quality Monitoring Platform */
 
 /* ============================================================================
+   SCSS System Structure
+   ============================================================================
+
+   1. Variables - Color palettes, spacing, typography, shadows
+   2. Mixins - Reusable functions for responsive, interactive states
+   3. Theme - AQI color schemes and badge/indicator styles
+   4. Material - Angular Material component customizations
+   5. Base - Global styles, typography, utilities
+*/
+
+// ============================================================================
+// Import SCSS System Files
+// ============================================================================
+
+@use 'styles/variables';
+@use 'styles/mixins';
+@use 'styles/theme';
+
+/* ============================================================================
    Angular Material Theme & Components
    ============================================================================ */
 
