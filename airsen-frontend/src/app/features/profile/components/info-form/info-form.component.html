@@ -1,0 +1,86 @@
+<div class="info-form-container">
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <!-- First Name -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Prénom</mat-label>
+        <input matInput formControlName="firstName" placeholder="Entrez votre prénom" />
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-error *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+          {{ firstNameError }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Last Name -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nom</mat-label>
+        <input matInput formControlName="lastName" placeholder="Entrez votre nom" />
+        <mat-icon matPrefix>person_outline</mat-icon>
+        <mat-error *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+          {{ lastNameError }}
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Telephone -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Téléphone</mat-label>
+      <input matInput formControlName="telephone" placeholder="06 12 34 56 78" type="tel" />
+      <mat-icon matPrefix>phone</mat-icon>
+      <mat-error *ngIf="profileForm.get('telephone')?.invalid && profileForm.get('telephone')?.touched">
+        {{ telephoneError }}
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Address -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Adresse</mat-label>
+      <input matInput formControlName="address" placeholder="Entrez votre adresse" />
+      <mat-icon matPrefix>home</mat-icon>
+      <mat-error *ngIf="profileForm.get('address')?.invalid && profileForm.get('address')?.touched">
+        {{ addressError }}
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Bio -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Biographie</mat-label>
+      <textarea
+        matInput
+        formControlName="bio"
+        placeholder="Parlez-nous de vous..."
+        rows="4"
+        maxlength="500"
+      ></textarea>
+      <mat-icon matPrefix>description</mat-icon>
+      <mat-hint align="end">{{ bioCharCount }}/500 caractères</mat-hint>
+      <mat-error *ngIf="profileForm.get('bio')?.invalid && profileForm.get('bio')?.touched">
+        {{ bioError }}
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        mat-stroked-button
+        color="warn"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        <mat-icon>cancel</mat-icon>
+        Annuler
+      </button>
+
+      <button
+        type="submit"
+        mat-raised-button
+        color="primary"
+        [disabled]="profileForm.invalid || isSubmitting"
+      >
+        <mat-icon>save</mat-icon>
+        {{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </form>
+</div>

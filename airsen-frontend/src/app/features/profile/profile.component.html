@@ -1,362 +1,147 @@
-<div class="profile-page">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-text">
-      <h1>Mon profil</h1>
-      <p>Gérez vos informations personnelles et préférences</p>
+<div class="profile-container">
+  <!-- Profile Header -->
+  <div class="profile-header">
+    <div class="avatar-section">
+      <!-- Initials-based Avatar -->
+      <div class="avatar-circle">
+        <span class="avatar-initials">{{ userInitials }}</span>
+      </div>
     </div>
-    <button class="btn-outline" routerLink="/dashboard">
-      Retour au tableau de bord
-    </button>
+
+    <div class="user-info">
+      <h2 class="user-name">{{ userFullName }}</h2>
+      <p class="user-email">{{ userProfile?.email }}</p>
+      <p class="user-role">
+        <mat-icon>{{ userProfile?.role === 'ADMIN' ? 'admin_panel_settings' : 'person' }}</mat-icon>
+        {{ userProfile?.role === 'ADMIN' ? 'Administrateur' : 'Utilisateur' }}
+      </p>
+    </div>
   </div>
 
-  <div class="grid">
-    <!-- Colonne gauche -->
-    <div class="sidebar-wrapper">
-      <div class="sidebar">
-        <div class="card text-center">
-          <div class="avatar-wrapper">
-            <!-- Avatar cliquable uniquement -->
-            <div class="avatar" (click)="onAvatarClick()">
-              <img
-                *ngIf="avatarUrl; else initials"
-                [src]="avatarUrl"
-                alt="Avatar utilisateur"
-              />
-              <ng-template #initials>{{ getInitials() }}</ng-template>
+  <!-- Loading State -->
+  <div *ngIf="isLoadingProfile" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement du profil...</p>
+  </div>
 
-              <!-- Icône appareil photo avec + -->
-              <div class="avatar-overlay">
-                <i class="material-icons">add_a_photo</i>
-              </div>
-            </div>
+  <!-- Main Content with Tabs -->
+  <div *ngIf="!isLoadingProfile" class="profile-content">
+    <mat-tab-group animationDuration="300ms" dynamicHeight>
+      <!-- Tab 1: Personal Information -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>person</mat-icon>
+          Informations personnelles
+        </ng-template>
 
-            <!-- Input file caché -->
-            <input
-              type="file"
-              accept="image/*"
-              id="fileInput"
-              (change)="onAvatarSelected($event)"
-              hidden
-            />
+        <div class="tab-content">
+          <app-info-form
+            [user]="userProfile"
+            (profileUpdate)="onProfileUpdate($event)"
+          ></app-info-form>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 2: Security (Password Change) -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>security</mat-icon>
+          Sécurité
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="security-header">
+            <h3>Modifier le mot de passe</h3>
+            <p>Assurez-vous d'utiliser un mot de passe fort et unique</p>
           </div>
 
-          <h3>{{ formData.firstName }}</h3>
-          <h3>{{ formData.lastName }}</h3>
-          <p>{{ formData.email }}</p>
-
-          <!-- En attente des infos du backend pour actualisation -->
-          <!-- <div class="stats">
-            <div>
-              <strong>{{ userStats.discussions }}</strong>
-              <span>Discussions</span>
-            </div>
-            <div>
-              <strong>{{ userStats.likes }}</strong>
-              <span>J'aime</span>
-            </div>
-            <div>
-              <strong>{{ userStats.followers }}</strong>
-              <span>Abonnés</span>
-            </div>
-          </div> -->
-
-          <div class="badge">✅ Utilisateur vérifié</div>
+          <app-change-password
+            (passwordChange)="onPasswordChange($event)"
+          ></app-change-password>
         </div>
-      </div>
-    </div>
+      </mat-tab>
 
-    <!-- Colonne droite -->
-    <div class="content">
-      <!-- Conteneur boutons + cadre infos -->
-      <div class="tabs-and-card">
-        <!-- Tabs -->
-        <div class="tabs">
-          <button
-            [class.active]="activeTab === 'profile'"
-            (click)="activeTab = 'profile'"
-          >
-            Profil
-          </button>
-          <button
-            [class.active]="activeTab === 'notifications'"
-            (click)="activeTab = 'notifications'"
-          >
-            Notifications
-          </button>
-          <button
-            [class.active]="activeTab === 'security'"
-            (click)="activeTab = 'security'"
-          >
-            Sécurité
-          </button>
-        </div>
+      <!-- Tab 3: Notifications (Received + Preferences) -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon [matBadge]="unreadNotificationCount > 0 ? unreadNotificationCount : null" matBadgeColor="warn">notifications</mat-icon>
+          Notifications
+        </ng-template>
 
-        <!-- Onglet Profil -->
-        <div *ngIf="activeTab === 'profile'" class="profile-card card">
-          <h2>Informations personnelles</h2>
-
-          <form (ngSubmit)="saveProfile()" class="form-grid">
-            <!-- Ligne 1 : Prénom + Nom -->
-            <div class="form-row two-cols">
-              <!-- Prénom -->
-              <div class="form-group">
-                <label for="firstName">Prénom</label>
-                <input
-                  [(ngModel)]="formData.firstName"
-                  name="firstName"
-                  id="firstName"
-                  maxlength="22"
-                  required
-                  #firstNameField="ngModel"
-                />
-
-                <!-- Compteur de caractères -->
-                <div class="char-counter">
-                  {{ formData.firstName?.length || 0 }}/22
-                </div>
-
-                <!-- Messages d’erreur -->
-                <div
-                  *ngIf="firstNameField.invalid && firstNameField.touched"
-                  class="error-message"
-                >
-                  <span *ngIf="firstNameField.errors?.['required']">
-                    Le prénom est obligatoire.
-                  </span>
-                  <span *ngIf="firstNameField.errors?.['maxlength']">
-                    Le prénom ne peut pas dépasser 22 caractères.
-                  </span>
-                </div>
-              </div>
-
-              <!-- Nom -->
-              <div class="form-group">
-                <label for="lastName">Nom</label>
-                <input
-                  [(ngModel)]="formData.lastName"
-                  name="lastName"
-                  id="lastName"
-                  maxlength="22"
-                  required
-                  #lastNameField="ngModel"
-                />
-
-                <!-- Compteur de caractères -->
-                <div class="char-counter">
-                  {{ formData.lastName?.length || 0 }}/22
-                </div>
-
-                <!-- Messages d’erreur -->
-                <div
-                  *ngIf="lastNameField.invalid && lastNameField.touched"
-                  class="error-message"
-                >
-                  <span *ngIf="lastNameField.errors?.['required']">
-                    Le nom est obligatoire.
-                  </span>
-                  <span *ngIf="lastNameField.errors?.['maxlength']">
-                    Le nom ne peut pas dépasser 22 caractères.
-                  </span>
-                </div>
-              </div>
-
-              <!-- Adresse email -->
-              <div class="form-group">
-                <label for="email">Adresse e-mail</label>
-                <input
-                  [(ngModel)]="formData.email"
-                  name="email"
-                  id="email"
-                  type="email"
-                  readonly
-                  class="readonly-input"
-                />
-              </div>
+        <div class="tab-content notifications-tab">
+          <!-- Section 1: Received Notifications (Admin Broadcasts) -->
+          <div class="notifications-section">
+            <div class="section-header">
+              <h3>
+                <mat-icon>campaign</mat-icon>
+                Alertes reçues
+              </h3>
+              <p>Notifications environnementales diffusées par les administrateurs</p>
             </div>
 
-            <!-- Ligne 2 : Adresse -->
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label for="address">Adresse</label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  [(ngModel)]="formData.address"
-                  #address="ngModel"
-                  maxlength="200"
-                  placeholder="Votre adresse complète"
-                  required
-                />
-
-                <!-- Compteur de caractères -->
-                <div class="char-counter">
-                  {{ formData.address?.length || 0 }}/200
-                </div>
-
-                <!-- Message d'erreur -->
-                <div
-                  *ngIf="address.invalid && address.touched"
-                  class="error-message"
-                >
-                  <span *ngIf="address.errors?.['required']"
-                    >L’adresse est obligatoire.</span
-                  >
-                  <span *ngIf="address.errors?.['maxlength']">
-                    L’adresse ne peut pas dépasser 255 caractères.
-                  </span>
-                </div>
-              </div>
+            <!-- Loading State -->
+            <div *ngIf="isLoadingNotifications" class="loading-state">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Chargement des notifications...</p>
             </div>
 
-            <!-- Ligne 3 : Téléphone -->
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label for="phone">Téléphone</label>
-                <input
-                  [(ngModel)]="formData.phone"
-                  name="phone"
-                  id="phone"
-                  maxlength="12"
-                  #phone="ngModel"
-                  required
-                  pattern="^[0-9]*$"
-                />
-                <div
-                  class="error-message"
-                  *ngIf="phone.errors && (phone.dirty || phone.touched)"
-                >
-                  <span *ngIf="phone.errors['required']"
-                    >Le téléphone est obligatoire.</span
-                  >
-                  <span *ngIf="phone.errors['pattern']"
-                    >Le téléphone ne doit contenir que des chiffres.</span
-                  >
-                  <span *ngIf="phone.errors['maxlength']"
-                    >Le téléphone ne peut pas dépasser 12 caractères.</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <!-- Ligne 4 : Bio -->
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label for="bio">Bio</label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  [(ngModel)]="formData.bio"
-                  #bio="ngModel"
-                  maxlength="500"
-                  rows="4"
-                  placeholder="Décrivez-vous (max 500 caractères)"
-                  required
-                ></textarea>
-
-                <!--  Compteur de caractères -->
-                <div class="char-counter">
-                  {{ formData.bio?.length || 0 }}/500
-                </div>
-
-                <!--  Message d'erreur -->
-                <div *ngIf="bio.invalid && bio.touched" class="error-message">
-                  <span *ngIf="bio.errors?.['required']"
-                    >La bio est obligatoire.</span
-                  >
-                  <span *ngIf="bio.errors?.['maxlength']">
-                    La bio ne peut pas dépasser 500 caractères.
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Ligne 5 : Bouton Sauvegarder -->
-            <div class="form-row button-row">
-              <button type="submit" class="btn-save">
-                Sauvegarder les modifications
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Onglet Notifications -->
-        <div
-          *ngIf="activeTab === 'notifications'"
-          class="card notifications-card"
-        >
-          <h2>Préférences de notification</h2>
-          <p class="notif-intro">
-            Choisissez comment vous souhaitez être notifié
-          </p>
-
-          <div class="notifications-list">
-            <div *ngFor="let key of notifications | keyvalue" class="notif-row">
-              <!-- <span class="notif-label">{{ key.key }}</span> -->
-              <div class="notif-labels">
-                <span class="notif-title">{{
-                  notificationLabels[key.key]?.title
-                }}</span>
-                <span class="notif-description">{{
-                  notificationLabels[key.key]?.description
-                }}</span>
+            <!-- Received Notifications List -->
+            <div *ngIf="!isLoadingNotifications" class="notifications-list">
+              <!-- Empty State -->
+              <div *ngIf="receivedNotifications.length === 0" class="empty-state">
+                <mat-icon>notifications_none</mat-icon>
+                <p>Aucune notification reçue</p>
+                <span class="empty-state-hint">Les alertes environnementales apparaîtront ici</span>
               </div>
 
-              <button
-                (click)="toggleNotificationKey(key.key)"
-                [class.active]="key.value"
-                [class.inactive]="!key.value"
-              >
-                {{ key.value ? "Activé" : "Désactivé" }}
-              </button>
+              <!-- Notification Cards -->
+              <mat-card *ngFor="let notification of receivedNotifications" class="notification-card">
+                <mat-card-header>
+                  <div mat-card-avatar class="notification-icon" [class]="notification.status.toLowerCase()">
+                    <mat-icon>{{ notification.status === 'PENDING' ? 'notifications_active' : notification.status === 'SENT' ? 'check_circle' : 'error' }}</mat-icon>
+                  </div>
+                  <mat-card-title>Alerte environnementale #{{ notification.campaignId }}</mat-card-title>
+                  <mat-card-subtitle>
+                    {{ notification.recipientEmail }} · {{ notification.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+                  </mat-card-subtitle>
+                </mat-card-header>
+
+                <mat-card-content>
+                  <div class="notification-status">
+                    <mat-chip [class]="notification.status.toLowerCase()">
+                      {{ notification.status === 'PENDING' ? 'En attente' : notification.status === 'SENT' ? 'Envoyée' : 'Échec' }}
+                    </mat-chip>
+                  </div>
+
+                  <p *ngIf="notification.failedAt && notification.errorMessage" class="error-message">
+                    <mat-icon>error</mat-icon>
+                    {{ notification.errorMessage }}
+                  </p>
+                </mat-card-content>
+              </mat-card>
             </div>
           </div>
 
-          <div class="notif-actions">
-            <button (click)="saveNotifications()" class="btn-save">
-              Sauvegarder
-            </button>
+          <mat-divider></mat-divider>
+
+          <!-- Section 2: Notification Preferences -->
+          <div class="preferences-section">
+            <div class="section-header">
+              <h3>
+                <mat-icon>tune</mat-icon>
+                Préférences de notification
+              </h3>
+              <p>Personnalisez vos préférences de notification</p>
+            </div>
+
+            <app-notification-toggle
+              *ngIf="currentUser"
+              [userId]="currentUser.id"
+              (settingsChange)="onNotificationSettingsChange($event)"
+            ></app-notification-toggle>
           </div>
         </div>
-
-        <!-- Onglet Sécurité -->
-        <div *ngIf="activeTab === 'security'" class="card security-card">
-          <h2>Sécurité du compte</h2>
-          <p class="security-subtitle">
-            Gérez la sécurité et les paramètres de votre compte
-          </p>
-
-          <!-- Changer le mot de passe -->
-          <div class="security-section">
-            <div class="section-text">
-              <h3>Changer le mot de passe</h3>
-              <p class="section-description">
-                Mettez à jour votre mot de passe régulièrement pour la sécurité.
-              </p>
-            </div>
-            <button class="btn-outline-rounded">Modifier</button>
-          </div>
-
-          <!-- Authentification à deux facteurs -->
-          <div class="security-section">
-            <div class="section-text">
-              <h3>Authentification à deux facteurs</h3>
-              <p class="section-description">
-                Ajoutez une couche de sécurité supplémentaire à votre compte.
-              </p>
-            </div>
-            <button class="btn-outline-rounded">Configurer 2FA</button>
-          </div>
-
-          <!-- Zone de danger -->
-          <div class="security-section danger-zone">
-            <h3>Zone de danger</h3>
-            <p class="danger-text">Actions irréversibles sur votre compte</p>
-            <button class="btn-danger-rounded">🗑️ Supprimer le compte</button>
-          </div>
-        </div>
-      </div>
-    </div>
+      </mat-tab>
+    </mat-tab-group>
   </div>
 </div>

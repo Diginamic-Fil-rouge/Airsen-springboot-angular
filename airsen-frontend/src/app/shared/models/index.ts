@@ -29,6 +29,9 @@ export * from './export.model';
 // API Response Models
 export * from './api-response.model';
 
+// User Profile Models
+export * from './profile.model';
+
 // Re-export Auth models for convenience (from core/auth/models)
-export * from '../../core/auth/models/user.model';
+export { User, UserRole, UserRegistrationRequest, UserUpdateRequest, NotificationPreference, NotificationScope } from '../../core/auth/models/user.model';
 export * from '../../core/auth/models/auth.model';

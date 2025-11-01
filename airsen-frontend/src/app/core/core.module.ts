@@ -6,7 +6,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './auth/services/auth.service';
 import { AlertService } from './services/alert.service';
 import { ExportService } from './services/export.service';
-import { NotificationService } from './services/notification.service';
 
 // Guards
 import { AuthGuard } from './auth/guards/auth.guard';
@@ -24,7 +23,6 @@ import { GuestGuard } from './auth/guards/guest.guard';
  * - AuthService: JWT authentication and token management
  * - AlertService: Fetch and cache admin broadcast alerts
  * - ExportService: Client-side PDF/CSV generation with history
- * - NotificationService: MatSnackBar wrapper for user feedback
  *
  * Guards:
  * - AuthGuard: JWT token validation for protected routes
@@ -41,7 +39,6 @@ import { GuestGuard } from './auth/guards/guest.guard';
     AuthService,
     AlertService,
     ExportService,
-    NotificationService,
     // Guards
     AuthGuard,
     RoleGuard,

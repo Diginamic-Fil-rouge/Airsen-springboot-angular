@@ -14,6 +14,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -48,6 +49,7 @@ const MATERIAL_MODULES = [
   MatGridListModule,
   MatChipsModule,
   MatProgressSpinnerModule,
+  MatProgressBarModule,
   MatSnackBarModule,
   MatDialogModule,
   MatTabsModule,

@@ -1,4 +1,4 @@
-import { Commune } from '../../models/commune.model';
+import { Commune } from '@/shared/models';
 
 /**
  * Core User model representing authenticated user with profile information

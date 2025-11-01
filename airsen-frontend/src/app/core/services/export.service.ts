@@ -55,20 +55,22 @@ export class ExportService {
 
         // Generate file based on format
         let fileSize = 0;
-        const fileName = `airsen_export_${data.commune.name}_${request.startDate}_${request.endDate}.${request.format.toLowerCase()}`;
+        const startDateStr = request.startDate?.toISOString().split('T')[0] || 'latest';
+        const endDateStr = request.endDate?.toISOString().split('T')[0] || 'latest';
+        const fileName = `airsen_export_${data.commune}_${startDateStr}_${endDateStr}.${request.format.toLowerCase()}`;
 
         if (request.format === ExportFormat.PDF) {
           fileSize = this.generatePDF(data, {
-            locationName: data.commune.name,
-            startDate: request.startDate,
-            endDate: request.endDate,
+            locationName: data.commune,
+            startDate: startDateStr,
+            endDate: endDateStr,
             fileName: fileName
           });
         } else if (request.format === ExportFormat.CSV) {
           fileSize = this.generateCSV(data, {
-            locationName: data.commune.name,
-            startDate: request.startDate,
-            endDate: request.endDate,
+            locationName: data.commune,
+            startDate: startDateStr,
+            endDate: endDateStr,
             fileName: fileName
           });
         }
@@ -76,11 +78,10 @@ export class ExportService {
         // Create export record
         const exportRecord: ExportRecord = {
           id: exportId,
-          userId: request.userId,
-          locationName: data.commune.name,
-          inseeCode: request.inseeCode,
-          startDate: request.startDate,
-          endDate: request.endDate,
+          userId: 0, // Will be set by component
+          locationName: data.commune,
+          inseeCode: data.inseeCode,
+          exportType: request.exportType,
           format: request.format,
           fileName: fileName,
           fileSize: fileSize,
@@ -129,7 +130,7 @@ export class ExportService {
     // Location and Date Range
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Location: ${metadata.locationName} (INSEE: ${data.commune.inseeCode})`, 20, yPosition);
+    doc.text(`Location: ${metadata.locationName} (INSEE: ${data.inseeCode})`, 20, yPosition);
     yPosition += 8;
     doc.text(`Period: ${metadata.startDate} to ${metadata.endDate}`, 20, yPosition);
     yPosition += 15;
@@ -143,19 +144,19 @@ export class ExportService {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
 
-    if (data.airQuality && data.airQuality.length > 0) {
-      data.airQuality.forEach((aqi, index) => {
+    if (data.airQuality && data.airQuality.measurements && data.airQuality.measurements.length > 0) {
+      data.airQuality.measurements.forEach((aqi, index) => {
         // ATMO Index with color coding
-        const indexColor = this.getAQIColor(aqi.atmoIndex);
+        const indexColor = this.getAQIColor(aqi.aqi);
         doc.setTextColor(indexColor.r, indexColor.g, indexColor.b);
-        doc.text(`Date: ${aqi.measurementDate} - ATMO Index: ${aqi.atmoIndex} (${aqi.qualifier})`, 25, yPosition);
+        doc.text(`Date: ${aqi.date} - AQI: ${aqi.aqi} (${aqi.aqiLabel})`, 25, yPosition);
         doc.setTextColor(0, 0, 0); // Reset to black
         yPosition += 6;
 
         // Pollutants
-        doc.text(`  NO2: ${aqi.pollutants.no2} μg/m³, O3: ${aqi.pollutants.o3} μg/m³, PM10: ${aqi.pollutants.pm10} μg/m³`, 25, yPosition);
+        doc.text(`  NO2: ${aqi.no2 || 'N/A'} μg/m³, O3: ${aqi.o3 || 'N/A'} μg/m³, PM10: ${aqi.pm10 || 'N/A'} μg/m³`, 25, yPosition);
         yPosition += 6;
-        doc.text(`  PM2.5: ${aqi.pollutants.pm25} μg/m³, SO2: ${aqi.pollutants.so2} μg/m³`, 25, yPosition);
+        doc.text(`  PM2.5: ${aqi.pm25 || 'N/A'} μg/m³`, 25, yPosition);
         yPosition += 8;
 
         // Page break if needed
@@ -180,13 +181,13 @@ export class ExportService {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
 
-    if (data.weather && data.weather.length > 0) {
-      data.weather.forEach((weather, index) => {
-        doc.text(`Date: ${weather.measurementDate}`, 25, yPosition);
+    if (data.weather && data.weather.measurements && data.weather.measurements.length > 0) {
+      data.weather.measurements.forEach((weather, index) => {
+        doc.text(`Date: ${weather.date}`, 25, yPosition);
         yPosition += 6;
-        doc.text(`  Temperature: ${weather.temperature}°C, Humidity: ${weather.humidity}%`, 25, yPosition);
+        doc.text(`  Temperature: ${weather.temperature}°C, Feels Like: ${weather.feelsLike}°C, Humidity: ${weather.humidity}%`, 25, yPosition);
         yPosition += 6;
-        doc.text(`  Precipitation: ${weather.precipitation} mm, Wind: ${weather.windSpeed} km/h`, 25, yPosition);
+        doc.text(`  Wind Speed: ${weather.windSpeed} km/h, ${weather.weatherDescription}`, 25, yPosition);
         yPosition += 8;
 
         // Page break if needed
@@ -234,7 +235,7 @@ export class ExportService {
     csvData.push({
       'Date': '',
       'Location': metadata.locationName,
-      'INSEE Code': data.commune.inseeCode,
+      'INSEE Code': data.inseeCode,
       'Period': `${metadata.startDate} to ${metadata.endDate}`,
       'Generated': new Date().toLocaleString()
     });
@@ -255,17 +256,16 @@ export class ExportService {
       'SO2 (μg/m³)': 'SO2'
     });
 
-    if (data.airQuality && data.airQuality.length > 0) {
-      data.airQuality.forEach(aqi => {
+    if (data.airQuality && data.airQuality.measurements && data.airQuality.measurements.length > 0) {
+      data.airQuality.measurements.forEach(aqi => {
         csvData.push({
-          'Date': aqi.measurementDate,
-          'ATMO Index': aqi.atmoIndex,
-          'Qualifier': aqi.qualifier,
-          'NO2 (μg/m³)': aqi.pollutants.no2,
-          'O3 (μg/m³)': aqi.pollutants.o3,
-          'PM10 (μg/m³)': aqi.pollutants.pm10,
-          'PM2.5 (μg/m³)': aqi.pollutants.pm25,
-          'SO2 (μg/m³)': aqi.pollutants.so2
+          'Date': aqi.date,
+          'AQI': aqi.aqi,
+          'Label': aqi.aqiLabel,
+          'NO2 (μg/m³)': aqi.no2 || 'N/A',
+          'O3 (μg/m³)': aqi.o3 || 'N/A',
+          'PM10 (μg/m³)': aqi.pm10 || 'N/A',
+          'PM2.5 (μg/m³)': aqi.pm25 || 'N/A'
         });
       });
     } else {
@@ -285,14 +285,15 @@ export class ExportService {
       'Wind Speed (km/h)': 'Wind Speed'
     });
 
-    if (data.weather && data.weather.length > 0) {
-      data.weather.forEach(weather => {
+    if (data.weather && data.weather.measurements && data.weather.measurements.length > 0) {
+      data.weather.measurements.forEach(weather => {
         csvData.push({
-          'Date': weather.measurementDate,
+          'Date': weather.date,
           'Temperature (°C)': weather.temperature,
+          'Feels Like (°C)': weather.feelsLike,
           'Humidity (%)': weather.humidity,
-          'Precipitation (mm)': weather.precipitation,
-          'Wind Speed (km/h)': weather.windSpeed
+          'Wind Speed (km/h)': weather.windSpeed,
+          'Description': weather.weatherDescription
         });
       });
     } else {
