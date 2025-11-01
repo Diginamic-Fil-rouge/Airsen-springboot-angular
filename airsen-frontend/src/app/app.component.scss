@@ -1,9 +1,9 @@
 // Main Application Layout Styles - Airsen Platform
 // Clean white background with minimal design
+@use 'styles/design-system' as *;
 
 .app-container {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
   background-color: white;
 }
@@ -41,37 +41,44 @@
   }
 }
 
-.main-content {
-  display: flex;
+.main-layout {
   flex: 1;
-  background-color: white;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left $duration-slow $ease-in-out;
+
+  &.authenticated {
+    margin-left: $sidebar-width;
+
+    @include respond-max(lg) {
+      margin-left: 0;
+    }
+  }
+}
+
+.main-content {
+  flex: 1;
+  background-color: $airsen-gray-50;
+  min-height: 100vh;
+
+  &.with-sidebar {
+    padding: $space-6;
+
+    @include respond-max(md) {
+      padding: $space-4;
+    }
+
+    @include respond-max(sm) {
+      padding: $space-3;
+    }
+  }
 
   &.with-nav {
     padding-top: 0;
   }
 }
 
-.sidenav {
-  flex-shrink: 0;
-}
-
-.content-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  background-color: white;
-
-  &.with-sidenav {
-    width: calc(100% - 280px);
-
-    @media (max-width: 1024px) {
-      width: 100%;
-    }
-  }
-}
-
-.content-area {
+.content-area-old {
   flex: 1;
   padding: 2rem;
   background-color: white;

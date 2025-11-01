@@ -1,0 +1,81 @@
+<aside class="sidebar" [class.collapsed]="!isExpanded">
+  <!-- Logo and Hamburger Menu Toggle -->
+  <div class="sidebar-header" [class.collapsed]="!isExpanded">
+    <!-- Logo (hidden when collapsed) -->
+    <div class="sidebar-logo" *ngIf="isExpanded">
+      <img
+        src="assets/images/airsen-logo.png"
+        alt="AIRSEN Logo"
+        class="logo-image"
+      />
+      <span class="logo-text">AIRSEN</span>
+    </div>
+
+    <!-- Hamburger Menu Button -->
+    <button
+      class="hamburger-btn"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
+      [attr.aria-expanded]="isExpanded"
+    >
+      <span class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+  </div>
+
+  <!-- Navigation Sections -->
+  <nav class="sidebar-nav">
+    <!-- Main Navigation -->
+    <ul class="nav-list">
+      <li *ngFor="let item of visibleNavItems" class="nav-item-wrapper">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-item"
+          [class.nav-item-featured]="item.featured"
+          [matTooltip]="!isExpanded ? item.label : ''"
+          matTooltipPosition="right">
+          <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+          <span class="nav-label" *ngIf="isExpanded">{{ item.label }}</span>
+          <!-- Badge for notification counts -->
+          <span class="nav-badge" *ngIf="isExpanded && item.badgeCount && item.badgeCount > 0">
+            {{ item.badgeCount }}
+          </span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Divider -->
+    <div class="nav-divider" *ngIf="isExpanded"></div>
+
+    <!-- Logout -->
+    <ul class="nav-list nav-list-bottom">
+      <li class="nav-item-wrapper">
+        <button
+          class="nav-item nav-logout-btn"
+          (click)="onLogout()"
+          [matTooltip]="!isExpanded ? 'Déconnexion' : ''"
+          matTooltipPosition="right">
+          <mat-icon class="nav-icon">logout</mat-icon>
+          <span class="nav-label" *ngIf="isExpanded">Déconnexion</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Footer Version Info -->
+  <div class="sidebar-footer" *ngIf="isExpanded">
+    <p class="version-info">v{{ appVersion }}</p>
+    <p class="copyright">© 2024 AIRSEN</p>
+  </div>
+</aside>
+
+<!-- Backdrop for mobile/tablet overlay -->
+<div
+  class="sidebar-backdrop"
+  *ngIf="showBackdrop"
+  (click)="toggleSidebar()"
+></div>

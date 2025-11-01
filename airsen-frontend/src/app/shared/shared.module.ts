@@ -11,6 +11,7 @@ import { LoaderComponent } from './components/loader/loader.component';
 import { BackButtonComponent } from './components/backButton/back-button.component';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-loader.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
 
 // Pipes
 import { AqiLabelPipe } from './pipes/aqi-label.pipe';
@@ -27,6 +28,8 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
  * - LoaderComponent: Loading spinner for async operations
  * - BackButtonComponent: Navigation back button
  * - BreadcrumbComponent: Breadcrumb navigation trail
+ * - SkeletonLoaderComponent: Skeleton loading placeholders
+ * - SidebarComponent: Collapsible navigation sidebar
  *
  * Pipes:
  * - AqiLabelPipe: Convert AQI number to label (Good, Moderate, Unhealthy, etc.)
@@ -60,6 +63,7 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     BackButtonComponent,
     BreadcrumbComponent,
     SkeletonLoaderComponent,
+    SidebarComponent,
     // Pipes
     AqiLabelPipe,
     AqiColorPipe
@@ -83,6 +87,7 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     BackButtonComponent,
     BreadcrumbComponent,
     SkeletonLoaderComponent,
+    SidebarComponent,
     // Pipes
     AqiLabelPipe,
     AqiColorPipe
