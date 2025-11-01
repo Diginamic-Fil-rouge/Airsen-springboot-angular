@@ -65,6 +65,13 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }, {
       validators: this.passwordMatchValidator
     });
+
+    // Clear error when user starts typing in any form field
+    this.registerForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.authService.clearError();
+      });
   }
 
   /**

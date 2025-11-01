@@ -58,6 +58,13 @@ export class LoginComponent implements OnInit, OnDestroy {
       password: ['', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false]
     });
+
+    // Clear error when user starts typing in any form field
+    this.loginForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.authService.clearError();
+      });
   }
 
   /**
