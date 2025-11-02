@@ -67,13 +67,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { label: 'Carte', icon: 'map', route: '/map' },
 
     // Alerts (with badge count - ADMIN only)
-    { label: 'Alertes', icon: 'notifications', route: '/alerts', roles: ['ADMIN'], badgeCount: 3 },
+    { label: 'Alertes', icon: 'notifications', route: '/alerts', roles: ['ADMIN']},
 
     // Community
     { label: 'Forum', icon: 'forum', route: '/forum' },
 
-    // Favorites (with badge count)
-    { label: 'Favoris', icon: 'favorite', route: '/favorites', badgeCount: 7 },
+    // Favorites
+    { label: 'Favoris', icon: 'favorite', route: '/favorites' },
 
     // Export/Download
     { label: 'Exports', icon: 'download', route: '/export' },
