@@ -25,7 +25,7 @@ import {
   providedIn: 'root'
 })
 export class ExportService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/export`;
+  private readonly apiUrl = `${environment.apiUrl}/export`;
   private readonly STORAGE_KEY = 'airsen_export_history';
   private readonly MAX_HISTORY_RECORDS = 50;
   private http = inject(HttpClient);

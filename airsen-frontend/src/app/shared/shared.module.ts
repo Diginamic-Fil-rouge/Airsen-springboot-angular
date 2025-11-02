@@ -12,6 +12,7 @@ import { BackButtonComponent } from './components/backButton/back-button.compone
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-loader.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { FavoriteButtonComponent } from './components/favorite-button/favorite-button.component';
 
 // Pipes
 import { AqiLabelPipe } from './pipes/aqi-label.pipe';
@@ -64,6 +65,7 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     BreadcrumbComponent,
     SkeletonLoaderComponent,
     SidebarComponent,
+    FavoriteButtonComponent,
     // Pipes
     AqiLabelPipe,
     AqiColorPipe
@@ -88,6 +90,7 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     BreadcrumbComponent,
     SkeletonLoaderComponent,
     SidebarComponent,
+    FavoriteButtonComponent,
     // Pipes
     AqiLabelPipe,
     AqiColorPipe

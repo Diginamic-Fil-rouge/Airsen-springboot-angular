@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class VotingService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/forum/threads`;
+  private readonly apiUrl = `${environment.apiUrl}/forum/threads`;
     private http = inject(HttpClient);
 
     voteThread(threadId: number | undefined, voteType: string): Observable<any> {

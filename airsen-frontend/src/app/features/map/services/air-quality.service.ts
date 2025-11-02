@@ -7,7 +7,7 @@ import { AirQuality } from '@/shared/models';
   providedIn: 'root'
 })
 export class AirQualityService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/atmo`;
+  private readonly apiUrl = `${environment.apiUrl}/atmo`;
   private http = inject(HttpClient);
 
   getAirLatestQuality(inseeCode: string): Observable<any>{

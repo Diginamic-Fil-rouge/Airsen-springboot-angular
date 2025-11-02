@@ -7,7 +7,7 @@ import { Commune, CommuneDatas, ExportData } from '@/shared/models';
   providedIn: 'root'
 })
 export class GeographicService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/communes`;
+  private readonly apiUrl = `${environment.apiUrl}/communes`;
   private http = inject(HttpClient);
 
   getCommunesWithCoordinatesAndMinPop(): Observable<Commune[]>{

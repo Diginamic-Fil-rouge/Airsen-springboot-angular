@@ -43,7 +43,7 @@ export interface ChangePasswordResponse {
   providedIn: 'root'
 })
 export class UserProfileService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/users`;
+  private readonly apiUrl = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient) {}
 

@@ -7,7 +7,7 @@ import { Weather } from '@/shared/models';
   providedIn: 'root'
 })
 export class WeatherService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/weather`;
+  private readonly apiUrl = `${environment.apiUrl}/weather`;
   private http = inject(HttpClient);
 
   getCurrentWeather(inseeCode: string): Observable<Weather>{

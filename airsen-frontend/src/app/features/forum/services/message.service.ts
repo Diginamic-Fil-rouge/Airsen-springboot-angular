@@ -9,7 +9,7 @@ import { Message } from '../models/message.model';
   providedIn: 'root'
 })
 export class MessageService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/forum/threads`;
+  private readonly apiUrl = `${environment.apiUrl}/forum/threads`;
   private http = inject(HttpClient);
   messages: Observable<Message[]> = new Observable<Message[]>();
 
@@ -29,10 +29,10 @@ export class MessageService {
     if (typeof messageId !== 'number' || isNaN(messageId)) {
       throw new Error('deleteMessage: messageId must be a valid number');
     }
-    return this.http.delete<void>(`${environment.apiUrl}/api/v1/forum/messages/${messageId}`);
+    return this.http.delete<void>(`${environment.apiUrl}/forum/messages/${messageId}`);
   }
 
   editMessage(message: any): Observable<any> {
-    return this.http.put(`${environment.apiUrl}/api/v1/forum/messages/${message?.id}`, message);
+    return this.http.put(`${environment.apiUrl}/forum/messages/${message?.id}`, message);
   }
 }

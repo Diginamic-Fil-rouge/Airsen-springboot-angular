@@ -1,7 +1,7 @@
 // Development Environment Configuration
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080',
+  apiUrl: 'http://localhost:8080/api/v1',
   mapbox: {
     accessToken: 'YOUR_MAPBOX_TOKEN_HERE' // To be configured
   },

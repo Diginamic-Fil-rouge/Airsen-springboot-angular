@@ -9,7 +9,7 @@ import { Category } from '../models/category.model';
   providedIn: 'root'
 })
 export class ForumService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/forum/categories`;
+  private readonly apiUrl = `${environment.apiUrl}/forum/categories`;
   private http = inject(HttpClient);
   categories: Observable<Category[]> = this.http.get<Category[]>(this.apiUrl);
 

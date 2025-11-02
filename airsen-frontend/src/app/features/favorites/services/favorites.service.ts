@@ -8,7 +8,7 @@ import { FavoriteCheckResponse, Favorite } from '@/shared/models';
   providedIn: 'root'
 })
 export class FavoritesService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/users`;
+  private readonly apiUrl = `${environment.apiUrl}/users`;
   private http = inject(HttpClient);
 
     getUserFavorites(userId: number | undefined): Observable<Favorite[]>{

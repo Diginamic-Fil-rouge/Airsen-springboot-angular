@@ -10,19 +10,19 @@ import { Page } from '../models/page.model';
   providedIn: 'root'
 })
 export class ThreadService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/forum/threads`;
+  private readonly apiUrl = `${environment.apiUrl}/forum/threads`;
     private http = inject(HttpClient);
     threads: Observable<Thread[]> = this.http.get<Thread[]>(this.apiUrl);
 
     getAllThreads(): Observable<Page> {
         return this.http.get<Page>(`${this.apiUrl}`, { params: { sortBy: 'lastMessageDate' }});
     }
-    
+
     getThreads(id: number): Observable<Thread[]> {
         if (id === 0) {
             return this.threads;
         }
-        this.threads = this.http.get<Thread[]>(`${environment.apiUrl}/api/v1/forum/categories/${id}/threads`);
+        this.threads = this.http.get<Thread[]>(`${environment.apiUrl}/forum/categories/${id}/threads`);
         return this.threads;
     }
 
