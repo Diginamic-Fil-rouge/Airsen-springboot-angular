@@ -1,0 +1,21 @@
+<div class="empty-state">
+  <div class="empty-state-content">
+    <div class="illustration">
+      <mat-icon class="empty-icon">favorite_border</mat-icon>
+    </div>
+    
+    <h2 class="empty-title">Aucune commune favorite</h2>
+    <p class="empty-description">
+      Ajoutez des communes à vos favoris pour les retrouver rapidement
+    </p>
+    
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onBrowseCommunes()"
+      class="browse-button">
+      <mat-icon>explore</mat-icon>
+      Parcourir les communes
+    </button>
+  </div>
+</div>

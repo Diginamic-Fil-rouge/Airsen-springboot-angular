@@ -1,0 +1,47 @@
+<div class="favorites-page">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        Mes Communes Favoris
+        <span class="count-badge" *ngIf="!state.isLoading">
+          {{ state.favoriteCount.count }}/{{ state.favoriteCount.maximum }}
+        </span>
+      </h1>
+      <p class="page-subtitle">Accédez rapidement à vos communes surveillées</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Loading State -->
+    <app-favorites-loading-skeleton *ngIf="state.isLoading"></app-favorites-loading-skeleton>
+
+    <!-- Error State -->
+    <div class="error-state" *ngIf="!state.isLoading && state.error">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h2>Erreur de chargement</h2>
+      <p>{{ state.error }}</p>
+      <button mat-raised-button color="primary" (click)="retryLoad()">
+        <mat-icon>refresh</mat-icon>
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <app-favorites-empty-state 
+      *ngIf="!state.isLoading && !state.error && state.favorites.length === 0"
+      (browseCommunes)="browseCommunes()">
+    </app-favorites-empty-state>
+
+    <!-- Favorites Grid -->
+    <div class="favorites-grid" *ngIf="!state.isLoading && !state.error && state.favorites.length > 0">
+      <app-commune-favorite-card
+        *ngFor="let favorite of state.favorites"
+        [favorite]="favorite"
+        (viewDetails)="viewCommuneDetails($event)"
+        (removeFavorite)="removeFavorite($event)">
+      </app-commune-favorite-card>
+    </div>
+  </main>
+</div>

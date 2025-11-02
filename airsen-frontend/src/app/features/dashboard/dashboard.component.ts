@@ -6,9 +6,9 @@ import { takeUntil, catchError } from 'rxjs/operators';
 import { AuthService } from '@/auth/services/auth.service';
 import { AuthUser } from '@/auth/models/auth.model';
 import { AlertService } from '@/core/services/alert.service';
-import { FavoritesService } from '@/features/favorites/services/favorites.service';
+import { FavoriteService } from '@/features/favorites/services/favorite.service';
 import { CampaignNotification, NotificationDeliveryStatus } from '@/shared/models';
-import { Favorite } from '@/shared/models';
+import { UserFavoriteResponse } from '@/shared/models/favorite.model';
 import { QuickActionCard, QuickActionKey } from './models/quick-action';
 import { AlertSummaryItem } from './models/alert-summary';
 import { UserStatsSnapshot } from './models/user-stats';
@@ -57,7 +57,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private alertService: AlertService,
-    private favoritesService: FavoritesService,
+    private favoriteService: FavoriteService,
     private router: Router
   ) {}
 
@@ -230,7 +230,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return of([]);
         })
       ),
-      favorites: this.favoritesService.getUserFavorites(userId).pipe(
+      favorites: this.favoriteService.getUserFavorites(userId).pipe(
         catchError(err => {
           console.error('Error loading favorites:', err);
           return of([]);
@@ -274,7 +274,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   /**
    * Processes user favorites and updates stats.
    */
-  private processFavorites(favorites: Favorite[]): void {
+  private processFavorites(favorites: UserFavoriteResponse[]): void {
     this.userStats.favoriteIndicators = favorites.length;
   }
 
