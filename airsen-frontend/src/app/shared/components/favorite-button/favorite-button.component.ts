@@ -110,6 +110,9 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
           // Service returns true when added, false when removed
           this.isLoading = false;
 
+          // Update state based on actual service response
+          this.isFavorited = added;
+
           // Trigger success animation only on add
           if (added) {
             this.animateSuccess = true;
