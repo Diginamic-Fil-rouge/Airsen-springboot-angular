@@ -1,6 +1,7 @@
 import {
   Component,
   AfterViewInit,
+  OnDestroy,
   input,
   inject,
   Output,
@@ -25,7 +26,7 @@ import { AuthUser } from "@/app/core/auth/models/auth.model";
   templateUrl: "./map-view.component.html",
   styleUrls: ["./map-view.component.scss"],
 })
-export class MapViewComponent implements AfterViewInit {
+export class MapViewComponent implements AfterViewInit, OnDestroy {
   private map: any;
   private geographicService = inject(GeographicService);
   private favoriteService = inject(FavoriteService);
@@ -55,8 +56,21 @@ export class MapViewComponent implements AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    this.initMap();
-    this.initFavorites();
+    // Small timeout to ensure DOM is ready
+    setTimeout(() => {
+      this.initMap();
+      this.initMarkers();
+      this.initFavorites();
+    }, 0);
+  }
+
+  ngOnDestroy(): void {
+    // Clean up map instance
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+    this.markersInitialized = false;
   }
 
   /**
@@ -69,6 +83,17 @@ export class MapViewComponent implements AfterViewInit {
    * copyright notice.
    */
   private initMap(): void {
+    // Clean up existing map instance if any
+    if (this.map) {
+      this.map.remove();
+    }
+
+    const mapElement = document.getElementById("map");
+    if (!mapElement) {
+      console.error("Map element not found");
+      return;
+    }
+
     this.map = L.map("map", {
       // coordinates of France
       center: [47.0, 1.5231],
@@ -82,6 +107,13 @@ export class MapViewComponent implements AfterViewInit {
     });
 
     tiles.addTo(this.map);
+
+    // Force map to recalculate size
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 100);
   }
 
   /**
@@ -91,6 +123,12 @@ export class MapViewComponent implements AfterViewInit {
    * The markers are only initialized once, and then the function does nothing.
    */
   initMarkers() {
+    // Wait for map to be initialized
+    if (!this.map) {
+      console.warn("Map not initialized yet, skipping marker initialization");
+      return;
+    }
+
     if (!this.markersInitialized) {
       this.communes()?.forEach((communes) => {
         console.log("commune : ", communes);
@@ -177,6 +215,11 @@ export class MapViewComponent implements AfterViewInit {
    * @param commune The commune data to add to the map.
    */
   addMarkerToMap(commune: Commune | CommuneWithAirQuality | any, prefix: string | null) {
+    if (!this.map) {
+      console.warn("Cannot add marker: map not initialized");
+      return;
+    }
+
     if (!commune.latitude || !commune.longitude) {
       return;
     }
@@ -217,6 +260,10 @@ export class MapViewComponent implements AfterViewInit {
    * @param {number} zoomLevel - The zoom level to use.
    */
   zoomOnMap(latLng: any, zoomLevel: number) {
+    if (!this.map) {
+      console.warn("Cannot zoom: map not initialized");
+      return;
+    }
     this.map.setView(latLng, zoomLevel);
   }
 }

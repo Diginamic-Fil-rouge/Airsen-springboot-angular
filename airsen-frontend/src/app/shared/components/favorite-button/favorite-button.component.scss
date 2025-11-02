@@ -1,27 +1,41 @@
 .favorite-button {
   border: none;
-  background: transparent;
+  background: rgba(76, 175, 80, 0.1);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  border-radius: 50%;
+  padding: 8px;
 
-  &.small .mat-icon { font-size: 20px; }
-  &.medium .mat-icon { font-size: 24px; }
-  &.large .mat-icon { font-size: 32px; }
+  &.small {
+    .mat-icon { font-size: 20px; }
+    padding: 6px;
+  }
+
+  &.medium {
+    .mat-icon { font-size: 24px; }
+    padding: 8px;
+  }
+
+  &.large {
+    .mat-icon { font-size: 32px; }
+    padding: 10px;
+  }
 
   .mat-icon {
     color: var(--airsen-gray-500);
 
     &.favorited {
-      color: var(--airsen-error);
+      color: #4CAF50;
     }
   }
 
   &:hover:not(:disabled) {
     transform: scale(1.1);
+    background: rgba(76, 175, 80, 0.15);
   }
 
   &:disabled {
