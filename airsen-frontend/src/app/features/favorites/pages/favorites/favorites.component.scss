@@ -1,0 +1,106 @@
+@use '@angular/material' as mat;
+@import 'src/styles/variables';
+
+.favorites-page {
+  min-height: 100vh;
+  background-color: $airsen-background;
+  padding: $spacing-lg;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-md;
+  }
+}
+
+.page-header {
+  margin-bottom: $spacing-xl;
+  text-align: center;
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: $airsen-text-primary;
+    margin-bottom: $spacing-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-md;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: 2rem;
+      flex-direction: column;
+      gap: $spacing-sm;
+    }
+  }
+
+  .count-badge {
+    background: linear-gradient(135deg, $airsen-primary, $airsen-primary-light);
+    color: white;
+    padding: $spacing-xs $spacing-md;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-width: 60px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .page-subtitle {
+    font-size: 1.1rem;
+    color: $airsen-text-secondary;
+    margin: 0;
+  }
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.error-state {
+  text-align: center;
+  padding: $spacing-xxl;
+  background: white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  margin: $spacing-xl 0;
+
+  .error-icon {
+    font-size: 4rem;
+    color: $airsen-error;
+    margin-bottom: $spacing-lg;
+  }
+
+  h2 {
+    color: $airsen-text-primary;
+    margin-bottom: $spacing-sm;
+  }
+
+  p {
+    color: $airsen-text-secondary;
+    margin-bottom: $spacing-lg;
+  }
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: $spacing-lg;
+  margin-top: $spacing-lg;
+
+  @media (max-width: $breakpoint-md) {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: $spacing-md;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+  }
+}

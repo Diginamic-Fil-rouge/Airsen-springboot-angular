@@ -15,7 +15,7 @@ import * as L from "leaflet";
 import { Observable } from "rxjs";
 import { Commune, CommuneWithAirQuality } from "@/shared/models";
 import { GeographicService } from "../services/geographic.service";
-import { FavoritesService } from "../../favorites/services/favorites.service";
+import { FavoriteService } from "../../favorites/services/favorite.service";
 import { AuthService } from "../../../core/auth/services/auth.service";
 import { AuthUser } from "@/app/core/auth/models/auth.model";
 
@@ -28,7 +28,7 @@ import { AuthUser } from "@/app/core/auth/models/auth.model";
 export class MapViewComponent implements AfterViewInit {
   private map: any;
   private geographicService = inject(GeographicService);
-  private favoriteService = inject(FavoritesService);
+  private favoriteService = inject(FavoriteService);
   private authService = inject(AuthService);
   markersInitialized = false;
   communes = input<Observable<Commune[]>>();
@@ -151,17 +151,17 @@ export class MapViewComponent implements AfterViewInit {
 
     if (currentUser) {
       this.favoriteService.getUserFavorites(currentUser.id).subscribe({
-        next: (data) => {
-          data.forEach(favorite => this.geographicService.getCommuneDatas(favorite.communeInseeCode).subscribe({
-            next: (data) => {
-              this.addMarkerToMap(data, 'favorite');
+        next: (data: any[]) => {
+          data.forEach((favorite: any) => this.geographicService.getCommuneDatas(favorite.communeInseeCode).subscribe({
+            next: (communeData: any) => {
+              this.addMarkerToMap(communeData, 'favorite');
             },
-            error: (error) => {
+            error: (error: any) => {
               console.error('Error fetching favorite commune data:', error);
             }
           }))
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error("Error fetching favorite communes:", error);
         },
       });

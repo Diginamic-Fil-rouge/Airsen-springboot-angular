@@ -9,7 +9,7 @@ import * as L from "leaflet";
 import { GeographicService } from "./services/geographic.service";
 import { WeatherService } from "./services/weather.service";
 import { AirQualityService } from "./services/air-quality.service";
-import { FavoritesService } from '../favorites/services/favorites.service';
+import { FavoriteService } from '../favorites/services/favorite.service';
 import { NgClass } from '@angular/common';
 import { Commune, Weather, AirQuality } from "@/shared/models";
 
@@ -24,7 +24,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private geographicService = inject(GeographicService);
   private weatherService = inject(WeatherService);
   private airQualityService = inject(AirQualityService);
-  private favoriteService = inject(FavoritesService);
+  private favoriteService = inject(FavoriteService);
   private router = inject(Router);
 
   currentUser: AuthUser | null = null;
@@ -138,14 +138,16 @@ export class MapComponent implements OnInit, OnDestroy {
         type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)).catch(() => null) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)).catch(() => null),
       ]);
 
-      this.favoriteService.checkIfIsFavorite(this.currentUser?.id, commune.inseeCode).subscribe({
-        next: (data) => {
-          this.communeClickedIsFavorite = data.isFavorited;
-        },
-        error: (error) => {
-          console.error("Error checking if commune is favorite:", error);
-        }
-      });
+      if (this.currentUser?.id) {
+        this.favoriteService.checkFavorite(this.currentUser.id, commune.inseeCode).subscribe({
+          next: (data) => {
+            this.communeClickedIsFavorite = data.isFavorited;
+          },
+          error: (error) => {
+            console.error("Error checking if commune is favorite:", error);
+          }
+        });
+      }
 
       console.log("Weather data received:", weather);
       console.log("Air quality data received:", airQuality);
@@ -193,7 +195,12 @@ export class MapComponent implements OnInit, OnDestroy {
    * If there is an error while adding the favorite, logs the error to the console.
    */
   addFavorite(){
-    this.favoriteService.addFavorite(this.currentUser?.id, this.communeClicked?.inseeCode).subscribe({
+    if (!this.currentUser?.id || !this.communeClicked?.inseeCode) {
+      console.error("Cannot add favorite: missing user ID or commune INSEE code");
+      return;
+    }
+
+    this.favoriteService.addFavorite(this.currentUser.id, { communeInseeCode: this.communeClicked.inseeCode }).subscribe({
       next: (data) => {
         this.communeClickedIsFavorite = true;
       },
@@ -210,7 +217,12 @@ export class MapComponent implements OnInit, OnDestroy {
    * If there is an error while removing the favorite, logs the error to the console.
    */
   removeFavorite(){
-    this.favoriteService.removeFavorite(this.currentUser?.id, this.communeClicked?.inseeCode).subscribe({
+    if (!this.currentUser?.id || !this.communeClicked?.inseeCode) {
+      console.error("Cannot remove favorite: missing user ID or commune INSEE code");
+      return;
+    }
+
+    this.favoriteService.removeFavorite(this.currentUser.id, this.communeClicked.inseeCode).subscribe({
       next: () => {
         this.communeClickedIsFavorite = false;
       },

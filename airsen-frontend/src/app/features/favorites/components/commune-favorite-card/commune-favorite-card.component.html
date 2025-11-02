@@ -1,0 +1,45 @@
+<mat-card class="commune-favorite-card">
+  <mat-card-header>
+    <div class="geographic-hierarchy">
+      <span class="region">{{ favorite.regionName }}</span>
+      <mat-icon class="hierarchy-separator">chevron_right</mat-icon>
+      <span class="department">{{ favorite.departmentName }}</span>
+    </div>
+  </mat-card-header>
+
+  <mat-card-content>
+    <h2 class="commune-name">{{ favorite.communeName }}</h2>
+    
+    <div class="commune-details">
+      <p class="insee-code">
+        <mat-icon>location_on</mat-icon>
+        Code INSEE: {{ favorite.communeInseeCode }}
+      </p>
+      
+      <p class="added-date">
+        <mat-icon>schedule</mat-icon>
+        Ajouté le {{ favorite.addedAt | date:'dd/MM/yyyy' }}
+      </p>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onViewDetails()"
+      [attr.aria-label]="'View details for ' + favorite.communeName">
+      <mat-icon>visibility</mat-icon>
+      Voir les détails
+    </button>
+
+    <button
+      mat-icon-button
+      color="warn"
+      (click)="onRemoveFavorite()"
+      [attr.aria-label]="'Remove ' + favorite.communeName + ' from favorites'"
+      matTooltip="Remove from favorites">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </mat-card-actions>
+</mat-card>
