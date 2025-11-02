@@ -21,12 +21,6 @@ interface NavItem {
  *
  * Collapsible navigation sidebar with user profile, role-based navigation,
  * and responsive behavior (overlay on mobile/tablet).
- *
- * Features:
- * - Role-based navigation filtering (USER/ADMIN)
- * - Active route tracking
- * - Persistent state (localStorage)
- * - Responsive overlay mode for mobile/tablet
  */
 @Component({
   standalone: false,
@@ -149,12 +143,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.router.navigate(['/login']);
+          this.router.navigate(['auth//login']);
         },
         error: (error) => {
           console.error('Logout error:', error);
           // Navigate to login even if logout request fails
-          this.router.navigate(['/login']);
+          this.router.navigate(['auth/login']);
         }
       });
   }
