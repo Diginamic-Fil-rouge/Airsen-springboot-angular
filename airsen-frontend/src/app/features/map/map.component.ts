@@ -9,7 +9,6 @@ import * as L from "leaflet";
 import { GeographicService } from "./services/geographic.service";
 import { WeatherService } from "./services/weather.service";
 import { AirQualityService } from "./services/air-quality.service";
-import { FavoriteService } from '../favorites/services/favorite.service';
 import { NgClass } from '@angular/common';
 import { Commune, Weather, AirQuality } from "@/shared/models";
 
@@ -24,7 +23,6 @@ export class MapComponent implements OnInit, OnDestroy {
   private geographicService = inject(GeographicService);
   private weatherService = inject(WeatherService);
   private airQualityService = inject(AirQualityService);
-  private favoriteService = inject(FavoriteService);
   private router = inject(Router);
 
   currentUser: AuthUser | null = null;
@@ -32,7 +30,6 @@ export class MapComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   communeClicked: Commune | null = null;
-  communeClickedIsFavorite: boolean = false;
   communeSearched: Commune | null = null;
   airQualityClicked: any | null = null;
   weatherClicked: Weather | null = null;
@@ -123,7 +120,6 @@ export class MapComponent implements OnInit, OnDestroy {
 
     // Reset state for new commune
     this.communeClicked = commune;
-    this.communeClickedIsFavorite = false;
     this.weatherClicked = null;
     this.airQualityClicked = null;
     this.dataErrors = null;
@@ -131,31 +127,19 @@ export class MapComponent implements OnInit, OnDestroy {
 
     console.log("Fetching data for commune:", commune.name, "INSEE Code:", commune.inseeCode);
 
+    // Fetch both weather and air quality data in parallel for better performance
+    const [weather, airQuality] = await Promise.all([
+      firstValueFrom(this.weatherService.getCurrentWeather(commune.inseeCode)).catch(() => null),
+      type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)).catch(() => null) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)).catch(() => null),
+    ]);
 
-      // Fetch both weather and air quality data in parallel for better performance
-      const [weather, airQuality] = await Promise.all([
-        firstValueFrom(this.weatherService.getCurrentWeather(commune.inseeCode)).catch(() => null),
-        type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)).catch(() => null) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)).catch(() => null),
-      ]);
+    console.log("Weather data received:", weather);
+    console.log("Air quality data received:", airQuality);
 
-      if (this.currentUser?.id) {
-        this.favoriteService.checkFavorite(this.currentUser.id, commune.inseeCode).subscribe({
-          next: (data) => {
-            this.communeClickedIsFavorite = data.isFavorited;
-          },
-          error: (error) => {
-            console.error("Error checking if commune is favorite:", error);
-          }
-        });
-      }
+    this.weatherClicked = weather;
+    this.airQualityClicked = airQuality;
 
-      console.log("Weather data received:", weather);
-      console.log("Air quality data received:", airQuality);
-
-      this.weatherClicked = weather;
-      this.airQualityClicked = airQuality;
-    
-      this.isLoadingDatas = false;
+    this.isLoadingDatas = false;
     
   }
 
@@ -172,63 +156,6 @@ export class MapComponent implements OnInit, OnDestroy {
         console.error("Error loading user data:", error);
         this.isLoading = false;
       },
-    });
-  }
-
-  /**
-   * Handles the event when the favorite button is clicked.
-   * If the commune is currently a favorite, removes the favorite.
-   * If the commune is not currently a favorite, adds the favorite.
-   * @param commune The Commune object of the clicked favorite button.
-   */
-  onFavoriteButtonClicked(commune: Commune){
-    if (this.communeClickedIsFavorite) {
-      this.removeFavorite();
-    } else {
-      this.addFavorite();
-    }
-  }
-
-  /**
-   * Adds the currently clicked commune to the user's favorites.
-   * If the favorite is successfully added, sets the communeClickedIsFavorite flag to true.
-   * If there is an error while adding the favorite, logs the error to the console.
-   */
-  addFavorite(){
-    if (!this.currentUser?.id || !this.communeClicked?.inseeCode) {
-      console.error("Cannot add favorite: missing user ID or commune INSEE code");
-      return;
-    }
-
-    this.favoriteService.addFavorite(this.currentUser.id, { communeInseeCode: this.communeClicked.inseeCode }).subscribe({
-      next: (data) => {
-        this.communeClickedIsFavorite = true;
-      },
-      error: (error) => {
-        console.error("Error adding favorite:", error);
-      }
-    });
-  }
-
-
-  /**
-   * Removes the currently clicked commune from the user's favorites.
-   * If the favorite is successfully removed, sets the communeClickedIsFavorite flag to false.
-   * If there is an error while removing the favorite, logs the error to the console.
-   */
-  removeFavorite(){
-    if (!this.currentUser?.id || !this.communeClicked?.inseeCode) {
-      console.error("Cannot remove favorite: missing user ID or commune INSEE code");
-      return;
-    }
-
-    this.favoriteService.removeFavorite(this.currentUser.id, this.communeClicked.inseeCode).subscribe({
-      next: () => {
-        this.communeClickedIsFavorite = false;
-      },
-      error: (error) => {
-        console.error("Error removing favorite:", error);
-      }
     });
   }
 
