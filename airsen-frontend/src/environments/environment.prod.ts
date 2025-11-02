@@ -1,7 +1,7 @@
 // Production Environment Configuration
 export const environment = {
   production: true,
-  apiUrl: 'https://api.airsen.fr', // To be configured with actual production URL
+  apiUrl: 'https://api.airsen.fr/api/v1', // To be configured with actual production URL
   mapbox: {
     accessToken: 'YOUR_PRODUCTION_MAPBOX_TOKEN_HERE' // To be configured
   },

@@ -1,0 +1,56 @@
+.favorite-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &.small .mat-icon { font-size: 20px; }
+  &.medium .mat-icon { font-size: 24px; }
+  &.large .mat-icon { font-size: 32px; }
+
+  .mat-icon {
+    color: var(--airsen-gray-500);
+
+    &.favorited {
+      color: var(--airsen-error);
+    }
+  }
+
+  &:hover:not(:disabled) {
+    transform: scale(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.animate-success .mat-icon {
+    animation: heartBeat 0.3s ease;
+  }
+
+  .max-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 4px;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 11px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+

@@ -137,11 +137,11 @@
 
     @if (!isLoadingDatas){
 
-    <app-map-datas
+    <app-map-data
       [airQualityClicked]="airQualityClicked"
       [weatherClicked]="weatherClicked"
-    ></app-map-datas>
-    
+    ></app-map-data>
+
     } @else if (isLoadingDatas) {
     <div class="loading-container">
       <p>Chargement des données environnementales...</p>

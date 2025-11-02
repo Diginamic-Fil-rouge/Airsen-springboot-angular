@@ -30,7 +30,7 @@ import { CampaignNotification } from '@/shared/models';
   providedIn: "root",
 })
 export class AlertService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/users`;
+  private readonly apiUrl = `${environment.apiUrl}/users`;
   private http = inject(HttpClient);
 
   //Fetches all notifications received by user.

@@ -17,24 +17,18 @@ import { environment } from '@/environments/environment';
 
 /**
  *  Manages user favorites with reactive state management
- *
- * Architecture Pattern: Mirrors backend UserFavoritesService.java
- * - Service Layer: Business logic and state management
- * - Reactive Pattern: BehaviorSubject for state management (like backend JPA entities)
- * - Error Handling: Matches backend exception handling
- * - Authentication: Integrates with AuthService for JWT and user management
  */
 @Injectable({
   providedIn: 'root'
 })
 export class FavoriteService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/users`;
+  private readonly apiUrl = `${environment.apiUrl}/users`;
 
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  // Reactive state management (like backend JPA entities)
+  // Reactive state management
   private favoritesSubject = new BehaviorSubject<UserFavoriteResponse[]>([]);
   public favorites$ = this.favoritesSubject.asObservable();
 
@@ -67,7 +61,7 @@ export class FavoriteService {
 
   /**
    * Add commune to favorites
-   * POST /api/v1/users/{userId}/favorites
+   * POST /users/{userId}/favorites
    */
   addFavorite(userId: number, request: AddFavoriteRequest): Observable<UserFavoriteResponse> {
     this.setLoading(true);
