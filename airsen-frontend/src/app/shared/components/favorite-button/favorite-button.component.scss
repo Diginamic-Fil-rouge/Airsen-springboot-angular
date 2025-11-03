@@ -1,6 +1,6 @@
 .favorite-button {
   border: none;
-  background: rgba(76, 175, 80, 0.1);
+  background: transparent;
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.2s ease;
   display: inline-flex;
@@ -31,16 +31,50 @@
     &.favorited {
       color: #4CAF50;
     }
+
+    // Ensure proper styling when disabled at max limit
+    &.disabled-icon {
+      color: var(--airsen-gray-400);
+      opacity: 0.7;
+    }
   }
 
-  &:hover:not(:disabled) {
-    transform: scale(1.1);
-    background: rgba(76, 175, 80, 0.15);
+  // Only apply green background when favorited and not disabled
+  &.is-favorited:not(:disabled) {
+    background: rgba(76, 175, 80, 0.1);
+
+    &:hover:not(:disabled) {
+      transform: scale(1.1);
+      background: rgba(76, 175, 80, 0.15);
+    }
+  }
+
+  // For unfavorited items, use gray background on hover
+  &:not(.is-favorited) {
+    &:hover:not(:disabled) {
+      transform: scale(1.1);
+      background: rgba(158, 158, 158, 0.1);
+    }
+  }
+
+  // Special styling when at max limit and not favorited
+  &.at-max-limit {
+    background: transparent !important;
+    
+    &:hover:not(:disabled) {
+      background: transparent !important;
+    }
   }
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: transparent !important;
+    
+    // Ensure no green background when disabled, even if favorited
+    &.is-favorited {
+      background: transparent !important;
+    }
   }
 
   &.animate-success .mat-icon {

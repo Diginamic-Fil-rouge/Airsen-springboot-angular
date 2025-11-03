@@ -87,13 +87,13 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
 
   toggleFavorite(): void {
     if (!this.currentUserId || !this.communeInseeCode) {
-      this.openSnack('Please login to manage your favorites.');
+      this.openSnack('Veuillez vous connecter pour gérer vos favoris.', true);
       return;
     }
 
     // Guard: prevent adding when at maximum
     if (!this.isFavorited && this.isMaxReached) {
-      this.openSnack('Maximum 10 favorites reached');
+      this.openSnack('Limite atteinte : 10 favoris maximum', true);
       return;
     }
 
@@ -122,9 +122,9 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
             }, 300);
 
             const count = this.favoriteService.getCurrentCount();
-            this.openSnack(`Added to favorites (${count.count}/${count.maximum})`);
+            this.openSnack(`Ajouté aux favoris (${count.count}/${count.maximum})`);
           } else {
-            this.openSnack('Removed from favorites');
+            this.openSnack('Retiré des favoris');
           }
 
           this.favoriteToggled.emit(added);
@@ -134,8 +134,21 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
           // Rollback optimistic state and show error
           this.isLoading = false;
           this.isFavorited = previous;
-          const message = err instanceof Error ? err.message : 'An error occurred';
-          this.openSnack(message);
+
+          // Check if error is about maximum favorites limit
+          let message = 'Une erreur est survenue lors de la gestion des favoris';
+          if (err instanceof Error) {
+            if (err.message.toLowerCase().includes('maximum') ||
+                err.message.toLowerCase().includes('limit')) {
+              message = 'Limite atteinte : 10 favoris maximum';
+            } else if (err.message.toLowerCase().includes('already exists')) {
+              message = 'Ce favori existe déjà';
+            } else {
+              message = err.message;
+            }
+          }
+
+          this.openSnack(message, true);
           this.cdr.markForCheck();
         }
       });
@@ -156,8 +169,10 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
         },
         error: (err: unknown) => {
           this.isLoading = false;
-          const message = err instanceof Error ? err.message : 'An error occurred';
-          this.openSnack(message);
+          const message = err instanceof Error
+            ? err.message
+            : 'Impossible de vérifier le statut du favori';
+          this.openSnack(message, true);
           this.cdr.markForCheck();
         }
       });
@@ -168,7 +183,14 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
     this.isMaxReached = count.count >= count.maximum;
   }
 
-  private openSnack(message: string): void {
-    this.snackBar.open(message, 'Close', { duration: 2500 });
+  private openSnack(message: string, isError: boolean = false): void {
+    // Error messages stay longer (5s) so users can read them
+    // Success messages disappear faster (3.5s)
+    const duration = isError ? 5000 : 3500;
+    this.snackBar.open(message, 'Fermer', {
+      duration,
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
+    });
   }
 }
