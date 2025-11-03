@@ -1,6 +1,8 @@
 <button
   class="favorite-button"
   [class.animate-success]="animateSuccess"
+  [class.is-favorited]="isFavorited"
+  [class.at-max-limit]="isMaxReached && !isFavorited"
   [ngClass]="size"
   [disabled]="isLoading || (isMaxReached && !isFavorited)"
   [attr.aria-label]="isFavorited ? 'Remove from favorites' : 'Add to favorites'"
@@ -8,7 +10,8 @@
 
   <mat-icon
     *ngIf="!isLoading"
-    [class.favorited]="isFavorited">
+    [class.favorited]="isFavorited"
+    [class.disabled-icon]="isMaxReached && !isFavorited">
     {{ isFavorited ? 'favorite' : 'favorite_border' }}
   </mat-icon>
 
@@ -18,7 +21,7 @@
   </mat-spinner>
 
   <span *ngIf="isMaxReached && !isFavorited" class="max-tooltip">
-    Maximum 10 favorites reached
+    Limite atteinte : 10 favoris maximum
   </span>
 </button>
 
