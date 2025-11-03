@@ -1,4 +1,4 @@
-@import 'src/styles/variables';
+@use 'styles/design-system' as *;
 
 .skeleton-container {
   padding: $spacing-lg 0;
