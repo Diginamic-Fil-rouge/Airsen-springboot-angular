@@ -22,8 +22,11 @@ import { AirQualityChartComponent } from "./components/air-quality-chart/air-qua
   imports: [
     CommonModule,
     DashboardRoutingModule,
-    SharedModule,  
+    SharedModule,
     BaseChartDirective
   ],
+  exports: [
+    AirQualityChartComponent
+  ]
 })
 export class DashboardModule {}

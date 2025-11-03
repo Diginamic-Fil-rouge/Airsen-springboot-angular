@@ -1,16 +1,16 @@
-@use 'styles/design-system' as *;
+@use '../../../styles/design-system' as *;
 
 mat-dialog-content {
-  padding: $spacing-lg;
+  padding: $space-4;
 
   p {
     margin: 0;
-    color: $airsen-text-secondary;
-    line-height: 1.5;
+    color: $airsen-gray-600;
+    line-height: $line-height-normal;
   }
 }
 
 mat-dialog-actions {
-  padding: $spacing-sm $spacing-lg $spacing-lg;
-  gap: $spacing-sm;
+  padding: $space-2 $space-4 $space-4;
+  gap: $space-2;
 }

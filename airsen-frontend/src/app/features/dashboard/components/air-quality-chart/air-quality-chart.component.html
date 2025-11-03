@@ -1,7 +1,9 @@
-<div class="air-quality-chart">
+<div class="air-quality-chart" 
+     [class.bar-chart-mode]="chartMode === 'bar'"
+     [class.map-display]="isMapDisplay">
   <canvas
     baseChart
-    type="line"
+    [type]="chartType"
     [data]="chartData"
     [options]="chartOptions"
   ></canvas>
