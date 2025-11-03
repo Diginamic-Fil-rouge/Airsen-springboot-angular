@@ -12,11 +12,51 @@
     height: 260px;
   }
 
+  // Enhanced styling for bar chart mode (map display)
+  &.bar-chart-mode {
+    padding: 0.5rem 1rem;
+    min-height: 180px;
+    
+    canvas {
+      height: 200px;
+    }
+  }
+
+  // Specific styling for map popup display
+  &.map-display {
+    padding: 0.75rem;
+    min-height: 160px;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    
+    canvas {
+      height: 180px;
+    }
+    
+    &.bar-chart-mode {
+      padding: 0.5rem 0.75rem;
+      
+      canvas {
+        height: 160px;
+      }
+    }
+  }
+
   @media (max-width: 768px) {
     padding: 0.75rem 1rem;
 
     canvas {
       height: 220px;
+    }
+    
+    &.bar-chart-mode {
+      padding: 0.5rem 0.75rem;
+      
+      canvas {
+        height: 180px;
+      }
     }
   }
 }

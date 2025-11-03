@@ -1,6 +1,7 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { SharedModule } from "@/shared/shared.module";
+import { DashboardModule } from "@/features/dashboard/dashboard.module";
 
 import { MapRoutingModule } from "./map-routing.module";
 import { MapComponent } from "./map.component";
@@ -16,6 +17,6 @@ import { MapDataComponent } from "./data/map-data.component";
  */
 @NgModule({
   declarations: [MapComponent, MapViewComponent, MapLegendComponent, MapDataComponent],
-  imports: [CommonModule, SharedModule, MapRoutingModule],
+  imports: [CommonModule, SharedModule, MapRoutingModule, DashboardModule],
 })
 export class MapModule {}

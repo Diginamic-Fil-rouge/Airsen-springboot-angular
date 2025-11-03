@@ -1,70 +1,70 @@
-@use 'styles/design-system' as *;
+@use '../../../../styles/design-system' as *;
 
 .empty-state {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  padding: $spacing-xxl;
+  padding: $space-12;
 
   .empty-state-content {
     text-align: center;
-    max-width: 400px;
+    max-width: $container-sm;
   }
 
   .illustration {
-    margin-bottom: $spacing-xl;
+    margin-bottom: $space-8;
 
     .empty-icon {
-      font-size: 5rem;
-      width: 5rem;
-      height: 5rem;
-      color: $airsen-text-muted;
+      font-size: $font-size-5xl;
+      width: $font-size-5xl;
+      height: $font-size-5xl;
+      color: $airsen-gray-500;
       opacity: 0.6;
     }
   }
 
   .empty-title {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: $airsen-text-primary;
-    margin-bottom: $spacing-md;
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-900;
+    margin-bottom: $space-3;
   }
 
   .empty-description {
-    font-size: 1.1rem;
-    color: $airsen-text-secondary;
-    margin-bottom: $spacing-xl;
-    line-height: 1.5;
+    font-size: $font-size-lg;
+    color: $airsen-gray-600;
+    margin-bottom: $space-8;
+    line-height: $line-height-normal;
   }
 
   .browse-button {
-    font-size: 1rem;
-    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-base;
+    padding: $space-2 $space-4;
 
     mat-icon {
-      margin-right: $spacing-sm;
+      margin-right: $space-2;
     }
   }
 }
 
 // Responsive adjustments
-@media (max-width: $breakpoint-sm) {
+@include respond-max(sm) {
   .empty-state {
-    padding: $spacing-lg;
+    padding: $space-8;
 
     .illustration .empty-icon {
-      font-size: 4rem;
-      width: 4rem;
-      height: 4rem;
+      font-size: $font-size-4xl;
+      width: $font-size-4xl;
+      height: $font-size-4xl;
     }
 
     .empty-title {
-      font-size: 1.5rem;
+      font-size: $font-size-2xl;
     }
 
     .empty-description {
-      font-size: 1rem;
+      font-size: $font-size-base;
     }
   }
 }

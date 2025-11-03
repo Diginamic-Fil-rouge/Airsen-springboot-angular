@@ -68,32 +68,32 @@
     @if (communeClicked){
     <!-- Header Section -->
     <div class="card-header">
-      <h2 class="commune-name">
-        <span class="pin-icon">📍</span>{{ communeClicked.name }}
-      </h2>
+      <div class="header-top">
+        <h2 class="commune-name">
+          <span class="pin-icon">📍</span>{{ communeClicked.name }}
+        </h2>
+        <!-- Action Buttons Section -->
+        <div class="action-buttons">
+          <app-favorite-button
+            [communeInseeCode]="communeClicked.inseeCode"
+            size="medium">
+          </app-favorite-button>
+          <button
+            class="export-button"
+            title="Exporter les données en PDF"
+            [disabled]="!communeClicked || isExportingPDF"
+            (click)="exportCurrentDataAsPDF()">
+            <mat-icon *ngIf="!isExportingPDF">download</mat-icon>
+            <mat-spinner *ngIf="isExportingPDF" diameter="20"></mat-spinner>
+          </button>
+        </div>
+      </div>
       <p class="commune-population">
         Population : {{ communeClicked.population | number : '' : 'fr-FR' }} habitants
       </p>
       <p class="last-updated" *ngIf="airQualityClicked?.lastUpdated || weatherClicked?.measurementDate">
         Dernière mise à jour : {{ (airQualityClicked?.lastUpdated || weatherClicked?.measurementDate) | date : 'dd/MM/yyyy' }}
       </p>
-    </div>
-
-    <!-- Action Buttons Section -->
-    <div class="action-buttons">
-      <app-favorite-button
-        [communeInseeCode]="communeClicked.inseeCode"
-        size="medium">
-      </app-favorite-button>
-      <button
-        class="export-button"
-        title="Exporter les données en PDF"
-        [disabled]="!communeClicked || isExportingPDF"
-        (click)="exportCurrentDataAsPDF()">
-        <mat-icon *ngIf="!isExportingPDF">download</mat-icon>
-        <mat-spinner *ngIf="isExportingPDF" diameter="20"></mat-spinner>
-        <span>{{ isExportingPDF ? 'Export en cours...' : 'Exporter PDF' }}</span>
-      </button>
     </div>
 
     <!-- Data Section -->
