@@ -3,12 +3,15 @@ import { Observable, firstValueFrom } from "rxjs";
 import { Router } from "@angular/router";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { AuthService } from "@/auth/services/auth.service";
 import { AuthUser } from "@/auth/models/auth.model";
 import * as L from "leaflet";
 import { GeographicService } from "./services/geographic.service";
 import { WeatherService } from "./services/weather.service";
 import { AirQualityService } from "./services/air-quality.service";
+import { ExportDataService } from "@/core/services/export-data.service";
+import { PdfGenerationService } from "@/core/services/pdf-generation.service";
 import { NgClass } from '@angular/common';
 import { Commune, Weather, AirQuality } from "@/shared/models";
 
@@ -24,6 +27,9 @@ export class MapComponent implements OnInit, OnDestroy {
   private weatherService = inject(WeatherService);
   private airQualityService = inject(AirQualityService);
   private router = inject(Router);
+  private exportDataService = inject(ExportDataService);
+  private pdfGenerationService = inject(PdfGenerationService);
+  private snackBar = inject(MatSnackBar);
 
   currentUser: AuthUser | null = null;
   isLoading = true;
@@ -35,6 +41,7 @@ export class MapComponent implements OnInit, OnDestroy {
   weatherClicked: Weather | null = null;
   communes = new Observable<Commune[]>();
   isLoadingDatas = false;
+  isExportingPDF = false;
 
   dataErrors: string[] | null = null;
 
@@ -165,5 +172,38 @@ export class MapComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.router.navigate(["/auth/login"]);
+  }
+
+  /**
+   * Export current commune data as PDF
+   * Fetches export data from backend and generates PDF with current indicators
+   */
+  exportCurrentDataAsPDF(): void {
+    if (!this.communeClicked) {
+      this.snackBar.open('Aucune commune sélectionnée', 'Fermer', { duration: 2500 });
+      return;
+    }
+
+    this.isExportingPDF = true;
+
+    this.exportDataService.getExportData(this.communeClicked.inseeCode)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          console.log('Export data received:', data);
+          console.log('Commune data:', data.commune);
+          console.log('Air quality data:', data.airQuality);
+          console.log('Weather data:', data.weather);
+          console.log('Data quality:', data.dataQuality);
+          this.pdfGenerationService.generateCurrentReport(data, this.communeClicked!.name);
+          this.snackBar.open('PDF téléchargé avec succès', 'Fermer', { duration: 3000 });
+          this.isExportingPDF = false;
+        },
+        error: (err) => {
+          console.error('Export PDF failed:', err);
+          this.snackBar.open('Erreur lors de l\'export PDF', 'Fermer', { duration: 3000 });
+          this.isExportingPDF = false;
+        }
+      });
   }
 }

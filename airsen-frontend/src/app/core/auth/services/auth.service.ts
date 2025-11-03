@@ -21,7 +21,7 @@ import { StorageService } from '@/auth/services/storage.service';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/auth`;
+  private readonly apiUrl = `${environment.apiUrl}/auth`;
 
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);

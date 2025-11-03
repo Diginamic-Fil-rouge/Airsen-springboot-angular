@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@import 'src/styles/variables';
+@use 'styles/design-system' as *;
 
 .commune-favorite-card {
   height: 100%;
@@ -89,7 +89,7 @@
     mat-card-actions {
       flex-direction: column;
       gap: $spacing-sm;
-      
+
       button {
         width: 100%;
       }

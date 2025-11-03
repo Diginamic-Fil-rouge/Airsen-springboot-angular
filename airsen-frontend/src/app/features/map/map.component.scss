@@ -1,4 +1,4 @@
-@use '../../../styles/design-system' as *;
+@use 'styles/design-system' as *;
 
 .page-container {
   background-color: $airsen-gray-100;
@@ -173,23 +173,45 @@
             }
 
             .export-button{
-              width: 25px;
-              height: 25px;
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              padding: 6px 12px;
               border-radius: 8px;
               border: 1px solid $airsen-gray-300;
               background: linear-gradient(to right, $airsen-primary, $airsen-primary-light);
+              color: $airsen-white;
               cursor: pointer;
               transition: all 0.2s ease;
+              font-size: 12px;
+              font-weight: 500;
+              white-space: nowrap;
 
-              svg{
+              mat-icon{
+                font-size: 16px;
                 width: 16px;
                 height: 16px;
                 color: $airsen-white;
               }
+
+              mat-spinner{
+                display: inline-flex;
+              }
+
+              span{
+                color: $airsen-white;
+              }
             }
 
-            .export-button:hover{
+            .export-button:hover:not(:disabled){
               background: linear-gradient(to right, $airsen-primary-light, $airsen-primary);
+              transform: translateY(-1px);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .export-button:disabled{
+              opacity: 0.6;
+              cursor: not-allowed;
             }
           }
         }

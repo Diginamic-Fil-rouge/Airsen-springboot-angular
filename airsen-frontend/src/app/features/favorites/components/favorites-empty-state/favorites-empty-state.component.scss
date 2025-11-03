@@ -1,4 +1,4 @@
-@import 'src/styles/variables';
+@use 'styles/design-system' as *;
 
 .empty-state {
   display: flex;
@@ -41,7 +41,7 @@
   .browse-button {
     font-size: 1rem;
     padding: $spacing-sm $spacing-lg;
-    
+
     mat-icon {
       margin-right: $spacing-sm;
     }
@@ -52,17 +52,17 @@
 @media (max-width: $breakpoint-sm) {
   .empty-state {
     padding: $spacing-lg;
-    
+
     .illustration .empty-icon {
       font-size: 4rem;
       width: 4rem;
       height: 4rem;
     }
-    
+
     .empty-title {
       font-size: 1.5rem;
     }
-    
+
     .empty-description {
       font-size: 1rem;
     }

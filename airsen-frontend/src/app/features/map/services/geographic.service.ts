@@ -22,7 +22,7 @@ export class GeographicService {
   }
 
   getAllCommunesByDepartment(departmentId: number){
-    return this.http.get<Commune[]>(`${environment.apiUrl}/api/v1/department/${departmentId}/communes`);
+    return this.http.get<Commune[]>(`${environment.apiUrl}/department/${departmentId}/communes`);
   }
 
   searchCommunes(query: string): Observable<Commune[]> {
