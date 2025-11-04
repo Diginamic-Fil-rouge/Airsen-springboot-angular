@@ -6,11 +6,10 @@ import fr.airsen.api.entity.Commune;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.repository.WeatherDataRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -18,13 +17,21 @@ import java.util.Optional;
  * Uses the Haversine formula to calculate distances between coordinates.
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class GeoDistanceService {
+
+    private static final Logger log = LoggerFactory.getLogger(GeoDistanceService.class);
 
     private final CommuneRepository communeRepository;
     private final WeatherDataRepository weatherDataRepository;
     private final AirQualityRepository airQualityRepository;
+
+    public GeoDistanceService(CommuneRepository communeRepository,
+                              WeatherDataRepository weatherDataRepository,
+                              AirQualityRepository airQualityRepository) {
+        this.communeRepository = communeRepository;
+        this.weatherDataRepository = weatherDataRepository;
+        this.airQualityRepository = airQualityRepository;
+    }
 
     /**
      * Earth's radius in kilometers.
@@ -107,8 +114,8 @@ public class GeoDistanceService {
 
         // Query database for nearest commune with weather data
         Optional<Object[]> result = weatherDataRepository.findNearestCommuneWithWeather(
-                commune.getLatitude(),
-                commune.getLongitude(),
+                commune.getLatitude().doubleValue(),
+                commune.getLongitude().doubleValue(),
                 maxDistanceKm
         );
 
@@ -157,8 +164,8 @@ public class GeoDistanceService {
 
         // Query database for nearest commune with air quality data
         Optional<Object[]> result = airQualityRepository.findNearestCommuneWithAirQuality(
-                commune.getLatitude(),
-                commune.getLongitude(),
+                commune.getLatitude().doubleValue(),
+                commune.getLongitude().doubleValue(),
                 maxDistanceKm
         );
 
