@@ -15,7 +15,7 @@ dist/
 # Environment files - Use docker-compose environment variables instead
 .env
 .env.*
-.env.local
+.env.dev
 .env.*.local
 !.env.example
 
