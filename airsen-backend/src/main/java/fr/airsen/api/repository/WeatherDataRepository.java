@@ -16,7 +16,7 @@ import java.util.Optional;
 
 /**
  * Repository for managing WeatherData entities.
- * 
+ *
  * Provides data access methods for weather measurements
  * with custom queries for temporal and geographic searches.
  */
@@ -25,7 +25,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds weather data by commune and measurement date.
-     * 
+     *
      * @param commune the commune
      * @param measurementDate the measurement date
      * @return optional weather data
@@ -34,7 +34,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds weather data by commune ID.
-     * 
+     *
      * @param communeId commune identifier
      * @param pageable pagination parameters
      * @return page of weather data for the commune
@@ -44,7 +44,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds latest weather data for a commune.
-     * 
+     *
      * @param communeId commune identifier
      * @return optional latest weather data
      */
@@ -53,7 +53,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds weather data by commune ID and date range.
-     * 
+     *
      * @param communeId commune identifier
      * @param startDate start date (inclusive)
      * @param endDate end date (inclusive)
@@ -69,7 +69,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds weather data for multiple communes on a specific date.
-     * 
+     *
      * @param communeIds list of commune identifiers
      * @param measurementDate measurement date
      * @return list of weather data
@@ -81,7 +81,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds weather data by temperature range.
-     * 
+     *
      * @param minTemperature minimum temperature
      * @param maxTemperature maximum temperature
      * @param pageable pagination parameters
@@ -95,7 +95,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Counts weather data entries for a commune.
-     * 
+     *
      * @param communeId commune identifier
      * @return number of weather data entries
      */
@@ -104,7 +104,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds weather data by commune for API integration.
-     * 
+     *
      * @param commune the commune
      * @return list of weather data ordered by date
      */
@@ -113,7 +113,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds current weather for external API integration.
-     * 
+     *
      * @param commune the commune
      * @return optional current weather data
      */
@@ -122,7 +122,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Gets weather forecast for external API integration.
-     * 
+     *
      * @param commune the commune
      * @param startDate start date for forecast
      * @return list of weather forecast data
@@ -134,7 +134,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Deletes old weather data for cleanup.
-     * 
+     *
      * @param cutoffDate date before which data will be deleted
      */
     @Query("DELETE FROM WeatherData w WHERE w.createdAt < :cutoffDate")
@@ -142,20 +142,20 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds the most recent weather data entry for a commune by INSEE code.
-     * 
+     *
      * @param inseeCode commune INSEE code
      * @return optional latest weather data
      */
     @Query(value = "SELECT w.id, w.commune_id, w.measurement_date, w.temperature, w.humidity, " +
            "w.wind_speed, w.wind_direction, w.weather_code, w.created_at " +
            "FROM weather_data w JOIN communes c ON w.commune_id = c.id " +
-           "WHERE c.insee_code = :inseeCode ORDER BY w.measurement_date DESC, w.created_at DESC LIMIT 1", 
+           "WHERE c.insee_code = :inseeCode ORDER BY w.measurement_date DESC, w.created_at DESC LIMIT 1",
            nativeQuery = true)
     Optional<WeatherData> getMostRecentWeatherByInseeCode(@Param("inseeCode") String inseeCode);
 
     /**
      * Finds weather data by commune INSEE code and date range property access.
-     * 
+     *
      * @param inseeCode commune INSEE code
      * @param startDateTime start date time
      * @param endDateTime end date time
@@ -165,10 +165,10 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
     /**
      * Finds latest weather data for a commune for export endpoint.
-     * 
+     *
      * Optimized query for export/export-data endpoint that retrieves
      * the most recent weather measurement in a single query.
-     * 
+     *
      * @param inseeCode commune INSEE code
      * @return optional weather data
      */
@@ -176,16 +176,16 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
                    "JOIN communes c ON w.commune_id = c.id " +
                    "WHERE c.insee_code = :inseeCode " +
                    "ORDER BY w.measurement_date DESC " +
-                   "LIMIT 1", 
+                   "LIMIT 1",
            nativeQuery = true)
     Optional<WeatherData> findLatestExportDataByInseeCode(@Param("inseeCode") String inseeCode);
 
     /**
      * Finds weather data for a commune within a date range for export endpoint.
-     * 
+     *
      * Optimized query for export/historical-data endpoint that retrieves
      * all weather measurements within a date range in chronological order.
-     * 
+     *
      * @param inseeCode commune INSEE code
      * @param startDate start date (inclusive)
      * @param endDate end date (inclusive)
@@ -199,4 +199,47 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
             @Param("inseeCode") String inseeCode,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    /**
+     * Find nearest commune with weather data within specified distance using Haversine formula.
+     * Used for geodistance fallback when target commune has no direct weather data.
+     *
+     * @param lat Target latitude in decimal degrees
+     * @param lon Target longitude in decimal degrees
+     * @param maxDistanceKm Maximum search radius in kilometers (typically 20km per PRD)
+     * @return Optional containing result array with commune info, weather data, and distance
+     */
+    @Query(value = """
+        SELECT
+            c.insee_code,
+            c.name,
+            c.latitude,
+            c.longitude,
+            w.measurement_date,
+            w.temperature,
+            w.humidity,
+            w.wind_speed,
+            w.wind_direction,
+            w.weather_code,
+            (6371 * acos(
+                cos(radians(:lat)) * cos(radians(c.latitude))
+                * cos(radians(c.longitude) - radians(:lon))
+                + sin(radians(:lat)) * sin(radians(c.latitude))
+            )) AS distance_km
+        FROM communes c
+        INNER JOIN weather_data w ON w.commune_id = c.id
+        WHERE w.measurement_date = (
+            SELECT MAX(wd.measurement_date)
+            FROM weather_data wd
+            WHERE wd.commune_id = c.id
+        )
+        HAVING distance_km <= :maxDistanceKm
+        ORDER BY distance_km ASC
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<Object[]> findNearestCommuneWithWeather(
+        @Param("lat") double lat,
+        @Param("lon") double lon,
+        @Param("maxDistanceKm") double maxDistanceKm
+    );
 }

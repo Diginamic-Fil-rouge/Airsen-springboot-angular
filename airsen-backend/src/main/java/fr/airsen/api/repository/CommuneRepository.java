@@ -370,4 +370,20 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      */
     @Query("SELECT COUNT(c) FROM Commune c WHERE c.population < 10000")
     long countTier3Communes();
+
+    /**
+     * Find commune by INSEE code with coordinates for geodistance calculations.
+     * Used when target commune has no direct data and needs fallback estimation.
+     *
+     * @param inseeCode INSEE code of the commune
+     * @return Optional containing commune with non-null coordinates, or empty if not found
+     */
+    @Query("""
+        SELECT c
+        FROM Commune c
+        WHERE c.inseeCode = :inseeCode
+          AND c.latitude IS NOT NULL
+          AND c.longitude IS NOT NULL
+        """)
+    Optional<Commune> findByInseeCodeWithCoordinates(@Param("inseeCode") String inseeCode);
 }

@@ -15,7 +15,7 @@ import java.util.Optional;
 
 /**
  * Repository for managing AirQuality entities.
- * 
+ *
  * Provides data access methods for air quality measurements
  * with custom queries for temporal and geographic searches.
  */
@@ -24,7 +24,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds air quality data by commune and measurement date.
-     * 
+     *
      * @param commune the commune
      * @param measurementDate the measurement date
      * @return optional air quality data
@@ -33,7 +33,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds air quality data by commune and measurement date with eager loading.
-     * 
+     *
      * @param commune the commune
      * @param measurementDate the measurement date
      * @return optional air quality data with relationships loaded
@@ -47,7 +47,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds air quality data by commune ID.
-     * 
+     *
      * @param communeId commune identifier
      * @param pageable pagination parameters
      * @return page of air quality data for the commune
@@ -57,7 +57,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds latest air quality data for a commune.
-     * 
+     *
      * @param communeId commune identifier
      * @return optional latest air quality data
      */
@@ -66,7 +66,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds latest air quality data by commune INSEE code with eager loading.
-     * 
+     *
      * @param inseeCode commune INSEE code
      * @return optional latest air quality data with commune, department, and region loaded
      */
@@ -85,7 +85,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds air quality data by commune ID and date range.
-     * 
+     *
      * @param communeId commune identifier
      * @param startDate start date (inclusive)
      * @param endDate end date (inclusive)
@@ -101,7 +101,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds air quality data for multiple communes on a specific date.
-     * 
+     *
      * @param communeIds list of commune identifiers
      * @param measurementDate measurement date
      * @return list of air quality data
@@ -113,7 +113,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Counts air quality data entries for a commune.
-     * 
+     *
      * @param communeId commune identifier
      * @return number of air quality data entries
      */
@@ -122,7 +122,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds air quality data entries for a specific measurement date.
-     * 
+     *
      * @param measurementDate the measurement date
      * @return list of air quality data entries for the date
      */
@@ -130,7 +130,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Counts air quality data entries for a specific measurement date.
-     * 
+     *
      * @param measurementDate the measurement date
      * @return number of air quality data entries for the date
      */
@@ -138,7 +138,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds air quality data by commune for API integration.
-     * 
+     *
      * @param commune the commune
      * @return list of air quality data ordered by date
      */
@@ -147,7 +147,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Deletes old air quality data for cleanup.
-     * 
+     *
      * @param cutoffDate date before which data will be deleted
      */
     @Query("DELETE FROM AirQuality aq WHERE aq.createdAt < :cutoffDate")
@@ -155,10 +155,10 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
     /**
      * Finds latest air quality data for a commune for export endpoint.
-     * 
+     *
      * Optimized query for export/export-data endpoint that retrieves
      * the most recent air quality measurement in a single query.
-     * 
+     *
      * @param inseeCode commune INSEE code
      * @return optional air quality data
      */
@@ -166,16 +166,16 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
                    "JOIN communes c ON aq.commune_id = c.id " +
                    "WHERE c.insee_code = :inseeCode " +
                    "ORDER BY aq.measurement_date DESC " +
-                   "LIMIT 1", 
+                   "LIMIT 1",
            nativeQuery = true)
     Optional<AirQuality> findLatestExportDataByInseeCode(@Param("inseeCode") String inseeCode);
 
     /**
      * Finds air quality data for a commune within a date range for export endpoint.
-     * 
+     *
      * Optimized query for export/historical-data endpoint that retrieves
      * all air quality measurements within a date range in chronological order.
-     * 
+     *
      * @param inseeCode commune INSEE code
      * @param startDate start date (inclusive)
      * @param endDate end date (inclusive)
@@ -189,4 +189,50 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
             @Param("inseeCode") String inseeCode,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    /**
+     * Find nearest commune with air quality data within specified distance using Haversine formula.
+     * Used for geodistance fallback when target commune has no direct air quality data.
+     *
+     * @param lat Target latitude in decimal degrees
+     * @param lon Target longitude in decimal degrees
+     * @param maxDistanceKm Maximum search radius in kilometers (typically 20km per PRD)
+     * @return Optional containing result array with commune info, air quality data, and distance
+     */
+    @Query(value = """
+        SELECT
+            c.insee_code,
+            c.name,
+            c.latitude,
+            c.longitude,
+            aq.measurement_date,
+            aq.atm_index,
+            aq.atmo_qual,
+            aq.atmo_color,
+            aq.no2,
+            aq.o3,
+            aq.pm10,
+            aq.pm25,
+            aq.so2,
+            (6371 * acos(
+                cos(radians(:lat)) * cos(radians(c.latitude))
+                * cos(radians(c.longitude) - radians(:lon))
+                + sin(radians(:lat)) * sin(radians(c.latitude))
+            )) AS distance_km
+        FROM communes c
+        INNER JOIN air_quality aq ON aq.commune_id = c.id
+        WHERE aq.measurement_date = (
+            SELECT MAX(aq2.measurement_date)
+            FROM air_quality aq2
+            WHERE aq2.commune_id = c.id
+        )
+        HAVING distance_km <= :maxDistanceKm
+        ORDER BY distance_km ASC
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<Object[]> findNearestCommuneWithAirQuality(
+        @Param("lat") double lat,
+        @Param("lon") double lon,
+        @Param("maxDistanceKm") double maxDistanceKm
+    );
 }
