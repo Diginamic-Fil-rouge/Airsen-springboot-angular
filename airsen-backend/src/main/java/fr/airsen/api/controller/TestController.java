@@ -1,5 +1,7 @@
 package fr.airsen.api.controller;
 
+import fr.airsen.api.entity.enums.UserRole;
+import fr.airsen.api.security.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -7,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +19,7 @@ import java.util.Map;
 
 /**
  * Test controller to verify proper functioning of the Airsen API.
- * 
+ *
  * This controller provides test endpoints to validate application
  * configuration and Swagger documentation.
  */
@@ -24,6 +27,14 @@ import java.util.Map;
 @RequestMapping("/test")
 @Tag(name = "Test", description = "Test endpoints to verify API functionality")
 public class TestController {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final Environment environment;
+
+    public TestController(JwtTokenProvider jwtTokenProvider, Environment environment) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.environment = environment;
+    }
 
     /**
      * GET /test/health
@@ -142,7 +153,7 @@ public class TestController {
         description = "Returns detailed information about the Airsen API"
     )
     @ApiResponse(
-        responseCode = "200", 
+        responseCode = "200",
         description = "API information returned",
         content = @Content(schema = @Schema(implementation = Map.class))
     )
@@ -162,7 +173,103 @@ public class TestController {
             "Forum System",
             "Export System"
         });
-        
+
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * GET /test/generate-token
+     *
+     * Generates a test JWT token for development/testing purposes.
+     * ONLY WORKS IN DEV ENVIRONMENT - Returns 403 in production.
+     *
+     * Query parameters:
+     * - email: User email (default: test@airsen.fr)
+     * - role: User role - USER, ADMIN, or VISITOR (default: USER)
+     *
+     * @param email User email to encode in token
+     * @param role User role for authorization
+     * @return ResponseEntity with generated JWT token
+     */
+    @GetMapping("/generate-token")
+    @Operation(
+        summary = "Generate test JWT token",
+        description = """
+            Generates a test JWT token for development and testing purposes.
+
+            **SECURITY WARNING**: This endpoint only works in DEV environment.
+            It will return 403 Forbidden in production environments.
+
+            Use this token to test protected endpoints without needing to login.
+
+            Examples:
+            - GET /test/generate-token (generates USER token for test@airsen.fr)
+            - GET /test/generate-token?email=admin@airsen.fr&role=ADMIN
+            - GET /test/generate-token?email=sarah@airsen.fr&role=ADMIN
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Token generated successfully",
+            content = @Content(schema = @Schema(implementation = Map.class))
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Only available in DEV environment"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid role parameter"
+        )
+    })
+    public ResponseEntity<Map<String, Object>> generateTestToken(
+            @Parameter(description = "User email for token", example = "sarah@airsen.fr")
+            @RequestParam(defaultValue = "test@airsen.fr") String email,
+            @Parameter(description = "User role (USER, ADMIN, VISITOR)", example = "ADMIN")
+            @RequestParam(defaultValue = "USER") String role) {
+
+        // SECURITY: Only allow in DEV environment
+        String activeProfile = environment.getProperty("spring.profiles.active", "");
+        if (!activeProfile.contains("dev") && !activeProfile.contains("test")) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Forbidden");
+            errorResponse.put("message", "Token generation only available in DEV/TEST environments");
+            errorResponse.put("activeProfile", activeProfile);
+            return ResponseEntity.status(403).body(errorResponse);
+        }
+
+        try {
+            // Parse role
+            UserRole userRole = UserRole.valueOf(role.toUpperCase());
+
+            // Generate token using JwtTokenProvider
+            String token = jwtTokenProvider.generateAccessToken(email, userRole);
+
+            // Prepare response
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("token", token);
+            response.put("tokenType", "Bearer");
+            response.put("expiresIn", 86400000); // 24 hours in milliseconds
+            response.put("user", Map.of(
+                "email", email,
+                "role", userRole.name()
+            ));
+            response.put("usage", "Authorization: Bearer " + token);
+            response.put("timestamp", LocalDateTime.now());
+            response.put("environment", activeProfile);
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            // Invalid role
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Invalid role");
+            errorResponse.put("message", "Role must be one of: USER, ADMIN, VISITOR");
+            errorResponse.put("providedRole", role);
+            errorResponse.put("validRoles", new String[]{"USER", "ADMIN", "VISITOR"});
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 }

@@ -28,18 +28,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * including geodistance fallback mechanism with real spatial calculations
  * and ATMO index quality mapping.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
                 properties = {
                     "spring.profiles.active=test",
-                    "spring.datasource.url=jdbc:h2:mem:testdb",
-                    "spring.jpa.hibernate.ddl-auto=create-drop"
+                    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE",
+                    "spring.jpa.hibernate.ddl-auto=create",
+                    "spring.jpa.defer-datasource-initialization=true",
+                    "spring.sql.init.mode=always",
+                    "airsen.data.initialize=false"
                 })
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {
     "/test-data/communes.sql",
     "/test-data/air-quality.sql"
-}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class AtmoControllerIntegrationTest {
 
     @Autowired

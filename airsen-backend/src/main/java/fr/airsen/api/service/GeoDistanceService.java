@@ -6,6 +6,7 @@ import fr.airsen.api.entity.Commune;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.repository.WeatherDataRepository;
+import fr.airsen.api.util.JpqlResultConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -126,6 +127,11 @@ public class GeoDistanceService {
 
         // Parse result array from native query
         Object[] row = result.get();
+
+        // Handle nested Object[] - some JDBC drivers wrap native query results in an extra array
+        JpqlResultConverter.UnwrapResult unwrapResult = JpqlResultConverter.unwrapNestedArray(row);
+        row = unwrapResult.data;
+
         NearestWeatherResult nearestResult = parseWeatherResult(row);
 
         log.info("Found nearest weather data: commune {} at distance {:.2f} km",
@@ -176,6 +182,11 @@ public class GeoDistanceService {
 
         // Parse result array from native query
         Object[] row = result.get();
+
+        // Handle nested Object[] - some JDBC drivers wrap native query results in an extra array
+        JpqlResultConverter.UnwrapResult unwrapResult = JpqlResultConverter.unwrapNestedArray(row);
+        row = unwrapResult.data;
+
         NearestAirQualityResult nearestResult = parseAirQualityResult(row);
 
         log.info("Found nearest air quality data: commune {} at distance {:.2f} km",
@@ -184,7 +195,7 @@ public class GeoDistanceService {
         return Optional.of(nearestResult);
     }
 
-    /**
+        /**
      * Validate that coordinates are within valid ranges.
      *
      * @param lat Latitude in degrees
@@ -213,17 +224,17 @@ public class GeoDistanceService {
      */
     private NearestWeatherResult parseWeatherResult(Object[] row) {
         return new NearestWeatherResult(
-            (String) row[0],          // inseeCode
-            (String) row[1],          // communeName
-            (Double) row[2],          // latitude
-            (Double) row[3],          // longitude
-            ((java.sql.Date) row[4]).toLocalDate(),  // measurementDate
-            (Double) row[5],          // temperature
-            (Integer) row[6],         // humidity
-            (Double) row[7],          // windSpeed
-            (Integer) row[8],         // windDirection
-            (Integer) row[9],         // weatherCode
-            (Double) row[10]          // distanceKm
+            JpqlResultConverter.toStringNullable(row[0]),          // inseeCode (VARCHAR → String)
+            JpqlResultConverter.toStringNullable(row[1]),          // communeName (VARCHAR → String)
+            JpqlResultConverter.toDoubleNullable(row[2]),          // latitude (BigDecimal → Double)
+            JpqlResultConverter.toDoubleNullable(row[3]),          // longitude (BigDecimal → Double)
+            JpqlResultConverter.toLocalDateNullable(row[4]),       // measurementDate
+            JpqlResultConverter.toDoubleNullable(row[5]),          // temperature (BigDecimal → Double)
+            JpqlResultConverter.toIntegerNullable(row[6]),         // humidity (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toDoubleNullable(row[7]),          // windSpeed (BigDecimal → Double)
+            JpqlResultConverter.toIntegerNullable(row[8]),         // windDirection (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toIntegerNullable(row[9]),         // weatherCode (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toDoubleNullable(row[10])          // distanceKm (BigDecimal → Double)
         );
     }
 
@@ -235,20 +246,20 @@ public class GeoDistanceService {
      */
     private NearestAirQualityResult parseAirQualityResult(Object[] row) {
         return new NearestAirQualityResult(
-            (String) row[0],          // inseeCode
-            (String) row[1],          // communeName
-            (Double) row[2],          // latitude
-            (Double) row[3],          // longitude
-            ((java.sql.Date) row[4]).toLocalDate(),  // measurementDate
-            (Integer) row[5],         // atmoIndex
-            (String) row[6],          // qualifier
-            (String) row[7],          // color
-            (Integer) row[8],          // no2
-            (Integer) row[9],          // o3
-            (Integer) row[10],         // pm10
-            (Integer) row[11],         // pm25
-            (Integer) row[12],         // so2
-            (Double) row[13]          // distanceKm
+            JpqlResultConverter.toStringNullable(row[0]),          // inseeCode (VARCHAR → String)
+            JpqlResultConverter.toStringNullable(row[1]),          // communeName (VARCHAR → String)
+            JpqlResultConverter.toDoubleNullable(row[2]),          // latitude (BigDecimal → Double)
+            JpqlResultConverter.toDoubleNullable(row[3]),          // longitude (BigDecimal → Double)
+            JpqlResultConverter.toLocalDateNullable(row[4]),       // measurementDate
+            JpqlResultConverter.toIntegerNullable(row[5]),         // atmoIndex (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toStringNullable(row[6]),          // qualifier (VARCHAR → String)
+            JpqlResultConverter.toStringNullable(row[7]),          // color (VARCHAR → String)
+            JpqlResultConverter.toIntegerNullable(row[8]),         // no2 (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toIntegerNullable(row[9]),         // o3 (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toIntegerNullable(row[10]),        // pm10 (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toIntegerNullable(row[11]),        // pm25 (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toIntegerNullable(row[12]),        // so2 (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toDoubleNullable(row[13])          // distanceKm (BigDecimal → Double)
         );
     }
 }
