@@ -1,5 +1,6 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.dto.response.NearestWeatherResult;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.WeatherData;
 import fr.airsen.api.external.client.InseeApiClient;
@@ -26,7 +27,7 @@ import java.util.Optional;
 
 /**
  * Service for integrating weather data from Open-Meteo API.
- * 
+ *
  * Uses INSEE API to get commune coordinates and Open-Meteo API for weather data.
  * Handles data transformation, validation, and persistence for weather measurements.
  */
@@ -40,15 +41,18 @@ public class WeatherService {
     private final InseeApiClient inseeApiClient;
     private final WeatherDataRepository weatherDataRepository;
     private final CommuneRepository communeRepository;
+    private final GeoDistanceService geoDistanceService;
 
     public WeatherService(OpenMeteoApiClient openMeteoApiClient,
                          InseeApiClient inseeApiClient,
                          WeatherDataRepository weatherDataRepository,
-                         CommuneRepository communeRepository) {
+                         CommuneRepository communeRepository,
+                         GeoDistanceService geoDistanceService) {
         this.openMeteoApiClient = openMeteoApiClient;
         this.inseeApiClient = inseeApiClient;
         this.weatherDataRepository = weatherDataRepository;
         this.communeRepository = communeRepository;
+        this.geoDistanceService = geoDistanceService;
     }
 
     /**
@@ -104,68 +108,94 @@ public class WeatherService {
 
     /**
      * Updates current weather data for a specific commune.
-     * 
+     *
      * First gets coordinates from INSEE API, then fetches weather from Open-Meteo.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<WeatherData> containing the updated data
      */
     public Mono<WeatherData> updateWeatherForCommune(String communeInseeCode) {
         log.info("Updating weather data for commune: {}", communeInseeCode);
-        
+
         // Get coordinates from database instead of INSEE API
         return Mono.fromCallable(() -> {
                 Commune commune = communeRepository.findByInseeCode(communeInseeCode)
                     .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + communeInseeCode));
-                
+
                 if (commune.getLatitude() == null || commune.getLongitude() == null) {
                     throw new IllegalStateException("Commune " + communeInseeCode + " has no coordinates in database");
                 }
-                
+
                 // Return coordinates as [longitude, latitude] for Open-Meteo API
                 return new Double[]{commune.getLongitude().doubleValue(), commune.getLatitude().doubleValue()};
             })
             .flatMap(coordinates -> {
-                log.debug("Retrieved coordinates for commune {}: [{}, {}]", 
+                log.debug("Retrieved coordinates for commune {}: [{}, {}]",
                          communeInseeCode, coordinates[0], coordinates[1]);
-                
+
                 return openMeteoApiClient.getCurrentWeatherByCoordinates(coordinates);
             })
             .map(weatherResponse -> mapToEntity(weatherResponse, communeInseeCode))
             .flatMap(weatherData -> {
                 WeatherData saved = weatherDataRepository.save(weatherData);
-                
-                log.info("Successfully updated weather data for commune: {} - Temperature: {}°C", 
+
+                log.info("Successfully updated weather data for commune: {} - Temperature: {}°C",
                         communeInseeCode, saved.getTemperature());
-                
+
                 return Mono.just(saved);
             });
     }
 
     /**
-     * Gets current weather data for a commune (cached for 30 minutes).
+     * Gets current weather data for a commune with geodistance fallback.
+     *
+     * Data retrieval strategy (per PRD):
+     * 1. Query database for recent data (< 1 day old) from requested commune
+     * 2. If no recent direct data exists, attempt geodistance fallback:
+     *    - Find nearest commune with weather data within 20km radius
+     *    - Return estimated data from nearest commune
+     * 3. If no data within 20km threshold, return empty Optional
+     *
+     * Database is populated by scheduled updateAllWeatherData() task.
+     * This method never calls external APIs directly - only reads from database.
      *
      * @param communeInseeCode INSEE code of the commune
-     * @return Mono<WeatherData> containing current weather data
+     * @return Mono<WeatherData> containing weather data (direct or estimated from nearest commune)
      */
-    @Cacheable(value = "weather", key = "#communeInseeCode", unless = "#result == null")
     public Mono<WeatherData> getCurrentWeatherForCommune(String communeInseeCode) {
-        log.info("Cache miss - Fetching weather data from Open-Meteo API for INSEE code: {}", communeInseeCode);
+        log.info("Fetching weather data for commune: {}", communeInseeCode);
 
-        // Try to get recent data from database first
-        Optional<WeatherData> existingOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(communeInseeCode);
+        // Step 1: Try to get recent direct data from database
+        Optional<WeatherData> directDataOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(communeInseeCode);
 
-        if (existingOpt.isPresent()) {
-            WeatherData existing = existingOpt.get();
-            if (existing.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
-                log.debug("Returning recent weather data from database for commune: {}", communeInseeCode);
-                return Mono.just(existing);
+        if (directDataOpt.isPresent()) {
+            WeatherData directData = directDataOpt.get();
+            if (directData.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
+                log.debug("Found recent direct weather data for commune: {} (measurement date: {})",
+                        communeInseeCode, directData.getMeasurementDate());
+                return Mono.just(directData);
             }
         }
 
-        // Fetch fresh data if no recent data exists
-        log.info("Fetching fresh weather data for commune: {}", communeInseeCode);
-        return updateWeatherForCommune(communeInseeCode);
+        // Step 2: No recent direct data - attempt geodistance fallback (20km threshold per PRD)
+        log.info("No recent direct weather data for commune: {}, attempting geodistance fallback (20km)",
+                communeInseeCode);
+
+        Optional<NearestWeatherResult> nearestResult = geoDistanceService
+            .findNearestCommuneWithWeather(communeInseeCode, 20.0);
+
+        if (nearestResult.isPresent()) {
+            NearestWeatherResult result = nearestResult.get();
+            log.info("Found weather data from nearest commune: {} at distance: {:.2f} km (measurement date: {})",
+                    result.communeName(), result.distanceKm(), result.measurementDate());
+
+            // Convert NearestWeatherResult to WeatherData entity for return compatibility
+            return Mono.just(convertNearestResultToWeatherData(communeInseeCode, result));
+        }
+
+        // Step 3: No data available within 20km threshold
+        log.warn("No weather data available within 20km radius for commune: {}", communeInseeCode);
+        return Mono.empty();
     }
 
     /**
@@ -188,7 +218,7 @@ public class WeatherService {
 
     /**
      * Gets current weather data for a commune (alias for backward compatibility).
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<WeatherData> containing current weather data
      */
@@ -266,44 +296,44 @@ public class WeatherService {
 
     /**
      * Gets weather forecast for a commune (returns raw API response).
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @param forecastDays number of forecast days (1-16)
      * @return Mono<OpenMeteoForecastResponse> containing forecast data
      */
     public Mono<OpenMeteoForecastResponse> getWeatherForecast(String communeInseeCode, int forecastDays) {
         log.info("Fetching weather forecast for commune: {} for {} days", communeInseeCode, forecastDays);
-        
+
         return getCommuneCoordinatesWithFallback(communeInseeCode)
             .flatMap(coordinates -> {
                 log.debug("Using coordinates for forecast: [{}, {}]", coordinates[0], coordinates[1]);
-                
+
                 return openMeteoApiClient.getForecastByCoordinates(coordinates, forecastDays);
             })
-            .doOnSuccess(forecast -> log.info("Retrieved {} day forecast for commune: {}", 
+            .doOnSuccess(forecast -> log.info("Retrieved {} day forecast for commune: {}",
                                             forecastDays, communeInseeCode));
     }
 
     /**
      * Gets historical weather data for a commune.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @param startDate start date for historical data
      * @param endDate end date for historical data
      * @return Flux<WeatherData> containing historical weather data
      */
-    public Flux<WeatherData> getHistoricalWeather(String communeInseeCode, 
-                                                 LocalDate startDate, 
+    public Flux<WeatherData> getHistoricalWeather(String communeInseeCode,
+                                                 LocalDate startDate,
                                                  LocalDate endDate) {
-        log.info("Fetching historical weather data for commune: {} from {} to {}", 
+        log.info("Fetching historical weather data for commune: {} from {} to {}",
                 communeInseeCode, startDate, endDate);
-        
+
         // For historical data, we would typically query our database
         // or make additional API calls if the external API supports historical data
         return Flux.fromIterable(
             weatherDataRepository.findByCommune_InseeCodeAndMeasurementDateBetween(
-                communeInseeCode, 
-                startDate.atStartOfDay(), 
+                communeInseeCode,
+                startDate.atStartOfDay(),
                 endDate.atTime(23, 59, 59)
             )
         );
@@ -311,7 +341,7 @@ public class WeatherService {
 
     /**
      * Forces update of weather data for a commune (bypasses cache).
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<WeatherData> containing the updated data
      */
@@ -322,7 +352,7 @@ public class WeatherService {
 
     /**
      * Forces update of weather data for a commune (alias for backward compatibility).
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono<WeatherData> containing the updated data
      */
@@ -332,15 +362,15 @@ public class WeatherService {
 
     /**
      * Gets weather data for multiple communes in a region.
-     * 
+     *
      * @param regionCode INSEE region code
      * @return Flux<WeatherData> containing weather data for all communes in the region
      */
     public Flux<WeatherData> getRegionWeatherData(String regionCode) {
         log.info("Fetching weather data for all communes in region: {}", regionCode);
-        
+
         List<Commune> communes = communeRepository.findByRegionCode(regionCode);
-        
+
         return Flux.fromIterable(communes)
             .flatMap(commune -> getCurrentWeather(commune.getInseeCode()))
             .doOnComplete(() -> log.info("Completed weather data fetch for region: {}", regionCode));
@@ -348,10 +378,10 @@ public class WeatherService {
 
     /**
      * Gets coordinates for a commune with fallback mechanism.
-     * 
+     *
      * First tries to get coordinates from database (primary source).
      * If database coordinates are missing, falls back to INSEE API.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @return Mono containing coordinates as [longitude, latitude]
      */
@@ -359,14 +389,14 @@ public class WeatherService {
         return Mono.fromCallable(() -> {
                 Commune commune = communeRepository.findByInseeCode(communeInseeCode)
                     .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + communeInseeCode));
-                
+
                 // Check if database has coordinates
                 if (commune.getLatitude() != null && commune.getLongitude() != null) {
-                    log.debug("Using database coordinates for commune {}: [{}, {}]", 
+                    log.debug("Using database coordinates for commune {}: [{}, {}]",
                              communeInseeCode, commune.getLongitude(), commune.getLatitude());
                     return new Double[]{commune.getLongitude().doubleValue(), commune.getLatitude().doubleValue()};
                 }
-                
+
                 // No coordinates in database, need to fetch from INSEE API
                 log.warn("No coordinates in database for commune {}, falling back to INSEE API", communeInseeCode);
                 return null;
@@ -375,20 +405,20 @@ public class WeatherService {
                 if (coordinates != null) {
                     return Mono.just(coordinates);
                 }
-                
+
                 // Fallback to INSEE API
                 log.info("Fetching coordinates from INSEE API for commune: {}", communeInseeCode);
                 return inseeApiClient.getCommuneCoordinates(communeInseeCode)
-                    .doOnSuccess(coords -> log.debug("Retrieved coordinates from INSEE API for commune {}: [{}, {}]", 
+                    .doOnSuccess(coords -> log.debug("Retrieved coordinates from INSEE API for commune {}: [{}, {}]",
                                                    communeInseeCode, coords[0], coords[1]))
-                    .doOnError(error -> log.error("Failed to get coordinates for commune {} from INSEE API", 
+                    .doOnError(error -> log.error("Failed to get coordinates for commune {} from INSEE API",
                                                 communeInseeCode, error));
             });
     }
 
     /**
      * Maps Open-Meteo API response to WeatherData entity.
-     * 
+     *
      * @param response Open-Meteo API response
      * @param communeInseeCode INSEE code of the commune
      * @return WeatherData entity
@@ -401,7 +431,7 @@ public class WeatherService {
         weatherData.setCommune(commune);
         weatherData.setMeasurementDate(LocalDate.now());
         weatherData.setCreatedAt(LocalDate.now());
-        
+
         if (response.current() != null) {
             weatherData.setTemperature(response.current().temperature() != null ? response.current().temperature() : 0.0);
             weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity().doubleValue() : 0.0);
@@ -409,22 +439,22 @@ public class WeatherService {
             weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection().doubleValue() : 0.0);
             weatherData.setWeatherCode(response.current().weatherCode() != null ? response.current().weatherCode() : 0);
         }
-        
+
         return weatherData;
     }
 
     /**
      * Creates a WeatherData entity for forecast data.
-     * 
+     *
      * @param communeInseeCode INSEE code of the commune
      * @param date forecast date
      * @param tempMax maximum temperature
      * @param tempMin minimum temperature
      * @return WeatherData entity for forecast
      */
-    private WeatherData createForecastWeatherData(String communeInseeCode, 
-                                                 java.time.LocalDate date, 
-                                                 Double tempMax, 
+    private WeatherData createForecastWeatherData(String communeInseeCode,
+                                                 java.time.LocalDate date,
+                                                 Double tempMax,
                                                  Double tempMin) {
         Commune commune = communeRepository.findByInseeCode(communeInseeCode)
             .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + communeInseeCode));
@@ -435,7 +465,37 @@ public class WeatherService {
         weatherData.setTemperature((tempMax + tempMin) / 2); // Average temperature
         weatherData.setMaxTemperature(tempMax);
         weatherData.setMinTemperature(tempMin);
-        
+
         return weatherData;
     }
+
+    /**
+     * Converts NearestWeatherResult to WeatherData entity.
+     *
+     * Used when returning estimated weather data from nearest commune.
+     * The returned entity represents data from the nearest commune,
+     * not the originally requested commune.
+     *
+     * @param requestedCommuneInseeCode INSEE code of requested commune
+     * @param nearestResult Weather result from nearest commune
+     * @return WeatherData entity with estimated data
+     */
+    private WeatherData convertNearestResultToWeatherData(String requestedCommuneInseeCode,
+                                                          NearestWeatherResult nearestResult) {
+        Commune estimatedCommune = communeRepository.findByInseeCode(requestedCommuneInseeCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + requestedCommuneInseeCode));
+
+        WeatherData weatherData = new WeatherData();
+        weatherData.setCommune(estimatedCommune);
+        weatherData.setMeasurementDate(nearestResult.measurementDate());
+        weatherData.setCreatedAt(LocalDate.now());
+        weatherData.setTemperature(nearestResult.temperature() != null ? nearestResult.temperature() : 0.0);
+        weatherData.setHumidity(nearestResult.humidity() != null ? nearestResult.humidity().doubleValue() : 0.0);
+        weatherData.setWindSpeed(nearestResult.windSpeed() != null ? nearestResult.windSpeed() : 0.0);
+        weatherData.setWindDirection(nearestResult.windDirection() != null ? nearestResult.windDirection().doubleValue() : 0.0);
+        weatherData.setWeatherCode(nearestResult.weatherCode());
+
+        return weatherData;
+    }
+
 }

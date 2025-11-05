@@ -1,5 +1,6 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.dto.response.NearestAirQualityResult;
 import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.external.client.AtmoApiClient;
@@ -36,14 +37,16 @@ public class AirQualityService {
     private final AtmoApiClient atmoApiClient;
     private final AirQualityRepository airQualityRepository;
     private final CommuneRepository communeRepository;
+    private final GeoDistanceService geoDistanceService;
 
     public AirQualityService(AtmoApiClient atmoApiClient,
                             AirQualityRepository airQualityRepository,
-                            CommuneRepository communeRepository)
-                            {
+                            CommuneRepository communeRepository,
+                            GeoDistanceService geoDistanceService) {
         this.atmoApiClient = atmoApiClient;
         this.airQualityRepository = airQualityRepository;
         this.communeRepository = communeRepository;
+        this.geoDistanceService = geoDistanceService;
     }
 
     /**
@@ -99,29 +102,55 @@ public class AirQualityService {
     }
 
     /**
-     * Gets current air quality data for a commune (cached for 1 hour).
+     * Gets current air quality data for a commune with geodistance fallback.
+     *
+     * Data retrieval strategy (per PRD):
+     * 1. Query database for recent data (< 1 day old) from requested commune
+     * 2. If no recent direct data exists, attempt geodistance fallback:
+     *    - Find nearest commune with air quality data within 20km radius
+     *    - Return estimated data from nearest commune
+     * 3. If no data within 20km threshold, return empty Optional
+     *
+     * Database is populated by scheduled updates via CacheAwareTieredScheduler.
+     * This method never calls external APIs directly - only reads from database.
      *
      * @param communeInseeCode INSEE code of the commune
-     * @return Mono<AirQuality> containing current data
+     * @return Mono<AirQuality> containing air quality data (direct or estimated from nearest commune)
      */
-    @Cacheable(value = "air-quality", key = "#communeInseeCode", unless = "#result == null")
     public Mono<AirQuality> getCurrentAirQuality(String communeInseeCode) {
-        log.info("Cache miss - Fetching air quality data from ATMO API for INSEE code: {}", communeInseeCode);
+        log.info("Fetching air quality data for commune: {}", communeInseeCode);
 
-        // Try to get from database first
-        Optional<AirQuality> existingOpt = airQualityRepository.findLatestByCommune_InseeCode(communeInseeCode);
+        // Step 1: Try to get recent direct data from database
+        Optional<AirQuality> directDataOpt = airQualityRepository.findLatestByCommune_InseeCode(communeInseeCode);
 
-        if (existingOpt.isPresent()) {
-            AirQuality existing = existingOpt.get();
-            if (existing.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
-                log.debug("Returning recent air quality data from database for commune: {}", communeInseeCode);
-                return Mono.just(existing);
+        if (directDataOpt.isPresent()) {
+            AirQuality directData = directDataOpt.get();
+            if (directData.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
+                log.debug("Found recent direct air quality data for commune: {} (measurement date: {})",
+                        communeInseeCode, directData.getMeasurementDate());
+                return Mono.just(directData);
             }
         }
 
-        // Fetch fresh data if no recent data exists
-        log.info("Fetching fresh air quality data for commune: {}", communeInseeCode);
-        return updateAirQualityForCommune(communeInseeCode);
+        // Step 2: No recent direct data - attempt geodistance fallback (20km threshold per PRD)
+        log.info("No recent direct air quality data for commune: {}, attempting geodistance fallback (20km)",
+                communeInseeCode);
+
+        Optional<NearestAirQualityResult> nearestResult = geoDistanceService
+            .findNearestCommuneWithAirQuality(communeInseeCode, 20.0);
+
+        if (nearestResult.isPresent()) {
+            NearestAirQualityResult result = nearestResult.get();
+            log.info("Found air quality data from nearest commune: {} at distance: {:.2f} km (measurement date: {})",
+                    result.communeName(), result.distanceKm(), result.measurementDate());
+
+            // Convert NearestAirQualityResult to AirQuality entity for return compatibility
+            return Mono.just(convertNearestResultToAirQuality(communeInseeCode, result));
+        }
+
+        // Step 3: No data available within 20km threshold
+        log.warn("No air quality data available within 20km radius for commune: {}", communeInseeCode);
+        return Mono.empty();
     }
 
     /**
@@ -313,4 +342,36 @@ public class AirQualityService {
             default -> null;
         };
     }
+
+    /**
+     * Converts NearestAirQualityResult to AirQuality entity.
+     *
+     * Used when returning estimated air quality data from nearest commune.
+     * The returned entity represents data from the nearest commune,
+     * not the originally requested commune.
+     *
+     * @param requestedCommuneInseeCode INSEE code of requested commune
+     * @param nearestResult Air quality result from nearest commune
+     * @return AirQuality entity with estimated data
+     */
+    private AirQuality convertNearestResultToAirQuality(String requestedCommuneInseeCode,
+                                                        NearestAirQualityResult nearestResult) {
+        Commune estimatedCommune = communeRepository.findByInseeCode(requestedCommuneInseeCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + requestedCommuneInseeCode));
+
+        AirQuality airQuality = new AirQuality();
+        airQuality.setCommune(estimatedCommune);
+        airQuality.setMeasurementDate(nearestResult.measurementDate());
+        airQuality.setAtmIndex(nearestResult.atmoIndex());
+        airQuality.setAtmoQual(nearestResult.qualifier());
+        airQuality.setAtmoColor(nearestResult.color());
+        airQuality.setNO2(nearestResult.no2());
+        airQuality.setO3(nearestResult.o3());
+        airQuality.setPm10(nearestResult.pm10());
+        airQuality.setPm25(nearestResult.pm25());
+        airQuality.setSO2(nearestResult.so2());
+
+        return airQuality;
+    }
+
 }

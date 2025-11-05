@@ -1,12 +1,16 @@
 package fr.airsen.api.service;
 
 import fr.airsen.api.dto.AirQualityResponseDTO;
+import fr.airsen.api.dto.response.NearestAirQualityResult;
+import fr.airsen.api.dto.response.AirQualityResponse;
 import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.external.client.AtmoApiClient;
 import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
+import fr.airsen.api.exception.AirQualityDataNotFoundException;
+import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -20,6 +24,7 @@ import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -39,13 +44,16 @@ public class AtmoIntegrationService {
     private final AtmoApiClient atmoApiClient;
     private final AirQualityRepository airQualityRepository;
     private final CommuneRepository communeRepository;
+    private final GeoDistanceService geoDistanceService;
 
     public AtmoIntegrationService(AtmoApiClient atmoApiClient,
                                  AirQualityRepository airQualityRepository,
-                                 CommuneRepository communeRepository) {
+                                 CommuneRepository communeRepository,
+                                 GeoDistanceService geoDistanceService) {
         this.atmoApiClient = atmoApiClient;
         this.airQualityRepository = airQualityRepository;
         this.communeRepository = communeRepository;
+        this.geoDistanceService = geoDistanceService;
     }
 
     /**
@@ -223,14 +231,54 @@ public class AtmoIntegrationService {
     }
 
     /**
-     * Gets the latest stored air quality data for a commune as DTO.
-     * 
+     * Gets the latest stored air quality data for a commune with geodistance fallback.
+     *
+     * Data retrieval strategy (per PRD):
+     * 1. Query database for recent data (< 1 day old) from requested commune
+     * 2. If no recent direct data exists, attempt geodistance fallback:
+     *    - Find nearest commune with air quality data within 20km radius
+     *    - Return estimated data from nearest commune
+     * 3. If no data within 20km threshold, return empty Optional
+     *
+     * This method is database-only and never calls external APIs.
+     *
      * @param inseeCode INSEE code of the commune
-     * @return Optional containing the latest air quality data as DTO
+     * @return Optional containing the latest air quality data as DTO (direct or estimated from nearest commune)
      */
     public Optional<AirQualityResponseDTO> getLatestStoredAirQuality(String inseeCode) {
-        Optional<AirQuality> airQuality = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
-        return airQuality.map(AirQualityResponseDTO::fromEntity);
+        log.info("Fetching latest stored air quality data for commune: {}", inseeCode);
+
+        // Step 1: Try to get recent direct data from database
+        Optional<AirQuality> directDataOpt = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
+
+        if (directDataOpt.isPresent()) {
+            AirQuality directData = directDataOpt.get();
+            if (directData.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
+                log.debug("Found recent direct air quality data for commune: {} (measurement date: {})",
+                        inseeCode, directData.getMeasurementDate());
+                return Optional.of(AirQualityResponseDTO.fromEntity(directData));
+            }
+        }
+
+        // Step 2: No recent direct data - attempt geodistance fallback (20km threshold per PRD)
+        log.info("No recent direct air quality data for commune: {}, attempting geodistance fallback (20km)",
+                inseeCode);
+
+        Optional<NearestAirQualityResult> nearestResult = geoDistanceService
+            .findNearestCommuneWithAirQuality(inseeCode, 20.0);
+
+        if (nearestResult.isPresent()) {
+            NearestAirQualityResult result = nearestResult.get();
+            log.info("Found air quality data from nearest commune: {} at distance: {:.2f} km (measurement date: {})",
+                    result.communeName(), result.distanceKm(), result.measurementDate());
+
+            // Convert NearestAirQualityResult to AirQualityResponseDTO
+            return Optional.of(convertNearestResultToAirQualityDTO(inseeCode, result));
+        }
+
+        // Step 3: No data available within 20km threshold
+        log.warn("No air quality data available within 20km radius for commune: {}", inseeCode);
+        return Optional.empty();
     }
 
     /**
@@ -244,6 +292,66 @@ public class AtmoIntegrationService {
         long totalCommunes = communeRepository.count();
         
         return new AirQualityStats(todayCount, totalCommunes, today);
+    }
+
+    /**
+     * Gets air quality for a commune with database-first and geodistance fallback.
+     * Returns DIRECT data if a recent record (<1 day) exists for the commune.
+     * Otherwise, returns ESTIMATED data from nearest commune within 20km.
+     * Throws AirQualityDataNotFoundException if none found within 20km.
+     */
+    public AirQualityResponse getAirQualityWithFallback(String inseeCode) {
+        Commune requested = communeRepository.findByInseeCode(inseeCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + inseeCode));
+
+        // Direct data path
+        Optional<AirQuality> directOpt = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
+        if (directOpt.isPresent()) {
+            AirQuality direct = directOpt.get();
+            if (direct.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
+                Map<String, Integer> pollutants = new java.util.HashMap<>();
+                pollutants.put("NO2", direct.getNo2Concentration());
+                pollutants.put("O3", direct.getO3Concentration());
+                pollutants.put("PM10", direct.getPm10Concentration());
+                pollutants.put("PM25", direct.getPm25Concentration());
+                pollutants.put("SO2", direct.getSo2Concentration());
+                return AirQualityResponse.direct(
+                    inseeCode,
+                    requested.getName(),
+                    direct.getMeasurementDate(),
+                    direct.getAtmoIndex(),
+                    direct.getQualifier(),
+                    direct.getColor(),
+                    pollutants
+                );
+            }
+        }
+
+        // Estimated fallback path (20km)
+        Optional<NearestAirQualityResult> nearestOpt = geoDistanceService.findNearestCommuneWithAirQuality(inseeCode, 20.0);
+        if (nearestOpt.isPresent()) {
+            NearestAirQualityResult r = nearestOpt.get();
+            Map<String, Integer> pollutants = new java.util.HashMap<>();
+            pollutants.put("NO2", r.no2());
+            pollutants.put("O3", r.o3());
+            pollutants.put("PM10", r.pm10());
+            pollutants.put("PM25", r.pm25());
+            pollutants.put("SO2", r.so2());
+            return AirQualityResponse.estimated(
+                inseeCode,
+                requested.getName(),
+                r.measurementDate(),
+                r.atmoIndex(),
+                r.qualifier(),
+                r.color(),
+                pollutants,
+                r.communeName(),
+                r.distanceKm()
+            );
+        }
+
+        // No data within threshold
+        throw new AirQualityDataNotFoundException("No air quality data within 20km");
     }
 
     /**
@@ -440,6 +548,48 @@ public class AtmoIntegrationService {
         existing.setPm25Concentration(newData.getPm25Concentration());
         existing.setSo2Concentration(newData.getSo2Concentration());
         existing.setCreatedAt(LocalDate.now()); // Update timestamp
+    }
+
+    /**
+     * Converts NearestAirQualityResult to AirQualityResponseDTO.
+     *
+     * Used when returning estimated air quality data from nearest commune.
+     * Creates a DTO representation of the air quality data for API response.
+     *
+     * @param requestedCommuneInseeCode INSEE code of requested commune
+     * @param nearestResult Air quality result from nearest commune
+     * @return AirQualityResponseDTO with estimated data
+     */
+    private AirQualityResponseDTO convertNearestResultToAirQualityDTO(String requestedCommuneInseeCode,
+                                                                      NearestAirQualityResult nearestResult) {
+        // Find the requested commune to link the DTO
+        Commune commune = communeRepository.findByInseeCode(requestedCommuneInseeCode)
+            .orElseThrow(() -> new IllegalArgumentException("Commune not found: " + requestedCommuneInseeCode));
+
+        // Get department and region names
+        String departmentName = commune.getDepartment() != null ? commune.getDepartment().getName() : "";
+        String regionName = commune.getDepartment() != null && commune.getDepartment().getRegion() != null
+            ? commune.getDepartment().getRegion().getName() : "";
+
+        // Create AirQualityResponseDTO with nearest commune's data
+        // Note: The DTO will show commune info for the requested commune,
+        // but the data (pollutants, index, etc.) are from the nearest commune
+        return new AirQualityResponseDTO(
+            requestedCommuneInseeCode,
+            commune.getName(),
+            departmentName,
+            regionName,
+            nearestResult.measurementDate(),
+            nearestResult.atmoIndex(),
+            nearestResult.qualifier(),
+            nearestResult.color(),
+            nearestResult.no2(),
+            nearestResult.o3(),
+            nearestResult.pm10(),
+            nearestResult.pm25(),
+            nearestResult.so2(),
+            LocalDate.now()  // Use current date as createdAt
+        );
     }
 
     /**

@@ -998,3 +998,31 @@ $badge-font-weight: $font-weight-medium !default;
     flex-wrap: wrap;
   }
 }
+
+// =============================================================================
+// LEGACY COMPATIBILITY ALIASES
+// For components still using old variable naming conventions
+// TODO: Refactor components to use new design system variable names directly
+// =============================================================================
+
+// Background colors
+$airsen-background: $airsen-gray-50 !default;
+
+// Text colors
+$airsen-text-primary: $airsen-gray-900 !default;
+$airsen-text-secondary: $airsen-gray-600 !default;
+
+// Spacing aliases (map new space-* to old spacing-*)
+$spacing-xs: $space-2 !default;   // 8px
+$spacing-sm: $space-3 !default;   // 12px
+$spacing-md: $space-4 !default;   // 16px
+$spacing-lg: $space-6 !default;   // 24px
+$spacing-xl: $space-8 !default;   // 32px
+$spacing-xxl: $space-12 !default; // 48px
+
+// Border radius aliases (already defined, but included for completeness)
+$border-radius-sm: $radius-sm !default;
+$border-radius-md: $radius-md !default;
+$border-radius-lg: $radius-lg !default;
+
+// Note: $shadow-sm, $shadow-md, $shadow-lg already exist in design system

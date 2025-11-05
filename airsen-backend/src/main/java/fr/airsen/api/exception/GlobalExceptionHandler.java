@@ -18,6 +18,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import fr.airsen.api.dto.response.ErrorResponse;
+
+/** Weather exceptions */
+import fr.airsen.api.exception.WeatherDataNotFoundException;
+import fr.airsen.api.exception.AirQualityDataNotFoundException;
 
 /**
  * Global exception handler for the Airsen API.
@@ -338,6 +343,31 @@ public class GlobalExceptionHandler {
         errorResponse.put("timestamp", LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    /**
+     * Handles weather data not found within 20km.
+     */
+    @ExceptionHandler(WeatherDataNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWeatherDataNotFound(WeatherDataNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            "WEATHER_DATA_NOT_FOUND",
+            ex.getMessage(),
+            LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(AirQualityDataNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAirQualityDataNotFound(AirQualityDataNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            "AIR_QUALITY_DATA_NOT_FOUND",
+            ex.getMessage(),
+            LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     /**
