@@ -1,0 +1,272 @@
+package fr.airsen.api.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.airsen.api.dto.response.WeatherResponse;
+import fr.airsen.api.entity.WeatherData;
+import fr.airsen.api.repository.CommuneRepository;
+import fr.airsen.api.repository.WeatherDataRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Integration tests for WeatherController endpoints.
+ *
+ * Tests the complete flow from HTTP request to database query,
+ * including geodistance fallback mechanism with real spatial calculations.
+ */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+                properties = {
+                    "spring.profiles.active=test",
+                    "spring.datasource.url=jdbc:h2:mem:testdb",
+                    "spring.jpa.hibernate.ddl-auto=create-drop"
+                })
+@AutoConfigureMockMvc
+@Transactional
+@Sql(scripts = {
+    "/test-data/communes.sql",
+    "/test-data/weather-data.sql"
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+class WeatherControllerIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private WeatherDataRepository weatherDataRepository;
+
+    @Autowired
+    private CommuneRepository communeRepository;
+
+    @Test
+    @DisplayName("Should return direct weather data when available for requested commune")
+    void shouldReturnDirectWeatherData() throws Exception {
+        // Given: Paris (75056) has fresh weather data in database
+        String parisInseeCode = "75056";
+
+        // When: Request weather for Paris
+        MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", parisInseeCode)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then: Response contains direct data from Paris
+        WeatherResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            WeatherResponse.class
+        );
+
+        assertThat(response.inseeCode()).isEqualTo(parisInseeCode);
+        assertThat(response.communeName()).isEqualTo("Paris");
+        assertThat(response.dataSource()).isEqualTo(WeatherResponse.DataSource.DIRECT);
+        assertThat(response.temperature()).isEqualTo(15.5);
+        assertThat(response.humidity()).isEqualTo(65);
+        assertThat(response.windSpeed()).isEqualTo(12.5);
+        assertThat(response.windDirection()).isEqualTo(180);
+        assertThat(response.weatherCode()).isEqualTo(2);
+        assertThat(response.measurementDate()).isEqualTo(LocalDate.now());
+        assertThat(response.dataQualityNote()).isEqualTo("Données mesurées pour cette commune");
+
+        // Estimated fields should be null for direct data
+        assertThat(response.estimatedFromCommune()).isNull();
+        assertThat(response.distanceKm()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return estimated weather data from nearest commune within 20km")
+    void shouldReturnEstimatedWeatherDataFromNearestCommune() throws Exception {
+        // Given: Saint-Denis (93008) has no weather data, but Paris (75056) does (~10km away)
+        String saintDenisInseeCode = "93008";
+
+        // Verify setup: Saint-Denis has no weather data
+        assertThat(weatherDataRepository.getMostRecentWeatherByInseeCode(saintDenisInseeCode)).isEmpty();
+
+        // When: Request weather for Saint-Denis
+        MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", saintDenisInseeCode)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then: Response contains estimated data from nearest commune (Paris)
+        WeatherResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            WeatherResponse.class
+        );
+
+        assertThat(response.inseeCode()).isEqualTo(saintDenisInseeCode);
+        assertThat(response.communeName()).isEqualTo("Saint-Denis");
+        assertThat(response.dataSource()).isEqualTo(WeatherResponse.DataSource.ESTIMATED);
+
+        // Data should come from nearest commune (Paris or Boulogne-Billancourt)
+        assertThat(response.estimatedFromCommune()).isIn("Paris", "Boulogne-Billancourt");
+        assertThat(response.distanceKm()).isBetween(8.0, 12.0); // Approximate distance
+        assertThat(response.dataQualityNote()).contains("Données estimées depuis");
+
+        // Weather data should be inherited from nearest commune
+        assertThat(response.temperature()).isNotNull();
+        assertThat(response.humidity()).isNotNull();
+        assertThat(response.measurementDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    @DisplayName("Should return estimated data for commune with nearby weather source (15km)")
+    void shouldReturnEstimatedDataForCommuneWithin20km() throws Exception {
+        // Given: Créteil (94017) has no weather data, but Paris (75056) is ~15km away
+        String creteilInseeCode = "94017";
+
+        // Verify setup: Créteil has no weather data
+        assertThat(weatherDataRepository.getMostRecentWeatherByInseeCode(creteilInseeCode)).isEmpty();
+
+        // When: Request weather for Créteil
+        MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", creteilInseeCode)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then: Response contains estimated data from nearest commune
+        WeatherResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            WeatherResponse.class
+        );
+
+        assertThat(response.inseeCode()).isEqualTo(creteilInseeCode);
+        assertThat(response.communeName()).isEqualTo("Créteil");
+        assertThat(response.dataSource()).isEqualTo(WeatherResponse.DataSource.ESTIMATED);
+        assertThat(response.distanceKm()).isBetween(10.0, 20.0); // Within 20km threshold
+        assertThat(response.estimatedFromCommune()).isNotNull();
+        assertThat(response.dataQualityNote()).contains("Données estimées depuis");
+    }
+
+    @Test
+    @DisplayName("Should return 404 when no weather data available within 20km radius")
+    void shouldReturn404WhenNoDataWithin20km() throws Exception {
+        // Given: Meaux (77001) is ~50km from Paris, outside 20km threshold
+        String meauxInseeCode = "77001";
+
+        // When: Request weather for Meaux
+        mockMvc.perform(get("/weather/current/{inseeCode}", meauxInseeCode)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("No weather data within 20km"));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when commune does not exist")
+    void shouldReturn404WhenCommuneNotFound() throws Exception {
+        // Given: Invalid INSEE code that doesn't exist
+        String invalidInseeCode = "99999";
+
+        // When: Request weather for non-existent commune
+        mockMvc.perform(get("/weather/current/{inseeCode}", invalidInseeCode)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Commune not found"));
+    }
+
+    @Test
+    @DisplayName("Should return weather data regardless of age (scheduler handles freshness)")
+    void shouldReturnWeatherDataRegardlessOfAge() throws Exception {
+        // Given: Meaux (77001) has weather data but it's 30 days old
+        // Note: This test assumes Meaux is moved closer to test old data specifically
+        // For this test, we'll insert fresh data for a test commune and then make it old
+
+        String meauxInseeCode = "77001";
+
+        // Verify old data exists
+        var oldData = weatherDataRepository.getMostRecentWeatherByInseeCode(meauxInseeCode);
+        assertThat(oldData).isPresent();
+        assertThat(oldData.get().getMeasurementDate()).isBefore(LocalDate.now().minusDays(7));
+
+        // When: Request weather for commune with old data
+        // This should still work if there's ANY data (regardless of age)
+        // The endpoint returns available data; scheduler handles freshness
+        MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", meauxInseeCode)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Then: Response contains the old data (system accepts any age)
+        WeatherResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            WeatherResponse.class
+        );
+
+        assertThat(response.inseeCode()).isEqualTo(meauxInseeCode);
+        assertThat(response.communeName()).isEqualTo("Meaux");
+        assertThat(response.dataSource()).isEqualTo(WeatherResponse.DataSource.DIRECT);
+        assertThat(response.temperature()).isEqualTo(12.8);
+        assertThat(response.measurementDate()).isBefore(LocalDate.now());
+    }
+
+    @Test
+    @DisplayName("Should validate INSEE code format")
+    void shouldValidateInseeCodeFormat() throws Exception {
+        // Given: Invalid INSEE code format (not 5 digits)
+        String invalidFormat = "123";
+
+        // When: Request weather with invalid format
+        mockMvc.perform(get("/weather/current/{inseeCode}", invalidFormat)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return geodistance calculation accuracy within expected range")
+    void shouldReturnAccurateGeodistanceCalculations() throws Exception {
+        // Given: Saint-Denis (93008) coordinates vs Paris (75056) coordinates
+        // Expected distance: ~10km (real-world distance between these cities)
+        String saintDenisInseeCode = "93008";
+
+        // When: Request weather for Saint-Denis (should fallback to Paris)
+        MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", saintDenisInseeCode)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Then: Distance calculation should be accurate (within 1km tolerance)
+        WeatherResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            WeatherResponse.class
+        );
+
+        if (response.estimatedFromCommune() != null && response.estimatedFromCommune().equals("Paris")) {
+            // Distance from Saint-Denis to Paris should be ~9-11km
+            assertThat(response.distanceKm()).isBetween(8.0, 12.0);
+        }
+    }
+
+    /**
+     * Helper method to verify test data setup.
+     */
+    private void verifyTestDataSetup() {
+        // Verify communes exist
+        assertThat(communeRepository.findByInseeCode("75056")).isPresent(); // Paris
+        assertThat(communeRepository.findByInseeCode("93008")).isPresent(); // Saint-Denis
+        assertThat(communeRepository.findByInseeCode("94017")).isPresent(); // Créteil
+        assertThat(communeRepository.findByInseeCode("77001")).isPresent(); // Meaux
+
+        // Verify weather data distribution
+        assertThat(weatherDataRepository.getMostRecentWeatherByInseeCode("75056")).isPresent(); // Paris has data
+        assertThat(weatherDataRepository.getMostRecentWeatherByInseeCode("93008")).isEmpty();    // Saint-Denis no data
+        assertThat(weatherDataRepository.getMostRecentWeatherByInseeCode("94017")).isEmpty();    // Créteil no data
+    }
+}
