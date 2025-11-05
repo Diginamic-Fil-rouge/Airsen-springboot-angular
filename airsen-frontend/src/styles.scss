@@ -1,3 +1,6 @@
+// Import Sass color module for modern color functions
+@use 'sass:color';
+
 // Import Design System
 @use 'styles/design-system' as *;
 
@@ -19,22 +22,22 @@ html, body {
 /* Air Quality Indicators Colors */
 .air-quality-good {
   color: $airsen-green-good;
-  background-color: lighten($airsen-green-good, 45%);
+  background-color: color.adjust($airsen-green-good, $lightness: 45%);
 }
 
 .air-quality-moderate {
   color: $airsen-yellow-moderate;
-  background-color: lighten($airsen-yellow-moderate, 35%);
+  background-color: color.adjust($airsen-yellow-moderate, $lightness: 35%);
 }
 
 .air-quality-poor {
   color: $airsen-red-unhealthy;
-  background-color: lighten($airsen-red-unhealthy, 35%);
+  background-color: color.adjust($airsen-red-unhealthy, $lightness: 35%);
 }
 
 .air-quality-very-poor {
   color: $airsen-purple-very;
-  background-color: lighten($airsen-purple-very, 40%);
+  background-color: color.adjust($airsen-purple-very, $lightness: 40%);
 }
 
 /* Weather Icons Colors */

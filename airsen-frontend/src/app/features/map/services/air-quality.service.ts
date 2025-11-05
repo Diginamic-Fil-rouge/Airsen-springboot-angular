@@ -11,7 +11,7 @@ export class AirQualityService {
   private http = inject(HttpClient);
 
   getAirLatestQuality(inseeCode: string): Observable<any>{
-    return this.http.get(`${this.apiUrl}/air-quality/${inseeCode}/latest`);
+    return this.http.get(`${this.apiUrl}/air-quality/${inseeCode}`);
   }
 
   getAirQuality(inseeCode: string): Observable<AirQuality[]>{
