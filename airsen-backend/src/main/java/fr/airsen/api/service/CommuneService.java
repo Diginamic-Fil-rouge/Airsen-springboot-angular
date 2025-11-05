@@ -10,6 +10,7 @@ import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.insee.InseeCommuneResponse;
 import fr.airsen.api.mapper.CommuneDetailMapper;
 import fr.airsen.api.repository.*;
+import fr.airsen.api.util.JpqlResultConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -94,9 +95,9 @@ public class CommuneService {
         return results.stream()
             .map(row -> {
                 Commune c = (Commune) row[0];
-                Integer atmoIndex = (Integer) row[1];
-                String qualifier = (String) row[2];
-                String color = (String) row[3];
+                Integer atmoIndex = JpqlResultConverter.toIntegerNullable(row[1]);
+                String qualifier = JpqlResultConverter.toStringNullable(row[2]);
+                String color = JpqlResultConverter.toStringNullable(row[3]);
 
                 // Log warning if coordinates are missing (impacts map display)
                 if (c.getLatitude() == null || c.getLongitude() == null) {
@@ -239,9 +240,9 @@ public class CommuneService {
         return results.stream()
             .map(row -> {
                 Commune c = (Commune) row[0];
-                Integer atmoIndex = (Integer) row[1];  // Can be null
-                String qualifier = (String) row[2];    // Can be null
-                String color = (String) row[3];        // Can be null
+                Integer atmoIndex = JpqlResultConverter.toIntegerNullable(row[1]);  // Can be null
+                String qualifier = JpqlResultConverter.toStringNullable(row[2]);    // Can be null
+                String color = JpqlResultConverter.toStringNullable(row[3]);        // Can be null
 
                 return new CommuneDTO(
                     c.getId(),
