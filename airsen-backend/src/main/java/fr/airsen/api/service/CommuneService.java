@@ -3,6 +3,7 @@ package fr.airsen.api.service;
 import fr.airsen.api.dto.CommuneDTO;
 import fr.airsen.api.dto.response.CommuneDetailResponse;
 import fr.airsen.api.entity.*;
+import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import fr.airsen.api.external.client.AtmoApiClient;
 import fr.airsen.api.external.client.InseeApiClient;
@@ -10,10 +11,11 @@ import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.insee.InseeCommuneResponse;
 import fr.airsen.api.mapper.CommuneDetailMapper;
 import fr.airsen.api.repository.*;
+import fr.airsen.api.service.cacheData.SmartCacheService;
 import fr.airsen.api.util.JpqlResultConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,7 @@ public class CommuneService {
     private final AtmoApiClient atmoApiClient;
     private final OpenMeteoApiClient openMeteoApiClient;
     private final CommuneDetailMapper communeDetailMapper;
+    private final SmartCacheService smartCacheService;
 
     public CommuneService(CommuneRepository communeRepository,
                          DepartmentRepository departmentRepository,
@@ -50,7 +53,8 @@ public class CommuneService {
                          InseeApiClient inseeApiClient,
                          AtmoApiClient atmoApiClient,
                          OpenMeteoApiClient openMeteoApiClient,
-                         CommuneDetailMapper communeDetailMapper) {
+                         CommuneDetailMapper communeDetailMapper,
+                         SmartCacheService smartCacheService) {
         this.communeRepository = communeRepository;
         this.departmentRepository = departmentRepository;
         this.regionRepository = regionRepository;
@@ -60,6 +64,7 @@ public class CommuneService {
         this.atmoApiClient = atmoApiClient;
         this.openMeteoApiClient = openMeteoApiClient;
         this.communeDetailMapper = communeDetailMapper;
+        this.smartCacheService = smartCacheService;
     }
 
     @Transactional(readOnly = true)
@@ -199,10 +204,10 @@ public class CommuneService {
     }
 
     /**
-     * Clears all commune cache.
+     * Clears all commune cache using SmartCacheService.
      */
-    @CacheEvict(value = "communes", allEntries = true)
     public void evictAllCommuneCache() {
+        smartCacheService.clearAll();
         log.info("Cleared all commune cache");
     }
 
@@ -650,26 +655,65 @@ public class CommuneService {
     }
 
     /**
-     * Gets detailed commune information with integrated environmental data.
+     * Gets detailed commune information with integrated environmental data using smart caching.
+     *
+     * Cache-Aware Data Aggregation Strategy:
+     * 1. Check SmartCache first (cache key: "commune-details:" + inseeCode)
+     * 2. If cache miss or stale, execute fetchCommuneDetailFromDatabase()
+     * 3. Cache result with 6-hour TTL (ON_DEMAND_FETCH)
+     *
+     * Data Aggregation (preserved as-is):
+     * 1. Fetch commune data with eager loading (department, region)
+     * 2. Fetch latest air quality data for the commune
+     * 3. Fetch latest weather data for the commune
+     * 4. Aggregate all data using CommuneDetailMapper
+     *
+     * @param inseeCode INSEE code of the commune
+     * @return CommuneDetailResponse containing aggregated commune, air quality, and weather data
+     * @throws ResourceNotFoundException if commune not found
      */
     @Transactional(readOnly = true)
     public CommuneDetailResponse getCommuneDetailWithEnvironmentalData(String inseeCode) {
-        log.info("Fetching commune detail with environmental data for INSEE code: {}", inseeCode);
+        log.debug("Fetching commune detail with environmental data for INSEE code: {}", inseeCode);
 
-        // Step 1: Validate INSEE code format
+        // Validate INSEE code format
         if (inseeCode == null || !inseeCode.matches("\\d{5}")) {
             log.warn("Invalid INSEE code format: {}", inseeCode);
             throw new IllegalArgumentException("INSEE code must be exactly 5 digits");
         }
 
-        // Step 2: Fetch commune from database with eager loading (single query)
+        String cacheKey = "commune-details:" + inseeCode;
+
+        return smartCacheService.getOrFetch(
+            cacheKey,
+            CommuneDetailResponse.class,
+            CacheMetadata.DataSource.ON_DEMAND_FETCH,
+            false, // forceRefresh
+            () -> fetchCommuneDetailFromDatabase(inseeCode)
+        ).getData();
+    }
+
+    /**
+     * Fetches commune detail with aggregated environmental data from database.
+     *
+     * This method preserves the existing data aggregation logic exactly as-is.
+     * Called by SmartCacheService when cache miss occurs or refresh is needed.
+     *
+     * @param inseeCode INSEE code of the commune
+     * @return CommuneDetailResponse with aggregated data
+     * @throws ResourceNotFoundException if commune not found
+     */
+    private CommuneDetailResponse fetchCommuneDetailFromDatabase(String inseeCode) {
+        log.debug("Cache miss or refresh needed, fetching commune detail from database");
+
+        // Step 1: Fetch commune from database with eager loading (single query)
         Commune commune = communeRepository.findByInseeCodeWithEagerLoading(inseeCode)
             .orElseThrow(() -> {
                 log.error("Commune not found for INSEE code: {}", inseeCode);
                 return new ResourceNotFoundException("Commune not found with INSEE code: " + inseeCode);
             });
 
-        log.info("Found commune: {} ({}) - Department: {}, Region: {}",
+        log.debug("Found commune: {} ({}) - Department: {}, Region: {}",
             commune.getName(),
             commune.getInseeCode(),
             commune.getDepartment() != null ? commune.getDepartment().getName() : "N/A",
@@ -677,7 +721,7 @@ public class CommuneService {
                 ? commune.getDepartment().getRegion().getName() : "N/A"
         );
 
-        // Step 3: Fetch latest air quality from database
+        // Step 2: Fetch latest air quality from database
         Optional<AirQuality> airQualityOpt = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
         AirQuality airQuality = airQualityOpt.orElse(null);
 
@@ -685,10 +729,10 @@ public class CommuneService {
             log.debug("Found air quality data for {}: ATMO index={}, date={}",
                 inseeCode, airQuality.getAtmoIndex(), airQuality.getMeasurementDate());
         } else {
-            log.warn("No air quality data found in database for commune: {}", inseeCode);
+            log.debug("No air quality data found in database for commune: {}", inseeCode);
         }
 
-        // Step 4: Fetch latest weather data from database
+        // Step 3: Fetch latest weather data from database
         Optional<WeatherData> weatherOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(inseeCode);
         WeatherData weather = weatherOpt.orElse(null);
 
@@ -696,10 +740,10 @@ public class CommuneService {
             log.debug("Found weather data for {}: temp={}°C, date={}",
                 inseeCode, weather.getTemperature(), weather.getMeasurementDate());
         } else {
-            log.warn("No weather data found in database for commune: {}", inseeCode);
+            log.debug("No weather data found in database for commune: {}", inseeCode);
         }
 
-        // Step 5: Build response DTO using MapStruct mapper
+        // Step 4: Build response DTO using MapStruct mapper
         CommuneDetailResponse response = communeDetailMapper.toCommuneDetailResponse(
             commune,
             airQuality,
@@ -713,5 +757,24 @@ public class CommuneService {
         );
 
         return response;
+    }
+
+    /**
+     * Evicts commune details cache for specific commune using SmartCacheService.
+     *
+     * @param inseeCode INSEE code of the commune
+     */
+    public void evictCommuneDetailsCache(String inseeCode) {
+        String cacheKey = "commune-details:" + inseeCode;
+        smartCacheService.invalidate(cacheKey);
+        log.info("Evicted commune details cache for INSEE code: {}", inseeCode);
+    }
+
+    /**
+     * Clears all commune details cache using SmartCacheService.
+     */
+    public void evictAllCommuneDetailsCache() {
+        smartCacheService.clearAll();
+        log.info("Cleared all commune details cache");
     }
 }

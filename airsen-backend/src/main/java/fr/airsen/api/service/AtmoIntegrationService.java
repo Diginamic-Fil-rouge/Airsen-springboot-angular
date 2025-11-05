@@ -5,10 +5,13 @@ import fr.airsen.api.dto.response.NearestAirQualityResult;
 import fr.airsen.api.dto.response.AirQualityResponse;
 import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.Commune;
+import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.external.client.AtmoApiClient;
 import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
+import fr.airsen.api.mapper.AirQualityMapper;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
+import fr.airsen.api.service.cacheData.SmartCacheService;
 import fr.airsen.api.exception.AirQualityDataNotFoundException;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -16,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
+
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -45,15 +48,21 @@ public class AtmoIntegrationService {
     private final AirQualityRepository airQualityRepository;
     private final CommuneRepository communeRepository;
     private final GeoDistanceService geoDistanceService;
+    private final SmartCacheService smartCacheService;
+    private final AirQualityMapper airQualityMapper;
 
     public AtmoIntegrationService(AtmoApiClient atmoApiClient,
                                  AirQualityRepository airQualityRepository,
                                  CommuneRepository communeRepository,
-                                 GeoDistanceService geoDistanceService) {
+                                 GeoDistanceService geoDistanceService,
+                                 SmartCacheService smartCacheService,
+                                 AirQualityMapper airQualityMapper) {
         this.atmoApiClient = atmoApiClient;
         this.airQualityRepository = airQualityRepository;
         this.communeRepository = communeRepository;
         this.geoDistanceService = geoDistanceService;
+        this.smartCacheService = smartCacheService;
+        this.airQualityMapper = airQualityMapper;
     }
 
     /**
@@ -226,27 +235,91 @@ public class AtmoIntegrationService {
         } catch (Exception e) {
             log.error("Error in synchronous air quality request for commune: {}", inseeCode, e);
             // Fallback to database data if external API fails
-            return getLatestStoredAirQuality(inseeCode);
+            return getLatestStoredAirQualityLegacy(inseeCode);
         }
     }
 
     /**
-     * Gets the latest stored air quality data for a commune with geodistance fallback.
+     * Gets air quality response for a commune with smart caching and geodistance fallback.
      *
-     * Data retrieval strategy (per PRD):
-     * 1. Query database for recent data (< 1 day old) from requested commune
-     * 2. If no recent direct data exists, attempt geodistance fallback:
-     *    - Find nearest commune with air quality data within 20km radius
-     *    - Return estimated data from nearest commune
-     * 3. If no data within 20km threshold, return empty Optional
+     * Cache-Aware Data Retrieval Strategy:
+     * 1. Check SmartCache first (cache key: "air-quality:" + inseeCode)
+     * 2. If cache miss or stale, execute fetchAirQualityWithFallback()
+     * 3. Cache result with 6-hour TTL (ON_DEMAND_FETCH)
      *
-     * This method is database-only and never calls external APIs.
+     * Fallback Strategy (preserved as-is):
+     * 1. Query database for recent data from requested commune
+     * 2. If no direct data exists, attempt geodistance fallback within 20km
+     * 3. Return AirQualityResponse with proper DataSource metadata (DIRECT/ESTIMATED)
      *
      * @param inseeCode INSEE code of the commune
-     * @return Optional containing the latest air quality data as DTO (direct or estimated from nearest commune)
+     * @return AirQualityResponse containing air quality data with source transparency
+     * @throws ResourceNotFoundException if no air quality data within 20km threshold
      */
-    public Optional<AirQualityResponseDTO> getLatestStoredAirQuality(String inseeCode) {
-        log.info("Fetching latest stored air quality data for commune: {}", inseeCode);
+    @Transactional(readOnly = true)
+    public AirQualityResponse getLatestStoredAirQuality(String inseeCode) {
+        log.debug("Fetching air quality for commune: {}", inseeCode);
+
+        String cacheKey = "air-quality:" + inseeCode;
+
+        return smartCacheService.getOrFetch(
+            cacheKey,
+            AirQualityResponse.class,
+            CacheMetadata.DataSource.ON_DEMAND_FETCH,
+            false, // forceRefresh
+            () -> fetchAirQualityWithFallback(inseeCode)
+        ).getData();
+    }
+
+    /**
+     * Fetches air quality data with geodistance fallback logic (extracted from cache wrapper).
+     *
+     * This method preserves the existing 20km Haversine fallback exactly as-is.
+     * Called by SmartCacheService when cache miss occurs or refresh is needed.
+     *
+     * @param inseeCode INSEE code of the commune
+     * @return AirQualityResponse with proper DataSource metadata
+     * @throws ResourceNotFoundException if no air quality data within 20km threshold
+     */
+    private AirQualityResponse fetchAirQualityWithFallback(String inseeCode) {
+        log.debug("Cache miss or refresh needed, fetching air quality from database");
+
+        // Try direct database query
+        Optional<AirQuality> directData = airQualityRepository
+            .findLatestByCommune_InseeCode(inseeCode);
+
+        if (directData.isPresent()) {
+            log.debug("Found direct air quality data for commune: {}", inseeCode);
+            return airQualityMapper.toDirectResponse(directData.get());
+        }
+
+        // Geodistance fallback (20km threshold) - PRESERVED AS-IS
+        log.debug("No direct data, attempting geodistance fallback within 20km");
+        Optional<NearestAirQualityResult> nearestData = geoDistanceService
+            .findNearestCommuneWithAirQuality(inseeCode, 20.0);
+
+        if (nearestData.isPresent()) {
+            log.info("Using estimated air quality from {} ({} km away)",
+                     nearestData.get().communeName(),
+                     nearestData.get().distanceKm());
+            return airQualityMapper.toEstimatedResponse(nearestData.get());
+        }
+
+        throw new ResourceNotFoundException(
+            "No air quality data within 20km for commune: " + inseeCode
+        );
+    }
+
+    /**
+     * Gets the latest stored air quality data for a commune (legacy method for backward compatibility).
+     *
+     * @param inseeCode INSEE code of the commune
+     * @return Optional containing the latest air quality data as DTO
+     * @deprecated Use getLatestStoredAirQuality() that returns AirQualityResponse with caching
+     */
+    @Deprecated
+    public Optional<AirQualityResponseDTO> getLatestStoredAirQualityLegacy(String inseeCode) {
+        log.info("Fetching latest stored air quality data for commune: {} (legacy method)", inseeCode);
 
         // Step 1: Try to get recent direct data from database
         Optional<AirQuality> directDataOpt = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
@@ -279,6 +352,25 @@ public class AtmoIntegrationService {
         // Step 3: No data available within 20km threshold
         log.warn("No air quality data available within 20km radius for commune: {}", inseeCode);
         return Optional.empty();
+    }
+
+    /**
+     * Evicts air quality cache for specific commune using SmartCacheService.
+     *
+     * @param inseeCode INSEE code of the commune
+     */
+    public void evictAirQualityCache(String inseeCode) {
+        String cacheKey = "air-quality:" + inseeCode;
+        smartCacheService.invalidate(cacheKey);
+        log.info("Evicted air quality cache for INSEE code: {}", inseeCode);
+    }
+
+    /**
+     * Clears all air quality cache using SmartCacheService.
+     */
+    public void evictAllAirQualityCache() {
+        smartCacheService.clearAll();
+        log.info("Cleared all air quality cache");
     }
 
     /**
