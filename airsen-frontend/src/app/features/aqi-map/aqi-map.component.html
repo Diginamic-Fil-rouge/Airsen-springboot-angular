@@ -1,0 +1,133 @@
+<div class="aqi-map-container" [class.mobile-view]="isMobileView">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p class="loading-text">Chargement de la carte de qualité de l'air...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="aqi-map-content" *ngIf="!isLoading">
+
+    <!-- Side Panel (Desktop) / Bottom Sheet (Mobile) -->
+    <aside
+      class="side-panel"
+      [class.open]="isSidePanelOpen"
+      [class.mobile]="isMobileView">
+
+      <!-- Panel Header -->
+      <div class="panel-header">
+        <h1 class="panel-title">
+          <mat-icon class="title-icon">air</mat-icon>
+          Qualité de l'Air
+        </h1>
+        <button
+          class="panel-toggle-btn"
+          (click)="toggleSidePanel()"
+          [attr.aria-label]="isSidePanelOpen ? 'Fermer le panneau' : 'Ouvrir le panneau'">
+          <mat-icon>{{ isSidePanelOpen ? 'close' : 'menu' }}</mat-icon>
+        </button>
+      </div>
+
+      <!-- Panel Content (will be implemented in next steps) -->
+      <div class="panel-content">
+        <p class="panel-placeholder">
+          Filtres et liste des stations seront affichés ici
+        </p>
+
+        <!-- Station Details (when selected) -->
+        <div *ngIf="selectedStation" class="selected-station-info">
+          <div class="station-header">
+            <h3>{{ selectedStation.name }}</h3>
+            <button
+              class="close-btn"
+              (click)="closeStationDetails()"
+              aria-label="Fermer les détails">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <div class="station-aqi">
+            <div class="aqi-value" [style.color]="selectedStation.aqiColor">
+              {{ selectedStation.currentAqi }}
+            </div>
+            <div class="aqi-label">
+              Indice de qualité de l'air
+            </div>
+          </div>
+
+          <p class="station-last-update">
+            Dernière mise à jour : {{ selectedStation.lastUpdated | date:'short':'':'fr' }}
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Map Container -->
+    <main class="map-wrapper">
+      <!-- Toggle Button (visible when panel is closed) -->
+      <button
+        *ngIf="!isSidePanelOpen"
+        class="panel-open-btn"
+        (click)="toggleSidePanel()"
+        aria-label="Ouvrir le panneau">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <!-- Map View Component (to be implemented) -->
+      <div class="map-placeholder">
+        <div class="placeholder-content">
+          <mat-icon class="placeholder-icon">map</mat-icon>
+          <h2>Carte Interactive</h2>
+          <p>La vue de carte avec les marqueurs sera implémentée ici</p>
+          <p class="placeholder-info">
+            {{ stations.length }} stations chargées
+          </p>
+        </div>
+      </div>
+
+      <!-- Map Controls (bottom right) -->
+      <div class="map-controls">
+        <button class="map-control-btn" matTooltip="Ma position" aria-label="Ma position">
+          <mat-icon>my_location</mat-icon>
+        </button>
+        <button class="map-control-btn" matTooltip="Zoom avant" aria-label="Zoom avant">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button class="map-control-btn" matTooltip="Zoom arrière" aria-label="Zoom arrière">
+          <mat-icon>remove</mat-icon>
+        </button>
+      </div>
+
+      <!-- Legend (bottom left) -->
+      <div class="map-legend">
+        <h4 class="legend-title">Légende</h4>
+        <div class="legend-items">
+          <div class="legend-item">
+            <span class="legend-marker" style="background-color: #00E400;"></span>
+            <span class="legend-label">Bon (0-50)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker" style="background-color: #FFFF00;"></span>
+            <span class="legend-label">Moyen (51-100)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker" style="background-color: #FF7E00;"></span>
+            <span class="legend-label">Dégradé (101-150)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker" style="background-color: #FF0000;"></span>
+            <span class="legend-label">Mauvais (151-200)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker" style="background-color: #8F3F97;"></span>
+            <span class="legend-label">Très mauvais (201-300)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker" style="background-color: #7E0023;"></span>
+            <span class="legend-label">Extrêmement mauvais (301+)</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

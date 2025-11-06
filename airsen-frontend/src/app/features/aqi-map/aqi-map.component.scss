@@ -1,0 +1,420 @@
+@use 'sass:color';
+@use '../../../styles/design-system' as *;
+@use './styles/aqi-colors-enhanced' as aqi;
+
+// ============================================================================
+// AQI MAP CONTAINER - FULL SCREEN LAYOUT
+// ============================================================================
+
+.aqi-map-container {
+  position: fixed;
+  top: $header-height;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  background-color: $airsen-gray-100;
+  z-index: 1;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba($airsen-white, 0.95);
+  z-index: $z-index-modal;
+  gap: $space-4;
+
+  .loading-text {
+    font-size: $font-size-lg;
+    color: $airsen-gray-700;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.aqi-map-content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+// ============================================================================
+// SIDE PANEL (Desktop) / BOTTOM SHEET (Mobile)
+// ============================================================================
+
+.side-panel {
+  width: 400px;
+  height: 100%;
+  background-color: $airsen-white;
+  box-shadow: $shadow-lg;
+  display: flex;
+  flex-direction: column;
+  transition: transform $duration-normal $ease-in-out;
+  z-index: $z-index-sticky;
+  position: relative;
+
+  &:not(.open) {
+    transform: translateX(-100%);
+  }
+
+  &.mobile {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 60vh;
+    max-height: 80vh;
+    border-radius: $radius-xl $radius-xl 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+
+    &:not(.open) {
+      transform: translateY(calc(100% - 60px));
+    }
+
+    &.open {
+      transform: translateY(0);
+    }
+  }
+
+  @include respond-max(md) {
+    width: 350px;
+  }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-6;
+  border-bottom: 1px solid $airsen-gray-200;
+  background: linear-gradient(135deg, $airsen-primary 0%, color.adjust($airsen-primary, $lightness: -8%) 100%);
+  color: $airsen-white;
+
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    margin: 0;
+
+    .title-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .panel-toggle-btn {
+    background: rgba($airsen-white, 0.2);
+    border: none;
+    border-radius: $radius-full;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: $transition-all;
+    color: $airsen-white;
+
+    &:hover {
+      background: rgba($airsen-white, 0.3);
+      transform: scale(1.1);
+    }
+
+    mat-icon {
+      font-size: 24px;
+    }
+  }
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: $space-6;
+  @include custom-scrollbar();
+
+  .panel-placeholder {
+    color: $airsen-gray-600;
+    text-align: center;
+    padding: $space-8;
+    font-style: italic;
+  }
+}
+
+// Selected Station Info
+.selected-station-info {
+  background: linear-gradient(135deg, rgba($airsen-primary, 0.1) 0%, rgba($airsen-primary, 0.05) 100%);
+  border-radius: $radius-lg;
+  padding: $space-6;
+  margin-top: $space-4;
+  border: 2px solid rgba($airsen-primary, 0.2);
+
+  .station-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-4;
+
+    h3 {
+      margin: 0;
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: $airsen-gray-900;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: $space-2;
+      border-radius: $radius-full;
+      transition: $transition-all;
+
+      &:hover {
+        background: rgba($airsen-gray-500, 0.1);
+      }
+    }
+  }
+
+  .station-aqi {
+    text-align: center;
+    padding: $space-4 0;
+
+    .aqi-value {
+      font-size: $font-size-5xl;
+      font-weight: $font-weight-bold;
+      line-height: 1;
+    }
+
+    .aqi-label {
+      font-size: $font-size-sm;
+      color: $airsen-gray-600;
+      margin-top: $space-2;
+    }
+  }
+
+  .station-last-update {
+    text-align: center;
+    font-size: $font-size-sm;
+    color: $airsen-gray-500;
+    margin: 0;
+  }
+}
+
+// ============================================================================
+// MAP WRAPPER
+// ============================================================================
+
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  background-color: $airsen-gray-200;
+}
+
+.panel-open-btn {
+  position: absolute;
+  top: $space-4;
+  left: $space-4;
+  z-index: $z-index-sticky;
+  background: $airsen-white;
+  border: none;
+  border-radius: $radius-full;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: $shadow-md;
+  transition: $transition-all;
+
+  &:hover {
+    background: $airsen-primary;
+    color: $airsen-white;
+    transform: scale(1.1);
+  }
+
+  mat-icon {
+    font-size: 28px;
+  }
+}
+
+// Map Placeholder (temporary)
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba($airsen-primary, 0.05) 0%, rgba($airsen-secondary, 0.05) 100%);
+
+  .placeholder-content {
+    text-align: center;
+    color: $airsen-gray-700;
+
+    .placeholder-icon {
+      font-size: 80px;
+      width: 80px;
+      height: 80px;
+      color: $airsen-gray-400;
+    }
+
+    h2 {
+      font-size: $font-size-3xl;
+      margin: $space-4 0;
+    }
+
+    p {
+      font-size: $font-size-lg;
+      color: $airsen-gray-600;
+    }
+
+    .placeholder-info {
+      font-weight: $font-weight-bold;
+      color: $airsen-primary;
+      margin-top: $space-4;
+    }
+  }
+}
+
+// ============================================================================
+// MAP CONTROLS
+// ============================================================================
+
+.map-controls {
+  position: absolute;
+  bottom: $space-4;
+  right: $space-4;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  z-index: $z-index-sticky;
+}
+
+.map-control-btn {
+  background: $airsen-white;
+  border: none;
+  border-radius: $radius-full;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: $shadow-md;
+  transition: $transition-all;
+
+  &:hover {
+    background: $airsen-primary;
+    color: $airsen-white;
+    transform: scale(1.1);
+  }
+
+  mat-icon {
+    font-size: 24px;
+  }
+}
+
+// ============================================================================
+// MAP LEGEND
+// ============================================================================
+
+.map-legend {
+  position: absolute;
+  bottom: $space-4;
+  left: $space-4;
+  background: $airsen-white;
+  border-radius: $radius-lg;
+  padding: $space-4;
+  box-shadow: $shadow-md;
+  z-index: $z-index-sticky;
+  max-width: 250px;
+
+  .legend-title {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    margin: 0 0 $space-3 0;
+    color: $airsen-gray-900;
+  }
+
+  .legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+  }
+
+  .legend-marker {
+    width: 20px;
+    height: 20px;
+    border-radius: $radius-full;
+    border: 2px solid $airsen-white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+  }
+
+  .legend-label {
+    font-size: $font-size-sm;
+    color: $airsen-gray-700;
+  }
+}
+
+// ============================================================================
+// RESPONSIVE ADJUSTMENTS
+// ============================================================================
+
+@include respond-max(md) {
+  .aqi-map-container.mobile-view {
+    .map-legend {
+      max-width: 200px;
+      padding: $space-3;
+      font-size: $font-size-xs;
+
+      .legend-marker {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .map-controls {
+      bottom: calc(60px + #{$space-4}); // Above bottom sheet handle
+    }
+  }
+}
+
+@include respond-max(sm) {
+  .panel-header {
+    padding: $space-4;
+
+    .panel-title {
+      font-size: $font-size-xl;
+
+      .title-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+  }
+
+  .map-legend {
+    max-width: 180px;
+    left: $space-2;
+    bottom: calc(60px + #{$space-2});
+  }
+}
