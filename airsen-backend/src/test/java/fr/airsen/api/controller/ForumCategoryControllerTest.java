@@ -5,6 +5,9 @@ import fr.airsen.api.dto.ForumThreadDTO;
 import fr.airsen.api.dto.request.ForumCategoryCreateRequest;
 import fr.airsen.api.dto.request.ForumCategoryUpdateRequest;
 import fr.airsen.api.dto.request.ForumThreadCreateRequest;
+import fr.airsen.api.entity.User;
+import fr.airsen.api.entity.enums.UserRole;
+import fr.airsen.api.security.UserPrincipal;
 import fr.airsen.api.service.ForumCategoryService;
 import fr.airsen.api.service.ForumThreadService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(ForumCategoryController.class)
 class ForumCategoryControllerTest {
+    private final  Long userId = 1L;
 
     @Autowired
     private MockMvc mockMvc;
@@ -69,7 +75,8 @@ class ForumCategoryControllerTest {
         List<ForumCategoryDTO> categories = List.of(categoryDTO);
         when(categoryService.findAll()).thenReturn(categories);
 
-        mockMvc.perform(get("/forum/categories"))
+        mockMvc.perform(get("/forum/categories")
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(categoryDTO.getId()))
                 .andExpect(jsonPath("$[0].name").value(categoryDTO.getName()));
@@ -80,7 +87,8 @@ class ForumCategoryControllerTest {
     void testGetCategoryById() throws Exception {
         when(categoryService.findById(1L)).thenReturn(categoryDTO);
 
-        mockMvc.perform(get("/forum/categories/{id}", 1L))
+        mockMvc.perform(get("/forum/categories/{id}", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("General"));
@@ -91,7 +99,8 @@ class ForumCategoryControllerTest {
     void testListThreadsByCategory() throws Exception {
         when(threadService.findByCategory(1L)).thenReturn(List.of(threadDTO));
 
-        mockMvc.perform(get("/forum/categories/{id}/threads", 1L))
+        mockMvc.perform(get("/forum/categories/{id}/threads", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(threadDTO.getId()))
                 .andExpect(jsonPath("$[0].title").value("Welcome thread"));
@@ -106,7 +115,8 @@ class ForumCategoryControllerTest {
 
         mockMvc.perform(post("/forum/categories/{id}/threads", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$[0].id").value(threadDTO.getId()));
     }
@@ -121,7 +131,8 @@ class ForumCategoryControllerTest {
 
         mockMvc.perform(post("/forum/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$[0].name").value("General"));
     }
@@ -136,7 +147,8 @@ class ForumCategoryControllerTest {
 
         mockMvc.perform(put("/forum/categories/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(categoryDTO.getId()));
     }
@@ -146,7 +158,19 @@ class ForumCategoryControllerTest {
     void testDeleteCategory() throws Exception {
         doNothing().when(categoryService).deleteForumCategory(1L);
 
-        mockMvc.perform(delete("/forum/categories/{id}", 1L))
+        mockMvc.perform(delete("/forum/categories/{id}", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.ADMIN))))
                 .andExpect(status().isNoContent());
+    }
+
+    private UsernamePasswordAuthenticationToken userAuthentication(Long userId, UserRole role) {
+        User user = new User();
+        user.setId(userId);
+        user.setEmail("user" + userId + "@example.com");
+        user.setPassword("secret");
+        user.setRole(role);
+
+        UserPrincipal principal = UserPrincipal.create(user);
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 }
