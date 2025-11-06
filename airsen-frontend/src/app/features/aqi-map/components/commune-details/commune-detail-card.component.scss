@@ -1,6 +1,6 @@
 @use '../../../../../styles/design-system' as *;
 
-.station-detail-card {
+.commune-detail-card {
   background: $airsen-white;
   border-radius: $radius-lg;
   overflow: hidden;
@@ -158,5 +158,34 @@
     font-size: 18px;
     width: 18px;
     height: 18px;
+  }
+}
+
+// Action Buttons Section
+.action-buttons {
+  display: flex;
+  gap: $space-3;
+  padding: $space-4 $space-6;
+  border-top: 1px solid $airsen-gray-200;
+
+  .action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-2;
+    padding: $space-3 $space-4;
+    font-weight: $font-weight-medium;
+    text-transform: none;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    span {
+      font-size: $font-size-sm;
+    }
   }
 }

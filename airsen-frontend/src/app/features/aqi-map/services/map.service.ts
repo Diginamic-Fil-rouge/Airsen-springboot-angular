@@ -1,25 +1,21 @@
-import { Injectable, inject } from '@angular/core';
-import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
-import { GeographicService } from '@/features/map/services/geographic.service';
-import { AirQualityService } from '@/features/map/services/air-quality.service';
-import { FavoriteService } from '@/features/favorites/services/favorite.service';
-import { AuthService } from '@/auth/services/auth.service';
-import {
-  Station,
-  AqiLevel,
-  getAqiColor,
-  getAqiLevelFromValue,
-  PollutantData
-} from '../models/station.model';
-import { MapFilter, DEFAULT_MAP_FILTER } from '../models/map-filter.model';
+import { Injectable, inject } from "@angular/core";
+import { Observable, BehaviorSubject, combineLatest, of } from "rxjs";
+import { map, catchError, tap } from "rxjs/operators";
+import { GeographicService } from "@/features/map/services/geographic.service";
+import { AirQualityService } from "@/features/map/services/air-quality.service";
+import { FavoriteService } from "@/features/favorites/services/favorite.service";
+import { AuthService } from "@/auth/services/auth.service";
+import { Commune, CommuneWithAirQuality } from "@/shared/models/commune.model";
+import { MapFilter, DEFAULT_MAP_FILTER } from "../models/map-filter.model";
 
 /**
  * Map Service
  * Orchestrates data fetching and transformation for the air quality map
+ * Uses AIRSEN's existing commune models and services
+ * Backend provides atmoIndex, qualifier, and color - service just passes data through
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class MapService {
   private geographicService = inject(GeographicService);
@@ -29,59 +25,61 @@ export class MapService {
 
   // State management
   private filterSubject = new BehaviorSubject<MapFilter>(DEFAULT_MAP_FILTER);
-  private selectedStationSubject = new BehaviorSubject<Station | null>(null);
-  private stationsSubject = new BehaviorSubject<Station[]>([]);
+  private selectedCommuneSubject = new BehaviorSubject<CommuneWithAirQuality | null>(null);
+  private communesSubject = new BehaviorSubject<CommuneWithAirQuality[]>([]);
 
   public filter$ = this.filterSubject.asObservable();
-  public selectedStation$ = this.selectedStationSubject.asObservable();
-  public stations$ = this.stationsSubject.asObservable();
+  public selectedCommune$ = this.selectedCommuneSubject.asObservable();
+  public communes$ = this.communesSubject.asObservable();
 
   /**
-   * Load all stations with air quality data
+   * Load all communes with air quality data
    */
-  loadStations(): Observable<Station[]> {
+  loadCommunes(): Observable<CommuneWithAirQuality[]> {
     return this.geographicService.getCommunesWithCoordinatesAndMinPop().pipe(
-      map(communes => {
-        const stations: Station[] = communes.map(commune => this.mapCommuneToStation(commune));
-        this.stationsSubject.next(stations);
-        return stations;
+      map((communes) => {
+        const communesWithAqi: CommuneWithAirQuality[] = communes.map((commune) =>
+          this.mapCommuneWithAirQuality(commune)
+        );
+        this.communesSubject.next(communesWithAqi);
+        return communesWithAqi;
       }),
-      catchError(error => {
-        console.error('Error loading stations:', error);
+      catchError((error) => {
+        console.error("Error loading communes:", error);
         return of([]);
       })
     );
   }
 
   /**
-   * Get station details by INSEE code
+   * Get commune details by INSEE code
    */
-  getStationDetails(inseeCode: string): Observable<Station | null> {
+  getCommuneDetails(inseeCode: string): Observable<CommuneWithAirQuality | null> {
     return this.geographicService.getCommuneDatas(inseeCode).pipe(
-      map(data => {
+      map((data) => {
         if (!data) return null;
 
-        const station: Station = {
+        const commune: CommuneWithAirQuality = {
           id: data.id || 0,
           inseeCode: inseeCode,
-          name: data.name || '',
+          name: data.name || "",
           latitude: data.latitude || 0,
           longitude: data.longitude || 0,
-          currentAqi: data.airQuality?.atmoIndex || 0,
-          aqiLevel: this.getAqiLevelFromAtmoIndex(data.airQuality?.atmoIndex || 0),
-          aqiColor: getAqiColor(this.getAqiLevelFromAtmoIndex(data.airQuality?.atmoIndex || 0)),
-          lastUpdated: data.airQuality?.lastUpdated || new Date(),
-          pollutants: this.extractPollutants(data.airQuality),
           population: data.population,
-          stationType: 'GOVERNMENT' as any,
-          isFavorite: false
+          departmentCode: data.departmentCode,
+          regionCode: data.regionCode,
+          currentAirQuality: {
+            atmoIndex: data.airQuality?.atmoIndex || 0,
+            qualifier: data.airQuality?.qualifier || "Inconnu",
+            color: data.airQuality?.color || "#999999",
+          },
         };
 
-        this.selectedStationSubject.next(station);
-        return station;
+        this.selectedCommuneSubject.next(commune);
+        return commune;
       }),
-      catchError(error => {
-        console.error('Error loading station details:', error);
+      catchError((error) => {
+        console.error("Error loading commune details:", error);
         return of(null);
       })
     );
@@ -96,41 +94,52 @@ export class MapService {
   }
 
   /**
-   * Select a station
+   * Select a commune
    */
-  selectStation(station: Station | null): void {
-    this.selectedStationSubject.next(station);
+  selectCommune(commune: CommuneWithAirQuality | null): void {
+    this.selectedCommuneSubject.next(commune);
   }
 
   /**
-   * Get filtered stations based on current filter
+   * Get filtered communes based on current filter
    */
-  getFilteredStations(): Observable<Station[]> {
-    return combineLatest([this.stations$, this.filter$]).pipe(
-      map(([stations, filter]) => {
-        let filtered = stations;
+  getFilteredCommunes(): Observable<CommuneWithAirQuality[]> {
+    return combineLatest([this.communes$, this.filter$]).pipe(
+      map(([communes, filter]) => {
+        let filtered = communes;
 
         // Filter by search query
         if (filter.searchQuery) {
           const query = filter.searchQuery.toLowerCase();
-          filtered = filtered.filter(s =>
-            s.name.toLowerCase().includes(query) ||
-            s.inseeCode.includes(query)
-          );
+          filtered = filtered.filter((c) => c.name.toLowerCase().includes(query) || c.inseeCode.includes(query));
         }
 
-        // Filter by AQI levels
+        // Filter by ATMO index levels (backend provides the index)
         if (filter.aqiLevels.length > 0) {
-          filtered = filtered.filter(s =>
-            filter.aqiLevels.includes(s.aqiLevel)
-          );
+          filtered = filtered.filter((c) => {
+            const atmoIndex = c.currentAirQuality?.atmoIndex || 0;
+            // Map ATMO index to level string for filtering
+            const levelMap: Record<number, string> = {
+              1: "GOOD",
+              2: "MODERATE",
+              3: "UNHEALTHY_SENSITIVE",
+              4: "UNHEALTHY",
+              5: "VERY_UNHEALTHY",
+              6: "HAZARDOUS",
+            };
+            const level = levelMap[atmoIndex] || "UNKNOWN";
+            return filter.aqiLevels.includes(level);
+          });
         }
 
-        // Filter by station types
-        if (filter.stationTypes.length > 0) {
-          filtered = filtered.filter(s =>
-            filter.stationTypes.includes(s.stationType)
-          );
+        // Filter by departments
+        if (filter.departments.length > 0) {
+          filtered = filtered.filter((c) => c.departmentCode && filter.departments.includes(c.departmentCode));
+        }
+
+        // Filter by regions
+        if (filter.regions.length > 0) {
+          filtered = filtered.filter((c) => c.regionCode && filter.regions.includes(c.regionCode));
         }
 
         return filtered;
@@ -139,14 +148,14 @@ export class MapService {
   }
 
   /**
-   * Check if user has favorited a station
+   * Check if user has favorited a commune
    */
   checkFavoriteStatus(inseeCode: string): Observable<boolean> {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return of(false);
 
     return this.favoriteService.getUserFavorites(currentUser.id).pipe(
-      map(favorites => favorites.some(f => f.communeInseeCode === inseeCode)),
+      map((favorites) => favorites.some((f) => f.communeInseeCode === inseeCode)),
       catchError(() => of(false))
     );
   }
@@ -156,105 +165,30 @@ export class MapService {
   // =========================================================================
 
   /**
-   * Map commune data to Station
+   * Map commune data to CommuneWithAirQuality
+   * Backend provides atmoIndex, qualifier, and color - just pass through
    */
-  private mapCommuneToStation(commune: any): Station {
-    const atmoIndex = commune.currentAirQuality?.atmoIndex ||
-                      commune.airQuality?.atmoIndex ||
-                      0;
+  private mapCommuneWithAirQuality(commune: any): CommuneWithAirQuality {
+    const atmoIndex = commune.currentAirQuality?.atmoIndex || commune.airQuality?.atmoIndex || 0;
+
+    const qualifier = commune.currentAirQuality?.qualifier || commune.airQuality?.qualifier || "Inconnu";
+
+    const color = commune.currentAirQuality?.color || commune.airQuality?.color || "#999999";
 
     return {
       id: commune.id || 0,
-      inseeCode: commune.inseeCode || '',
-      name: commune.name || '',
+      inseeCode: commune.inseeCode || "",
+      name: commune.name || "",
       latitude: commune.latitude || 0,
       longitude: commune.longitude || 0,
-      currentAqi: atmoIndex,
-      aqiLevel: this.getAqiLevelFromAtmoIndex(atmoIndex),
-      aqiColor: getAqiColor(this.getAqiLevelFromAtmoIndex(atmoIndex)),
-      lastUpdated: new Date(),
-      pollutants: {},
       population: commune.population,
-      stationType: 'GOVERNMENT' as any,
-      isFavorite: false
+      departmentCode: commune.departmentCode,
+      regionCode: commune.regionCode,
+      currentAirQuality: {
+        atmoIndex: atmoIndex,
+        qualifier: qualifier,
+        color: color,
+      },
     };
-  }
-
-  /**
-   * Extract pollutant data from air quality response
-   */
-  private extractPollutants(airQuality: any): Station['pollutants'] {
-    if (!airQuality) return {};
-
-    return {
-      pm25: airQuality.pm25 ? {
-        value: airQuality.pm25,
-        level: this.getPollutantLevel(airQuality.pm25, 'pm25'),
-        unit: 'µg/m³',
-        lastUpdated: airQuality.lastUpdated || new Date()
-      } : undefined,
-      pm10: airQuality.pm10 ? {
-        value: airQuality.pm10,
-        level: this.getPollutantLevel(airQuality.pm10, 'pm10'),
-        unit: 'µg/m³',
-        lastUpdated: airQuality.lastUpdated || new Date()
-      } : undefined,
-      o3: airQuality.o3 ? {
-        value: airQuality.o3,
-        level: this.getPollutantLevel(airQuality.o3, 'o3'),
-        unit: 'µg/m³',
-        lastUpdated: airQuality.lastUpdated || new Date()
-      } : undefined,
-      no2: airQuality.no2 ? {
-        value: airQuality.no2,
-        level: this.getPollutantLevel(airQuality.no2, 'no2'),
-        unit: 'µg/m³',
-        lastUpdated: airQuality.lastUpdated || new Date()
-      } : undefined,
-      so2: airQuality.so2 ? {
-        value: airQuality.so2,
-        level: this.getPollutantLevel(airQuality.so2, 'so2'),
-        unit: 'µg/m³',
-        lastUpdated: airQuality.lastUpdated || new Date()
-      } : undefined
-    };
-  }
-
-  /**
-   * Convert ATMO index (1-6) to AqiLevel
-   */
-  private getAqiLevelFromAtmoIndex(atmoIndex: number): AqiLevel {
-    switch (atmoIndex) {
-      case 1: return AqiLevel.GOOD;
-      case 2: return AqiLevel.MODERATE;
-      case 3: return AqiLevel.UNHEALTHY_SENSITIVE;
-      case 4: return AqiLevel.UNHEALTHY;
-      case 5: return AqiLevel.VERY_UNHEALTHY;
-      case 6: return AqiLevel.HAZARDOUS;
-      default: return AqiLevel.UNKNOWN;
-    }
-  }
-
-  /**
-   * Get pollutant level based on value and type
-   */
-  private getPollutantLevel(value: number, type: string): AqiLevel {
-    // Simplified thresholds - adjust based on WHO/EU standards
-    const thresholds: Record<string, number[]> = {
-      pm25: [25, 50, 75, 100, 150],
-      pm10: [50, 100, 150, 200, 300],
-      o3: [100, 160, 240, 380, 800],
-      no2: [40, 90, 120, 230, 340],
-      so2: [100, 200, 350, 500, 750]
-    };
-
-    const limits = thresholds[type] || [50, 100, 150, 200, 300];
-
-    if (value <= limits[0]) return AqiLevel.GOOD;
-    if (value <= limits[1]) return AqiLevel.MODERATE;
-    if (value <= limits[2]) return AqiLevel.UNHEALTHY_SENSITIVE;
-    if (value <= limits[3]) return AqiLevel.UNHEALTHY;
-    if (value <= limits[4]) return AqiLevel.VERY_UNHEALTHY;
-    return AqiLevel.HAZARDOUS;
   }
 }

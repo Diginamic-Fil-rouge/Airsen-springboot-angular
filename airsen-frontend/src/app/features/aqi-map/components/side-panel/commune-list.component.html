@@ -1,0 +1,60 @@
+<div class="commune-list">
+  <div class="list-header">
+    <h3 class="list-title">Communes ({{ filteredAndSortedCommunes.length }})</h3>
+
+    <!-- Search -->
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput placeholder="Rechercher une commune..." [(ngModel)]="searchQuery">
+    </mat-form-field>
+
+    <!-- Sort Controls -->
+    <div class="sort-controls">
+      <button mat-button [class.active]="sortBy === 'aqi'" (click)="toggleSort('aqi')">
+        AQI
+        <mat-icon *ngIf="sortBy === 'aqi'">
+          {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+        </mat-icon>
+      </button>
+      <button mat-button [class.active]="sortBy === 'name'" (click)="toggleSort('name')">
+        Nom
+        <mat-icon *ngIf="sortBy === 'name'">
+          {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+        </mat-icon>
+      </button>
+      <button mat-button [class.active]="sortBy === 'population'" (click)="toggleSort('population')">
+        Population
+        <mat-icon *ngIf="sortBy === 'population'">
+          {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+        </mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Commune Items -->
+  <div class="commune-items">
+    <div *ngFor="let commune of filteredAndSortedCommunes" class="commune-item"
+      [class.selected]="selectedCommune?.inseeCode === commune.inseeCode" (click)="onCommuneClick(commune)">
+
+      <div class="commune-info">
+        <div class="commune-name">{{ commune.name }}</div>
+        <div class="commune-meta">
+          Pop: {{ (commune.population || 0) | number:'':'fr-FR' }}
+        </div>
+      </div>
+
+      <div class="commune-aqi">
+        <div class="aqi-badge" [style.background-color]="getAqiColor(commune)"
+          [style.color]="getAtmoIndex(commune) <= 2 ? '#000' : '#fff'">
+          {{ getAtmoIndex(commune) || '?' }}
+        </div>
+        <div class="aqi-label">{{ getAqiLabel(commune) }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredAndSortedCommunes.length === 0" class="empty-state">
+      <mat-icon>search_off</mat-icon>
+      <p>Aucune commune trouvée</p>
+    </div>
+  </div>
+</div>

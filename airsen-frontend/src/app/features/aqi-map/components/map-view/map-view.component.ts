@@ -1,17 +1,9 @@
-import {
-  Component,
-  AfterViewInit,
-  OnDestroy,
-  Input,
-  Output,
-  EventEmitter,
-  inject
-} from '@angular/core';
-import * as L from 'leaflet';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { Station, getAqiColor, getAqiLabel } from '../../models/station.model';
-import { MapStyle } from '../../models/map-filter.model';
+import { Component, AfterViewInit, OnDestroy, Input, Output, EventEmitter, inject } from "@angular/core";
+import * as L from "leaflet";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import { CommuneWithAirQuality } from "@/shared/models/commune.model";
+import { MapStyle } from "../../models/map-filter.model";
 
 /**
  * Enhanced Map View Component with zoom-based clustering
@@ -19,17 +11,17 @@ import { MapStyle } from '../../models/map-filter.model';
  */
 @Component({
   standalone: false,
-  selector: 'app-map-view',
-  templateUrl: './map-view.component.html',
-  styleUrls: ['./map-view.component.scss']
+  selector: "app-map-view",
+  templateUrl: "./map-view.component.html",
+  styleUrls: ["./map-view.component.scss"],
 })
 export class MapViewComponent implements AfterViewInit, OnDestroy {
-  @Input() stations: Station[] = [];
-  @Input() selectedStation: Station | null = null;
+  @Input() communes: CommuneWithAirQuality[] = [];
+  @Input() selectedCommune: CommuneWithAirQuality | null = null;
   @Input() showHeatmap: boolean = false;
   @Input() mapStyle: MapStyle = MapStyle.STREETS;
 
-  @Output() stationSelected = new EventEmitter<Station>();
+  @Output() communeSelected = new EventEmitter<CommuneWithAirQuality>();
 
   private map: L.Map | null = null;
   private markerLayer: L.LayerGroup | null = null;
@@ -41,12 +33,12 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
 
   // Population thresholds based on zoom level
   private readonly ZOOM_POPULATION_THRESHOLDS = {
-    3: 1000000,  // Zoom 3-5: Very large cities (1M+)
-    6: 200000,   // Zoom 6-7: Large cities (200K+)
-    8: 100000,   // Zoom 8-9: Medium cities (100K+)
-    10: 50000,   // Zoom 10-11: Small cities (50K+)
-    12: 20000,   // Zoom 12-13: Towns (20K+)
-    14: 5000,    // Zoom 14+: All communes (5K+)
+    3: 1000000, // Zoom 3-5: Very large cities (1M+)
+    6: 200000, // Zoom 6-7: Large cities (200K+)
+    8: 100000, // Zoom 8-9: Medium cities (100K+)
+    10: 50000, // Zoom 10-11: Small cities (50K+)
+    12: 20000, // Zoom 12-13: Towns (20K+)
+    14: 5000, // Zoom 14+: All communes (5K+)
   };
 
   ngAfterViewInit(): void {
@@ -73,7 +65,7 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
       this.updateMarkers();
       this.updateMapStyle();
       this.updateHeatmap();
-      this.highlightSelectedStation();
+      this.highlightSelectedCommune();
     }
   }
 
@@ -81,21 +73,21 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
    * Initialize the Leaflet map
    */
   private initMap(): void {
-    const mapElement = document.getElementById('map-container');
+    const mapElement = document.getElementById("map-container");
     if (!mapElement) {
-      console.error('Map element not found');
+      console.error("Map element not found");
       return;
     }
 
-    this.map = L.map('map-container', {
+    this.map = L.map("map-container", {
       center: [46.603354, 1.888334], // Center of France
       zoom: 6,
       zoomControl: false, // Custom controls
-      attributionControl: true
+      attributionControl: true,
     });
 
     // Listen to zoom changes for dynamic clustering
-    this.map.on('zoomend', () => {
+    this.map.on("zoomend", () => {
       this.onZoomChanged();
     });
 
@@ -143,40 +135,40 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
     // Streets (OpenStreetMap)
     this.tileLayers.set(
       MapStyle.STREETS,
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
         minZoom: 3,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       })
     );
 
     // Satellite (ESRI World Imagery)
     this.tileLayers.set(
       MapStyle.SATELLITE,
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
         maxZoom: 18,
         minZoom: 3,
-        attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
+        attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
       })
     );
 
     // Terrain (OpenTopoMap)
     this.tileLayers.set(
       MapStyle.TERRAIN,
-      L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
         maxZoom: 17,
         minZoom: 3,
-        attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+        attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
       })
     );
 
     // Dark mode (CartoDB Dark Matter)
     this.tileLayers.set(
       MapStyle.DARK,
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
         minZoom: 3,
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       })
     );
   }
@@ -188,7 +180,7 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
     if (!this.map) return;
 
     // Remove all existing layers
-    this.tileLayers.forEach(layer => {
+    this.tileLayers.forEach((layer) => {
       if (this.map?.hasLayer(layer)) {
         this.map.removeLayer(layer);
       }
@@ -222,68 +214,77 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
     // Get population threshold for current zoom
     const populationThreshold = this.getPopulationThreshold();
 
-    // Filter stations by population
-    const visibleStations = this.stations.filter(station =>
-      (station.population || 0) >= populationThreshold
+    // Filter communes by population
+    const visibleCommunes = this.communes.filter((commune) => (commune.population || 0) >= populationThreshold);
+
+    console.log(
+      `Zoom ${this.currentZoom}: Showing ${visibleCommunes.length}/${this.communes.length} communes (pop >= ${populationThreshold})`
     );
 
-    console.log(`Zoom ${this.currentZoom}: Showing ${visibleStations.length}/${this.stations.length} stations (pop >= ${populationThreshold})`);
+    // Add markers for visible communes
+    visibleCommunes.forEach((commune) => {
+      if (!commune.latitude || !commune.longitude) return;
 
-    // Add markers for visible stations
-    visibleStations.forEach(station => {
-      if (!station.latitude || !station.longitude) return;
-
-      const marker = this.createMarker(station);
+      const marker = this.createMarker(commune);
       marker.addTo(this.markerLayer!);
-      this.markers.set(station.inseeCode, marker);
+      this.markers.set(commune.inseeCode, marker);
     });
 
-    // Always show selected station even if below threshold
-    if (this.selectedStation &&
-        !this.markers.has(this.selectedStation.inseeCode) &&
-        this.selectedStation.latitude &&
-        this.selectedStation.longitude) {
-      const marker = this.createMarker(this.selectedStation);
+    // Always show selected commune even if below threshold
+    if (
+      this.selectedCommune &&
+      !this.markers.has(this.selectedCommune.inseeCode) &&
+      this.selectedCommune.latitude &&
+      this.selectedCommune.longitude
+    ) {
+      const marker = this.createMarker(this.selectedCommune);
       marker.addTo(this.markerLayer);
-      this.markers.set(this.selectedStation.inseeCode, marker);
+      this.markers.set(this.selectedCommune.inseeCode, marker);
     }
   }
 
   /**
    * Create enhanced marker with AQI styling
    */
-  private createMarker(station: AqiStation): L.Marker {
-    const color = getAqiColor(station.aqiLevel);
-    const label = getAqiLabel(station.aqiLevel);
+  private createMarker(commune: CommuneWithAirQuality): L.Marker {
+    const color = commune.currentAirQuality?.color || "#999999";
+    const qualifier = commune.currentAirQuality?.qualifier || "Inconnu";
+    const atmoIndex = commune.currentAirQuality?.atmoIndex || 0;
 
     // Create custom icon with AQI color
     const icon = L.divIcon({
-      className: 'aqi-custom-marker',
+      className: "aqi-custom-marker",
       html: `
         <div class="aqi-marker" style="background-color: ${color}; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-          <span style="color: ${station.aqiLevel === 'MODERATE' ? '#000' : '#fff'}; font-weight: bold; font-size: 12px;">
-            ${station.currentAqi || '?'}
+          <span style="color: ${atmoIndex === 2 ? "#000" : "#fff"}; font-weight: bold; font-size: 12px;">
+            ${atmoIndex || "?"}
           </span>
         </div>
       `,
       iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      iconAnchor: [18, 18],
     });
 
-    const marker = L.marker([station.latitude, station.longitude], { icon });
+    const marker = L.marker([commune.latitude!, commune.longitude!], { icon });
 
     // Add popup
     const popupContent = `
       <div style="min-width: 200px;">
-        <h3 style="margin: 0 0 8px 0; color: #212121;">${station.name}</h3>
+        <h3 style="margin: 0 0 8px 0; color: #212121;">${commune.name}</h3>
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
           <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${color};"></div>
-          <strong style="font-size: 18px; color: ${color};">${station.currentAqi}</strong>
-          <span style="color: #616161;">${label}</span>
+          <strong style="font-size: 18px; color: ${color};">${atmoIndex}</strong>
+          <span style="color: #616161;">${qualifier}</span>
         </div>
-        ${station.population ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #757575;">Population: ${station.population.toLocaleString('fr-FR')}</p>` : ''}
+        ${
+          commune.population
+            ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #757575;">Population: ${commune.population.toLocaleString(
+                "fr-FR"
+              )}</p>`
+            : ""
+        }
         <p style="margin: 0; font-size: 12px; color: #757575;">
-          Dernière mise à jour: ${new Date(station.lastUpdated).toLocaleString('fr-FR')}
+          INSEE: ${commune.inseeCode}
         </p>
       </div>
     `;
@@ -291,24 +292,24 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
     marker.bindPopup(popupContent);
 
     // Click handler
-    marker.on('click', () => {
-      this.stationSelected.emit(station);
+    marker.on("click", () => {
+      this.communeSelected.emit(commune);
     });
 
     // Hover effects
-    marker.on('mouseover', (e) => {
+    marker.on("mouseover", (e) => {
       const markerElement = e.target.getElement();
       if (markerElement) {
-        markerElement.style.transform = 'scale(1.15)';
-        markerElement.style.zIndex = '1000';
+        markerElement.style.transform = "scale(1.15)";
+        markerElement.style.zIndex = "1000";
       }
     });
 
-    marker.on('mouseout', (e) => {
+    marker.on("mouseout", (e) => {
       const markerElement = e.target.getElement();
-      if (markerElement && station.inseeCode !== this.selectedStation?.inseeCode) {
-        markerElement.style.transform = 'scale(1)';
-        markerElement.style.zIndex = '400';
+      if (markerElement && commune.inseeCode !== this.selectedCommune?.inseeCode) {
+        markerElement.style.transform = "scale(1)";
+        markerElement.style.zIndex = "400";
       }
     });
 
@@ -337,24 +338,20 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
     // Add heatmap if enabled
     if (this.showHeatmap) {
       // TODO: Implement heatmap using leaflet.heat plugin
-      console.log('Heatmap feature - to be implemented with leaflet.heat');
+      console.log("Heatmap feature - to be implemented with leaflet.heat");
     }
   }
 
   /**
-   * Highlight selected station
+   * Highlight selected commune
    */
-  private highlightSelectedStation(): void {
-    if (!this.selectedStation) return;
+  private highlightSelectedCommune(): void {
+    if (!this.selectedCommune) return;
 
-    const marker = this.markers.get(this.selectedStation.inseeCode);
+    const marker = this.markers.get(this.selectedCommune.inseeCode);
     if (marker && this.map) {
       // Zoom to marker
-      this.map.setView(
-        [this.selectedStation.latitude, this.selectedStation.longitude],
-        11,
-        { animate: true }
-      );
+      this.map.setView([this.selectedCommune.latitude, this.selectedCommune.longitude], 11, { animate: true });
 
       // Open popup
       marker.openPopup();
@@ -362,8 +359,8 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
       // Highlight marker
       const markerElement = marker.getElement();
       if (markerElement) {
-        markerElement.style.transform = 'scale(1.2)';
-        markerElement.style.zIndex = '1001';
+        markerElement.style.transform = "scale(1.2)";
+        markerElement.style.zIndex = "1001";
       }
     }
   }
@@ -392,24 +389,21 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
 
           // Add temporary marker for user location
           const userIcon = L.divIcon({
-            className: 'user-location-marker',
+            className: "user-location-marker",
             html: '<div style="width: 16px; height: 16px; background-color: #2196F3; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
             iconSize: [16, 16],
-            iconAnchor: [8, 8]
+            iconAnchor: [8, 8],
           });
 
-          L.marker([lat, lng], { icon: userIcon })
-            .addTo(this.map!)
-            .bindPopup('Votre position')
-            .openPopup();
+          L.marker([lat, lng], { icon: userIcon }).addTo(this.map!).bindPopup("Votre position").openPopup();
         },
         (error) => {
-          console.error('Error getting user location:', error);
-          alert('Impossible d\'obtenir votre position');
+          console.error("Error getting user location:", error);
+          alert("Impossible d'obtenir votre position");
         }
       );
     } else {
-      alert('La géolocalisation n\'est pas supportée par votre navigateur');
+      alert("La géolocalisation n'est pas supportée par votre navigateur");
     }
   }
 

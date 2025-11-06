@@ -1,48 +1,56 @@
-import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { MapService } from './services/map.service';
-import { Station } from './models/station.model';
-import { MapFilter, PollutantType, TimeRange, MapStyle } from './models/map-filter.model';
-import { MapViewComponent } from './components/map-view/map-view.component';
+import { Component, OnInit, OnDestroy, inject, ViewChild } from "@angular/core";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { MapService } from "./services/map.service";
+import { CommuneWithAirQuality } from "@/shared/models/commune.model";
+import { MapFilter, PollutantType, TimeRange, MapStyle } from "./models/map-filter.model";
+import { MapViewComponent } from "./components/map-view/map-view.component";
+import { ExportDataService } from "@/core/services/export-data.service";
+import { PdfGenerationService } from "@/core/services/pdf-generation.service";
 
 /**
  * Main Map Container Component
- * Full-screen air quality map interface similar to aqi.in
+ * Full-screen air quality map interface for AIRSEN communes
  */
 @Component({
   standalone: false,
-  selector: 'app-map',
-  templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss']
+  selector: "app-map",
+  templateUrl: "./map.component.html",
+  styleUrls: ["./map.component.scss"],
 })
 export class MapComponent implements OnInit, OnDestroy {
   private mapService = inject(MapService);
+  private exportDataService = inject(ExportDataService);
+  private pdfGenerationService = inject(PdfGenerationService);
+  private snackBar = inject(MatSnackBar);
   private destroy$ = new Subject<void>();
 
-  @ViewChild('mapView') mapView!: MapViewComponent;
+  @ViewChild("mapView") mapView!: MapViewComponent;
 
   // Component State
   isLoading = true;
   isSidePanelOpen = true;
   isMobileView = false;
-  selectedCommune: Station | null = null;
-  communes: Station[] = [];
+  selectedCommune: CommuneWithAirQuality | null = null;
+  communes: CommuneWithAirQuality[] = [];
   currentFilter: MapFilter | null = null;
+  isExportingPDF = false;
+  mapStyleDefault = MapStyle.STREETS;
 
   ngOnInit(): void {
     this.checkMobileView();
     this.setupSubscriptions();
-    this.loadStations();
+    this.loadCommunes();
 
     // Listen for window resize
-    window.addEventListener('resize', () => this.checkMobileView());
+    window.addEventListener("resize", () => this.checkMobileView());
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    window.removeEventListener('resize', () => this.checkMobileView());
+    window.removeEventListener("resize", () => this.checkMobileView());
   }
 
   /**
@@ -50,42 +58,37 @@ export class MapComponent implements OnInit, OnDestroy {
    */
   private setupSubscriptions(): void {
     // Subscribe to selected commune
-    this.mapService.selectedStation$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(commune => {
-        this.selectedCommune = commune;
-      });
+    this.mapService.selectedCommune$.pipe(takeUntil(this.destroy$)).subscribe((commune) => {
+      this.selectedCommune = commune;
+    });
 
-    // Subscribe to communes
-    this.mapService.stations$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(communes => {
-        this.communes = communes;
-      });
+    // Subscribe to communes list
+    this.mapService.communes$.pipe(takeUntil(this.destroy$)).subscribe((communes) => {
+      this.communes = communes;
+    });
 
     // Subscribe to filter changes
-    this.mapService.filter$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(filter => {
-        this.currentFilter = filter;
-      });
+    this.mapService.filter$.pipe(takeUntil(this.destroy$)).subscribe((filter) => {
+      this.currentFilter = filter;
+    });
   }
 
   /**
-   * Load all communes
+   * Load all communes with air quality data
    */
-  private loadStations(): void {
+  private loadCommunes(): void {
     this.isLoading = true;
-    this.mapService.loadStations()
+    this.mapService
+      .loadCommunes()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading communes:', error);
+          console.error("Error loading communes:", error);
           this.isLoading = false;
-        }
+        },
       });
   }
 
@@ -110,8 +113,8 @@ export class MapComponent implements OnInit, OnDestroy {
   /**
    * Handle commune selection from map
    */
-  onCommuneSelected(commune: Station): void {
-    this.mapService.selectStation(commune);
+  onCommuneSelected(commune: CommuneWithAirQuality): void {
+    this.mapService.selectCommune(commune);
 
     // On mobile, open bottom sheet with details
     if (this.isMobileView) {
@@ -130,7 +133,7 @@ export class MapComponent implements OnInit, OnDestroy {
    * Close commune details
    */
   closeCommuneDetails(): void {
-    this.mapService.selectStation(null);
+    this.mapService.selectCommune(null);
   }
 
   /**
@@ -171,5 +174,44 @@ export class MapComponent implements OnInit, OnDestroy {
 
   onLayerChanged(mapStyle: MapStyle): void {
     this.mapService.updateFilter({ mapStyle });
+  }
+
+  /**
+   * Add selected commune to favorites
+   */
+  addToFavorites(): void {
+    if (!this.selectedCommune) {
+      this.snackBar.open("Veuillez sélectionner une commune", "Fermer", { duration: 3000 });
+      return;
+    }
+
+    // TODO: Implement favorites service
+    this.snackBar.open(`${this.selectedCommune.name} ajoutée aux favoris`, "Fermer", {
+      duration: 3000,
+    });
+  }
+
+  /**
+   * Export selected commune data to PDF
+   */
+  async exportToPDF(): Promise<void> {
+    if (!this.selectedCommune) {
+      this.snackBar.open("Veuillez sélectionner une commune pour exporter", "Fermer", {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.isExportingPDF = true;
+
+    try {
+      await this.pdfGenerationService.generateCommunePDF(this.selectedCommune);
+      this.snackBar.open("PDF généré avec succès", "Fermer", { duration: 3000 });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      this.snackBar.open("Erreur lors de la génération du PDF", "Fermer", { duration: 3000 });
+    } finally {
+      this.isExportingPDF = false;
+    }
   }
 }

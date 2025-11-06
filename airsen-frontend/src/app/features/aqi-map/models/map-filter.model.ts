@@ -1,6 +1,6 @@
 /**
  * Map Filter Models
- * Used for filtering stations and data on the AQI map
+ * Used for filtering communes and air quality data on the map
  */
 
 export interface MapFilter {
@@ -14,9 +14,10 @@ export interface MapFilter {
   mapStyle: MapStyle;
   showHeatmap: boolean;
 
-  // Station filters
-  stationTypes: string[];
+  // Commune filters
   aqiLevels: string[];
+  departments: string[];
+  regions: string[];
 
   // Search/location
   searchQuery: string;
@@ -24,28 +25,27 @@ export interface MapFilter {
 }
 
 export enum PollutantType {
-  ALL = 'ALL',
-  PM25 = 'PM25',
-  PM10 = 'PM10',
-  O3 = 'O3',
-  NO2 = 'NO2',
-  SO2 = 'SO2',
-  CO = 'CO'
+  ALL = "ALL",
+  PM25 = "PM25",
+  PM10 = "PM10",
+  O3 = "O3",
+  NO2 = "NO2",
+  SO2 = "SO2",
 }
 
 export enum TimeRange {
-  NOW = 'NOW',
-  HOUR_1 = 'HOUR_1',
-  HOURS_24 = 'HOURS_24',
-  DAYS_7 = 'DAYS_7',
-  DAYS_30 = 'DAYS_30'
+  NOW = "NOW",
+  HOUR_1 = "HOUR_1",
+  HOURS_24 = "HOURS_24",
+  DAYS_7 = "DAYS_7",
+  DAYS_30 = "DAYS_30",
 }
 
 export enum MapStyle {
-  STREETS = 'STREETS',
-  SATELLITE = 'SATELLITE',
-  TERRAIN = 'TERRAIN',
-  DARK = 'DARK'
+  STREETS = "STREETS",
+  SATELLITE = "SATELLITE",
+  TERRAIN = "TERRAIN",
+  DARK = "DARK",
 }
 
 export interface BoundingBox {
@@ -60,13 +60,12 @@ export interface BoundingBox {
  */
 export function getPollutantLabel(type: PollutantType): string {
   const labels: Record<PollutantType, string> = {
-    [PollutantType.ALL]: 'Tous les polluants',
-    [PollutantType.PM25]: 'PM2.5',
-    [PollutantType.PM10]: 'PM10',
-    [PollutantType.O3]: 'Ozone (O₃)',
-    [PollutantType.NO2]: 'Dioxyde d\'azote (NO₂)',
-    [PollutantType.SO2]: 'Dioxyde de soufre (SO₂)',
-    [PollutantType.CO]: 'Monoxyde de carbone (CO)'
+    [PollutantType.ALL]: "Tous les polluants",
+    [PollutantType.PM25]: "PM2.5",
+    [PollutantType.PM10]: "PM10",
+    [PollutantType.O3]: "Ozone (O₃)",
+    [PollutantType.NO2]: "Dioxyde d'azote (NO₂)",
+    [PollutantType.SO2]: "Dioxyde de soufre (SO₂)",
   };
   return labels[type] || type;
 }
@@ -76,11 +75,11 @@ export function getPollutantLabel(type: PollutantType): string {
  */
 export function getTimeRangeLabel(range: TimeRange): string {
   const labels: Record<TimeRange, string> = {
-    [TimeRange.NOW]: 'Maintenant',
-    [TimeRange.HOUR_1]: 'Dernière heure',
-    [TimeRange.HOURS_24]: 'Dernières 24 heures',
-    [TimeRange.DAYS_7]: '7 derniers jours',
-    [TimeRange.DAYS_30]: '30 derniers jours'
+    [TimeRange.NOW]: "Maintenant",
+    [TimeRange.HOUR_1]: "Dernière heure",
+    [TimeRange.HOURS_24]: "Dernières 24 heures",
+    [TimeRange.DAYS_7]: "7 derniers jours",
+    [TimeRange.DAYS_30]: "30 derniers jours",
   };
   return labels[range] || range;
 }
@@ -93,7 +92,8 @@ export const DEFAULT_MAP_FILTER: MapFilter = {
   timeRange: TimeRange.NOW,
   mapStyle: MapStyle.STREETS,
   showHeatmap: false,
-  stationTypes: [],
   aqiLevels: [],
-  searchQuery: ''
+  departments: [],
+  regions: [],
+  searchQuery: "",
 };
