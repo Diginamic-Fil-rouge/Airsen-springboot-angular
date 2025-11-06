@@ -1,26 +1,36 @@
 @use 'styles/design-system' as *;
 
-.page-container {
-  background-color: $airsen-gray-100;
-  border-radius: $radius-lg;
-  position: relative;
+// =============================================================================
+// MAP PAGE - Interactive Environmental Data Visualization
+// =============================================================================
 
-  // Loading State
+.page-container {
+  background-color: $airsen-gray-100; // Light background from design system
+  border-radius: $radius-lg; // 12px
+  position: relative;
+  min-height: 100vh;
+
+  // ===========================================================================
+  // LOADING STATES
+  // ===========================================================================
+
+  // Initial page loading
   .loading-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    gap: $space-4;
+    gap: $space-4; // 16px
 
     p {
-      color: $airsen-gray-700;
-      font-size: $font-size-base;
+      color: $airsen-gray-700; // Secondary text
+      font-size: $font-size-base; // 16px
+      margin: 0;
     }
   }
 
-  // Commune Loading State
+  // Commune data loading overlay
   .commune-loading-container {
     display: flex;
     flex-direction: column;
@@ -30,21 +40,25 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 9999;
-    background: rgba(255, 255, 255, 0.95);
-    padding: $space-8;
-    border-radius: $radius-lg;
-    box-shadow: $shadow-lg;
-    gap: $space-4;
+    z-index: $z-index-modal; // 9999
+    background: rgba($airsen-white, 0.95); // Semi-transparent white
+    padding: $space-8; // 32px
+    border-radius: $radius-lg; // 12px
+    box-shadow: $shadow-lg; // Large shadow for prominence
+    gap: $space-4; // 16px
 
     p {
       color: $airsen-gray-700;
-      font-size: $font-size-base;
+      font-size: $font-size-base; // 16px
       margin: 0;
     }
   }
 
-  // Empty Communes State
+  // ===========================================================================
+  // EMPTY & ERROR STATES
+  // ===========================================================================
+
+  // Empty communes state (no data loaded)
   .empty-communes-state {
     display: flex;
     flex-direction: column;
@@ -52,43 +66,45 @@
     justify-content: center;
     min-height: 60vh;
     text-align: center;
-    gap: $space-4;
-    padding: $space-8;
+    gap: $space-4; // 16px
+    padding: $space-8; // 32px
 
     mat-icon {
       font-size: 64px;
       width: 64px;
       height: 64px;
-      color: $airsen-gray-400;
+      color: $airsen-gray-400; // Placeholder color
     }
 
     h3 {
       margin: 0;
-      color: $airsen-gray-900;
-      font-size: $font-size-xl;
+      color: $airsen-gray-900; // Headings
+      font-size: $font-size-xl; // 20px
+      font-weight: $font-weight-semibold; // 600
     }
 
     p {
-      color: $airsen-gray-600;
-      font-size: $font-size-base;
+      color: $airsen-gray-600; // Secondary text
+      font-size: $font-size-base; // 16px
       max-width: 400px;
       margin: 0;
+      line-height: $line-height-normal; // 1.5
     }
 
     button {
-      margin-top: $space-2;
+      margin-top: $space-2; // 8px
 
       mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        margin-right: $space-2;
+        font-size: $font-size-lg; // 18px
+        width: $font-size-lg;
+        height: $font-size-lg;
+        margin-right: $space-2; // 8px
         color: inherit;
       }
     }
   }
 
-  // Error State
+  // Error container (authentication/connection failure)
   .error-container {
     display: flex;
     flex-direction: column;
@@ -96,85 +112,150 @@
     justify-content: center;
     min-height: 100vh;
     text-align: center;
-    gap: $space-4;
+    gap: $space-4; // 16px
+    padding: $space-6; // 24px
 
     mat-icon {
-      font-size: $space-16;
+      font-size: $space-16; // 64px
       width: $space-16;
       height: $space-16;
-      color: $airsen-error;
+      color: $airsen-error; // Error red
     }
 
     h2 {
       margin: 0;
       color: $airsen-gray-900;
+      font-size: $font-size-2xl; // 24px
+      font-weight: $font-weight-semibold; // 600
     }
 
     p {
       color: $airsen-gray-700;
+      font-size: $font-size-base; // 16px
+      margin: 0;
     }
-
-
   }
+
+  // ===========================================================================
+  // SEARCH BAR - Top-right floating search
+  // ===========================================================================
 
   .search-bar {
     width: 300px;
-    border: 1px solid $airsen-gray-300;
-    border-radius: $radius-lg;
-    background-color: $airsen-gray-50;
-    padding: $space-1;
+    border: 1px solid $airsen-gray-300; // Border from design system
+    border-radius: $radius-lg; // 12px
+    background-color: $airsen-white; // Clean white background
+    padding: $space-2; // 8px
     position: absolute;
-    right: 0;
-    z-index: $z-index-sticky * 450;
+    top: $space-4; // 16px from top
+    right: $space-4; // 16px from right
+    z-index: $z-index-sticky; // Above map but below modals
+    box-shadow: $shadow-md; // Medium shadow
+    transition: box-shadow $duration-normal; // 200ms
+
+    &:focus-within {
+      box-shadow: $shadow-lg; // Larger shadow on focus
+      border-color: $airsen-primary; // Forest green border
+    }
 
     .search-input {
       display: flex;
       align-items: center;
+      gap: $space-2; // 8px
 
       svg {
-        color: $airsen-gray-800;
-        width: $space-6;
-        height: $space-6;
+        color: $airsen-gray-600; // Icon color
+        width: $space-5; // 20px
+        height: $space-5;
+        flex-shrink: 0;
       }
 
       input {
-        padding: $space-3;
-        width: 275px;
-        border-radius: $radius-lg;
+        padding: $space-3; // 12px
+        flex: 1;
+        border-radius: $radius-md; // 8px
         border: none;
-        outline: none
+        outline: none;
+        font-size: $font-size-base; // 16px (prevents iOS zoom)
+        font-family: $font-family-sans;
+        color: $airsen-gray-900;
+        background: transparent;
+
+        &::placeholder {
+          color: $airsen-gray-400; // Placeholder text
+        }
+
+        &:focus {
+          outline: none; // Handled by parent container
+        }
       }
     }
 
-    .search-input:focus {
-      outline: 2px solid $airsen-primary;
-    }
-
+    // Search results dropdown
     .search-results {
       position: absolute;
-      z-index: $z-index-tooltip * 1428;
-      background-color: $airsen-gray-50;
+      top: calc(100% + #{$space-2}); // 8px below search bar
+      left: 0;
+      right: 0;
+      z-index: $z-index-tooltip; // High z-index
+      background-color: $airsen-white;
       color: $airsen-gray-800;
-      border-radius: $radius-lg;
+      border-radius: $radius-lg; // 12px
       border: 1px solid $airsen-gray-300;
-      width: 300px;
+      box-shadow: $shadow-lg; // Large shadow for dropdown
+      max-height: 300px;
+      overflow-y: auto;
+      @include custom-scrollbar(); // From design system mixin
 
-      li {
+      ul {
         list-style: none;
-        cursor: pointer;
-        transition: $transition-all;
+        padding: 0;
+        margin: 0;
       }
 
-      li:hover {
-        color: $airsen-primary;
+      li {
+        padding: $space-3 $space-4; // 12px 16px
+        cursor: pointer;
+        transition: background-color $duration-fast, // 150ms
+                    color $duration-fast;
+        font-size: $font-size-base; // 16px
+        border-bottom: 1px solid $airsen-gray-200;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background-color: $airsen-gray-100; // Light hover
+          color: $airsen-primary; // Forest green text
+        }
+
+        &:active {
+          background-color: $airsen-gray-200;
+        }
       }
     }
 
+    // Mobile responsive
+    @media (max-width: $breakpoint-sm) {
+      width: calc(100vw - #{$space-8}); // Full width minus padding
+      right: $space-4;
+      left: $space-4;
+    }
   }
+
+  // ===========================================================================
+  // MAP VIEW COMPONENT
+  // ===========================================================================
 
   app-map-view {
     width: 100%;
+    display: block;
   }
+
+  // ===========================================================================
+  // MAP INFO CARD - Data display panel
+  // ===========================================================================
 
   .map-info-card {
     display: flex;
@@ -185,128 +266,109 @@
     max-height: 85vh;
     overflow-y: auto;
     position: absolute;
-    left: $space-4;
-    top: 12%;
-    z-index: 8999;
+    left: $space-4; // 16px from left
+    top: 12%; // Positioned below header
+    z-index: $z-index-dropdown; // 8999 (below modals, above map)
 
-    // Apply card mixin
-    background: $card-background;
-    border-radius: $card-border-radius;
-    box-shadow: $shadow-md;
-    padding: $space-6;
-    transition: box-shadow $duration-normal;
+    // Card styling from design system
+    background: $card-background; // White
+    border-radius: $card-border-radius; // 12px
+    box-shadow: $shadow-md; // Medium shadow
+    padding: $space-6; // 24px
+    transition: box-shadow $duration-normal, // 200ms
+                transform $duration-normal;
     color: $airsen-gray-800;
 
     &:hover {
-      box-shadow: $shadow-lg;
+      box-shadow: $shadow-lg; // Larger shadow on hover
+      transform: translateY(-2px); // Subtle lift effect
     }
 
+    // Custom scrollbar
     @include custom-scrollbar();
 
-    // Responsive adjustments
-    @include respond-max(md) {
-      width: 350px;
-      padding: $space-4;
-      left: $space-2;
-      max-height: 80vh;
-    }
+    // ===========================================================================
+    // CARD HEADER - Commune info and actions
+    // ===========================================================================
 
-    @include respond-max(sm) {
-      width: calc(100vw - #{$space-8});
-      left: $space-4;
-      right: $space-4;
-      padding: $space-4;
-      top: auto;
-      bottom: $space-4;
-      max-height: 60vh;
-    }
-
-    // Header Section
     .card-header {
       display: flex;
       flex-direction: column;
-      gap: $space-2;
-      padding-bottom: $space-4;
+      gap: $space-2; // 8px
+      padding-bottom: $space-4; // 16px
       border-bottom: 1px solid $airsen-gray-200;
-      margin-bottom: $space-4;
+      margin-bottom: $space-4; // 16px
 
       .header-top {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        gap: $space-4;
-
-        @include respond-max(sm) {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: $space-3;
-        }
+        align-items: flex-start; // Align to top for better spacing
+        gap: $space-4; // 16px
       }
 
       .commune-name {
         display: flex;
         align-items: center;
-        gap: $space-2;
-        font-size: $font-size-2xl;
-        font-weight: $font-weight-bold;
+        gap: $space-2; // 8px
+        font-size: $font-size-2xl; // 24px
+        font-weight: $font-weight-bold; // 700
         color: $airsen-gray-900;
         margin: 0;
-        line-height: $line-height-tight;
-        flex-shrink: 0;
+        line-height: $line-height-tight; // 1.2
+        flex-shrink: 1; // Allow name to wrap if needed
 
         .pin-icon {
-          font-size: $font-size-2xl;
-        }
-
-        @include respond-max(sm) {
-          font-size: $font-size-xl;
+          font-size: $font-size-2xl; // 24px
+          flex-shrink: 0;
         }
       }
 
       .commune-population {
-        font-size: $font-size-base;
+        font-size: $font-size-base; // 16px
         color: $airsen-gray-700;
         margin: 0;
+        line-height: $line-height-normal; // 1.5
       }
 
       .last-updated {
-        font-size: $font-size-sm;
-        color: $airsen-gray-500;
+        font-size: $font-size-base; // ✅ 16px (was 14px)
+        color: $airsen-gray-600;
         margin: 0;
+        font-style: italic;
       }
     }
 
-    // Action Buttons Section
+    // ===========================================================================
+    // ACTION BUTTONS - Favorite & Export
+    // ===========================================================================
+
     .action-buttons {
       display: flex;
-      gap: $space-2;
+      gap: $space-2; // 8px
       align-items: center;
       flex-shrink: 0;
 
-      @include respond-max(sm) {
-        gap: $space-2;
-        width: 100%;
-      }
-
       .export-button {
         border: none;
-        background: rgba(76, 175, 80, 0.1);
+        // ✅ Use forest green with transparency (Airsen primary color)
+        background: rgba($airsen-primary, 0.1); // Forest green tint
         cursor: pointer;
-        transition: transform 0.2s ease, background-color 0.2s ease;
+        transition: transform $duration-fast, // 150ms
+                    background-color $duration-fast;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         position: relative;
-        border-radius: 50%;
-        padding: 8px;
+        border-radius: 50%; // Circular button
+        padding: $space-2; // 8px
         min-width: 40px;
         height: 40px;
 
         mat-icon {
-          font-size: 24px;
-          width: 24px;
-          height: 24px;
-          color: var(--airsen-gray-500);
+          font-size: $font-size-2xl; // 24px
+          width: $font-size-2xl;
+          height: $font-size-2xl;
+          color: $airsen-gray-600; // Icon color
         }
 
         mat-spinner {
@@ -314,50 +376,47 @@
         }
 
         &:hover:not(:disabled) {
-          transform: scale(1.1);
-          background: rgba(76, 175, 80, 0.15);
+          transform: scale(1.1); // Slight grow on hover
+          background: rgba($airsen-primary, 0.2); // Darker tint
+        }
+
+        &:active:not(:disabled) {
+          transform: scale(0.95); // Press effect
         }
 
         &:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
-        @include respond-max(sm) {
-          min-width: 36px;
-          height: 36px;
-
-          mat-icon {
-            font-size: 20px;
-            width: 20px;
-            height: 20px;
-          }
-        }
       }
     }
 
-    // Loading State
+    // ===========================================================================
+    // DATA SECTION - Weather & Air Quality
+    // ===========================================================================
+
+    // Loading state within card
     .loading-data {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: $space-4;
-      padding: $space-8 0;
+      gap: $space-4; // 16px
+      padding: $space-8 0; // 32px vertical
 
       p {
         color: $airsen-gray-600;
-        font-size: $font-size-sm;
+        font-size: $font-size-base; // ✅ 16px (was 14px)
         margin: 0;
       }
     }
 
-    // Empty State
+    // Empty state (no commune selected)
     .empty-state {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: $space-4;
-      padding: $space-12 $space-4;
+      gap: $space-4; // 16px
+      padding: $space-12 $space-4; // 48px 16px
       text-align: center;
 
       mat-icon {
@@ -365,18 +424,117 @@
         width: 48px;
         height: 48px;
         color: $airsen-gray-400;
+        opacity: 0.7;
       }
 
       p {
         color: $airsen-gray-600;
-        font-size: $font-size-base;
+        font-size: $font-size-base; // 16px
         margin: 0;
         max-width: 300px;
+        line-height: $line-height-normal; // 1.5
       }
     }
 
+    // Map data component container
     app-map-data {
       width: 100%;
+      display: block;
+      animation: fadeIn $duration-normal ease-in; // 200ms fade in
     }
+
+    // ===========================================================================
+    // RESPONSIVE DESIGN - Mobile-first approach
+    // ===========================================================================
+
+    // Tablet (768px - 1024px)
+    @media (max-width: $breakpoint-md) {
+      width: 350px;
+      padding: $space-4; // 16px
+      left: $space-2; // 8px from left
+      max-height: 80vh;
+
+      .card-header {
+        .commune-name {
+          font-size: $font-size-xl; // 20px on tablet
+        }
+      }
+    }
+
+    // Mobile (< 768px)
+    @media (max-width: $breakpoint-sm) {
+      width: calc(100vw - #{$space-8}); // Full width minus margin
+      left: $space-4; // 16px from left
+      right: $space-4; // 16px from right
+      padding: $space-4; // 16px
+      top: auto; // Remove top positioning
+      bottom: $space-4; // 16px from bottom (card at bottom on mobile)
+      max-height: 60vh; // Less height on mobile
+
+      .card-header {
+        .header-top {
+          flex-direction: column; // Stack vertically on mobile
+          align-items: flex-start;
+          gap: $space-3; // 12px
+        }
+
+        .commune-name {
+          font-size: $font-size-lg; // 18px on mobile
+
+          .pin-icon {
+            font-size: $font-size-lg;
+          }
+        }
+
+        .last-updated {
+          font-size: $font-size-sm; // 14px on mobile (exception for space)
+        }
+      }
+
+      .action-buttons {
+        width: 100%;
+        justify-content: flex-end;
+
+        .export-button {
+          min-width: 36px;
+          height: 36px;
+
+          mat-icon {
+            font-size: $font-size-xl; // 20px on mobile
+            width: $font-size-xl;
+            height: $font-size-xl;
+          }
+        }
+      }
+
+      .empty-state {
+        padding: $space-8 $space-4; // 32px 16px
+
+        mat-icon {
+          font-size: 40px;
+          width: 40px;
+          height: 40px;
+        }
+
+        p {
+          font-size: $font-size-sm; // 14px on mobile (exception for space)
+        }
+      }
+    }
+  }
+}
+
+// ===========================================================================
+// ANIMATIONS
+// ===========================================================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

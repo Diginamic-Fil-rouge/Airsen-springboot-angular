@@ -1,36 +1,45 @@
 @use 'sass:color';
 @use '../../../styles/design-system' as *;
 
+// =============================================================================
+// PROFILE CONTAINER - Clean, minimal, mobile-first
+// =============================================================================
+
 .profile-container {
-  max-width: 1000px;
+  max-width: $container-lg; // 1024px
   margin: 0 auto;
-  padding: 24px;
+  padding: $space-6; // 24px
+
+  // ===========================================================================
+  // PROFILE HEADER - Avatar + User Info
+  // ===========================================================================
 
   .profile-header {
     display: flex;
     align-items: center;
-    gap: 24px;
-    margin-bottom: 32px;
-    padding: 24px;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    gap: $space-6; // 24px
+    margin-bottom: $space-8; // 32px
+    padding: $space-6; // 24px
+    background-color: $airsen-white;
+    border-radius: $radius-md; // 8px from design system
+    box-shadow: $shadow-sm; // Subtle shadow from design system
 
     .avatar-section {
       .avatar-circle {
         width: 120px;
         height: 120px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        // ✅ Use Airsen forest green solid (no gradients except primary button)
+        background-color: $airsen-primary; // Forest green #2E7D32
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: $shadow-md; // Subtle shadow from design system
 
         .avatar-initials {
-          font-size: 48px;
-          font-weight: 600;
-          color: #fff;
+          font-size: $font-size-4xl; // 40px (3rem from design system)
+          font-weight: $font-weight-semibold; // 600
+          color: $airsen-white;
           user-select: none;
         }
       }
@@ -40,59 +49,69 @@
       flex: 1;
 
       .user-name {
-        margin: 0 0 8px 0;
-        font-size: 28px;
-        font-weight: 600;
-        color: #333;
+        margin: 0 0 $space-2 0; // 8px bottom margin
+        font-size: $font-size-3xl; // 32px
+        font-weight: $font-weight-semibold; // 600
+        color: $airsen-gray-900; // Headings
+        line-height: $line-height-tight; // 1.2
       }
 
       .user-email {
-        margin: 0 0 8px 0;
-        font-size: 14px;
-        color: #666;
+        margin: 0 0 $space-3 0; // 12px bottom margin
+        font-size: $font-size-base; // ✅ 16px (minimum for body text)
+        color: $airsen-gray-700; // Secondary text
       }
 
       .user-role {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: $space-2; // 8px
         margin: 0;
-        font-size: 14px;
-        color: #2196f3;
-        font-weight: 500;
+        font-size: $font-size-base; // ✅ 16px (minimum for body text)
+        color: $airsen-secondary; // Blue #1976D2
+        font-weight: $font-weight-medium; // 500
 
         mat-icon {
-          font-size: 18px;
-          width: 18px;
-          height: 18px;
+          font-size: $font-size-lg; // 18px
+          width: $font-size-lg;
+          height: $font-size-lg;
         }
       }
     }
   }
+
+  // ===========================================================================
+  // LOADING STATE
+  // ===========================================================================
 
   .loading-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
-    gap: 16px;
+    padding: $space-12 $space-6; // 48px 24px
+    gap: $space-4; // 16px
 
     p {
-      font-size: 16px;
-      color: #666;
+      font-size: $font-size-base; // 16px
+      color: $airsen-gray-600; // Icons/secondary
     }
   }
 
+  // ===========================================================================
+  // PROFILE CONTENT - Material Tabs Container
+  // ===========================================================================
+
   .profile-content {
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: $airsen-white;
+    border-radius: $radius-md; // 8px
+    box-shadow: $shadow-sm; // Subtle shadow
     overflow: hidden;
 
+    // Material tab customization (minimal, let Material do the work)
     ::ng-deep .mat-mdc-tab-group {
       .mat-mdc-tab-labels {
-        padding: 0 24px;
+        padding: 0 $space-6; // 24px horizontal padding
       }
 
       .mat-mdc-tab {
@@ -101,7 +120,7 @@
         .mat-mdc-tab-label-content {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: $space-2; // 8px
         }
 
         mat-icon {
@@ -110,109 +129,126 @@
       }
     }
 
+    // ===========================================================================
+    // TAB CONTENT - Shared styles for all tabs
+    // ===========================================================================
+
     .tab-content {
-      padding: 24px;
+      padding: $space-6; // 24px
       min-height: 400px;
 
+      // Security tab header
       .security-header {
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: $space-6; // 24px
+        padding-bottom: $space-4; // 16px
+        border-bottom: 1px solid $airsen-gray-200; // Border from design system
 
         h3 {
-          margin: 0 0 8px 0;
-          font-size: 20px;
-          font-weight: 500;
-          color: #333;
+          margin: 0 0 $space-2 0; // 8px bottom margin
+          font-size: $font-size-xl; // 20px
+          font-weight: $font-weight-medium; // 500
+          color: $airsen-gray-900; // Headings
         }
 
         p {
           margin: 0;
-          font-size: 14px;
-          color: #666;
+          font-size: $font-size-base; // ✅ 16px (minimum)
+          color: $airsen-gray-600; // Secondary text
         }
       }
 
+      // ===========================================================================
+      // NOTIFICATIONS TAB - Special layout
+      // ===========================================================================
+
       &.notifications-tab {
-        padding: 0;
+        padding: 0; // Remove default padding for custom sections
 
         .notifications-section,
         .preferences-section {
-          padding: 32px 24px;
+          padding: $space-8 $space-6; // 32px 24px
 
           .section-header {
-            margin-bottom: 24px;
+            margin-bottom: $space-6; // 24px
 
             h3 {
               display: flex;
               align-items: center;
-              gap: 12px;
-              margin: 0 0 8px 0;
-              font-size: 20px;
-              font-weight: 500;
-              color: #333;
+              gap: $space-3; // 12px
+              margin: 0 0 $space-2 0; // 8px bottom margin
+              font-size: $font-size-xl; // 20px
+              font-weight: $font-weight-medium; // 500
+              color: $airsen-gray-900; // Headings
 
               mat-icon {
-                color: #2196f3;
+                color: $airsen-secondary; // Blue for info icons
               }
             }
 
             p {
               margin: 0;
-              font-size: 14px;
-              color: #666;
+              font-size: $font-size-base; // ✅ 16px
+              color: $airsen-gray-600; // Secondary text
             }
           }
         }
 
+        // Loading state
         .loading-state {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 16px;
-          padding: 40px;
+          gap: $space-4; // 16px
+          padding: $space-10; // 40px
 
           p {
             margin: 0;
-            font-size: 14px;
-            color: #666;
+            font-size: $font-size-base; // 16px
+            color: $airsen-gray-600;
           }
         }
+
+        // ===========================================================================
+        // NOTIFICATIONS LIST
+        // ===========================================================================
 
         .notifications-list {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: $space-4; // 16px
 
+          // Empty state
           .empty-state {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 60px 20px;
-            color: #999;
+            padding: $space-12 $space-6; // 48px 24px
+            color: $airsen-gray-500; // Secondary text
 
             mat-icon {
               font-size: 64px;
               width: 64px;
               height: 64px;
-              margin-bottom: 16px;
+              margin-bottom: $space-4; // 16px
               opacity: 0.5;
             }
 
             p {
-              margin: 0 0 8px 0;
-              font-size: 18px;
-              font-weight: 500;
+              margin: 0 0 $space-2 0; // 8px bottom
+              font-size: $font-size-lg; // 18px
+              font-weight: $font-weight-medium; // 500
             }
 
             .empty-state-hint {
-              font-size: 14px;
-              color: #bbb;
+              font-size: $font-size-base; // 16px
+              color: $airsen-gray-400; // Placeholder text
             }
           }
 
+          // Notification cards
           .notification-card {
+            // Material card avatar customization
             ::ng-deep .mat-mdc-card-header {
               .notification-icon {
                 width: 40px;
@@ -222,6 +258,7 @@
                 align-items: center;
                 justify-content: center;
 
+                // ✅ Use AQI colors for status (domain-specific)
                 &.pending {
                   background-color: color.adjust($airsen-yellow-moderate, $lightness: 35%);
                   color: $airsen-yellow-moderate;
@@ -238,15 +275,16 @@
                 }
 
                 mat-icon {
-                  font-size: 24px;
-                  width: 24px;
-                  height: 24px;
+                  font-size: $font-size-2xl; // 24px
+                  width: $font-size-2xl;
+                  height: $font-size-2xl;
                 }
               }
             }
 
+            // Status chips
             .notification-status {
-              margin-bottom: 12px;
+              margin-bottom: $space-3; // 12px
 
               mat-chip {
                 &.pending {
@@ -266,22 +304,23 @@
               }
             }
 
+            // Error message
             .error-message {
               display: flex;
               align-items: center;
-              gap: 8px;
-              margin: 12px 0 0 0;
-              padding: 12px;
+              gap: $space-2; // 8px
+              margin: $space-3 0 0 0; // 12px top
+              padding: $space-3; // 12px
               background-color: $aqi-unhealthy-lighter;
               border-left: 3px solid $aqi-unhealthy;
-              border-radius: 4px;
-              font-size: 13px;
+              border-radius: $radius-sm; // 4px
+              font-size: $font-size-base; // ✅ 16px (was 13px)
               color: $aqi-unhealthy-text;
 
               mat-icon {
-                font-size: 18px;
-                width: 18px;
-                height: 18px;
+                font-size: $font-size-lg; // 18px
+                width: $font-size-lg;
+                height: $font-size-lg;
               }
             }
           }
@@ -290,27 +329,105 @@
     }
   }
 
-  @media (max-width: 768px) {
-    padding: 12px;
+  // ===========================================================================
+  // RESPONSIVE DESIGN - Mobile-first approach
+  // ===========================================================================
+
+  // Tablet (768px+)
+  @media (max-width: $breakpoint-md) {
+    padding: $space-4; // 16px
 
     .profile-header {
       flex-direction: column;
       text-align: center;
-      gap: 16px;
+      gap: $space-4; // 16px
+      padding: $space-5; // 20px
 
-      .user-info .user-role {
-        justify-content: center;
+      .avatar-section {
+        .avatar-circle {
+          width: 96px; // Smaller on mobile
+          height: 96px;
+
+          .avatar-initials {
+            font-size: $font-size-3xl; // 32px (smaller on mobile)
+          }
+        }
+      }
+
+      .user-info {
+        .user-name {
+          font-size: $font-size-2xl; // 24px on mobile
+        }
+
+        .user-role {
+          justify-content: center;
+        }
       }
     }
 
     .profile-content {
       .tab-content {
-        padding: 16px;
+        padding: $space-4; // 16px
 
         &.notifications-tab {
           .notifications-section,
           .preferences-section {
-            padding: 24px 16px;
+            padding: $space-6 $space-4; // 24px 16px
+          }
+        }
+      }
+    }
+  }
+
+  // Mobile (< 640px)
+  @media (max-width: $breakpoint-sm) {
+    padding: $space-3; // 12px
+
+    .profile-header {
+      padding: $space-4; // 16px
+
+      .avatar-section {
+        .avatar-circle {
+          width: 80px; // Even smaller on small mobile
+          height: 80px;
+
+          .avatar-initials {
+            font-size: $font-size-2xl; // 24px
+          }
+        }
+      }
+
+      .user-info {
+        .user-name {
+          font-size: $font-size-xl; // 20px on small mobile
+        }
+      }
+    }
+
+    .profile-content {
+      // Tighter spacing on mobile
+      ::ng-deep .mat-mdc-tab-group {
+        .mat-mdc-tab-labels {
+          padding: 0 $space-3; // 12px
+        }
+
+        .mat-mdc-tab {
+          min-width: 120px; // Smaller tabs on mobile
+        }
+      }
+
+      .tab-content {
+        padding: $space-3; // 12px
+        min-height: 300px; // Shorter on mobile
+
+        &.notifications-tab {
+          .notifications-section,
+          .preferences-section {
+            padding: $space-4 $space-3; // 16px 12px
+          }
+
+          .notifications-list {
+            gap: $space-3; // 12px (tighter on mobile)
           }
         }
       }

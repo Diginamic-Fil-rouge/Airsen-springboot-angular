@@ -380,6 +380,14 @@ public class WeatherController {
             weatherData.getWindSpeed(),
             weatherData.getWindDirection(),
             weatherData.getWeatherCode(),
+            weatherData.getApparentTemperature(),
+            weatherData.getPrecipitation(),
+            weatherData.getRain(),
+            weatherData.getShowers(),
+            weatherData.getSnowfall(),
+            weatherData.getCloudCover(),
+            weatherData.getWindGusts(),
+            weatherData.getPressureMsl(),
             weatherData.getCreatedAt()
         );
     }

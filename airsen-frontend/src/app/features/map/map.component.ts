@@ -121,6 +121,7 @@ export class MapComponent implements OnInit, OnDestroy {
    * and stores the results in the component's state.
    * Prevents duplicate clicks on the same commune by
    * resetting the state when a new commune is clicked.
+   * Auto-scrolls to data view after fetching data.
    * @param commune The Commune object to fetch data for.
    * @param type The type of data to fetch, either "NEW" or "LATEST".
    * @returns A promise that resolves when the data has been fetched.
@@ -128,6 +129,8 @@ export class MapComponent implements OnInit, OnDestroy {
   async clickEvent(commune: Commune, type: string): Promise<void> {
     // Prevent duplicate clicks on same commune
     if (this.communeClicked && this.communeClicked.inseeCode === commune.inseeCode) {
+      // Even if same commune, scroll to data view for better UX
+      this.goToAnchor();
       return;
     }
 
@@ -139,6 +142,9 @@ export class MapComponent implements OnInit, OnDestroy {
     this.isLoadingDatas = true;
 
     console.log("Fetching data for commune:", commune.name, "INSEE Code:", commune.inseeCode);
+
+    // Auto-scroll to data view immediately (shows loading state)
+    setTimeout(() => this.goToAnchor(), 100);
 
     // Fetch both weather and air quality data in parallel for better performance
     const [weather, airQuality] = await Promise.all([

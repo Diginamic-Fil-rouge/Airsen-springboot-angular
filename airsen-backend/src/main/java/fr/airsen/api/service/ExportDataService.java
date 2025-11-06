@@ -199,16 +199,24 @@ public class ExportDataService {
         }
 
         return new WeatherExportDTO(
-                weather.getMeasurementDate() != null 
-                    ? weather.getMeasurementDate().atStartOfDay() 
+                weather.getMeasurementDate() != null
+                    ? weather.getMeasurementDate().atStartOfDay()
                     : null,
                 weather.getTemperature(),
                 weather.getHumidity(),
                 weather.getWindSpeed(),
                 weather.getWindDirection(),
                 weather.getWeatherCode(),
-                weather.getCreatedAt() != null 
-                    ? weather.getCreatedAt().atStartOfDay() 
+                weather.getApparentTemperature(),
+                weather.getPrecipitation(),
+                weather.getRain(),
+                weather.getShowers(),
+                weather.getSnowfall(),
+                weather.getCloudCover(),
+                weather.getWindGusts(),
+                weather.getPressureMsl(),
+                weather.getCreatedAt() != null
+                    ? weather.getCreatedAt().atStartOfDay()
                     : null
         );
     }
@@ -386,6 +394,14 @@ public class ExportDataService {
         Double windSpeed = (requestedIndicators.isEmpty() || requestedIndicators.contains("windspeed")) ? weather.getWindSpeed() : null;
         Integer windDirection = (requestedIndicators.isEmpty() || requestedIndicators.contains("winddirection")) ? weather.getWindDirection() : null;
         Integer weatherCode = (requestedIndicators.isEmpty() || requestedIndicators.contains("weathercode")) ? weather.getWeatherCode() : null;
+        Double apparentTemperature = (requestedIndicators.isEmpty() || requestedIndicators.contains("apparenttemperature")) ? weather.getApparentTemperature() : null;
+        Double precipitation = (requestedIndicators.isEmpty() || requestedIndicators.contains("precipitation")) ? weather.getPrecipitation() : null;
+        Double rain = (requestedIndicators.isEmpty() || requestedIndicators.contains("rain")) ? weather.getRain() : null;
+        Double showers = (requestedIndicators.isEmpty() || requestedIndicators.contains("showers")) ? weather.getShowers() : null;
+        Double snowfall = (requestedIndicators.isEmpty() || requestedIndicators.contains("snowfall")) ? weather.getSnowfall() : null;
+        Integer cloudCover = (requestedIndicators.isEmpty() || requestedIndicators.contains("cloudcover")) ? weather.getCloudCover() : null;
+        Double windGusts = (requestedIndicators.isEmpty() || requestedIndicators.contains("windgusts")) ? weather.getWindGusts() : null;
+        Double pressureMsl = (requestedIndicators.isEmpty() || requestedIndicators.contains("pressure")) ? weather.getPressureMsl() : null;
 
         return new WeatherDataPoint(
                 temperature,
@@ -393,8 +409,14 @@ public class ExportDataService {
                 windSpeed,
                 windDirection,
                 weatherCode,
-                null, // precipitation not available in WeatherData entity
-                null  // cloudCover not available in WeatherData entity
+                apparentTemperature,
+                precipitation,
+                rain,
+                showers,
+                snowfall,
+                cloudCover,
+                windGusts,
+                pressureMsl
         );
     }
 
