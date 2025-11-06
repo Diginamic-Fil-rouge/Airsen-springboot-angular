@@ -1,0 +1,59 @@
+@use '../../../../../styles/design-system' as *;
+
+.map-view-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  background-color: $airsen-gray-100;
+}
+
+// Custom marker styles
+:host ::ng-deep {
+  .aqi-custom-marker {
+    background: transparent;
+    border: none;
+  }
+
+  .aqi-marker {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .user-location-marker {
+    background: transparent;
+    border: none;
+  }
+
+  // Leaflet popup customization
+  .leaflet-popup-content-wrapper {
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+  }
+
+  .leaflet-popup-content {
+    margin: $space-4;
+    font-family: $font-family-sans;
+  }
+
+  .leaflet-popup-tip {
+    background: $airsen-white;
+  }
+
+  // Attribution
+  .leaflet-control-attribution {
+    background: rgba($airsen-white, 0.8);
+    font-size: $font-size-xs;
+    padding: $space-1 $space-2;
+  }
+}

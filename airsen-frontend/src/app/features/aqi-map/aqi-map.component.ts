@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AqiMapService } from './services/aqi-map.service';
 import { AqiStation } from './models/aqi-station.model';
 import { MapFilter } from './models/map-filter.model';
+import { MapViewComponent } from './components/map-view/map-view.component';
 
 /**
  * Main AQI Map Container Component
@@ -18,6 +19,8 @@ import { MapFilter } from './models/map-filter.model';
 export class AqiMapComponent implements OnInit, OnDestroy {
   private aqiMapService = inject(AqiMapService);
   private destroy$ = new Subject<void>();
+
+  @ViewChild('mapView') mapView!: MapViewComponent;
 
   // Component State
   isLoading = true;
@@ -128,5 +131,26 @@ export class AqiMapComponent implements OnInit, OnDestroy {
    */
   closeStationDetails(): void {
     this.aqiMapService.selectStation(null);
+  }
+
+  /**
+   * Map control methods
+   */
+  goToUserLocation(): void {
+    if (this.mapView) {
+      this.mapView.goToUserLocation();
+    }
+  }
+
+  zoomIn(): void {
+    if (this.mapView) {
+      this.mapView.zoomIn();
+    }
+  }
+
+  zoomOut(): void {
+    if (this.mapView) {
+      this.mapView.zoomOut();
+    }
   }
 }

@@ -19,13 +19,15 @@ import { AqiMapRoutingModule } from './aqi-map-routing.module';
 
 // Components
 import { AqiMapComponent } from './aqi-map.component';
+import { MapViewComponent } from './components/map-view/map-view.component';
 
 // Services
 import { AqiMapService } from './services/aqi-map.service';
 
 @NgModule({
   declarations: [
-    AqiMapComponent
+    AqiMapComponent,
+    MapViewComponent
   ],
   imports: [
     CommonModule,
