@@ -10,7 +10,7 @@ import {
 import * as L from 'leaflet';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AqiStation, getAqiColor, getAqiLabel } from '../../models/aqi-station.model';
+import { Station, getAqiColor, getAqiLabel } from '../../models/station.model';
 import { MapStyle } from '../../models/map-filter.model';
 
 /**
@@ -24,12 +24,12 @@ import { MapStyle } from '../../models/map-filter.model';
   styleUrls: ['./map-view.component.scss']
 })
 export class MapViewComponent implements AfterViewInit, OnDestroy {
-  @Input() stations: AqiStation[] = [];
-  @Input() selectedStation: AqiStation | null = null;
+  @Input() stations: Station[] = [];
+  @Input() selectedStation: Station | null = null;
   @Input() showHeatmap: boolean = false;
   @Input() mapStyle: MapStyle = MapStyle.STREETS;
 
-  @Output() stationSelected = new EventEmitter<AqiStation>();
+  @Output() stationSelected = new EventEmitter<Station>();
 
   private map: L.Map | null = null;
   private markerLayer: L.LayerGroup | null = null;

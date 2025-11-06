@@ -1,9 +1,9 @@
 /**
- * AQI Station Model for Map Display
- * Represents a monitoring station with air quality data
+ * Station Model for Map Display
+ * Represents a commune/location with air quality data
  */
 
-export interface AqiStation {
+export interface Station {
   id: number;
   inseeCode: string;
   name: string;

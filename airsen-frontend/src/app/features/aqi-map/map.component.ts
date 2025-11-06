@@ -1,23 +1,23 @@
 import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AqiMapService } from './services/aqi-map.service';
-import { AqiStation } from './models/aqi-station.model';
-import { MapFilter } from './models/map-filter.model';
+import { MapService } from './services/map.service';
+import { Station } from './models/station.model';
+import { MapFilter, PollutantType, TimeRange, MapStyle } from './models/map-filter.model';
 import { MapViewComponent } from './components/map-view/map-view.component';
 
 /**
- * Main AQI Map Container Component
+ * Main Map Container Component
  * Full-screen air quality map interface similar to aqi.in
  */
 @Component({
   standalone: false,
-  selector: 'app-aqi-map',
-  templateUrl: './aqi-map.component.html',
-  styleUrls: ['./aqi-map.component.scss']
+  selector: 'app-map',
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.scss']
 })
-export class AqiMapComponent implements OnInit, OnDestroy {
-  private aqiMapService = inject(AqiMapService);
+export class MapComponent implements OnInit, OnDestroy {
+  private mapService = inject(MapService);
   private destroy$ = new Subject<void>();
 
   @ViewChild('mapView') mapView!: MapViewComponent;
@@ -26,8 +26,8 @@ export class AqiMapComponent implements OnInit, OnDestroy {
   isLoading = true;
   isSidePanelOpen = true;
   isMobileView = false;
-  selectedStation: AqiStation | null = null;
-  stations: AqiStation[] = [];
+  selectedCommune: Station | null = null;
+  communes: Station[] = [];
   currentFilter: MapFilter | null = null;
 
   ngOnInit(): void {
@@ -49,22 +49,22 @@ export class AqiMapComponent implements OnInit, OnDestroy {
    * Setup subscriptions to service observables
    */
   private setupSubscriptions(): void {
-    // Subscribe to selected station
-    this.aqiMapService.selectedStation$
+    // Subscribe to selected commune
+    this.mapService.selectedStation$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(station => {
-        this.selectedStation = station;
+      .subscribe(commune => {
+        this.selectedCommune = commune;
       });
 
-    // Subscribe to stations
-    this.aqiMapService.stations$
+    // Subscribe to communes
+    this.mapService.stations$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(stations => {
-        this.stations = stations;
+      .subscribe(communes => {
+        this.communes = communes;
       });
 
     // Subscribe to filter changes
-    this.aqiMapService.filter$
+    this.mapService.filter$
       .pipe(takeUntil(this.destroy$))
       .subscribe(filter => {
         this.currentFilter = filter;
@@ -72,18 +72,18 @@ export class AqiMapComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load all stations
+   * Load all communes
    */
   private loadStations(): void {
     this.isLoading = true;
-    this.aqiMapService.loadStations()
+    this.mapService.loadStations()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading stations:', error);
+          console.error('Error loading communes:', error);
           this.isLoading = false;
         }
       });
@@ -108,10 +108,10 @@ export class AqiMapComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle station selection from map
+   * Handle commune selection from map
    */
-  onStationSelected(station: AqiStation): void {
-    this.aqiMapService.selectStation(station);
+  onCommuneSelected(commune: Station): void {
+    this.mapService.selectStation(commune);
 
     // On mobile, open bottom sheet with details
     if (this.isMobileView) {
@@ -123,14 +123,14 @@ export class AqiMapComponent implements OnInit, OnDestroy {
    * Handle filter changes from side panel
    */
   onFilterChanged(filter: Partial<MapFilter>): void {
-    this.aqiMapService.updateFilter(filter);
+    this.mapService.updateFilter(filter);
   }
 
   /**
-   * Close station details
+   * Close commune details
    */
-  closeStationDetails(): void {
-    this.aqiMapService.selectStation(null);
+  closeCommuneDetails(): void {
+    this.mapService.selectStation(null);
   }
 
   /**
@@ -152,5 +152,24 @@ export class AqiMapComponent implements OnInit, OnDestroy {
     if (this.mapView) {
       this.mapView.zoomOut();
     }
+  }
+
+  /**
+   * Filter control handlers
+   */
+  onPollutantChanged(pollutant: PollutantType): void {
+    this.mapService.updateFilter({ pollutantType: pollutant });
+  }
+
+  onTimeRangeChanged(timeRange: TimeRange): void {
+    this.mapService.updateFilter({ timeRange });
+  }
+
+  onHeatmapToggled(showHeatmap: boolean): void {
+    this.mapService.updateFilter({ showHeatmap });
+  }
+
+  onLayerChanged(mapStyle: MapStyle): void {
+    this.mapService.updateFilter({ mapStyle });
   }
 }

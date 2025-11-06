@@ -1,0 +1,20 @@
+<div class="layer-switcher" [class.expanded]="isExpanded">
+  <!-- Current Layer Button -->
+  <button class="layer-button" (click)="toggleExpand()" matTooltip="Changer de fond de carte">
+    <mat-icon>{{ selectedLayerInfo?.icon }}</mat-icon>
+    <span class="layer-label">{{ selectedLayerInfo?.label }}</span>
+  </button>
+
+  <!-- Layer Options -->
+  <div class="layer-options" *ngIf="isExpanded">
+    <button
+      *ngFor="let layer of layers"
+      class="layer-option"
+      [class.active]="layer.value === selectedLayer"
+      (click)="selectLayer(layer.value)">
+      <mat-icon>{{ layer.icon }}</mat-icon>
+      <span>{{ layer.label }}</span>
+      <mat-icon class="check-icon" *ngIf="layer.value === selectedLayer">check</mat-icon>
+    </button>
+  </div>
+</div>

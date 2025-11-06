@@ -15,25 +15,33 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
 
 // Routing
-import { AqiMapRoutingModule } from './aqi-map-routing.module';
+import { MapRoutingModule } from './map-routing.module';
 
 // Components
-import { AqiMapComponent } from './aqi-map.component';
+import { MapComponent } from './map.component';
 import { MapViewComponent } from './components/map-view/map-view.component';
+import { FilterControlsComponent } from './components/side-panel/filter-controls.component';
+import { StationListComponent } from './components/side-panel/station-list.component';
+import { LayerSwitcherComponent } from './components/map-view/map-controls/layer-switcher.component';
+import { StationDetailCardComponent } from './components/station-details/station-detail-card.component';
 
 // Services
-import { AqiMapService } from './services/aqi-map.service';
+import { MapService } from './services/map.service';
 
 @NgModule({
   declarations: [
-    AqiMapComponent,
-    MapViewComponent
+    MapComponent,
+    MapViewComponent,
+    FilterControlsComponent,
+    StationListComponent,
+    LayerSwitcherComponent,
+    StationDetailCardComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    AqiMapRoutingModule,
+    MapRoutingModule,
     // Material
     MatIconModule,
     MatButtonModule,
@@ -47,7 +55,7 @@ import { AqiMapService } from './services/aqi-map.service';
     MatCardModule
   ],
   providers: [
-    AqiMapService
+    MapService
   ]
 })
-export class AqiMapModule { }
+export class MapModule { }

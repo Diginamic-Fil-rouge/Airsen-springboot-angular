@@ -6,22 +6,22 @@ import { AirQualityService } from '@/features/map/services/air-quality.service';
 import { FavoriteService } from '@/features/favorites/services/favorite.service';
 import { AuthService } from '@/auth/services/auth.service';
 import {
-  AqiStation,
+  Station,
   AqiLevel,
   getAqiColor,
   getAqiLevelFromValue,
   PollutantData
-} from '../models/aqi-station.model';
+} from '../models/station.model';
 import { MapFilter, DEFAULT_MAP_FILTER } from '../models/map-filter.model';
 
 /**
- * AQI Map Service
- * Orchestrates data fetching and transformation for the AQI map
+ * Map Service
+ * Orchestrates data fetching and transformation for the air quality map
  */
 @Injectable({
   providedIn: 'root'
 })
-export class AqiMapService {
+export class MapService {
   private geographicService = inject(GeographicService);
   private airQualityService = inject(AirQualityService);
   private favoriteService = inject(FavoriteService);
@@ -29,8 +29,8 @@ export class AqiMapService {
 
   // State management
   private filterSubject = new BehaviorSubject<MapFilter>(DEFAULT_MAP_FILTER);
-  private selectedStationSubject = new BehaviorSubject<AqiStation | null>(null);
-  private stationsSubject = new BehaviorSubject<AqiStation[]>([]);
+  private selectedStationSubject = new BehaviorSubject<Station | null>(null);
+  private stationsSubject = new BehaviorSubject<Station[]>([]);
 
   public filter$ = this.filterSubject.asObservable();
   public selectedStation$ = this.selectedStationSubject.asObservable();
@@ -39,10 +39,10 @@ export class AqiMapService {
   /**
    * Load all stations with air quality data
    */
-  loadStations(): Observable<AqiStation[]> {
+  loadStations(): Observable<Station[]> {
     return this.geographicService.getCommunesWithCoordinatesAndMinPop().pipe(
       map(communes => {
-        const stations: AqiStation[] = communes.map(commune => this.mapCommuneToStation(commune));
+        const stations: Station[] = communes.map(commune => this.mapCommuneToStation(commune));
         this.stationsSubject.next(stations);
         return stations;
       }),
@@ -56,12 +56,12 @@ export class AqiMapService {
   /**
    * Get station details by INSEE code
    */
-  getStationDetails(inseeCode: string): Observable<AqiStation | null> {
+  getStationDetails(inseeCode: string): Observable<Station | null> {
     return this.geographicService.getCommuneDatas(inseeCode).pipe(
       map(data => {
         if (!data) return null;
 
-        const station: AqiStation = {
+        const station: Station = {
           id: data.id || 0,
           inseeCode: inseeCode,
           name: data.name || '',
@@ -98,14 +98,14 @@ export class AqiMapService {
   /**
    * Select a station
    */
-  selectStation(station: AqiStation | null): void {
+  selectStation(station: Station | null): void {
     this.selectedStationSubject.next(station);
   }
 
   /**
    * Get filtered stations based on current filter
    */
-  getFilteredStations(): Observable<AqiStation[]> {
+  getFilteredStations(): Observable<Station[]> {
     return combineLatest([this.stations$, this.filter$]).pipe(
       map(([stations, filter]) => {
         let filtered = stations;
@@ -156,9 +156,9 @@ export class AqiMapService {
   // =========================================================================
 
   /**
-   * Map commune data to AqiStation
+   * Map commune data to Station
    */
-  private mapCommuneToStation(commune: any): AqiStation {
+  private mapCommuneToStation(commune: any): Station {
     const atmoIndex = commune.currentAirQuality?.atmoIndex ||
                       commune.airQuality?.atmoIndex ||
                       0;
@@ -183,7 +183,7 @@ export class AqiMapService {
   /**
    * Extract pollutant data from air quality response
    */
-  private extractPollutants(airQuality: any): AqiStation['pollutants'] {
+  private extractPollutants(airQuality: any): Station['pollutants'] {
     if (!airQuality) return {};
 
     return {

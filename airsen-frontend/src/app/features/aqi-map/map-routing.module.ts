@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AqiMapComponent } from './aqi-map.component';
+import { MapComponent } from './map.component';
 import { AuthGuard } from '@/auth/guards/auth.guard';
 
 const routes: Routes = [
   {
     path: '',
-    component: AqiMapComponent,
+    component: MapComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Carte de Qualité de l\'Air',
-      breadcrumb: 'Carte AQI'
+      breadcrumb: 'Carte'
     }
   }
 ];
@@ -19,4 +19,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class AqiMapRoutingModule { }
+export class MapRoutingModule { }

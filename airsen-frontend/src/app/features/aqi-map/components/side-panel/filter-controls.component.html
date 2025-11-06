@@ -1,0 +1,37 @@
+<div class="filter-controls">
+  <h3 class="filter-title">Filtres</h3>
+
+  <!-- Pollutant Type Filter -->
+  <div class="filter-section">
+    <label class="filter-label">Polluant</label>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(value)]="selectedPollutant" (selectionChange)="onPollutantChange($event.value)">
+        <mat-option *ngFor="let type of pollutantTypes" [value]="type">
+          {{ getPollutantLabel(type) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Time Range Filter -->
+  <div class="filter-section">
+    <label class="filter-label">Période</label>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(value)]="selectedTimeRange" (selectionChange)="onTimeRangeChange($event.value)">
+        <mat-option *ngFor="let range of timeRanges" [value]="range">
+          {{ getTimeRangeLabel(range) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Heatmap Toggle -->
+  <div class="filter-section">
+    <mat-slide-toggle
+      [(ngModel)]="showHeatmap"
+      (change)="onHeatmapToggle()"
+      color="primary">
+      Afficher la carte thermique
+    </mat-slide-toggle>
+  </div>
+</div>

@@ -40,9 +40,9 @@ const routes: Routes = [
   },
   // AQI Map Route (new full-screen air quality map interface)
   {
-    path: "aqi-map",
-    loadChildren: () => import("./features/aqi-map/aqi-map.module").then((m) => m.AqiMapModule),
-    canActivate: [AuthGuard],
+    path: 'aqi-map',
+    loadChildren: () => import('./features/aqi-map/map.module').then(m => m.MapModule),
+    canActivate: [AuthGuard]
   },
 
   // Protected Routes (require authentication with AuthGuard)

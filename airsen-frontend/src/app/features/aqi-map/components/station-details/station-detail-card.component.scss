@@ -1,0 +1,162 @@
+@use '../../../../../styles/design-system' as *;
+
+.station-detail-card {
+  background: $airsen-white;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-lg;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: $space-6;
+  border-bottom: 1px solid $airsen-gray-200;
+
+  .header-content {
+    flex: 1;
+
+    .commune-name {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $airsen-gray-900;
+      margin: 0 0 $space-2 0;
+    }
+
+    .commune-meta {
+      font-size: $font-size-sm;
+      color: $airsen-gray-600;
+      margin: 0;
+    }
+  }
+
+  .close-button {
+    background: transparent;
+    border: none;
+    padding: $space-2;
+    cursor: pointer;
+    border-radius: $radius-full;
+    transition: $transition-all;
+
+    &:hover {
+      background: $airsen-gray-100;
+    }
+
+    mat-icon {
+      color: $airsen-gray-600;
+    }
+  }
+}
+
+.aqi-display {
+  padding: $space-8 $space-6;
+  text-align: center;
+  color: white;
+
+  .aqi-value {
+    font-size: $font-size-5xl;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+    margin-bottom: $space-2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .aqi-label {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-medium;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.health-recommendation {
+  display: flex;
+  gap: $space-3;
+  padding: $space-6;
+  background: rgba($airsen-info, 0.05);
+  border-left: 4px solid $airsen-info;
+
+  .recommendation-icon {
+    color: $airsen-info;
+    flex-shrink: 0;
+  }
+
+  .recommendation-text {
+    font-size: $font-size-sm;
+    color: $airsen-gray-800;
+    line-height: $line-height-relaxed;
+    margin: 0;
+  }
+}
+
+.pollutants-section {
+  padding: $space-6;
+
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $airsen-gray-900;
+    margin: 0 0 $space-4 0;
+  }
+
+  .pollutant-item {
+    margin-bottom: $space-4;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .pollutant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-2;
+
+    .pollutant-name {
+      font-weight: $font-weight-medium;
+      color: $airsen-gray-900;
+    }
+
+    .pollutant-value {
+      font-weight: $font-weight-bold;
+      color: $airsen-gray-700;
+      font-size: $font-size-sm;
+    }
+  }
+
+  .pollutant-bar {
+    height: 8px;
+    background: $airsen-gray-200;
+    border-radius: $radius-full;
+    overflow: hidden;
+    margin-bottom: $space-1;
+
+    .bar-fill {
+      height: 100%;
+      border-radius: $radius-full;
+      transition: width 0.3s ease;
+    }
+  }
+
+  .pollutant-level {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.last-update {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-4 $space-6;
+  background: $airsen-gray-50;
+  font-size: $font-size-sm;
+  color: $airsen-gray-600;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}

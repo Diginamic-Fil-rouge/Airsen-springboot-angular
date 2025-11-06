@@ -28,37 +28,28 @@
         </button>
       </div>
 
-      <!-- Panel Content (will be implemented in next steps) -->
+      <!-- Panel Content -->
       <div class="panel-content">
-        <p class="panel-placeholder">
-          Filtres et liste des stations seront affichés ici
-        </p>
+        <!-- Filters -->
+        <app-filter-controls
+          (pollutantChanged)="onPollutantChanged($event)"
+          (timeRangeChanged)="onTimeRangeChanged($event)"
+          (heatmapToggled)="onHeatmapToggled($event)">
+        </app-filter-controls>
 
-        <!-- Station Details (when selected) -->
-        <div *ngIf="selectedStation" class="selected-station-info">
-          <div class="station-header">
-            <h3>{{ selectedStation.name }}</h3>
-            <button
-              class="close-btn"
-              (click)="closeStationDetails()"
-              aria-label="Fermer les détails">
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
+        <!-- Commune List -->
+        <app-station-list
+          [stations]="communes"
+          [selectedStation]="selectedCommune"
+          (stationSelected)="onCommuneSelected($event)">
+        </app-station-list>
 
-          <div class="station-aqi">
-            <div class="aqi-value" [style.color]="selectedStation.aqiColor">
-              {{ selectedStation.currentAqi }}
-            </div>
-            <div class="aqi-label">
-              Indice de qualité de l'air
-            </div>
-          </div>
-
-          <p class="station-last-update">
-            Dernière mise à jour : {{ selectedStation.lastUpdated | date:'short':'':'fr' }}
-          </p>
-        </div>
+        <!-- Commune Details (when selected) -->
+        <app-station-detail-card
+          *ngIf="selectedCommune"
+          [station]="selectedCommune"
+          (close)="closeCommuneDetails()">
+        </app-station-detail-card>
       </div>
     </aside>
 
@@ -75,16 +66,21 @@
 
       <!-- Map View Component -->
       <app-map-view
-        [stations]="stations"
-        [selectedStation]="selectedStation"
+        [stations]="communes"
+        [selectedStation]="selectedCommune"
         [showHeatmap]="currentFilter?.showHeatmap || false"
         [mapStyle]="currentFilter?.mapStyle || 'STREETS'"
-        (stationSelected)="onStationSelected($event)"
+        (stationSelected)="onCommuneSelected($event)"
         #mapView>
       </app-map-view>
 
       <!-- Map Controls (bottom right) -->
       <div class="map-controls">
+        <app-layer-switcher
+          (layerChanged)="onLayerChanged($event)"
+          class="layer-switcher-control">
+        </app-layer-switcher>
+
         <button class="map-control-btn" matTooltip="Ma position" aria-label="Ma position" (click)="goToUserLocation()">
           <mat-icon>my_location</mat-icon>
         </button>

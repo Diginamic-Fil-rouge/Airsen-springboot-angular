@@ -1,0 +1,60 @@
+<div class="station-detail-card" *ngIf="station">
+  <!-- Header -->
+  <div class="card-header">
+    <div class="header-content">
+      <h2 class="commune-name">{{ station.name }}</h2>
+      <p class="commune-meta" *ngIf="station.population">
+        Population: {{ station.population | number:'':'fr-FR' }} habitants
+      </p>
+    </div>
+    <button class="close-button" (click)="onClose()" aria-label="Fermer">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- AQI Display -->
+  <div class="aqi-display" [style.background-color]="getAqiColor(station.aqiLevel)">
+    <div class="aqi-value">{{ station.currentAqi }}</div>
+    <div class="aqi-label">{{ getAqiLabel(station.aqiLevel) }}</div>
+  </div>
+
+  <!-- Health Recommendation -->
+  <div class="health-recommendation">
+    <mat-icon class="recommendation-icon">info</mat-icon>
+    <p class="recommendation-text">{{ getHealthRecommendation(station.aqiLevel) }}</p>
+  </div>
+
+  <!-- Pollutant Breakdown -->
+  <div class="pollutants-section" *ngIf="pollutantsList.length > 0">
+    <h3 class="section-title">Détail des polluants</h3>
+
+    <div class="pollutant-item" *ngFor="let pollutant of pollutantsList">
+      <div class="pollutant-header">
+        <span class="pollutant-name">{{ pollutant.label }}</span>
+        <span class="pollutant-value">
+          {{ pollutant.data.value }} {{ pollutant.data.unit }}
+        </span>
+      </div>
+
+      <div class="pollutant-bar">
+        <div
+          class="bar-fill"
+          [style.width.%]="getPollutantPercentage(pollutant.data.value)"
+          [style.background-color]="getAqiColor(pollutant.data.level)">
+        </div>
+      </div>
+
+      <div class="pollutant-level">
+        <span [style.color]="getAqiColor(pollutant.data.level)">
+          {{ getAqiLabel(pollutant.data.level) }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Last Update -->
+  <div class="last-update">
+    <mat-icon>schedule</mat-icon>
+    <span>Dernière mise à jour: {{ station.lastUpdated | date:'short':'':'fr' }}</span>
+  </div>
+</div>
