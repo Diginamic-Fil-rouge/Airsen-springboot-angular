@@ -32,7 +32,7 @@ import java.util.Optional;
 
 /**
  * Production service for ATMO France API integration.
- * 
+ *
  * Handles automatic data synchronization, caching, and database storage
  * of air quality measurements for the Airsen application.
  */
@@ -68,11 +68,11 @@ public class AtmoIntegrationService {
     /**
      * Scheduled task to fetch and store current ATMO air quality data.
      *
-     * Runs daily at midnight (configurable via scheduling.atmo.cron property).
-     * Default: 00:00 Europe/Paris timezone.
+     * Runs daily at 10:00 AM (configurable via scheduling.atmo.cron property).
+     * Default: 10:00 Europe/Paris timezone (testing phase).
      *
      * Configuration:
-     * - scheduling.atmo.cron: Cron expression (default: 0 0 0 * * *)
+     * - scheduling.atmo.cron: Cron expression (default: 0 0 10 * * *)
      * - scheduling.atmo.timezone: Timezone (default: Europe/Paris)
      */
     @Scheduled(cron = "${scheduling.atmo.cron}", zone = "${scheduling.atmo.timezone}")
@@ -91,6 +91,9 @@ public class AtmoIntegrationService {
                 log.info("SCHEDULED ATMO SYNC COMPLETED at {}", endTime);
                 log.info("Records processed: {}", count);
                 log.info("Duration: {} seconds", duration.getSeconds());
+                // Evict all air quality caches to prevent serving stale data
+                int evicted = smartCacheService.clearCacheByPrefix("air-quality:");
+                log.info("Cleared {} air quality cache entries after scheduled sync", evicted);
                 log.info("========================================");
             })
             .doOnError(error -> {
@@ -107,12 +110,12 @@ public class AtmoIntegrationService {
 
     /**
      * Manual trigger for immediate data synchronization.
-     * 
+     *
      * @return Mono containing the number of records processed
      */
     public Mono<Integer> syncCurrentAirQualityData() {
         log.info("Starting manual ATMO data synchronization");
-        
+
         return atmoApiClient.getCurrentAirQualityIndices()
             .doOnNext(response -> log.debug("Processing air quality data for commune: {}", response.communeInsee()))
             .flatMap(this::processAndStoreAirQuality)
@@ -132,27 +135,27 @@ public class AtmoIntegrationService {
     /**
      * Fetches air quality data for a specific commune by INSEE code.
      * Also saves/updates the data in the database.
-     * 
+     *
      * @param inseeCode INSEE code of the commune
      * @return Mono containing the air quality data as DTO
      */
     public Mono<Optional<AirQualityResponseDTO>> getAirQualityForCommune(String inseeCode) {
         log.info("Starting getAirQualityForCommune for: {}", inseeCode);
-        
+
         return atmoApiClient.getCurrentAirQuality(inseeCode)
             .flatMap(this::convertToAirQuality)
             .map(airQuality -> {
                 try {
-                    log.info("Attempting to save air quality data for commune: {} with measurement date: {}", 
+                    log.info("Attempting to save air quality data for commune: {} with measurement date: {}",
                             inseeCode, airQuality.getMeasurementDate());
-                    log.info("Air quality data: index={}, qualifier={}, color={}", 
+                    log.info("Air quality data: index={}, qualifier={}, color={}",
                             airQuality.getAtmIndex(), airQuality.getQualifier(), airQuality.getColor());
-                    
+
                     // Check if data already exists for today
                     LocalDate measurementDate = airQuality.getMeasurementDate();
                     Optional<AirQuality> existing = airQualityRepository
                         .findByCommuneAndMeasurementDateWithEagerLoading(airQuality.getCommune(), measurementDate);
-                    
+
                     AirQuality savedEntity;
                     if (existing.isPresent()) {
                         // Update existing record
@@ -177,7 +180,7 @@ public class AtmoIntegrationService {
                             .findByCommuneAndMeasurementDateWithEagerLoading(newRecord.getCommune(), newRecord.getMeasurementDate())
                             .orElse(newRecord);
                     }
-                    
+
                     // Convert to DTO within transactional context to avoid lazy loading issues
                     log.info("Converting saved entity to DTO for commune: {}", inseeCode);
                     try {
@@ -216,22 +219,22 @@ public class AtmoIntegrationService {
     /**
      * Gets air quality data for a commune synchronously.
      * This method is designed for Redis cache integration later.
-     * 
+     *
      * @param inseeCode INSEE code of the commune
      * @return Optional containing the air quality data as DTO
      */
     public Optional<AirQualityResponseDTO> getAirQualityForCommuneSync(String inseeCode) {
         log.info("Synchronous air quality request for commune: {}", inseeCode);
-        
+
         try {
             // Convert reactive call to synchronous using block()
             // This is where we'll add Redis cache logic later
             Optional<AirQualityResponseDTO> result = getAirQualityForCommune(inseeCode)
                 .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
-            
+
             log.info("Successfully retrieved air quality data for commune: {}", inseeCode);
             return result != null ? result : Optional.empty();
-            
+
         } catch (Exception e) {
             log.error("Error in synchronous air quality request for commune: {}", inseeCode, e);
             // Fallback to database data if external API fails
@@ -375,14 +378,14 @@ public class AtmoIntegrationService {
 
     /**
      * Gets statistics about today's air quality data.
-     * 
+     *
      * @return Statistics about stored data
      */
     public AirQualityStats getTodayStats() {
         LocalDate today = LocalDate.now();
         long todayCount = airQualityRepository.countByMeasurementDate(today);
         long totalCommunes = communeRepository.count();
-        
+
         return new AirQualityStats(todayCount, totalCommunes, today);
     }
 
@@ -448,7 +451,7 @@ public class AtmoIntegrationService {
 
     /**
      * Processes and stores a single air quality response.
-     * 
+     *
      * @param atmoResponse the ATMO API response
      * @return Mono<Boolean> indicating success
      */
@@ -460,23 +463,23 @@ public class AtmoIntegrationService {
                     LocalDate measurementDate = airQuality.getMeasurementDate();
                     Optional<AirQuality> existing = airQualityRepository
                         .findByCommuneAndMeasurementDateWithEagerLoading(airQuality.getCommune(), measurementDate);
-                    
+
                     if (existing.isPresent()) {
                         // Update existing record
                         AirQuality existingRecord = existing.get();
                         updateAirQualityRecord(existingRecord, airQuality);
                         airQualityRepository.save(existingRecord);
-                        log.debug("Updated existing air quality record for commune: {}", 
+                        log.debug("Updated existing air quality record for commune: {}",
                                 airQuality.getCommune().getInseeCode());
                     } else {
                         // Create new record
                         airQualityRepository.save(airQuality);
-                        log.debug("Created new air quality record for commune: {}", 
+                        log.debug("Created new air quality record for commune: {}",
                                 airQuality.getCommune().getInseeCode());
                     }
                     return true;
                 } catch (Exception e) {
-                    log.error("Failed to store air quality data for commune: {}", 
+                    log.error("Failed to store air quality data for commune: {}",
                             atmoResponse.communeInsee(), e);
                     return false;
                 }
@@ -486,16 +489,16 @@ public class AtmoIntegrationService {
 
     /**
      * Converts ATMO API response to AirQuality entity.
-     * 
+     *
      * @param atmoResponse the ATMO API response
      * @return Mono containing the converted AirQuality entity
      */
     private Mono<AirQuality> convertToAirQuality(AtmoAirQualityResponse atmoResponse) {
         return Mono.fromCallable(() -> {
             log.info("Converting ATMO response for commune: {}", atmoResponse.communeInsee());
-            log.info("ATMO response details: measurementDate={}, atmoIndex={}, qualifier={}, color={}", 
+            log.info("ATMO response details: measurementDate={}, atmoIndex={}, qualifier={}, color={}",
                     atmoResponse.measurementDate(), atmoResponse.atmoIndex(), atmoResponse.qualifier(), atmoResponse.color());
-            
+
             // Find the commune by INSEE code with eager loading
             Optional<Commune> communeOpt = communeRepository.findByInseeCodeWithEagerLoading(atmoResponse.communeInsee());
             if (communeOpt.isEmpty()) {
@@ -505,9 +508,9 @@ public class AtmoIntegrationService {
 
             Commune commune = communeOpt.get();
             log.info("Found commune: {} (ID: {})", commune.getName(), commune.getId());
-            
+
             AirQuality airQuality = new AirQuality();
-            
+
             // Set basic properties
             airQuality.setCommune(commune);
             airQuality.setMeasurementDate(LocalDate.parse(atmoResponse.measurementDate()));
@@ -516,7 +519,7 @@ public class AtmoIntegrationService {
             airQuality.setAtmoColor(atmoResponse.color());
             airQuality.setCreatedAt(LocalDate.now());
 
-            log.info("Set basic air quality properties: measurementDate={}, atmoIndex={}, qualifier={}, color={}", 
+            log.info("Set basic air quality properties: measurementDate={}, atmoIndex={}, qualifier={}, color={}",
                     airQuality.getMeasurementDate(), airQuality.getAtmIndex(), airQuality.getAtmoQual(), airQuality.getAtmoColor());
 
             // Map pollutant codes directly from the ATMO API response
@@ -563,7 +566,7 @@ public class AtmoIntegrationService {
 
     /**
      * Converts ATMO pollutant codes to approximate concentrations.
-     * 
+     *
      * @param pollutant the pollutant type (NO2, O3, PM10, PM25, SO2)
      * @param code the ATMO code (1-6)
      * @return approximate concentration in μg/m³
@@ -626,7 +629,7 @@ public class AtmoIntegrationService {
 
     /**
      * Updates an existing air quality record with new data.
-     * 
+     *
      * @param existing the existing record
      * @param newData the new data
      */

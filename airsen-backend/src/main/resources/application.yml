@@ -164,10 +164,10 @@ springdoc:
 # Scheduling Configuration
 scheduling:
   atmo:
-    cron: ${ATMO_SCHEDULE_CRON:0 0 0 * * *} # Default: midnight (00:00)
+    cron: ${ATMO_SCHEDULE_CRON:0 0 10 * * *} # Default: 10:00 AM (testing phase)
     timezone: ${ATMO_SCHEDULE_TIMEZONE:Europe/Paris}
   weather:
-    cron: ${WEATHER_SCHEDULE_CRON:0 30 0 * * *} # Default: 00:30 (staggered 30 minutes after ATMO)
+    cron: ${WEATHER_SCHEDULE_CRON:0 30 10 * * *} # Default: 10:30 AM (staggered 30 minutes after ATMO, testing phase)
     timezone: ${WEATHER_SCHEDULE_TIMEZONE:Europe/Paris}
 
 # Custom application email settings
