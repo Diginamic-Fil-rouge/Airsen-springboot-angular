@@ -1,5 +1,6 @@
 package fr.airsen.api.external.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.airsen.api.external.config.OpenMeteoApiConfig;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoCurrentResponse;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoForecastResponse;
@@ -32,14 +33,17 @@ public class OpenMeteoApiClient {
     private final WebClient webClient;
     private final OpenMeteoApiConfig config;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public OpenMeteoApiClient(@Qualifier("openMeteoWebClient") WebClient webClient,
                              OpenMeteoApiConfig config,
-                             @Autowired(required = false) RedisTemplate<String, Object> redisTemplate) {
+                             @Autowired(required = false) RedisTemplate<String, Object> redisTemplate,
+                             ObjectMapper objectMapper) {
         this.webClient = webClient;
         this.config = config;
         this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -56,10 +60,18 @@ public class OpenMeteoApiClient {
         String cacheKey = String.format("weather:current:%.2f:%.2f", latitude, longitude);
 
         if (redisTemplate != null) {
-            OpenMeteoCurrentResponse cached = (OpenMeteoCurrentResponse) redisTemplate.opsForValue().get(cacheKey);
-            if (cached != null) {
-                log.debug("Returning cached weather data for coordinates: [{}, {}]", longitude, latitude);
-                return Mono.just(cached);
+            try {
+                Object cachedObj = redisTemplate.opsForValue().get(cacheKey);
+                if (cachedObj != null) {
+                    // Convert LinkedHashMap to OpenMeteoCurrentResponse using ObjectMapper
+                    OpenMeteoCurrentResponse cached = objectMapper.convertValue(cachedObj, OpenMeteoCurrentResponse.class);
+                    log.debug("Returning cached weather data for coordinates: [{}, {}]", longitude, latitude);
+                    return Mono.just(cached);
+                }
+            } catch (IllegalArgumentException e) {
+                log.warn("Failed to deserialize cached weather data for [{}, {}], fetching fresh data: {}",
+                         longitude, latitude, e.getMessage());
+                // Fall through to fetch fresh data
             }
         }
 
@@ -112,10 +124,18 @@ public class OpenMeteoApiClient {
     public Mono<OpenMeteoForecastResponse> getWeatherForecast(Double latitude, Double longitude, int forecastDays) {
         String cacheKey = String.format("weather:forecast:%.2f:%.2f:%d", latitude, longitude, forecastDays);
         if (redisTemplate != null) {
-            OpenMeteoForecastResponse cached = (OpenMeteoForecastResponse) redisTemplate.opsForValue().get(cacheKey);
-            if (cached != null) {
-                log.debug("Returning cached forecast data for coordinates: [{}, {}]", longitude, latitude);
-                return Mono.just(cached);
+            try {
+                Object cachedObj = redisTemplate.opsForValue().get(cacheKey);
+                if (cachedObj != null) {
+                    // Convert LinkedHashMap to OpenMeteoForecastResponse using ObjectMapper
+                    OpenMeteoForecastResponse cached = objectMapper.convertValue(cachedObj, OpenMeteoForecastResponse.class);
+                    log.debug("Returning cached forecast data for coordinates: [{}, {}]", longitude, latitude);
+                    return Mono.just(cached);
+                }
+            } catch (IllegalArgumentException e) {
+                log.warn("Failed to deserialize cached forecast data for [{}, {}], fetching fresh data: {}",
+                         longitude, latitude, e.getMessage());
+                // Fall through to fetch fresh data
             }
         }
 

@@ -3,6 +3,8 @@ package fr.airsen.api.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
@@ -31,16 +33,16 @@ public record WeatherDataDTO(
     @DecimalMax(value = "60.0", message = "Temperature must be at most 60°C")
     Double temperature,
     
-    @DecimalMin(value = "0.0", message = "Humidity must be at least 0%")
-    @DecimalMax(value = "100.0", message = "Humidity must be at most 100%")
-    Double humidity,
-    
+    @Min(value = 0, message = "Humidity must be at least 0%")
+    @Max(value = 100, message = "Humidity must be at most 100%")
+    Integer humidity,
+
     @DecimalMin(value = "0.0", message = "Wind speed cannot be negative")
     Double windSpeed,
-    
-    @DecimalMin(value = "0.0", message = "Wind direction must be at least 0°")
-    @DecimalMax(value = "360.0", message = "Wind direction must be at most 360°")
-    Double windDirection,
+
+    @Min(value = 0, message = "Wind direction must be at least 0°")
+    @Max(value = 360, message = "Wind direction must be at most 360°")
+    Integer windDirection,
     
     Integer weatherCode,
     

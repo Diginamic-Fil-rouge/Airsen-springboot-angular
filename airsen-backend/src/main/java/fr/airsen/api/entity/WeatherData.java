@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -30,21 +32,21 @@ public class WeatherData {
     @Column(name = "temperature")
     @DecimalMin(value = "-50.0", message = "The temperature must be at least -50°C")
     @DecimalMax(value = "60.0", message = "The temperature must be at most 60°C")
-    private double temperature;
+    private Double temperature;
 
     @Column(name = "humidity")
-    @DecimalMin(value = "0.0", message = "The humidity must be at least 0%")
-    @DecimalMax(value = "100.0", message = "The humidity must be at most 100%")
-    private double humidity;
+    @Min(value = 0, message = "The humidity must be at least 0%")
+    @Max(value = 100, message = "The humidity must be at most 100%")
+    private Integer humidity;
 
     @Column(name = "wind_speed")
     @DecimalMin(value = "0.0", message = "Wind speed cannot be negative")
-    private double windSpeed;
+    private Double windSpeed;
 
     @Column(name = "wind_direction")
-    @DecimalMin(value = "0.0", message = "Wind direction must be at least 0°")
-    @DecimalMax(value = "360.0", message = "Wind direction must be at most 360°")
-    private double windDirection;
+    @Min(value = 0, message = "Wind direction must be at least 0°")
+    @Max(value = 360, message = "Wind direction must be at most 360°")
+    private Integer windDirection;
 
     @Column(name = "weather_code")
     private Integer weatherCode;
@@ -55,7 +57,7 @@ public class WeatherData {
     public WeatherData() {
     }
 
-    public WeatherData(Commune commune, LocalDate measurementDate, double temperature, double humidity, double windSpeed, double windDirection, Integer weatherCode, LocalDate createdAt) {
+    public WeatherData(Commune commune, LocalDate measurementDate, Double temperature, Integer humidity, Double windSpeed, Integer windDirection, Integer weatherCode, LocalDate createdAt) {
         this.commune = commune;
         this.measurementDate = measurementDate;
         this.temperature = temperature;
@@ -70,7 +72,7 @@ public class WeatherData {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -90,35 +92,35 @@ public class WeatherData {
         this.measurementDate = measurementDate;
     }
 
-    public double getTemperature() {
+    public Double getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(double temperature) {
+    public void setTemperature(Double temperature) {
         this.temperature = temperature;
     }
 
-    public double getHumidity() {
+    public Integer getHumidity() {
         return humidity;
     }
 
-    public void setHumidity(double humidity) {
+    public void setHumidity(Integer humidity) {
         this.humidity = humidity;
     }
 
-    public double getWindSpeed() {
+    public Double getWindSpeed() {
         return windSpeed;
     }
 
-    public void setWindSpeed(double windSpeed) {
+    public void setWindSpeed(Double windSpeed) {
         this.windSpeed = windSpeed;
     }
 
-    public double getWindDirection() {
+    public Integer getWindDirection() {
         return windDirection;
     }
 
-    public void setWindDirection(double windDirection) {
+    public void setWindDirection(Integer windDirection) {
         this.windDirection = windDirection;
     }
 
@@ -149,12 +151,12 @@ public class WeatherData {
         this.temperature = temp != null ? temp : 0.0;
     }
 
-    public Double getRelativeHumidity() {
+    public Integer getRelativeHumidity() {
         return humidity;
     }
 
-    public void setRelativeHumidity(Double humidity) {
-        this.humidity = humidity != null ? humidity : 0.0;
+    public void setRelativeHumidity(Integer humidity) {
+        this.humidity = humidity != null ? humidity : 0;
     }
 
     public Double getWindSpeed10m() {
@@ -165,12 +167,12 @@ public class WeatherData {
         this.windSpeed = windSpeed != null ? windSpeed : 0.0;
     }
 
-    public Double getWindDirection10m() {
+    public Integer getWindDirection10m() {
         return windDirection;
     }
 
-    public void setWindDirection10m(Double windDirection) {
-        this.windDirection = windDirection != null ? windDirection : 0.0;
+    public void setWindDirection10m(Integer windDirection) {
+        this.windDirection = windDirection != null ? windDirection : 0;
     }
 
     public Integer getWeatherCodeValue() {
@@ -224,7 +226,7 @@ public class WeatherData {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof WeatherData that)) return false;
-        return Double.compare(temperature, that.temperature) == 0 && Double.compare(humidity, that.humidity) == 0 && Double.compare(windSpeed, that.windSpeed) == 0 && Double.compare(windDirection, that.windDirection) == 0 && Objects.equals(commune, that.commune) && Objects.equals(measurementDate, that.measurementDate) && Objects.equals(weatherCode, that.weatherCode);
+        return Objects.equals(temperature, that.temperature) && Objects.equals(humidity, that.humidity) && Objects.equals(windSpeed, that.windSpeed) && Objects.equals(windDirection, that.windDirection) && Objects.equals(commune, that.commune) && Objects.equals(measurementDate, that.measurementDate) && Objects.equals(weatherCode, that.weatherCode);
     }
 
     @Override

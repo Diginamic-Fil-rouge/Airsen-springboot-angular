@@ -382,9 +382,9 @@ public class ExportDataService {
     private WeatherDataPoint filterWeatherDataPoint(WeatherData weather, Set<String> requestedIndicators) {
         // Include weather indicators if requested or if no filter specified
         Double temperature = (requestedIndicators.isEmpty() || requestedIndicators.contains("temperature")) ? weather.getTemperature() : null;
-        Double humidity = (requestedIndicators.isEmpty() || requestedIndicators.contains("humidity")) ? weather.getHumidity() : null;
+        Integer humidity = (requestedIndicators.isEmpty() || requestedIndicators.contains("humidity")) ? weather.getHumidity() : null;
         Double windSpeed = (requestedIndicators.isEmpty() || requestedIndicators.contains("windspeed")) ? weather.getWindSpeed() : null;
-        Double windDirection = (requestedIndicators.isEmpty() || requestedIndicators.contains("winddirection")) ? weather.getWindDirection() : null;
+        Integer windDirection = (requestedIndicators.isEmpty() || requestedIndicators.contains("winddirection")) ? weather.getWindDirection() : null;
         Integer weatherCode = (requestedIndicators.isEmpty() || requestedIndicators.contains("weathercode")) ? weather.getWeatherCode() : null;
 
         return new WeatherDataPoint(

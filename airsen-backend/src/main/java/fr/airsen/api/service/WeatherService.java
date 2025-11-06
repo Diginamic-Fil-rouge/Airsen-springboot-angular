@@ -5,6 +5,7 @@ import fr.airsen.api.dto.response.WeatherResponse;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.WeatherData;
 import fr.airsen.api.entity.cacheData.CacheMetadata;
+import fr.airsen.api.event.WeatherDataUpdatedEvent;
 import fr.airsen.api.external.client.InseeApiClient;
 import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoCurrentResponse;
@@ -17,6 +18,7 @@ import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,7 @@ public class WeatherService {
     private final GeoDistanceService geoDistanceService;
     private final SmartCacheService smartCacheService;
     private final WeatherMapper weatherMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     public WeatherService(OpenMeteoApiClient openMeteoApiClient,
                          InseeApiClient inseeApiClient,
@@ -49,7 +52,8 @@ public class WeatherService {
                          CommuneRepository communeRepository,
                          GeoDistanceService geoDistanceService,
                          SmartCacheService smartCacheService,
-                         WeatherMapper weatherMapper) {
+                         WeatherMapper weatherMapper,
+                         ApplicationEventPublisher eventPublisher) {
         this.openMeteoApiClient = openMeteoApiClient;
         this.inseeApiClient = inseeApiClient;
         this.weatherDataRepository = weatherDataRepository;
@@ -57,21 +61,23 @@ public class WeatherService {
         this.geoDistanceService = geoDistanceService;
         this.smartCacheService = smartCacheService;
         this.weatherMapper = weatherMapper;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
      * Updates weather data for all tracked communes.
      *
-     * Runs daily at 00:30 (configurable via scheduling.weather.cron property).
-     * Default: 00:30 Europe/Paris timezone (staggered 30 minutes after ATMO sync).
+     * Runs daily at 10:30 AM (configurable via scheduling.weather.cron property).
+     * Default: 10:30 Europe/Paris timezone (staggered 30 minutes after ATMO sync, testing phase).
      *
      * Configuration:
-     * - scheduling.weather.cron: Cron expression (default: 0 30 0 * * *)
+     * - scheduling.weather.cron: Cron expression (default: 0 30 10 * * *)
      * - scheduling.weather.timezone: Timezone (default: Europe/Paris)
      *
-     * Scheduler Integration:
-     * Uses reactive Flux to process all communes in parallel with error handling.
-     * The reactive chain is subscribed to immediately to ensure the scheduler task completes.
+     * Transaction-Aware Cache Eviction:
+     * After successful database updates, publishes WeatherDataUpdatedEvent.
+     * The CacheEvictionListener will evict related caches ONLY after transaction commits.
+     * If update fails, caches remain intact to preserve stale data.
      */
     @Scheduled(cron = "${scheduling.weather.cron}", zone = "${scheduling.weather.timezone}")
     public void updateAllWeatherData() {
@@ -80,34 +86,76 @@ public class WeatherService {
         log.info("SCHEDULED WEATHER SYNC STARTED at {}", startTime);
         log.info("========================================");
 
+        try {
+            int communesUpdated = updateWeatherDataInTransaction();
+
+            LocalDateTime endTime = LocalDateTime.now();
+            java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+            log.info("========================================");
+            log.info("SCHEDULED WEATHER SYNC COMPLETED SUCCESSFULLY at {}", endTime);
+            log.info("Updated {} communes in {} seconds", communesUpdated, duration.getSeconds());
+            log.info("WeatherDataUpdatedEvent published - caches will be evicted after transaction commit");
+            log.info("========================================");
+
+        } catch (Exception e) {
+            LocalDateTime endTime = LocalDateTime.now();
+            java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+            log.error("========================================");
+            log.error("SCHEDULED WEATHER SYNC FAILED at {}", endTime);
+            log.error("Duration before failure: {} seconds", duration.getSeconds());
+            log.error("Error: {}", e.getMessage(), e);
+            log.error("Caches NOT cleared to preserve stale data");
+            log.error("========================================");
+            // Don't rethrow - allow scheduler to continue on next run
+        }
+    }
+
+    /**
+     * Transactional method to update weather data and publish event.
+     *
+     * This method ensures that:
+     * 1. All database updates happen within a single transaction
+     * 2. WeatherDataUpdatedEvent is published INSIDE the transaction
+     * 3. CacheEvictionListener will only evict caches AFTER transaction commits
+     * 4. If transaction fails, event is never published and caches remain intact
+     *
+     * @return number of communes successfully updated
+     */
+    @Transactional
+    protected int updateWeatherDataInTransaction() {
         List<Commune> communes = communeRepository.findAll();
         log.info("Found {} communes to update weather data", communes.size());
+
+        java.util.concurrent.atomic.AtomicInteger successCount = new java.util.concurrent.atomic.AtomicInteger(0);
+        java.util.concurrent.atomic.AtomicInteger failureCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
         Flux.fromIterable(communes)
             .flatMap(commune ->
                 updateWeatherForCommune(commune.getInseeCode())
-                    .onErrorContinue((error, commune_obj) ->
-                        log.warn("Failed to update weather for commune: {}",
-                               commune.getInseeCode(), error)))
-            .then()
-            .doOnSuccess(v -> {
-                LocalDateTime endTime = LocalDateTime.now();
-                java.time.Duration duration = java.time.Duration.between(startTime, endTime);
-                log.info("========================================");
-                log.info("SCHEDULED WEATHER SYNC COMPLETED at {}", endTime);
-                log.info("Duration: {} seconds", duration.getSeconds());
-                log.info("========================================");
-            })
-            .doOnError(error -> {
-                LocalDateTime endTime = LocalDateTime.now();
-                java.time.Duration duration = java.time.Duration.between(startTime, endTime);
-                log.error("========================================");
-                log.error("SCHEDULED WEATHER SYNC FAILED at {}", endTime);
-                log.error("Duration before failure: {} seconds", duration.getSeconds());
-                log.error("Error: {}", error.getMessage(), error);
-                log.error("========================================");
-            })
-            .subscribe(); // Subscribe to execute the reactive chain
+                    .doOnSuccess(updated -> {
+                        successCount.incrementAndGet();
+                        log.debug("Updated weather for commune: {}", commune.getInseeCode());
+                    })
+                    .onErrorContinue((error, commune_obj) -> {
+                        failureCount.incrementAndGet();
+                        log.warn("Failed to update weather for commune: {} - {}",
+                                commune.getInseeCode(), error.getMessage());
+                    }))
+            .blockLast(); // Block to ensure all updates complete within transaction
+
+        int updated = successCount.get();
+        int failed = failureCount.get();
+
+        log.info("Weather data update completed: {} successful, {} failed", updated, failed);
+
+        // Publish event INSIDE transaction - will only fire AFTER commit
+        eventPublisher.publishEvent(
+            new WeatherDataUpdatedEvent(this, updated, "SCHEDULED_DAILY")
+        );
+
+        log.debug("WeatherDataUpdatedEvent published with {} communes updated", updated);
+
+        return updated;
     }
 
     /**
@@ -297,8 +345,8 @@ public class WeatherService {
                                 }
 
                                 // Note: humidity and wind direction are not in daily forecast data
-                                weatherData.setHumidity(0.0);
-                                weatherData.setWindDirection(0.0);
+                                weatherData.setHumidity(0);
+                                weatherData.setWindDirection(0);
 
                                 return weatherData;
                             });
@@ -433,9 +481,9 @@ public class WeatherService {
 
         if (response.current() != null) {
             weatherData.setTemperature(response.current().temperature() != null ? response.current().temperature() : 0.0);
-            weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity().doubleValue() : 0.0);
+            weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity() : 0);
             weatherData.setWindSpeed(response.current().windSpeed() != null ? response.current().windSpeed() : 0.0);
-            weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection().doubleValue() : 0.0);
+            weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection() : 0);
             weatherData.setWeatherCode(response.current().weatherCode() != null ? response.current().weatherCode() : 0);
         }
 
@@ -489,9 +537,9 @@ public class WeatherService {
         weatherData.setMeasurementDate(nearestResult.measurementDate());
         weatherData.setCreatedAt(LocalDate.now());
         weatherData.setTemperature(nearestResult.temperature() != null ? nearestResult.temperature() : 0.0);
-        weatherData.setHumidity(nearestResult.humidity() != null ? nearestResult.humidity().doubleValue() : 0.0);
+        weatherData.setHumidity(nearestResult.humidity() != null ? nearestResult.humidity() : 0);
         weatherData.setWindSpeed(nearestResult.windSpeed() != null ? nearestResult.windSpeed() : 0.0);
-        weatherData.setWindDirection(nearestResult.windDirection() != null ? nearestResult.windDirection().doubleValue() : 0.0);
+        weatherData.setWindDirection(nearestResult.windDirection() != null ? nearestResult.windDirection() : 0);
         weatherData.setWeatherCode(nearestResult.weatherCode());
 
         return weatherData;

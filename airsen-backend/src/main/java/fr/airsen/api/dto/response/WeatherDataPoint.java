@@ -7,9 +7,9 @@ package fr.airsen.api.dto.response;
  */
 public record WeatherDataPoint(
     Double temperature,
-    Double humidity,
+    Integer humidity,
     Double windSpeed,
-    Double windDirection,
+    Integer windDirection,
     Integer weatherCode,
     Double precipitation,
     Integer cloudCover

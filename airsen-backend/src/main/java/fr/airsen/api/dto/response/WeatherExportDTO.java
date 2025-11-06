@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 public record WeatherExportDTO(
     LocalDateTime observationDate,
     Double temperature,
-    Double humidity,
+    Integer humidity,
     Double windSpeed,
-    Double windDirection,
+    Integer windDirection,
     Integer weatherCode,
     LocalDateTime createdAt
 ) {}

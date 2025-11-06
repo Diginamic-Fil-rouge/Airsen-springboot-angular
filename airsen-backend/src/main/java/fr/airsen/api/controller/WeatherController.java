@@ -129,15 +129,8 @@ public class WeatherController {
         log.info("REST request to get current weather for commune: {}", inseeCode);
 
         try {
-            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(inseeCode)
-                .block(java.time.Duration.ofSeconds(15));
-
-            if (weatherData == null) {
-                log.warn("No weather data available: No data within 20km for {}", inseeCode);
-                throw new fr.airsen.api.exception.WeatherDataNotFoundException("No weather data within 20km");
-            }
-
-            WeatherResponse response = mapToWeatherResponse(weatherData);
+            // Service now returns WeatherResponse directly with smart caching and geodistance fallback
+            WeatherResponse response = weatherService.getCurrentWeatherForCommune(inseeCode);
             return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException e) {
             log.error("Commune not found: {}", inseeCode);
@@ -344,46 +337,6 @@ public class WeatherController {
     }
 
     /**
-     * Get weather data for all communes in a region.
-     *
-     * @param regionCode INSEE region code
-     * @return Flux of weather data for the region
-     */
-    @GetMapping("/region/{regionCode}")
-    @Operation(
-        summary = "Get weather data for region",
-        description = "Retrieves current weather data for all communes in a region"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Region weather data retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Region not found")
-    })
-    public ResponseEntity<List<WeatherDataDTO>> getRegionWeatherData(
-            @Parameter(description = "INSEE region code", example = "11")
-            @PathVariable
-            @NotBlank(message = "Region code cannot be blank")
-            @Pattern(regexp = "\\d{1,2}", message = "Region code must be 1-2 digits")
-            String regionCode) {
-
-        log.info("Fetching weather data for region: {}", regionCode);
-
-        try {
-            // Convert reactive to synchronous to fix authentication context issue
-            List<WeatherDataDTO> weatherData = weatherService.getRegionWeatherData(regionCode)
-                .map(this::mapToDTO)
-                .collectList()
-                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
-
-            log.info("Successfully retrieved weather data for region: {}", regionCode);
-            return ResponseEntity.ok(weatherData != null ? weatherData : List.of());
-
-        } catch (Exception error) {
-            log.error("Error in region weather data for region: {}", regionCode, error);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    /**
      * Maps WeatherData entity to WeatherDataDTO.
      *
      * @param weatherData the weather data entity
@@ -412,9 +365,9 @@ public class WeatherController {
             weatherData.getCommune().getName(),
             weatherData.getMeasurementDate(),
             weatherData.getTemperature(),
-            (int) Math.round(weatherData.getHumidity()),
+            weatherData.getHumidity(),
             weatherData.getWindSpeed(),
-            (int) Math.round(weatherData.getWindDirection()),
+            weatherData.getWindDirection(),
             weatherData.getWeatherCode(),
             description
         );
