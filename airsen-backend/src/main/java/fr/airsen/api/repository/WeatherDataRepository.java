@@ -221,6 +221,14 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
             w.wind_speed,
             w.wind_direction,
             w.weather_code,
+            w.apparent_temperature,
+            w.precipitation,
+            w.rain,
+            w.showers,
+            w.snowfall,
+            w.cloud_cover,
+            w.wind_gusts,
+            w.pressure_msl,
             (6371 * acos(
                 cos(radians(:lat)) * cos(radians(c.latitude))
                 * cos(radians(c.longitude) - radians(:lon))

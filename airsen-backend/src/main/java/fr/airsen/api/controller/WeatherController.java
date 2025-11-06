@@ -91,6 +91,19 @@ public class WeatherController {
                               \"communeName\": \"Paris\",
                               \"measurementDate\": \"2025-11-04\",
                               \"temperature\": 15.5,
+                              \"humidity\": 62,
+                              \"windSpeed\": 12.3,
+                              \"windDirection\": 210,
+                              \"weatherCode\": 3,
+                              \"weatherDescription\": \"Overcast\",
+                              \"apparentTemperature\": 14.2,
+                              \"precipitation\": 0.2,
+                              \"rain\": 0.1,
+                              \"showers\": 0.0,
+                              \"snowfall\": 0.0,
+                              \"cloudCover\": 85,
+                              \"windGusts\": 22.5,
+                              \"pressureMsl\": 1014.3,
                               \"dataSource\": \"DIRECT\",
                               \"dataQualityNote\": \"Données mesurées pour cette commune\"
                             }
@@ -100,10 +113,23 @@ public class WeatherController {
                         name = "Estimated Data",
                         value = """
                             {
-                              \"inseeCode\": \"75057\",
-                              \"communeName\": \"Versailles\",
+                              \"inseeCode\": \"78646\",
+                              \"communeName\": \"Vélizy-Villacoublay\",
                               \"measurementDate\": \"2025-11-04\",
                               \"temperature\": 15.2,
+                              \"humidity\": 60,
+                              \"windSpeed\": 13.1,
+                              \"windDirection\": 205,
+                              \"weatherCode\": 2,
+                              \"weatherDescription\": \"Partly cloudy\",
+                              \"apparentTemperature\": 14.8,
+                              \"precipitation\": 0.0,
+                              \"rain\": 0.0,
+                              \"showers\": 0.0,
+                              \"snowfall\": 0.0,
+                              \"cloudCover\": 50,
+                              \"windGusts\": 20.0,
+                              \"pressureMsl\": 1013.8,
                               \"dataSource\": \"ESTIMATED\",
                               \"estimatedFromCommune\": \"Paris\",
                               \"distanceKm\": 17.3,
@@ -369,7 +395,15 @@ public class WeatherController {
             weatherData.getWindSpeed(),
             weatherData.getWindDirection(),
             weatherData.getWeatherCode(),
-            description
+            description,
+            weatherData.getApparentTemperature(),
+            weatherData.getPrecipitation(),
+            weatherData.getRain(),
+            weatherData.getShowers(),
+            weatherData.getSnowfall(),
+            weatherData.getCloudCover(),
+            weatherData.getWindGusts(),
+            weatherData.getPressureMsl()
         );
     }
 

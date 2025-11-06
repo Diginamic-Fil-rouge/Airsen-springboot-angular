@@ -46,6 +46,33 @@ public record WeatherDataDTO(
     
     Integer weatherCode,
     
+    @DecimalMin(value = "-60.0", message = "Apparent temperature must be at least -60°C")
+    @DecimalMax(value = "70.0", message = "Apparent temperature must be at most 70°C")
+    Double apparentTemperature,
+    
+    @DecimalMin(value = "0.0", message = "Precipitation cannot be negative")
+    Double precipitation,
+    
+    @DecimalMin(value = "0.0", message = "Rain amount cannot be negative")
+    Double rain,
+    
+    @DecimalMin(value = "0.0", message = "Shower amount cannot be negative")
+    Double showers,
+    
+    @DecimalMin(value = "0.0", message = "Snowfall amount cannot be negative")
+    Double snowfall,
+    
+    @Min(value = 0, message = "Cloud cover must be at least 0%")
+    @Max(value = 100, message = "Cloud cover must be at most 100%")
+    Integer cloudCover,
+    
+    @DecimalMin(value = "0.0", message = "Wind gusts cannot be negative")
+    Double windGusts,
+    
+    @DecimalMin(value = "870.0", message = "Pressure must be at least 870 hPa")
+    @DecimalMax(value = "1085.0", message = "Pressure must be at most 1085 hPa")
+    Double pressureMsl,
+    
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate createdAt
 ) {}

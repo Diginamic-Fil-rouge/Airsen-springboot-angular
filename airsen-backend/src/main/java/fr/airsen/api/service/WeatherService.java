@@ -344,9 +344,20 @@ public class WeatherService {
                                     weatherData.setWeatherCode(daily.weatherCodes().get(i));
                                 }
 
-                                // Note: humidity and wind direction are not in daily forecast data
+                                // Set precipitation data if available in daily forecast
+                                if (daily.precipitationSum() != null && i < daily.precipitationSum().size()) {
+                                    weatherData.setPrecipitation(daily.precipitationSum().get(i));
+                                }
+
+                                // Note: Daily forecast has limited weather data compared to current weather
+                                // These fields are not available in daily forecast and remain default/null:
+                                // - humidity and wind direction (not provided in daily data)
                                 weatherData.setHumidity(0);
                                 weatherData.setWindDirection(0);
+                                
+                                // - Advanced weather fields (not available in daily forecast)
+                                // apparentTemperature, rain, showers, snowfall, cloudCover, windGusts, pressureMsl
+                                // These will remain null for forecast data (acceptable behavior)
 
                                 return weatherData;
                             });
@@ -480,11 +491,22 @@ public class WeatherService {
         weatherData.setCreatedAt(LocalDate.now());
 
         if (response.current() != null) {
+            // Basic weather measurements
             weatherData.setTemperature(response.current().temperature() != null ? response.current().temperature() : 0.0);
             weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity() : 0);
             weatherData.setWindSpeed(response.current().windSpeed() != null ? response.current().windSpeed() : 0.0);
             weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection() : 0);
             weatherData.setWeatherCode(response.current().weatherCode() != null ? response.current().weatherCode() : 0);
+
+            // Advanced weather measurements
+            weatherData.setApparentTemperature(response.current().apparentTemperature());
+            weatherData.setPrecipitation(response.current().precipitation());
+            weatherData.setRain(response.current().rain());
+            weatherData.setShowers(response.current().showers());
+            weatherData.setSnowfall(response.current().snowfall());
+            weatherData.setCloudCover(response.current().cloudCover());
+            weatherData.setWindGusts(response.current().windGusts());
+            weatherData.setPressureMsl(response.current().pressureMsl());
         }
 
         return weatherData;
@@ -536,11 +558,23 @@ public class WeatherService {
         weatherData.setCommune(estimatedCommune);
         weatherData.setMeasurementDate(nearestResult.measurementDate());
         weatherData.setCreatedAt(LocalDate.now());
+
+        // Basic weather measurements with null-safe handling
         weatherData.setTemperature(nearestResult.temperature() != null ? nearestResult.temperature() : 0.0);
         weatherData.setHumidity(nearestResult.humidity() != null ? nearestResult.humidity() : 0);
         weatherData.setWindSpeed(nearestResult.windSpeed() != null ? nearestResult.windSpeed() : 0.0);
         weatherData.setWindDirection(nearestResult.windDirection() != null ? nearestResult.windDirection() : 0);
         weatherData.setWeatherCode(nearestResult.weatherCode());
+
+        // Advanced weather measurements (null-safe - these can be null)
+        weatherData.setApparentTemperature(nearestResult.apparentTemperature());
+        weatherData.setPrecipitation(nearestResult.precipitation());
+        weatherData.setRain(nearestResult.rain());
+        weatherData.setShowers(nearestResult.showers());
+        weatherData.setSnowfall(nearestResult.snowfall());
+        weatherData.setCloudCover(nearestResult.cloudCover());
+        weatherData.setWindGusts(nearestResult.windGusts());
+        weatherData.setPressureMsl(nearestResult.pressureMsl());
 
         return weatherData;
     }

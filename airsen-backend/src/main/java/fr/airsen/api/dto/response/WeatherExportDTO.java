@@ -4,8 +4,9 @@ import java.time.LocalDateTime;
 
 /**
  * Weather export information.
- * 
- * Contains latest weather measurements including temperature, humidity, wind speed, and conditions.
+ *
+ * Contains comprehensive weather measurements including temperature, humidity, wind,
+ * and advanced weather indicators (precipitation, cloud cover, pressure, etc.)
  */
 public record WeatherExportDTO(
     LocalDateTime observationDate,
@@ -14,5 +15,13 @@ public record WeatherExportDTO(
     Double windSpeed,
     Integer windDirection,
     Integer weatherCode,
+    Double apparentTemperature,
+    Double precipitation,
+    Double rain,
+    Double showers,
+    Double snowfall,
+    Integer cloudCover,
+    Double windGusts,
+    Double pressureMsl,
     LocalDateTime createdAt
 ) {}
