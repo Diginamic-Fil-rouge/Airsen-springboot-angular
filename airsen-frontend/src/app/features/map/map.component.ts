@@ -12,7 +12,8 @@ import { WeatherService } from "./services/weather.service";
 import { AirQualityService } from "./services/air-quality.service";
 import { ExportDataService } from "@/core/services/export-data.service";
 import { PdfGenerationService } from "@/core/services/pdf-generation.service";
-import { NgClass } from '@angular/common';
+import { CommuneDataService } from "@/core/services/commune-data.service";
+import { NgClass } from "@angular/common";
 import { Commune, Weather, AirQuality } from "@/shared/models";
 
 @Component({
@@ -29,6 +30,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private exportDataService = inject(ExportDataService);
   private pdfGenerationService = inject(PdfGenerationService);
+  private communeDataService = inject(CommuneDataService);
   private snackBar = inject(MatSnackBar);
 
   currentUser: AuthUser | null = null;
@@ -39,7 +41,8 @@ export class MapComponent implements OnInit, OnDestroy {
   communeSearched: Commune | null = null;
   airQualityClicked: any | null = null;
   weatherClicked: Weather | null = null;
-  communes = new Observable<Commune[]>();
+  communes$ = this.communeDataService.communes$;
+  communeLoading$ = this.communeDataService.loading$;
   isLoadingDatas = false;
   isExportingPDF = false;
 
@@ -53,7 +56,10 @@ export class MapComponent implements OnInit, OnDestroy {
     if (!this.currentUser) {
       this.router.navigate(["/auth/login"]);
     }
-    this.communes = this.geographicService.getCommunesWithCoordinatesAndMinPop();
+
+    // Communes are loaded via APP_INITIALIZER on startup
+    // No need to call API directly - use reactive service data
+    console.log("Map component initialized - using commune data from CommuneDataService");
   }
 
   ngOnDestroy(): void {
@@ -66,14 +72,14 @@ export class MapComponent implements OnInit, OnDestroy {
    * Calls the searchCommunes function of the GeographicService with the current search query,
    * and assigns the result to the searchResults observable.
    */
-  onSearchInput(){
+  onSearchInput() {
     this.geographicService.searchCommunes(this.searchQuery).subscribe({
       next: (communes) => {
         this.searchResults = communes;
       },
       error: (error) => {
         console.error(error);
-      }
+      },
     });
   }
 
@@ -84,8 +90,8 @@ export class MapComponent implements OnInit, OnDestroy {
    * calls the clickEvent function with the clicked commune and the type "NEW".
    * @param commune The Commune object of the clicked search result.
    */
-  onSearchResultClicked(commune: Commune){
-    this.searchQuery = '';
+  onSearchResultClicked(commune: Commune) {
+    this.searchQuery = "";
     this.searchResults = null;
     this.communeSearched = commune;
     this.clickEvent(commune, "NEW");
@@ -95,7 +101,7 @@ export class MapComponent implements OnInit, OnDestroy {
    * Resets the search results to an empty observable.
    * This is used to clear the search results when the user wants to go back to the original map view.
    */
-  closeSearchResults(){
+  closeSearchResults() {
     this.searchResults = null;
   }
 
@@ -103,7 +109,7 @@ export class MapComponent implements OnInit, OnDestroy {
    * Scrolls to the element with the id "map-datas" when called.
    * Does nothing if the element does not exist.
    */
-  goToAnchor(){
+  goToAnchor() {
     const element = document.getElementById("map-datas");
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -137,7 +143,9 @@ export class MapComponent implements OnInit, OnDestroy {
     // Fetch both weather and air quality data in parallel for better performance
     const [weather, airQuality] = await Promise.all([
       firstValueFrom(this.weatherService.getCurrentWeather(commune.inseeCode)).catch(() => null),
-      type === "LATEST" ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)).catch(() => null) : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)).catch(() => null),
+      type === "LATEST"
+        ? firstValueFrom(this.airQualityService.getAirLatestQuality(commune.inseeCode)).catch(() => null)
+        : firstValueFrom(this.airQualityService.getAirQuality(commune.inseeCode)).catch(() => null),
     ]);
 
     console.log("Weather data received:", weather);
@@ -147,7 +155,6 @@ export class MapComponent implements OnInit, OnDestroy {
     this.airQualityClicked = airQuality;
 
     this.isLoadingDatas = false;
-    
   }
 
   /**
@@ -180,30 +187,48 @@ export class MapComponent implements OnInit, OnDestroy {
    */
   exportCurrentDataAsPDF(): void {
     if (!this.communeClicked) {
-      this.snackBar.open('Aucune commune sélectionnée', 'Fermer', { duration: 2500 });
+      this.snackBar.open("Aucune commune sélectionnée", "Fermer", { duration: 2500 });
       return;
     }
 
     this.isExportingPDF = true;
 
-    this.exportDataService.getExportData(this.communeClicked.inseeCode)
+    this.exportDataService
+      .getExportData(this.communeClicked.inseeCode)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          console.log('Export data received:', data);
-          console.log('Commune data:', data.commune);
-          console.log('Air quality data:', data.airQuality);
-          console.log('Weather data:', data.weather);
-          console.log('Data quality:', data.dataQuality);
+          console.log("Export data received:", data);
+          console.log("Commune data:", data.commune);
+          console.log("Air quality data:", data.airQuality);
+          console.log("Weather data:", data.weather);
+          console.log("Data quality:", data.dataQuality);
           this.pdfGenerationService.generateCurrentReport(data, this.communeClicked!.name);
-          this.snackBar.open('PDF téléchargé avec succès', 'Fermer', { duration: 3000 });
+          this.snackBar.open("PDF téléchargé avec succès", "Fermer", { duration: 3000 });
           this.isExportingPDF = false;
         },
         error: (err) => {
-          console.error('Export PDF failed:', err);
-          this.snackBar.open('Erreur lors de l\'export PDF', 'Fermer', { duration: 3000 });
+          console.error("Export PDF failed:", err);
+          this.snackBar.open("Erreur lors de l'export PDF", "Fermer", { duration: 3000 });
           this.isExportingPDF = false;
-        }
+        },
+      });
+  }
+
+  /**
+   * Manually refresh commune data when initial loading fails
+   * Uses CommuneDataService to reload commune data and update reactive state
+   */
+  refreshCommunes(): void {
+    console.log("Manual commune refresh requested by user");
+    this.communeDataService
+      .refreshCommunes()
+      .then(() => {
+        this.snackBar.open("Données des communes rechargées", "Fermer", { duration: 2500 });
+      })
+      .catch((error) => {
+        console.error("Manual commune refresh failed:", error);
+        this.snackBar.open("Erreur lors du rechargement des communes", "Fermer", { duration: 3000 });
       });
   }
 }

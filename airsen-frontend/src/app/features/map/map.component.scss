@@ -20,6 +20,74 @@
     }
   }
 
+  // Commune Loading State
+  .commune-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.95);
+    padding: $space-8;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+    gap: $space-4;
+
+    p {
+      color: $airsen-gray-700;
+      font-size: $font-size-base;
+      margin: 0;
+    }
+  }
+
+  // Empty Communes State
+  .empty-communes-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    gap: $space-4;
+    padding: $space-8;
+
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: $airsen-gray-400;
+    }
+
+    h3 {
+      margin: 0;
+      color: $airsen-gray-900;
+      font-size: $font-size-xl;
+    }
+
+    p {
+      color: $airsen-gray-600;
+      font-size: $font-size-base;
+      max-width: 400px;
+      margin: 0;
+    }
+
+    button {
+      margin-top: $space-2;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: $space-2;
+        color: inherit;
+      }
+    }
+  }
+
   // Error State
   .error-container {
     display: flex;
@@ -30,81 +98,81 @@
     text-align: center;
     gap: $space-4;
 
-  mat-icon {
-    font-size: $space-16;
-    width: $space-16;
-    height: $space-16;
-    color: $airsen-error;
-  }
-
-  h2 {
-    margin: 0;
-    color: $airsen-gray-900;
-  }
-
-  p {
-    color: $airsen-gray-700;
-  }
-
-
-}
-
-.search-bar{
-  width: 300px;
-  border: 1px solid $airsen-gray-300;
-  border-radius: $radius-lg;
-  background-color: $airsen-gray-50;
-  padding: $space-1;
-  position: absolute;
-  right: 0;
-  z-index: $z-index-sticky * 450;
-
-  .search-input{
-    display: flex;
-    align-items: center;
-
-    svg{
-      color: $airsen-gray-800;
-      width: $space-6;
-      height: $space-6;
+    mat-icon {
+      font-size: $space-16;
+      width: $space-16;
+      height: $space-16;
+      color: $airsen-error;
     }
 
-    input{
-      padding: $space-3;
-      width: 275px;
-      border-radius: $radius-lg;
-      border: none;
-      outline: none
+    h2 {
+      margin: 0;
+      color: $airsen-gray-900;
     }
+
+    p {
+      color: $airsen-gray-700;
+    }
+
+
   }
 
-  .search-input:focus{
-    outline: 2px solid $airsen-primary;
-  }
-
-  .search-results{
-    position: absolute;
-    z-index: $z-index-tooltip * 1428;
-    background-color: $airsen-gray-50;
-    color: $airsen-gray-800;
-    border-radius: $radius-lg;
-    border: 1px solid $airsen-gray-300;
+  .search-bar {
     width: 300px;
+    border: 1px solid $airsen-gray-300;
+    border-radius: $radius-lg;
+    background-color: $airsen-gray-50;
+    padding: $space-1;
+    position: absolute;
+    right: 0;
+    z-index: $z-index-sticky * 450;
 
-    li{
-      list-style: none;
-      cursor: pointer;
-      transition: $transition-all;
+    .search-input {
+      display: flex;
+      align-items: center;
+
+      svg {
+        color: $airsen-gray-800;
+        width: $space-6;
+        height: $space-6;
+      }
+
+      input {
+        padding: $space-3;
+        width: 275px;
+        border-radius: $radius-lg;
+        border: none;
+        outline: none
+      }
     }
 
-    li:hover{
-      color: $airsen-primary;
+    .search-input:focus {
+      outline: 2px solid $airsen-primary;
     }
+
+    .search-results {
+      position: absolute;
+      z-index: $z-index-tooltip * 1428;
+      background-color: $airsen-gray-50;
+      color: $airsen-gray-800;
+      border-radius: $radius-lg;
+      border: 1px solid $airsen-gray-300;
+      width: 300px;
+
+      li {
+        list-style: none;
+        cursor: pointer;
+        transition: $transition-all;
+      }
+
+      li:hover {
+        color: $airsen-primary;
+      }
+    }
+
   }
 
-}
-
-  app-map-view{
+  app-map-view {
     width: 100%;
   }
 
@@ -312,6 +380,3 @@
     }
   }
 }
-  
-  
-
