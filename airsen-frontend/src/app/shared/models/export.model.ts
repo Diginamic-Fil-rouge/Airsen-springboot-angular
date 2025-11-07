@@ -85,107 +85,139 @@ export enum DataSource {
 }
 
 /**
- * Commune information
+ * Department information (nested in commune)
+ */
+export interface DepartmentInfo {
+  name: string;
+  departmentCode: string;
+  region: {
+    name: string;
+    regionCode: string;
+  };
+}
+
+/**
+ * Commune information - Backend Response
  */
 export interface CommuneInfo {
   inseeCode: string;
   name: string;
-  departmentName: string;
-  regionName: string;
   population: number;
   latitude: number;
   longitude: number;
+  department: DepartmentInfo;
 }
 
 /**
- * Air quality data snapshot
+ * Air quality data snapshot for PDF - Backend Response
+ * Uses ATMO France field names (atmIndex, atmoQual, atmoColor)
  */
 export interface AirQualityDataSnapshot {
-  aqi: number;
-  pm25: number;
-  pm10: number;
-  no2: number;
-  o3: number;
-  so2: number;
   measurementDate: string;
-}
-
-/**
- * Weather data snapshot
- */
-export interface WeatherDataSnapshot {
-  temperature: number;
-  humidity: number;
-  windSpeed: number;
-  windDirection: number;
-  weatherCode: number;
-  measurementDate: string;
-}
-
-/**
- * Data quality metadata
- */
-export interface DataQuality {
-  airQualityFreshness: DataFreshness;
-  weatherFreshness: DataFreshness;
-  dataSource: DataSource;
-  cacheAge: string;
-  cacheFreshness: number;
-}
-
-/**
- * Date range specification
- */
-export interface DateRange {
-  startDate: string;
-  endDate: string;
-  daysCount?: number;
-}
-
-/**
- * Single data point in time series
- */
-export interface DataPoint {
-  date: string;
-  time: string;
-  aqi?: number;
-  pm25?: number;
-  pm10?: number;
+  atmIndex: number;      // ⚠️ ATMO France index (1-6), NOT "aqi"
+  atmoQual: string;      // ⚠️ Quality label (Bon, Moyen, etc.), NOT "aqiLabel"
+  atmoColor: string;     // ⚠️ Hex color code, NOT "aqiColor"
   no2?: number;
   o3?: number;
+  pm10?: number;
+  pm25?: number;
   so2?: number;
+  createdAt: string;
+}
+
+/**
+ * Weather data snapshot for PDF - Backend Response
+ */
+export interface WeatherDataSnapshot {
   temperature?: number;
   humidity?: number;
   windSpeed?: number;
   windDirection?: number;
   weatherCode?: number;
+  measurementDate?: string;
+}
+
+/**
+ * Export metadata with data freshness info
+ */
+export interface ExportMetadata {
+  generatedAt: string;
+  dataFreshness: {
+    airQuality: string;
+    weather: string;
+  };
+}
+
+/**
+ * Date range specification - Backend Response
+ */
+export interface DateRange {
+  start: string;        // ISO date format: YYYY-MM-DD
+  end: string;          // ISO date format: YYYY-MM-DD
+}
+
+/**
+ * Air quality data in historical data point
+ * Uses different field names than PDF snapshot (aqi, qualifier, color)
+ */
+export interface HistoricalAirQuality {
+  aqi: number;          // ⚠️ Same as atmIndex, but backend uses "aqi" here
+  qualifier: string;    // ⚠️ Same as atmoQual, but backend uses "qualifier" here
+  color: string;        // Hex color code
+  no2?: number;
+  o3?: number;
+  pm10?: number;
+  pm25?: number;
+  so2?: number;
+}
+
+/**
+ * Single data point in time series - Backend Response
+ */
+export interface DataPoint {
+  timestamp: string;    // ISO datetime format: YYYY-MM-DDTHH:MM:SS
+  airQuality?: HistoricalAirQuality | null;
+  weather?: {
+    temperature?: number;
+    humidity?: number;
+    windSpeed?: number;
+    windDirection?: number;
+    weatherCode?: number;
+  } | null;
 }
 
 /**
  * Data completeness statistics
  */
 export interface DataCompleteness {
-  expectedPoints: number;
-  actualPoints: number;
-  completenessPercent: number;
+  airQuality: number;   // Percentage (0-100)
+  weather: number;      // Percentage (0-100)
 }
 
 /**
  * Export Data Response - Current snapshot data for PDF generation
+ * Endpoint: GET /api/v1/communes/{inseeCode}/export-data
  */
 export interface ExportDataResponse {
   commune: CommuneInfo;
-  airQuality: AirQualityDataSnapshot;
-  weather: WeatherDataSnapshot;
-  dataQuality: DataQuality;
+  airQuality: AirQualityDataSnapshot | null;
+  weather: WeatherDataSnapshot | null;
+  exportMetadata: ExportMetadata;
 }
 
 /**
  * Historical Data Response - Time-series data for CSV generation
+ * Endpoint: GET /api/v1/communes/{inseeCode}/historical-data?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
  */
 export interface HistoricalDataResponse {
-  commune: Pick<CommuneInfo, 'inseeCode' | 'name'>;
+  commune: {
+    name: string;
+    inseeCode: string;
+  };
   dateRange: DateRange;
   dataPoints: DataPoint[];
-  dataCompleteness: DataCompleteness;
+  summary: {
+    totalDataPoints: number;
+    completeness: DataCompleteness;
+  };
 }

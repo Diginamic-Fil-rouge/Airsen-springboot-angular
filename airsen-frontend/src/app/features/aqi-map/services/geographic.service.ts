@@ -55,10 +55,6 @@ export class GeographicService {
 
   /**
    * Get detailed information for a specific commune
-   * Uses backend endpoint: GET /communes/{inseeCode}/detail
-   *
-   * @param inseeCode 5-digit INSEE code
-   * @returns Observable<Commune>
    */
   getCommuneDetails(inseeCode: string): Observable<Commune> {
     return this.http.get<Commune>(`${this.BASE_URL}/communes/${inseeCode}/detail`).pipe(
@@ -71,7 +67,6 @@ export class GeographicService {
 
   /**
    * Get all communes with coordinates (used by map service)
-   * Uses backend endpoint: GET /communes/with-coordinates
    */
   getAllCommunesWithCoordinates(): Observable<Commune[]> {
     return this.http.get<Commune[]>(`${this.BASE_URL}/communes/with-coordinates`).pipe(
@@ -84,7 +79,6 @@ export class GeographicService {
 
   /**
    * Get all regions
-   * Uses backend endpoint: GET /regions
    */
   getAllRegions(): Observable<any[]> {
     return this.http.get<any[]>(`${this.BASE_URL}/regions`).pipe(
@@ -97,7 +91,6 @@ export class GeographicService {
 
   /**
    * Get all departments
-   * Uses backend endpoint: GET /departments
    */
   getAllDepartments(): Observable<any[]> {
     return this.http.get<any[]>(`${this.BASE_URL}/departments`).pipe(
@@ -110,7 +103,6 @@ export class GeographicService {
 
   /**
    * Get departments by region
-   * Uses backend endpoint: GET /regions/{regionId}/departments
    */
   getDepartmentsByRegion(regionId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.BASE_URL}/regions/${regionId}/departments`).pipe(
@@ -123,7 +115,6 @@ export class GeographicService {
 
   /**
    * Get communes by department
-   * Uses endpoint: GET /departments/{departmentId}/communes
    */
   getCommunesByDepartment(departmentId: string): Observable<Commune[]> {
     return this.http.get<Commune[]>(`${this.BASE_URL}/departments/${departmentId}/communes`).pipe(
@@ -136,7 +127,6 @@ export class GeographicService {
 
   /**
    * Get specific department by ID
-   * Uses backend endpoint: GET /departments/{id}
    */
   getDepartmentById(id: string): Observable<any> {
     return this.http.get<any>(`${this.BASE_URL}/departments/${id}`).pipe(
