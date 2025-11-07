@@ -305,24 +305,6 @@ public class WeatherData {
         this.weatherCode = weatherCode;
     }
 
-    // Apparent temperature alias removed - using direct field getter/setter above
-
-    public void setMaxTemperature(Double maxTemperature) {
-        this.temperature = maxTemperature != null ? maxTemperature : 0.0;
-    }
-
-    public Double getMaxTemperature() {
-        return temperature;
-    }
-
-    public void setMinTemperature(Double minTemperature) {
-        this.temperature = minTemperature != null ? minTemperature : 0.0;
-    }
-
-    public Double getMinTemperature() {
-        return temperature;
-    }
-
     @Override
     public String toString() {
         return "WeatherData{" +

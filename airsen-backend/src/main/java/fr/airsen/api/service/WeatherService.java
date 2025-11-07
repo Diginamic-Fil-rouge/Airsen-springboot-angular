@@ -333,9 +333,8 @@ public class WeatherService {
                                     ? daily.minTemperatures().get(i) : null;
 
                                 if (tempMax != null && tempMin != null) {
+                                    // Store average temperature (max + min) / 2
                                     weatherData.setTemperature((tempMax + tempMin) / 2);
-                                    weatherData.setMaxTemperature(tempMax);
-                                    weatherData.setMinTemperature(tempMin);
                                 }
 
                                 // Set wind speed
@@ -358,7 +357,7 @@ public class WeatherService {
                                 // - humidity and wind direction (not provided in daily data)
                                 weatherData.setHumidity(0);
                                 weatherData.setWindDirection(0);
-                                
+
                                 // - Advanced weather fields (not available in daily forecast)
                                 // apparentTemperature, rain, showers, snowfall, cloudCover, windGusts, pressureMsl
                                 // These will remain null for forecast data (acceptable behavior)
@@ -535,9 +534,8 @@ public class WeatherService {
         WeatherData weatherData = new WeatherData();
         weatherData.setCommune(commune);
         weatherData.setMeasurementDate(date);
-        weatherData.setTemperature((tempMax + tempMin) / 2); // Average temperature
-        weatherData.setMaxTemperature(tempMax);
-        weatherData.setMinTemperature(tempMin);
+        // Store average temperature (max + min) / 2
+        weatherData.setTemperature((tempMax + tempMin) / 2);
 
         return weatherData;
     }
