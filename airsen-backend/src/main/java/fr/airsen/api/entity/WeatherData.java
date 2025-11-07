@@ -6,6 +6,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -49,6 +50,8 @@ public class WeatherData {
     private Integer windDirection;
 
     @Column(name = "weather_code")
+    @Min(value = 0, message = "Weather code must be at least 0")
+    @Max(value = 99, message = "Weather code must be at most 99")
     private Integer weatherCode;
 
     @Column(name = "apparent_temperature")
@@ -87,6 +90,7 @@ public class WeatherData {
     private Double pressureMsl;
 
     @Column(name = "created_at")
+    @PastOrPresent(message = "Creation date cannot be in the future")
     private LocalDate createdAt;
 
     public WeatherData() {
