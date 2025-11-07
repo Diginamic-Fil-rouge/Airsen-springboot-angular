@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, ViewChild } from "@angular/core";
+import { Router } from "@angular/router";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -8,11 +9,11 @@ import { MapFilter, PollutantType, TimeRange, MapStyle } from "./models/map-filt
 import { MapViewComponent } from "./components/map-view/map-view.component";
 import { ExportDataService } from "@/core/services/export-data.service";
 import { PdfGenerationService } from "@/core/services/pdf-generation.service";
+import { AuthService } from "@/core/auth/services/auth.service";
+import { AuthUser } from "@/core/auth/models/auth.model";
+import { GeographicService } from "./services/geographic.service";
+import { Commune } from "@/shared/models/commune.model";
 
-/**
- * Main Map Container Component
- * Full-screen air quality map interface for AIRSEN communes
- */
 @Component({
   standalone: false,
   selector: "app-map",
@@ -24,6 +25,9 @@ export class MapComponent implements OnInit, OnDestroy {
   private exportDataService = inject(ExportDataService);
   private pdfGenerationService = inject(PdfGenerationService);
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private geographicService = inject(GeographicService);
   private destroy$ = new Subject<void>();
 
   @ViewChild("mapView") mapView!: MapViewComponent;
@@ -38,8 +42,16 @@ export class MapComponent implements OnInit, OnDestroy {
   isExportingPDF = false;
   mapStyleDefault = MapStyle.STREETS;
 
+  // Authentication State
+  currentUser: AuthUser | null = null;
+
+  // Search State
+  searchQuery: string = "";
+  searchResults: Commune[] | null = null;
+
   ngOnInit(): void {
     this.checkMobileView();
+    this.loadUserData();
     this.setupSubscriptions();
     this.loadCommunes();
 
@@ -51,6 +63,22 @@ export class MapComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     window.removeEventListener("resize", () => this.checkMobileView());
+  }
+
+  /**
+   * Load and verify user authentication
+   * Redirects to login if user is not authenticated
+   */
+  private loadUserData(): void {
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      this.currentUser = user;
+
+      // Authentication guard - redirect if not authenticated
+      if (!this.currentUser) {
+        console.warn("User not authenticated, redirecting to login");
+        this.router.navigate(["/auth/login"]);
+      }
+    });
   }
 
   /**
@@ -134,6 +162,8 @@ export class MapComponent implements OnInit, OnDestroy {
    */
   closeCommuneDetails(): void {
     this.mapService.selectCommune(null);
+    // Also clear search results when closing details
+    this.closeSearchResults();
   }
 
   /**
@@ -213,5 +243,104 @@ export class MapComponent implements OnInit, OnDestroy {
     } finally {
       this.isExportingPDF = false;
     }
+  }
+
+  /**
+   * Logout user and redirect to login page
+   */
+  logout(): void {
+    this.authService
+      .logout()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.snackBar.open("Déconnexion réussie", "Fermer", { duration: 2000 });
+          this.router.navigate(["/auth/login"]);
+        },
+        error: (error) => {
+          console.error("Logout error:", error);
+          // Still redirect to login even if logout request fails
+          this.router.navigate(["/auth/login"]);
+        },
+      });
+  }
+
+  /**
+   * Handle search input changes with autocomplete
+   * Calls GeographicService to fetch matching communes
+   */
+  onSearchInput(): void {
+    // Clear results if query is too short
+    if (!this.searchQuery || this.searchQuery.trim().length < 2) {
+      this.searchResults = null;
+      return;
+    }
+
+    // Search for communes using the geographic service
+    this.geographicService
+      .searchCommunes(this.searchQuery.trim())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (results) => {
+          this.searchResults = results;
+          console.log(`Found ${results.length} communes matching "${this.searchQuery}"`);
+        },
+        error: (error) => {
+          console.error("Search error:", error);
+          this.searchResults = [];
+          this.snackBar.open("Erreur lors de la recherche", "Fermer", { duration: 3000 });
+        }
+      });
+  }
+
+  /**
+   * Handle search result selection
+   * Maps Commune to CommuneWithAirQuality and selects it on map
+   */
+  onSearchResultClicked(commune: Commune): void {
+    console.log("Search result clicked:", commune.name);
+
+    // Find matching commune with air quality data from loaded communes
+    const communeWithAirQuality = this.communes.find(
+      (c) => c.inseeCode === commune.inseeCode
+    );
+
+    if (communeWithAirQuality) {
+      // Select commune through map service
+      this.mapService.selectCommune(communeWithAirQuality);
+
+      // Center map on selected commune with smooth animation
+      if (this.mapView) {
+        this.mapView.centerOnCommune(communeWithAirQuality);
+      }
+
+      // On mobile, open side panel
+      if (this.isMobileView) {
+        this.isSidePanelOpen = true;
+      }
+
+      // Clear search state
+      this.searchQuery = "";
+      this.searchResults = null;
+
+      this.snackBar.open(`Commune ${commune.name} sélectionnée`, "Fermer", {
+        duration: 2000
+      });
+    } else {
+      console.warn(`Commune ${commune.name} not found in loaded communes with air quality data`);
+      this.snackBar.open(
+        "Commune trouvée mais données indisponibles",
+        "Fermer",
+        { duration: 3000 }
+      );
+    }
+  }
+
+  /**
+   * Clear search results and query
+   */
+  closeSearchResults(): void {
+    this.searchQuery = "";
+    this.searchResults = null;
   }
 }

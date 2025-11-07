@@ -2,8 +2,8 @@ import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
 
 // Guards
-import { AuthGuard } from "./core/auth/guards/auth.guard";
-import { GuestGuard } from "./core/auth/guards/guest.guard";
+import { AuthGuard } from "@/auth/guards/auth.guard";
+import { GuestGuard } from "@/auth/guards/guest.guard";
 
 // Components (only NotFoundComponent - not lazy loaded)
 import { NotFoundComponent } from "./features/not-found/not-found.component";
@@ -33,12 +33,7 @@ const routes: Routes = [
     canActivate: [GuestGuard], // Prevent authenticated users from login/register
   },
 
-  // Map Route (public - anyone can view air quality data)
-  {
-    path: "map",
-    loadChildren: () => import("./features/aqi-map/map.module").then((m) => m.MapModule),
-  },
-  // AQI Map Route (full-screen air quality map interface - protected)
+  // AQI Map Route (air quality map interface - protected)
   {
     path: "aqi-map",
     loadChildren: () => import("./features/aqi-map/map.module").then((m) => m.MapModule),
