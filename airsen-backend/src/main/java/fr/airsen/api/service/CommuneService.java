@@ -72,6 +72,12 @@ public class CommuneService {
         log.info("Fetching communes for department {} (page: {}, size: {}, search: '{}')",
             departmentId, page, size, search != null ? search : "none");
 
+        // Verify department exists before querying communes
+        if (!departmentRepository.existsById(departmentId)) {
+            log.warn("Department not found with ID: {}", departmentId);
+            throw new ResourceNotFoundException("Department not found with ID: " + departmentId);
+        }
+
         Pageable pageable = PageRequest.of(page, size);
         List<Object[]> results;
 

@@ -44,14 +44,18 @@ public class CommuneController {
      * GET /departments/{departmentId}/communes
      *
      * Lists all communes belonging to a specific department.
+     *
+     * Validates department existence before querying communes to distinguish
+     * between "department has no communes" (HTTP 200) and "department doesn't exist" (HTTP 404).
      */
     @GetMapping("/departments/{departmentId}/communes")
     @Operation(
         summary = "Get communes by department",
-        description = "Retrieves paginated list of communes for a specific department with optional search"
+        description = "Retrieves paginated list of communes for a specific department with optional search. " +
+                     "Returns 404 if department doesn't exist, or 200 with empty list if department has no communes."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Communes retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Communes retrieved successfully (may be empty list)"),
         @ApiResponse(responseCode = "404", description = "Department not found")
     })
     public ResponseEntity<List<CommuneDTO>> getCommunesByDepartment(
