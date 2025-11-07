@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.beans.TypeMismatchException;
+import jakarta.validation.ConstraintViolationException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import fr.airsen.api.dto.response.ErrorResponse;
 
 /** Weather exceptions */
@@ -88,6 +90,65 @@ public class GlobalExceptionHandler {
         errorResponse.put("code", "VALIDATION_ERROR");
         errorResponse.put("timestamp", LocalDateTime.now());
         errorResponse.put("details", fieldErrors);
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
+     * Handles constraint violations from query parameters and path variables.
+     * 
+     * This method is triggered when validation constraints on @RequestParam or @PathVariable
+     * fail (e.g., @Pattern, @Min, @Max, @NotEmpty annotations). It extracts field-level
+     * validation errors and returns a 400 Bad Request response with detailed messages.
+     * 
+     * Common scenarios:
+     * - /api/v1/communes/search?query=P (query too short, min 2 characters)
+     * - /api/v1/weather/forecast/75056?days=20 (days exceeds max of 16)
+     * 
+     * @param ex ConstraintViolationException containing constraint violations
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 400 status and detailed validation error messages
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolationException(
+            ConstraintViolationException ex, WebRequest request) {
+        
+        logger.debug("Constraint violation for request {}: {}", 
+                    request.getDescription(false), ex.getMessage());
+
+        // Extract field-level constraint violations
+        List<Map<String, String>> violations = ex.getConstraintViolations().stream()
+            .map(violation -> {
+                Map<String, String> error = new HashMap<>();
+                
+                // Extract field name from property path (e.g., "getWeatherForecast.days" -> "days")
+                String propertyPath = violation.getPropertyPath().toString();
+                String fieldName = propertyPath.contains(".") 
+                    ? propertyPath.substring(propertyPath.lastIndexOf('.') + 1)
+                    : propertyPath;
+                
+                error.put("field", fieldName);
+                error.put("message", violation.getMessage());
+                error.put("rejectedValue", violation.getInvalidValue() != null 
+                    ? violation.getInvalidValue().toString() 
+                    : "null");
+                
+                return error;
+            })
+            .collect(Collectors.toList());
+
+        // Create consolidated error message
+        String errorMessage = violations.stream()
+            .map(v -> v.get("field") + ": " + v.get("message"))
+            .collect(Collectors.joining(", "));
+
+        // Create error response
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", "Constraint validation failed - " + errorMessage);
+        errorResponse.put("code", "CONSTRAINT_VIOLATION");
+        errorResponse.put("timestamp", LocalDateTime.now());
+        errorResponse.put("details", violations);
 
         return ResponseEntity.badRequest().body(errorResponse);
     }

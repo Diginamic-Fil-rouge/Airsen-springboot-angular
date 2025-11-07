@@ -4,6 +4,7 @@ import fr.airsen.api.dto.cacheData.CachedEntry;
 import fr.airsen.api.dto.response.ExportDataResponse;
 import fr.airsen.api.dto.response.HistoricalDataResponse;
 import fr.airsen.api.entity.cacheData.CacheMetadata;
+import fr.airsen.api.exception.ResourceNotFoundException;
 import fr.airsen.api.service.ExportDataService;
 import fr.airsen.api.service.cacheData.SmartCacheService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,13 +14,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 /**
  * REST Controller for export data endpoints.
@@ -37,6 +43,8 @@ import java.time.LocalDate;
 @Tag(name = "Export Data", description = "Endpoints for data export (client-side generation)")
 @SecurityRequirement(name = "bearerAuth")
 public class ExportDataController {
+
+    private static final Logger log = LoggerFactory.getLogger(ExportDataController.class);
 
     private final ExportDataService exportDataService;
     private final SmartCacheService cacheService;
@@ -219,7 +227,62 @@ public class ExportDataController {
             LocalDate endDate,
             @RequestParam(required = false) String indicators
     ) {
-        HistoricalDataResponse response = exportDataService.getHistoricalData(inseeCode, startDate, endDate, indicators);
-        return ResponseEntity.ok(response);
+        log.info("Fetching historical data for commune: {}, range: {} to {}, indicators: {}",
+                inseeCode, startDate, endDate, indicators);
+
+        try {
+            // Validate date range
+            if (startDate.isAfter(endDate)) {
+                log.warn("Invalid date range: start {} is after end {}", startDate, endDate);
+                throw new IllegalArgumentException("Start date must be before or equal to end date");
+            }
+
+            // Validate date range size (max 1 year)
+            long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+            if (daysBetween > 90) {
+                log.warn("Date range too large: {} days", daysBetween);
+                throw new IllegalArgumentException("Date range cannot exceed 90 days");
+            }
+
+            log.debug("Date range validation passed: {} days", daysBetween);
+
+            // Fetch historical data
+            HistoricalDataResponse response = exportDataService.getHistoricalData(
+                    inseeCode, startDate, endDate, indicators
+            );
+
+            if (response == null) {
+                log.error("Service returned null response for commune: {}", inseeCode);
+                throw new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Failed to retrieve historical data: service returned null"
+                );
+            }
+
+            log.info("Successfully retrieved historical data for commune {}: {} total data points",
+                    inseeCode,
+                    response.dataPoints() != null ? response.dataPoints().size() : 0);
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Validation error for commune {}: {}", inseeCode, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found for commune {}: {}", inseeCode, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+
+        } catch (ResponseStatusException e) {
+            // Re-throw ResponseStatusException without wrapping
+            throw e;
+
+        } catch (Exception e) {
+            log.error("Unexpected error fetching historical data for commune: {}", inseeCode, e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to retrieve historical data: " + e.getMessage()
+            );
+        }
     }
 }

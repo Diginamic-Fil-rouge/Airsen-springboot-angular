@@ -169,6 +169,9 @@ scheduling:
   weather:
     cron: ${WEATHER_SCHEDULE_CRON:0 30 10 * * *} # Default: 10:30 AM (staggered 30 minutes after ATMO, testing phase)
     timezone: ${WEATHER_SCHEDULE_TIMEZONE:Europe/Paris}
+    batch-size: 100
+    delay-between-batches-ms: 60000  # 1 minute
+    delay-between-requests-ms: 6000  # 6 seconds (10 requests/min)
 
 # Custom application email settings
 airsen:
