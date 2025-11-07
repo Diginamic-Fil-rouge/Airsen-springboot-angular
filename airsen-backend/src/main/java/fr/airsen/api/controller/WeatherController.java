@@ -62,8 +62,8 @@ public class WeatherController {
      */
     @GetMapping("/current/{inseeCode}")
     @Operation(
-        summary = "Get current weather for a commune",
-        description = """
+            summary = "Get current weather for a commune",
+            description = """
             Returns current weather data from the local database.
             If no direct data is available, estimates from the nearest commune within 20km.
             Returns 404 if no data is available within 20km radius (PRD requirement).
@@ -73,19 +73,19 @@ public class WeatherController {
             - ESTIMATED: Estimated from nearest commune (includes distance metadata)
             - NOT_AVAILABLE: No data within 20km
             """,
-        tags = {"Weather Data"}
+            tags = {"Weather Data"}
     )
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Weather data found (direct or estimated)",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = WeatherResponse.class),
-                examples = {
-                    @ExampleObject(
-                        name = "Direct Data",
-                        value = """
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Weather data found (direct or estimated)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = WeatherResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Direct Data",
+                                            value = """
                             {
                               \"inseeCode\": \"75056\",
                               \"communeName\": \"Paris\",
@@ -95,10 +95,10 @@ public class WeatherController {
                               \"dataQualityNote\": \"Données mesurées pour cette commune\"
                             }
                             """
-                    ),
-                    @ExampleObject(
-                        name = "Estimated Data",
-                        value = """
+                                    ),
+                                    @ExampleObject(
+                                            name = "Estimated Data",
+                                            value = """
                             {
                               \"inseeCode\": \"75057\",
                               \"communeName\": \"Versailles\",
@@ -110,34 +110,27 @@ public class WeatherController {
                               \"dataQualityNote\": \"Données estimées depuis Paris (17.3 km)\"
                             }
                             """
+                                    )
+                            }
                     )
-                }
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Commune not found or no weather data within 20km",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = fr.airsen.api.dto.response.ErrorResponse.class)
+                    )
             )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Commune not found or no weather data within 20km",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = fr.airsen.api.dto.response.ErrorResponse.class)
-            )
-        )
     })
     public ResponseEntity<WeatherResponse> getCurrentWeather(
-        @PathVariable @Parameter(description = "INSEE code of the commune") String inseeCode
+            @PathVariable @Parameter(description = "INSEE code of the commune") String inseeCode
     ) {
         log.info("REST request to get current weather for commune: {}", inseeCode);
 
         try {
-            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(inseeCode)
-                .block(java.time.Duration.ofSeconds(15));
-
-            if (weatherData == null) {
-                log.warn("No weather data available: No data within 20km for {}", inseeCode);
-                throw new fr.airsen.api.exception.WeatherDataNotFoundException("No weather data within 20km");
-            }
-
-            WeatherResponse response = mapToWeatherResponse(weatherData);
+            // Service now returns WeatherResponse directly with smart caching and geodistance fallback
+            WeatherResponse response = weatherService.getCurrentWeatherForCommune(inseeCode);
             return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException e) {
             log.error("Commune not found: {}", inseeCode);
@@ -153,13 +146,13 @@ public class WeatherController {
      */
     @PostMapping("/update/{communeInseeCode}")
     @Operation(
-        summary = "Update weather data",
-        description = "Fetches fresh weather data from Open-Meteo API and saves to database"
+            summary = "Update weather data",
+            description = "Fetches fresh weather data from Open-Meteo API and saves to database"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Weather data updated successfully"),
-        @ApiResponse(responseCode = "404", description = "Commune not found"),
-        @ApiResponse(responseCode = "500", description = "External API error or server error")
+            @ApiResponse(responseCode = "200", description = "Weather data updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Commune not found"),
+            @ApiResponse(responseCode = "500", description = "External API error or server error")
     })
     public ResponseEntity<WeatherUpdateResponse> updateWeatherData(
             @Parameter(description = "INSEE code of the commune", example = "75101")
@@ -173,7 +166,7 @@ public class WeatherController {
         try {
             // Convert reactive to synchronous to fix authentication context issue
             WeatherData weatherData = weatherService.forceUpdateWeatherForCommune(communeInseeCode)
-                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
+                    .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
 
             if (weatherData != null) {
                 WeatherDataDTO dto = mapToDTO(weatherData);
@@ -183,8 +176,8 @@ public class WeatherController {
             } else {
                 log.warn("No weather data returned for commune: {}", communeInseeCode);
                 WeatherUpdateResponse response = WeatherUpdateResponse.failure(
-                    communeInseeCode,
-                    "No weather data returned from service"
+                        communeInseeCode,
+                        "No weather data returned from service"
                 );
                 return ResponseEntity.ok(response);
             }
@@ -192,8 +185,8 @@ public class WeatherController {
         } catch (Exception error) {
             log.error("Failed to update weather data for commune: {}", communeInseeCode, error);
             WeatherUpdateResponse response = WeatherUpdateResponse.failure(
-                communeInseeCode,
-                "Failed to update weather data: " + error.getMessage()
+                    communeInseeCode,
+                    "Failed to update weather data: " + error.getMessage()
             );
             return ResponseEntity.ok(response);
         }
@@ -208,13 +201,13 @@ public class WeatherController {
      */
     @GetMapping("/forecast/{communeInseeCode}")
     @Operation(
-        summary = "Get weather forecast",
-        description = "Retrieves weather forecast from Open-Meteo API for a commune"
+            summary = "Get weather forecast",
+            description = "Retrieves weather forecast from Open-Meteo API for a commune"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Forecast data retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Commune not found"),
-        @ApiResponse(responseCode = "500", description = "External API error or server error")
+            @ApiResponse(responseCode = "200", description = "Forecast data retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Commune not found"),
+            @ApiResponse(responseCode = "500", description = "External API error or server error")
     })
     public ResponseEntity<List<WeatherDataDTO>> getWeatherForecast(
             @Parameter(description = "INSEE code of the commune", example = "75101")
@@ -234,9 +227,9 @@ public class WeatherController {
         try {
             // Convert reactive to synchronous to fix authentication context issue
             List<WeatherDataDTO> forecastData = weatherService.getWeatherForecastForCommune(communeInseeCode, days)
-                .map(this::mapToDTO)
-                .collectList()
-                .block(java.time.Duration.ofSeconds(15)); // 15 second timeout for forecast
+                    .map(this::mapToDTO)
+                    .collectList()
+                    .block(java.time.Duration.ofSeconds(15)); // 15 second timeout for forecast
 
             log.info("Successfully retrieved forecast for commune: {}", communeInseeCode);
             return ResponseEntity.ok(forecastData != null ? forecastData : List.of());
@@ -259,13 +252,13 @@ public class WeatherController {
      */
     @GetMapping("/historical/{communeInseeCode}")
     @Operation(
-        summary = "Get historical weather data",
-        description = "Retrieves historical weather data from database for a commune within a date range"
+            summary = "Get historical weather data",
+            description = "Retrieves historical weather data from database for a commune within a date range"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Historical data retrieved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid date range"),
-        @ApiResponse(responseCode = "404", description = "Commune not found")
+            @ApiResponse(responseCode = "200", description = "Historical data retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid date range"),
+            @ApiResponse(responseCode = "404", description = "Commune not found")
     })
     public ResponseEntity<List<WeatherDataDTO>> getHistoricalWeather(
             @Parameter(description = "INSEE code of the commune", example = "75101")
@@ -290,9 +283,9 @@ public class WeatherController {
         try {
             // Convert reactive to synchronous to fix authentication context issue
             List<WeatherDataDTO> historicalData = weatherService.getHistoricalWeather(communeInseeCode, startDate, endDate)
-                .map(this::mapToDTO)
-                .collectList()
-                .block(java.time.Duration.ofSeconds(20)); // 20 second timeout for historical data
+                    .map(this::mapToDTO)
+                    .collectList()
+                    .block(java.time.Duration.ofSeconds(20)); // 20 second timeout for historical data
 
             log.info("Successfully retrieved historical data for commune: {}", communeInseeCode);
             return ResponseEntity.ok(historicalData != null ? historicalData : List.of());
@@ -311,12 +304,12 @@ public class WeatherController {
      */
     @PostMapping("/bulk-update")
     @Operation(
-        summary = "Bulk update weather data",
-        description = "Updates weather data for multiple communes from Open-Meteo API"
+            summary = "Bulk update weather data",
+            description = "Updates weather data for multiple communes from Open-Meteo API"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Bulk update initiated"),
-        @ApiResponse(responseCode = "400", description = "Invalid commune codes")
+            @ApiResponse(responseCode = "200", description = "Bulk update initiated"),
+            @ApiResponse(responseCode = "400", description = "Invalid commune codes")
     })
     public Flux<WeatherUpdateResponse> bulkUpdateWeatherData(
             @Parameter(description = "List of INSEE codes")
@@ -325,62 +318,22 @@ public class WeatherController {
         log.info("Starting bulk weather update for {} communes", communeCodes.size());
 
         return Flux.fromIterable(communeCodes)
-            .filter(code -> code != null && code.matches("\\d{5}"))
-            .flatMap(communeCode ->
-                weatherService.forceUpdateWeatherForCommune(communeCode)
-                    .map(weatherData -> {
-                        WeatherDataDTO dto = mapToDTO(weatherData);
-                        return WeatherUpdateResponse.success(communeCode, dto);
-                    })
-                    .onErrorResume(error -> {
-                        log.warn("Failed to update weather for commune: {}", communeCode, error);
-                        return Mono.just(WeatherUpdateResponse.failure(
-                            communeCode,
-                            "Update failed: " + error.getMessage()
-                        ));
-                    })
-            )
-            .doOnComplete(() -> log.info("Completed bulk weather update"));
-    }
-
-    /**
-     * Get weather data for all communes in a region.
-     *
-     * @param regionCode INSEE region code
-     * @return Flux of weather data for the region
-     */
-    @GetMapping("/region/{regionCode}")
-    @Operation(
-        summary = "Get weather data for region",
-        description = "Retrieves current weather data for all communes in a region"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Region weather data retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Region not found")
-    })
-    public ResponseEntity<List<WeatherDataDTO>> getRegionWeatherData(
-            @Parameter(description = "INSEE region code", example = "11")
-            @PathVariable
-            @NotBlank(message = "Region code cannot be blank")
-            @Pattern(regexp = "\\d{1,2}", message = "Region code must be 1-2 digits")
-            String regionCode) {
-
-        log.info("Fetching weather data for region: {}", regionCode);
-
-        try {
-            // Convert reactive to synchronous to fix authentication context issue
-            List<WeatherDataDTO> weatherData = weatherService.getRegionWeatherData(regionCode)
-                .map(this::mapToDTO)
-                .collectList()
-                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
-
-            log.info("Successfully retrieved weather data for region: {}", regionCode);
-            return ResponseEntity.ok(weatherData != null ? weatherData : List.of());
-
-        } catch (Exception error) {
-            log.error("Error in region weather data for region: {}", regionCode, error);
-            return ResponseEntity.internalServerError().build();
-        }
+                .filter(code -> code != null && code.matches("\\d{5}"))
+                .flatMap(communeCode ->
+                        weatherService.forceUpdateWeatherForCommune(communeCode)
+                                .map(weatherData -> {
+                                    WeatherDataDTO dto = mapToDTO(weatherData);
+                                    return WeatherUpdateResponse.success(communeCode, dto);
+                                })
+                                .onErrorResume(error -> {
+                                    log.warn("Failed to update weather for commune: {}", communeCode, error);
+                                    return Mono.just(WeatherUpdateResponse.failure(
+                                            communeCode,
+                                            "Update failed: " + error.getMessage()
+                                    ));
+                                })
+                )
+                .doOnComplete(() -> log.info("Completed bulk weather update"));
     }
 
     /**
@@ -391,32 +344,32 @@ public class WeatherController {
      */
     private WeatherDataDTO mapToDTO(WeatherData weatherData) {
         return new WeatherDataDTO(
-            weatherData.getId(),
-            weatherData.getCommune().getId(),
-            weatherData.getCommune().getName(),
-            weatherData.getCommune().getInseeCode(),
-            weatherData.getMeasurementDate(),
-            weatherData.getTemperature(),
-            weatherData.getHumidity(),
-            weatherData.getWindSpeed(),
-            weatherData.getWindDirection(),
-            weatherData.getWeatherCode(),
-            weatherData.getCreatedAt()
+                weatherData.getId(),
+                weatherData.getCommune().getId(),
+                weatherData.getCommune().getName(),
+                weatherData.getCommune().getInseeCode(),
+                weatherData.getMeasurementDate(),
+                weatherData.getTemperature(),
+                weatherData.getHumidity(),
+                weatherData.getWindSpeed(),
+                weatherData.getWindDirection(),
+                weatherData.getWeatherCode(),
+                weatherData.getCreatedAt()
         );
     }
 
     private WeatherResponse mapToWeatherResponse(WeatherData weatherData) {
         String description = weatherCodeToDescription(weatherData.getWeatherCode());
         return WeatherResponse.direct(
-            weatherData.getCommune().getInseeCode(),
-            weatherData.getCommune().getName(),
-            weatherData.getMeasurementDate(),
-            weatherData.getTemperature(),
-            (int) Math.round(weatherData.getHumidity()),
-            weatherData.getWindSpeed(),
-            (int) Math.round(weatherData.getWindDirection()),
-            weatherData.getWeatherCode(),
-            description
+                weatherData.getCommune().getInseeCode(),
+                weatherData.getCommune().getName(),
+                weatherData.getMeasurementDate(),
+                weatherData.getTemperature(),
+                (int) Math.round(weatherData.getHumidity()),
+                weatherData.getWindSpeed(),
+                (int) Math.round(weatherData.getWindDirection()),
+                weatherData.getWeatherCode(),
+                description
         );
     }
 
