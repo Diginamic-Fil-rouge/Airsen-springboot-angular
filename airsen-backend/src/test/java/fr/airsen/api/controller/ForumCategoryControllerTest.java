@@ -7,6 +7,7 @@ import fr.airsen.api.dto.request.ForumCategoryUpdateRequest;
 import fr.airsen.api.dto.request.ForumThreadCreateRequest;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.UserRole;
+import fr.airsen.api.security.JwtTokenFilter;
 import fr.airsen.api.security.UserPrincipal;
 import fr.airsen.api.service.ForumCategoryService;
 import fr.airsen.api.service.ForumThreadService;
@@ -15,11 +16,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Unit tests for ForumCategoryController.
  */
 @WebMvcTest(ForumCategoryController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ForumCategoryControllerTest {
     private final  Long userId = 1L;
 
@@ -50,8 +56,15 @@ class ForumCategoryControllerTest {
     @MockBean
     private ForumThreadService threadService;
 
+    @MockBean
+    private fr.airsen.api.security.JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private fr.airsen.api.service.JwtBlacklistService jwtBlacklistService;
+
     @Autowired
     private ObjectMapper objectMapper;
+
 
     private ForumCategoryDTO categoryDTO;
     private ForumThreadDTO threadDTO;
