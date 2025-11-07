@@ -424,4 +424,41 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
       this.map.zoomOut();
     }
   }
+
+  /**
+   * Center map on specific commune with smooth animation
+   * Used by search functionality to focus on selected commune
+   */
+  public centerOnCommune(commune: CommuneWithAirQuality): void {
+    if (!this.map || !commune.latitude || !commune.longitude) return;
+
+    const zoom = 13; // Zoom level for commune view
+    this.map.flyTo([commune.latitude, commune.longitude], zoom, {
+      duration: 1.5,
+      easeLinearity: 0.25,
+    });
+
+    // Highlight the selected marker
+    this.highlightMarker(commune.inseeCode);
+  }
+
+  /**
+   * Highlight specific marker on map with visual emphasis
+   * Makes the selected commune marker stand out
+   */
+  private highlightMarker(inseeCode: string): void {
+    const marker = this.markers.get(inseeCode);
+    if (marker) {
+      // Open popup to show commune info
+      marker.openPopup();
+
+      // Add visual highlight to marker
+      const markerElement = marker.getElement();
+      if (markerElement) {
+        markerElement.style.transform = "scale(1.2)";
+        markerElement.style.zIndex = "1001";
+        markerElement.style.filter = "drop-shadow(0 0 10px rgba(33, 150, 243, 0.8))";
+      }
+    }
+  }
 }

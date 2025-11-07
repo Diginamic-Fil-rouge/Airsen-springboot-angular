@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { GeographicService } from "@/features/map/services/geographic.service";
+import { GeographicService } from "@/features/aqi-map/services/geographic.service";
 import { Commune } from "@/shared/models";
 
 /**
