@@ -261,7 +261,9 @@ export class MapComponent implements OnInit, OnDestroy {
     this.isExportingPDF = true;
 
     try {
-      await this.pdfGenerationService.generateCommunePDF(this.selectedCommune);
+      await firstValueFrom(
+        this.exportDataService.exportAsPDF(this.selectedCommune.inseeCode, this.selectedCommune.name)
+      );
       this.snackBar.open("PDF généré avec succès", "Fermer", { duration: 3000 });
     } catch (error) {
       console.error("Error generating PDF:", error);

@@ -76,6 +76,14 @@ export interface CommuneWithAirQuality extends Commune {
     qualifier: string;
     color: string;
   };
+  pollutants?: {
+    pm25?: number;
+    pm10?: number;
+    o3?: number;
+    no2?: number;
+    so2?: number;
+    co?: number;
+  };
 }
 
 export interface CommuneDatas{

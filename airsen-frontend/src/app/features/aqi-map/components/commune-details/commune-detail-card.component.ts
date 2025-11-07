@@ -31,14 +31,21 @@ export class CommuneDetailCardComponent {
   get pollutantsList() {
     if (!this.commune) return [];
 
+    const makeData = (val?: number) =>
+      val == null
+        ? null
+        : ({ value: val, unit: 'µg/m³', color: this.aqiColor, qualifier: this.aqiLabel });
+
+    const pol = this.commune.pollutants || {} as any;
+
     return [
-      { key: "pm25", label: "PM2.5", data: this.commune.pollutants.pm25 },
-      { key: "pm10", label: "PM10", data: this.commune.pollutants.pm10 },
-      { key: "o3", label: "O₃", data: this.commune.pollutants.o3 },
-      { key: "no2", label: "NO₂", data: this.commune.pollutants.no2 },
-      { key: "so2", label: "SO₂", data: this.commune.pollutants.so2 },
-      { key: "co", label: "CO", data: this.commune.pollutants.co },
-    ].filter((p) => p.data);
+      { key: "pm25", label: "PM2.5", data: makeData(pol.pm25) },
+      { key: "pm10", label: "PM10", data: makeData(pol.pm10) },
+      { key: "o3", label: "O₃", data: makeData(pol.o3) },
+      { key: "no2", label: "NO₂", data: makeData(pol.no2) },
+      { key: "so2", label: "SO₂", data: makeData(pol.so2) },
+      { key: "co", label: "CO", data: makeData(pol.co) },
+    ].filter((p) => p.data !== null);
   }
 
   onClose(): void {

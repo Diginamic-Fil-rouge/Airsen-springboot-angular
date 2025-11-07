@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { PollutantType, TimeRange, getPollutantLabel, getTimeRangeLabel } from '../../../models/map-filter.model';
+import { PollutantType, TimeRange, getPollutantLabel, getTimeRangeLabel } from '../../models/map-filter.model';
 
 @Component({
   standalone: false,

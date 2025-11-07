@@ -221,7 +221,7 @@ export class ExportDataService {
     doc.setFont('helvetica', 'normal');
     doc.text(`Location: ${data.commune.name} (INSEE: ${data.commune.inseeCode})`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Department: ${data.commune.departmentName}, Region: ${data.commune.regionName}`, 20, yPosition);
+    doc.text(`Department: ${data.commune.department?.name || 'N/A'}, Region: ${data.commune.department?.region?.name || 'N/A'}`, 20, yPosition);
     yPosition += 6;
     doc.text(`Population: ${data.commune.population.toLocaleString()}`, 20, yPosition);
     yPosition += 6;
@@ -238,26 +238,26 @@ export class ExportDataService {
     doc.setFont('helvetica', 'normal');
 
     // ATMO Index with color coding
-    const indexColor = this.getAQIColor(data.airQuality.aqi);
+    const indexColor = this.getAQIColor(data.airQuality?.atmIndex || 0);
     doc.setTextColor(indexColor.r, indexColor.g, indexColor.b);
-    doc.text(`ATMO Index: ${data.airQuality.aqi}`, 25, yPosition);
+    doc.text(`Indice ATMO: ${data.airQuality?.atmIndex ?? 'N/A'}`, 25, yPosition);
     doc.setTextColor(0, 0, 0);
     yPosition += 6;
 
     // Pollutants
-    doc.text(`NO2: ${data.airQuality.no2 || 'N/A'} μg/m³`, 25, yPosition);
+    doc.text(`NO2: ${data.airQuality?.no2 ?? 'N/A'} μg/m³`, 25, yPosition);
     yPosition += 6;
-    doc.text(`O3: ${data.airQuality.o3 || 'N/A'} μg/m³`, 25, yPosition);
+    doc.text(`O3: ${data.airQuality?.o3 ?? 'N/A'} μg/m³`, 25, yPosition);
     yPosition += 6;
-    doc.text(`PM10: ${data.airQuality.pm10 || 'N/A'} μg/m³`, 25, yPosition);
+    doc.text(`PM10: ${data.airQuality?.pm10 ?? 'N/A'} μg/m³`, 25, yPosition);
     yPosition += 6;
-    doc.text(`PM2.5: ${data.airQuality.pm25 || 'N/A'} μg/m³`, 25, yPosition);
+    doc.text(`PM2.5: ${data.airQuality?.pm25 ?? 'N/A'} μg/m³`, 25, yPosition);
     yPosition += 6;
-    doc.text(`SO2: ${data.airQuality.so2 || 'N/A'} μg/m³`, 25, yPosition);
+    doc.text(`SO2: ${data.airQuality?.so2 ?? 'N/A'} μg/m³`, 25, yPosition);
     yPosition += 6;
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Measured: ${data.airQuality.measurementDate}`, 25, yPosition);
+    doc.text(`Measured: ${data.airQuality?.measurementDate ?? 'N/A'}`, 25, yPosition);
     doc.setTextColor(0, 0, 0);
     yPosition += 15;
 
@@ -269,19 +269,19 @@ export class ExportDataService {
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Temperature: ${data.weather.temperature}°C`, 25, yPosition);
+    doc.text(`Temperature: ${data.weather?.temperature ?? 'N/A'}°C`, 25, yPosition);
     yPosition += 6;
-    doc.text(`Humidity: ${data.weather.humidity}%`, 25, yPosition);
+    doc.text(`Humidity: ${data.weather?.humidity ?? 'N/A'}%`, 25, yPosition);
     yPosition += 6;
-    doc.text(`Wind Speed: ${data.weather.windSpeed} km/h`, 25, yPosition);
+    doc.text(`Wind Speed: ${data.weather?.windSpeed ?? 'N/A'} km/h`, 25, yPosition);
     yPosition += 6;
-    doc.text(`Wind Direction: ${data.weather.windDirection}°`, 25, yPosition);
+    doc.text(`Wind Direction: ${data.weather?.windDirection ?? 'N/A'}°`, 25, yPosition);
     yPosition += 6;
-    doc.text(`Weather Code: ${data.weather.weatherCode}`, 25, yPosition);
+    doc.text(`Weather Code: ${data.weather?.weatherCode ?? 'N/A'}`, 25, yPosition);
     yPosition += 6;
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Measured: ${data.weather.measurementDate}`, 25, yPosition);
+    doc.text(`Measured: ${data.weather?.measurementDate ?? 'N/A'}`, 25, yPosition);
     doc.setTextColor(0, 0, 0);
     yPosition += 15;
 
@@ -293,15 +293,11 @@ export class ExportDataService {
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Air Quality Freshness: ${data.dataQuality.airQualityFreshness}`, 25, yPosition);
+    doc.text(`Air Quality Freshness: ${data.exportMetadata?.dataFreshness?.airQuality ?? 'N/A'}`, 25, yPosition);
     yPosition += 6;
-    doc.text(`Weather Freshness: ${data.dataQuality.weatherFreshness}`, 25, yPosition);
+    doc.text(`Weather Freshness: ${data.exportMetadata?.dataFreshness?.weather ?? 'N/A'}`, 25, yPosition);
     yPosition += 6;
-    doc.text(`Data Source: ${data.dataQuality.dataSource}`, 25, yPosition);
-    yPosition += 6;
-    doc.text(`Cache Age: ${data.dataQuality.cacheAge}`, 25, yPosition);
-    yPosition += 6;
-    doc.text(`Cache Freshness: ${data.dataQuality.cacheFreshness}%`, 25, yPosition);
+    doc.text(`Generated At: ${new Date(data.exportMetadata?.generatedAt || Date.now()).toLocaleString()}`, 25, yPosition);
 
     // Footer
     doc.setFontSize(9);
@@ -343,11 +339,7 @@ export class ExportDataService {
     });
     csvData.push({
       'Info': 'Date Range',
-      'Value': `${data.dateRange.startDate} to ${data.dateRange.endDate}`
-    });
-    csvData.push({
-      'Info': 'Days Count',
-      'Value': data.dateRange.daysCount || 'N/A'
+      'Value': `${data.dateRange.start} to ${data.dateRange.end}`
     });
     csvData.push({
       'Info': 'Generated',
@@ -356,18 +348,9 @@ export class ExportDataService {
     csvData.push({});
 
     // Data completeness
-    csvData.push({
-      'Info': 'Data Completeness',
-      'Value': `${data.dataCompleteness.completenessPercent}%`
-    });
-    csvData.push({
-      'Info': 'Expected Points',
-      'Value': data.dataCompleteness.expectedPoints
-    });
-    csvData.push({
-      'Info': 'Actual Points',
-      'Value': data.dataCompleteness.actualPoints
-    });
+    csvData.push({ 'Info': 'Data Completeness (AQ)', 'Value': `${data.summary.completeness.airQuality}%` });
+    csvData.push({ 'Info': 'Data Completeness (Weather)', 'Value': `${data.summary.completeness.weather}%` });
+    csvData.push({ 'Info': 'Total Data Points', 'Value': data.summary.totalDataPoints });
     csvData.push({});
 
     // Column headers for data points
@@ -390,20 +373,27 @@ export class ExportDataService {
     // Data points
     if (data.dataPoints && data.dataPoints.length > 0) {
       data.dataPoints.forEach(point => {
+        const ts = point.timestamp || '';
+        const parts = ts.split('T');
+        const date = parts[0] || '';
+        const time = parts[1] || '';
+        const aq = point.airQuality || null;
+        const wx = point.weather || null;
+
         csvData.push({
-          'Date': point.date,
-          'Time': point.time,
-          'AQI': point.aqi || 'N/A',
-          'NO2 (μg/m³)': point.no2 || 'N/A',
-          'O3 (μg/m³)': point.o3 || 'N/A',
-          'PM10 (μg/m³)': point.pm10 || 'N/A',
-          'PM2.5 (μg/m³)': point.pm25 || 'N/A',
-          'SO2 (μg/m³)': point.so2 || 'N/A',
-          'Temperature (°C)': point.temperature || 'N/A',
-          'Humidity (%)': point.humidity || 'N/A',
-          'Wind Speed (km/h)': point.windSpeed || 'N/A',
-          'Wind Direction (°)': point.windDirection || 'N/A',
-          'Weather Code': point.weatherCode || 'N/A'
+          'Date': date,
+          'Time': time,
+          'AQI': aq?.aqi ?? 'N/A',
+          'NO2 (μg/m³)': aq?.no2 ?? 'N/A',
+          'O3 (μg/m³)': aq?.o3 ?? 'N/A',
+          'PM10 (μg/m³)': aq?.pm10 ?? 'N/A',
+          'PM2.5 (μg/m³)': aq?.pm25 ?? 'N/A',
+          'SO2 (μg/m³)': aq?.so2 ?? 'N/A',
+          'Temperature (°C)': wx?.temperature ?? 'N/A',
+          'Humidity (%)': wx?.humidity ?? 'N/A',
+          'Wind Speed (km/h)': wx?.windSpeed ?? 'N/A',
+          'Wind Direction (°)': wx?.windDirection ?? 'N/A',
+          'Weather Code': wx?.weatherCode ?? 'N/A'
         });
       });
     } else {

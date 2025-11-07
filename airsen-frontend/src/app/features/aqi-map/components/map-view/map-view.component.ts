@@ -351,7 +351,10 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
     const marker = this.markers.get(this.selectedCommune.inseeCode);
     if (marker && this.map) {
       // Zoom to marker
-      this.map.setView([this.selectedCommune.latitude, this.selectedCommune.longitude], 11, { animate: true });
+      this.map.setView([
+        this.selectedCommune.latitude ?? 0,
+        this.selectedCommune.longitude ?? 0
+      ], 11, { animate: true });
 
       // Open popup
       marker.openPopup();

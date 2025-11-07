@@ -36,7 +36,7 @@ export class MapService {
    * Load all communes with air quality data
    */
   loadCommunes(): Observable<CommuneWithAirQuality[]> {
-    return this.geographicService.getCommunesWithCoordinatesAndMinPop().pipe(
+    return this.geographicService.getAllCommunesWithCoordinates().pipe(
       map((communes) => {
         const communesWithAqi: CommuneWithAirQuality[] = communes.map((commune) =>
           this.mapCommuneWithAirQuality(commune)
@@ -60,7 +60,7 @@ export class MapService {
         if (!data) return null;
 
         const commune: CommuneWithAirQuality = {
-          id: data.id || 0,
+          id: 0,
           inseeCode: inseeCode,
           name: data.name || "",
           latitude: data.latitude || 0,
@@ -73,6 +73,14 @@ export class MapService {
             qualifier: data.airQuality?.qualifier || "Inconnu",
             color: data.airQuality?.color || "#999999",
           },
+          pollutants: {
+            pm25: data.airQuality?.pollutants?.pm25,
+            pm10: data.airQuality?.pollutants?.pm10,
+            o3: data.airQuality?.pollutants?.o3,
+            no2: data.airQuality?.pollutants?.no2,
+            so2: data.airQuality?.pollutants?.so2,
+            co: (data as any)?.airQuality?.pollutants?.co
+          }
         };
 
         this.selectedCommuneSubject.next(commune);

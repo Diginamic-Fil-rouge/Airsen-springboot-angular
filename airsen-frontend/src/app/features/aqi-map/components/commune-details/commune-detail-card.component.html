@@ -32,19 +32,19 @@
       <div class="pollutant-header">
         <span class="pollutant-name">{{ pollutant.label }}</span>
         <span class="pollutant-value">
-          {{ pollutant.data.value }} {{ pollutant.data.unit }}
+          {{ pollutant.data?.value }} {{ pollutant.data?.unit }}
         </span>
       </div>
 
       <div class="pollutant-bar">
-        <div class="bar-fill" [style.width.%]="getPollutantPercentage(pollutant.data.value)"
-          [style.background-color]="pollutant.data.color">
+        <div class="bar-fill" [style.width.%]="getPollutantPercentage(pollutant.data?.value || 0)"
+          [style.background-color]="pollutant.data?.color || '#999999'">
         </div>
       </div>
 
       <div class="pollutant-level">
-        <span [style.color]="pollutant.data.color">
-          {{ pollutant.data.qualifier }}
+        <span [style.color]="pollutant.data?.color || '#666'">
+          {{ pollutant.data?.qualifier || '' }}
         </span>
       </div>
     </div>
