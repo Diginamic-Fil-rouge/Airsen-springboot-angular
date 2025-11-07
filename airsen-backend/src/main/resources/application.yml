@@ -1,10 +1,11 @@
-# Default configuration
+# Default configuration - Environment-agnostic settings
+# Profile-specific settings are in application-{profile}.yml
 spring:
   application:
     name: airsen-api
 
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   devtools:
     restart:
@@ -162,16 +163,23 @@ springdoc:
     disable-swagger-default-url: true
 
 # Scheduling Configuration
+# NOTE: These are base defaults. Override in application-{profile}.yml for environment-specific settings
+# - application-dev.yml: Relaxed schedules (weekly), small samples, disabled by default
+# - application-test.yml: All scheduling disabled, mock APIs
+# - application-prod.yml: Full schedules enabled, optimized settings
 scheduling:
+  enabled: ${ENABLE_SCHEDULING:true}  # Master switch to enable/disable all scheduling
+
   atmo:
-    cron: ${ATMO_SCHEDULE_CRON:0 0 10 * * *} # Default: 10:00 AM (testing phase)
+    cron: ${ATMO_SCHEDULE_CRON:0 0 10 * * *} # Default: 10:00 AM daily
     timezone: ${ATMO_SCHEDULE_TIMEZONE:Europe/Paris}
+
   weather:
-    cron: ${WEATHER_SCHEDULE_CRON:0 30 10 * * *} # Default: 10:30 AM (staggered 30 minutes after ATMO, testing phase)
+    cron: ${WEATHER_SCHEDULE_CRON:0 30 10 * * *} # Default: 10:30 AM daily (30 min after ATMO)
     timezone: ${WEATHER_SCHEDULE_TIMEZONE:Europe/Paris}
-    batch-size: 100
-    delay-between-batches-ms: 60000  # 1 minute
-    delay-between-requests-ms: 6000  # 6 seconds (10 requests/min)
+    batch-size: ${WEATHER_BATCH_SIZE:100}
+    delay-between-batches-ms: ${WEATHER_BATCH_DELAY:60000}  # 1 minute
+    delay-between-requests-ms: ${WEATHER_REQUEST_DELAY:6000}  # 6 seconds (~10 requests/min)
 
 # Custom application email settings
 airsen:
@@ -180,33 +188,15 @@ airsen:
       address: ${MAIL_FROM_ADDRESS:noreply@airsen.fr}
       name: ${MAIL_FROM_NAME:Airsen Air Quality System}
 
----
-# Development Profile Configuration
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  # DevTools + Redis compatibility settings
-  devtools:
-    restart:
-      # Prevent classloader issues with Redis cached objects
-      additional-exclude: "fr/airsen/api/external/dto/**,fr/airsen/api/entity/**"
-
-  mail:
-    properties:
-      mail:
-        debug: true
-
-logging:
-  level:
-    root: INFO
-    fr.airsen.api: DEBUG
-    org.springframework.cache: DEBUG
-    org.springframework.data.redis: DEBUG # Changed to DEBUG for better Redis troubleshooting
-    fr.airsen.api.config.RedisConfig: DEBUG # Changed to DEBUG to see serialization details
-    fr.airsen.api.scheduler.CacheRefreshScheduler: INFO
-    org.springframework.mail: DEBUG
-    fr.airsen.api.service.NotificationService: DEBUG
-    reactor.core.publisher: INFO # Add reactive stream logging
-    fr.airsen.api.external.client: DEBUG # Add external API client logging
+# Profile-specific configurations are now in separate files:
+# - application-dev.yml: Development settings (relaxed schedules, verbose logging)
+# - application-test.yml: Testing settings (disabled scheduling, mocked APIs)
+# - application-prod.yml: Production settings (full schedules, optimized performance)
+#
+# To activate a profile, set SPRING_PROFILES_ACTIVE environment variable:
+# - Development: SPRING_PROFILES_ACTIVE=dev (default)
+# - Testing: SPRING_PROFILES_ACTIVE=test
+# - Production: SPRING_PROFILES_ACTIVE=prod
+#
+# For development with scheduling disabled:
+# SPRING_PROFILES_ACTIVE=dev ENABLE_SCHEDULING=false
