@@ -13,6 +13,11 @@ import { AuthService } from "@/core/auth/services/auth.service";
 import { AuthUser } from "@/core/auth/models/auth.model";
 import { GeographicService } from "./services/geographic.service";
 import { Commune } from "@/shared/models/commune.model";
+import { WeatherService } from "./services/weather.service";
+import { AirQualityService } from "./services/air-quality.service";
+import { Weather } from "@/shared/models/weather.model";
+import { AirQuality } from "@/shared/models/air-quality.model";
+import { firstValueFrom } from "rxjs";
 
 @Component({
   standalone: false,
@@ -28,6 +33,8 @@ export class MapComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private geographicService = inject(GeographicService);
+  private weatherService = inject(WeatherService);
+  private airQualityService = inject(AirQualityService);
   private destroy$ = new Subject<void>();
 
   @ViewChild("mapView") mapView!: MapViewComponent;
@@ -48,6 +55,11 @@ export class MapComponent implements OnInit, OnDestroy {
   // Search State
   searchQuery: string = "";
   searchResults: Commune[] | null = null;
+
+  // Detailed Data State
+  weatherDetails: Weather | null = null;
+  airQualityDetails: AirQuality | null = null;
+  isLoadingDetails = false;
 
   ngOnInit(): void {
     this.checkMobileView();
@@ -85,9 +97,19 @@ export class MapComponent implements OnInit, OnDestroy {
    * Setup subscriptions to service observables
    */
   private setupSubscriptions(): void {
-    // Subscribe to selected commune
+    // Subscribe to selected commune and fetch detailed data when commune is selected
     this.mapService.selectedCommune$.pipe(takeUntil(this.destroy$)).subscribe((commune) => {
       this.selectedCommune = commune;
+
+      // Fetch detailed data when a commune is selected
+      if (commune) {
+        this.fetchDetailedData(commune.inseeCode);
+      } else {
+        // Clear detailed data when no commune is selected
+        this.weatherDetails = null;
+        this.airQualityDetails = null;
+        this.isLoadingDetails = false;
+      }
     });
 
     // Subscribe to communes list
@@ -162,6 +184,10 @@ export class MapComponent implements OnInit, OnDestroy {
    */
   closeCommuneDetails(): void {
     this.mapService.selectCommune(null);
+    // Clear detailed data when closing panel
+    this.weatherDetails = null;
+    this.airQualityDetails = null;
+    this.isLoadingDetails = false;
     // Also clear search results when closing details
     this.closeSearchResults();
   }
@@ -289,7 +315,7 @@ export class MapComponent implements OnInit, OnDestroy {
           console.error("Search error:", error);
           this.searchResults = [];
           this.snackBar.open("Erreur lors de la recherche", "Fermer", { duration: 3000 });
-        }
+        },
       });
   }
 
@@ -301,9 +327,7 @@ export class MapComponent implements OnInit, OnDestroy {
     console.log("Search result clicked:", commune.name);
 
     // Find matching commune with air quality data from loaded communes
-    const communeWithAirQuality = this.communes.find(
-      (c) => c.inseeCode === commune.inseeCode
-    );
+    const communeWithAirQuality = this.communes.find((c) => c.inseeCode === commune.inseeCode);
 
     if (communeWithAirQuality) {
       // Select commune through map service
@@ -324,15 +348,11 @@ export class MapComponent implements OnInit, OnDestroy {
       this.searchResults = null;
 
       this.snackBar.open(`Commune ${commune.name} sélectionnée`, "Fermer", {
-        duration: 2000
+        duration: 2000,
       });
     } else {
       console.warn(`Commune ${commune.name} not found in loaded communes with air quality data`);
-      this.snackBar.open(
-        "Commune trouvée mais données indisponibles",
-        "Fermer",
-        { duration: 3000 }
-      );
+      this.snackBar.open("Commune trouvée mais données indisponibles", "Fermer", { duration: 3000 });
     }
   }
 
@@ -342,5 +362,63 @@ export class MapComponent implements OnInit, OnDestroy {
   closeSearchResults(): void {
     this.searchQuery = "";
     this.searchResults = null;
+  }
+
+  /**
+   * Fetch detailed weather and air quality data for a commune
+   * Uses Promise.all() to fetch both services in parallel for better performance
+   * Implements AIRSEN's error handling patterns with graceful degradation
+   *
+   * @param inseeCode 5-digit INSEE code of the commune
+   */
+  private async fetchDetailedData(inseeCode: string): Promise<void> {
+    console.log(`Fetching detailed data for commune: ${inseeCode}`);
+
+    this.isLoadingDetails = true;
+
+    try {
+      // Use Promise.all to fetch weather and air quality data in parallel
+      // This is more efficient than sequential calls and reduces loading time
+      const [weatherResult, airQualityResult] = await Promise.all([
+        // Convert observables to promises with error handling
+        firstValueFrom(this.weatherService.getCurrentWeather(inseeCode)).catch((error) => {
+          console.warn(`Weather service failed for commune ${inseeCode}:`, error);
+          return null; // Return null instead of throwing to allow partial data display
+        }),
+
+        firstValueFrom(this.airQualityService.getAirLatestQuality(inseeCode)).catch((error) => {
+          console.warn(`Air quality service failed for commune ${inseeCode}:`, error);
+          return null; // Return null instead of throwing to allow partial data display
+        }),
+      ]);
+
+      // Store results in component state for template binding
+      this.weatherDetails = weatherResult;
+      this.airQualityDetails = airQualityResult;
+
+      // Log success for debugging and monitoring
+      const dataSourcesLoaded = [];
+      if (weatherResult) dataSourcesLoaded.push("weather");
+      if (airQualityResult) dataSourcesLoaded.push("air quality");
+
+      console.log(`Detailed data loaded for ${inseeCode}: [${dataSourcesLoaded.join(", ")}]`);
+
+      // Show user notification if both services failed
+      if (!weatherResult && !airQualityResult) {
+        this.snackBar.open("Données détaillées temporairement indisponibles", "Fermer", { duration: 3000 });
+      }
+    } catch (error) {
+      // This catch should rarely be triggered due to inner catch blocks
+      // but provides final safety net for unexpected errors
+      console.error(`Unexpected error fetching detailed data for commune ${inseeCode}:`, error);
+
+      // Reset state on unexpected error
+      this.weatherDetails = null;
+      this.airQualityDetails = null;
+
+      this.snackBar.open("Erreur lors du chargement des données détaillées", "Fermer", { duration: 3000 });
+    } finally {
+      this.isLoadingDetails = false;
+    }
   }
 }

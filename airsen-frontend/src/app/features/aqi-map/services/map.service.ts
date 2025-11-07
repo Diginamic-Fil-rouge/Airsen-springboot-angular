@@ -1,8 +1,8 @@
 import { Injectable, inject } from "@angular/core";
 import { Observable, BehaviorSubject, combineLatest, of } from "rxjs";
 import { map, catchError, tap } from "rxjs/operators";
-import { GeographicService } from "@/features/map/services/geographic.service";
-import { AirQualityService } from "@/features/map/services/air-quality.service";
+import { GeographicService } from "./geographic.service";
+import { AirQualityService } from "./air-quality.service";
 import { FavoriteService } from "@/features/favorites/services/favorite.service";
 import { AuthService } from "@/auth/services/auth.service";
 import { Commune, CommuneWithAirQuality } from "@/shared/models/commune.model";
