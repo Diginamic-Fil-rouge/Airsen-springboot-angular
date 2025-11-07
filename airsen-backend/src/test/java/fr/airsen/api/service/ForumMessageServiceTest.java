@@ -6,10 +6,12 @@ import fr.airsen.api.dto.request.ForumMessageUpdateRequest;
 import fr.airsen.api.entity.ForumMessage;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
+import fr.airsen.api.entity.enums.UserRole;
 import fr.airsen.api.mapper.ForumMessageMapper;
 import fr.airsen.api.repository.ForumMessageRepository;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.UserRepository;
+import fr.airsen.api.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,11 +19,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -134,7 +136,7 @@ class ForumMessageServiceTest {
         // Mock thread and user
         ForumThread thread = new ForumThread();
         thread.setMessages(Collections.emptyList());
-        User user = new User();
+        User user = new User("test@test.com", "test", "test", "test");
         user.setId(1L);
 
         ForumMessageCreateRequest request = new ForumMessageCreateRequest();
@@ -142,6 +144,14 @@ class ForumMessageServiceTest {
 
         ForumMessage savedMessage = new ForumMessage();
         ForumMessageDTO dto = new ForumMessageDTO();
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(forumThreadRepository.findById(1L)).thenReturn(Optional.of(thread));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -203,9 +213,9 @@ class ForumMessageServiceTest {
     void testDeleteMessage_Success() {
         ForumMessage message = new ForumMessage();
         User author = new User();
-        author.setMessages(Collections.singletonList(message));
+        author.setMessages(new ArrayList<>(List.of(message)));
         ForumThread thread = new ForumThread();
-        thread.setMessages(Collections.singletonList(message));
+        thread.setMessages(new ArrayList<>(List.of(message)));
         message.setAuthor(author);
         message.setThread(thread);
 
@@ -217,6 +227,7 @@ class ForumMessageServiceTest {
         assertFalse(author.getMessages().contains(message));
         assertFalse(thread.getMessages().contains(message));
     }
+
 
     @Test
     void testDeleteMessage_NotFound() {

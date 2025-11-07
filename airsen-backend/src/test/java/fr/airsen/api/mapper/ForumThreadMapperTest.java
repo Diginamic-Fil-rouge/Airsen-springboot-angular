@@ -1,11 +1,16 @@
 package fr.airsen.api.mapper;
 
 import fr.airsen.api.dto.ForumThreadDTO;
+import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
+import fr.airsen.api.entity.ForumVote;
+import fr.airsen.api.entity.User;
+import fr.airsen.api.entity.enums.VoteType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +28,15 @@ class ForumThreadMapperTest {
 
     @Test
     void testToDTO() {
+        User author = new User();
+        author.setId(1L);
+        ForumVote vote = new ForumVote();
+        vote.setVoteType(VoteType.LIKE);
+        vote.setUser(author);
+        ForumCategory category = new ForumCategory();
+        category.setId(1L);
         ForumThread entity = new ForumThread();
+        vote.setThread(entity);
         entity.setId(1L);
         entity.setTitle("Thread title");
         entity.setContent("Thread content");
@@ -32,7 +45,10 @@ class ForumThreadMapperTest {
         entity.setViewCount(100);
         entity.setPinned(true);
         entity.setClosed(false);
-        entity.setLikeCount(25);
+        entity.setVotes(new ArrayList<>());
+        entity.getVotes().add(vote);
+        entity.setCategory(category);
+        entity.setAuthor(author);
 
         ForumThreadDTO dto = mapper.toDTO(entity);
 
@@ -45,7 +61,7 @@ class ForumThreadMapperTest {
         assertThat(dto.getViewCount()).isEqualTo(entity.getViewCount());
         assertThat(dto.isPinned()).isEqualTo(entity.isPinned());
         assertThat(dto.isClosed()).isEqualTo(entity.isClosed());
-        assertThat(dto.getLikeCount()).isEqualTo(entity.getLikeCount());
+        assertThat(dto.getLikeCount()).isEqualTo(entity.getVotesValue());
     }
 
     @Test
@@ -77,10 +93,16 @@ class ForumThreadMapperTest {
 
     @Test
     void testToDTOs() {
+        User author = new User();
+        author.setId(1L);
+        ForumCategory category = new ForumCategory();
+        category.setId(1L);
         ForumThread t1 = new ForumThread();
         t1.setId(1L);
+        t1.setCategory(category);
         ForumThread t2 = new ForumThread();
         t2.setId(2L);
+        t2.setCategory(category);
 
         List<ForumThreadDTO> dtos = mapper.toDTOs(Arrays.asList(t1, t2));
 
@@ -111,16 +133,19 @@ class ForumThreadMapperTest {
 
     @Test
     void testNullFields() {
+        ForumCategory category = new ForumCategory();
+        category.setId(1L);
         ForumThread entity = new ForumThread(); // all fields null
+        entity.setCategory(category);
         ForumThreadDTO dto = mapper.toDTO(entity);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getId()).isNull();
+        assertThat(dto.getId()).isEqualTo(0L);
         assertThat(dto.getTitle()).isNull();
         assertThat(dto.getContent()).isNull();
         assertThat(dto.getCreatedDate()).isNull();
         assertThat(dto.getLastMessageDate()).isNull();
-        assertThat(dto.getViewCount()).isEqualTo(0); // primitive defaults
+        assertThat(dto.getViewCount()).isNull(); // primitive defaults
         assertThat(dto.isPinned()).isFalse(); // primitive defaults
         assertThat(dto.isClosed()).isFalse(); // primitive defaults
         assertThat(dto.getLikeCount()).isEqualTo(0);
