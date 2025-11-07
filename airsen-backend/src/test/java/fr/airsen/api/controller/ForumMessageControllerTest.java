@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.airsen.api.dto.ForumMessageDTO;
 import fr.airsen.api.dto.auth.UserDTO;
 import fr.airsen.api.dto.request.ForumMessageUpdateRequest;
+import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.UserRole;
+import fr.airsen.api.security.UserPrincipal;
 import fr.airsen.api.service.ForumMessageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -32,11 +36,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ForumMessageController.class)
 class ForumMessageControllerTest {
 
+    private final Long userId = 1L;
+
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private ForumMessageService forumMessageService;
+
+    @MockBean
+    private fr.airsen.api.security.JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -66,7 +75,8 @@ class ForumMessageControllerTest {
     void testGetAllMessages() throws Exception {
         when(forumMessageService.findAll()).thenReturn(List.of(messageDTO));
 
-        mockMvc.perform(get("/forum/messages"))
+        mockMvc.perform(get("/forum/messages")
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].author").value(userDTO))
@@ -78,7 +88,8 @@ class ForumMessageControllerTest {
     void testGetMessageById() throws Exception {
         when(forumMessageService.findById(1L)).thenReturn(messageDTO);
 
-        mockMvc.perform(get("/forum/messages/{id}", 1L))
+        mockMvc.perform(get("/forum/messages/{id}", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.author").value(userDTO))
@@ -95,7 +106,8 @@ class ForumMessageControllerTest {
 
         mockMvc.perform(put("/forum/messages/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.ADMIN))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.content").value("Hello world")); // returned mock data
@@ -106,7 +118,19 @@ class ForumMessageControllerTest {
     void testDeleteMessage() throws Exception {
         doNothing().when(forumMessageService).deleteMessage(1L);
 
-        mockMvc.perform(delete("/forum/messages/{id}", 1L))
+        mockMvc.perform(delete("/forum/messages/{id}", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.ADMIN))))
                 .andExpect(status().isNoContent());
+    }
+
+    private UsernamePasswordAuthenticationToken userAuthentication(Long userId, UserRole role) {
+        User user = new User();
+        user.setId(userId);
+        user.setEmail("user" + userId + "@example.com");
+        user.setPassword("secret");
+        user.setRole(role);
+
+        UserPrincipal principal = UserPrincipal.create(user);
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 }

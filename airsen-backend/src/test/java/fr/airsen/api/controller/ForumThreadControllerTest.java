@@ -8,8 +8,10 @@ import fr.airsen.api.dto.request.ForumMessageCreateRequest;
 import fr.airsen.api.dto.request.ForumThreadCreateRequest;
 import fr.airsen.api.dto.request.ForumThreadUpdateRequest;
 import fr.airsen.api.dto.request.VoteRequest;
+import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.UserRole;
 import fr.airsen.api.entity.enums.VoteType;
+import fr.airsen.api.security.UserPrincipal;
 import fr.airsen.api.service.ForumMessageService;
 import fr.airsen.api.service.ForumThreadService;
 import fr.airsen.api.service.ForumVoteService;
@@ -23,6 +25,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -39,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(ForumThreadController.class)
 class ForumThreadControllerTest {
+    private final Long userId = 1L;
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,6 +56,9 @@ class ForumThreadControllerTest {
 
     @MockBean
     private ForumVoteService forumVoteService;
+
+    @MockBean
+    private fr.airsen.api.security.JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -90,7 +98,8 @@ class ForumThreadControllerTest {
 
         mockMvc.perform(get("/forum/threads")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(1))
                 .andExpect(jsonPath("$.content[0].title").value("Air Quality Discussion"));
@@ -108,7 +117,8 @@ class ForumThreadControllerTest {
 
         mockMvc.perform(post("/forum/threads")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Air Quality Discussion"));
     }
@@ -118,7 +128,8 @@ class ForumThreadControllerTest {
     void testGetThreadById() throws Exception {
         when(forumThreadService.findById(1L)).thenReturn(threadDTO);
 
-        mockMvc.perform(get("/forum/threads/{id}", 1L))
+        mockMvc.perform(get("/forum/threads/{id}", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Air Quality Discussion"));
@@ -129,7 +140,8 @@ class ForumThreadControllerTest {
     void testGetMessagesByThread() throws Exception {
         when(forumMessageService.getMessagesByThread(1L)).thenReturn(List.of(messageDTO));
 
-        mockMvc.perform(get("/forum/threads/{id}/messages", 1L))
+        mockMvc.perform(get("/forum/threads/{id}/messages", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].content").value("Great topic!"))
@@ -145,7 +157,8 @@ class ForumThreadControllerTest {
 
         mockMvc.perform(post("/forum/threads/{id}/messages", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.content").value("Great topic!"));
@@ -161,7 +174,8 @@ class ForumThreadControllerTest {
 
         mockMvc.perform(put("/forum/threads/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.ADMIN))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Air Quality Discussion"));
@@ -172,7 +186,8 @@ class ForumThreadControllerTest {
     void testDeleteThread() throws Exception {
         doNothing().when(forumThreadService).deleteThread(1L);
 
-        mockMvc.perform(delete("/forum/threads/{id}", 1L))
+        mockMvc.perform(delete("/forum/threads/{id}", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.ADMIN))))
                 .andExpect(status().isNoContent());
     }
 
@@ -185,7 +200,8 @@ class ForumThreadControllerTest {
 
         mockMvc.perform(post("/forum/threads/{id}/vote", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(voteRequest)))
+                        .content(objectMapper.writeValueAsString(voteRequest))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.likeCount").value(5));
@@ -196,7 +212,19 @@ class ForumThreadControllerTest {
     void testUnvoteThread() throws Exception {
         doNothing().when(forumVoteService).unvoteThread(1L);
 
-        mockMvc.perform(delete("/forum/threads/{id}/vote", 1L))
+        mockMvc.perform(delete("/forum/threads/{id}/vote", 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isNoContent());
+    }
+
+    private UsernamePasswordAuthenticationToken userAuthentication(Long userId, UserRole role) {
+        User user = new User();
+        user.setId(userId);
+        user.setEmail("user" + userId + "@example.com");
+        user.setPassword("secret");
+        user.setRole(role);
+
+        UserPrincipal principal = UserPrincipal.create(user);
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 }
