@@ -28,6 +28,15 @@ spring:
       mail:
         debug: true
 
+  # Cache Configuration - Development settings
+  cache:
+    redis:
+      # Shorter TTL for development (30 minutes instead of 1 hour)
+      time-to-live: 1800000
+      cache-null-values: false
+      use-key-prefix: true
+      key-prefix: "airsen:dev:"
+
 # Scheduling Configuration - RELAXED FOR DEVELOPMENT
 scheduling:
   # Master switch to enable/disable all scheduled tasks
@@ -157,16 +166,6 @@ external:
     retry-attempts: ${INSEE_RETRY:2}
     log-requests: true
     log-responses: true
-
-# Cache Configuration - Development settings
-spring:
-  cache:
-    redis:
-      # Shorter TTL for development (30 minutes instead of 1 hour)
-      time-to-live: 1800000
-      cache-null-values: false
-      use-key-prefix: true
-      key-prefix: "airsen:dev:"
 
 # Logging Configuration - Verbose for development
 logging:

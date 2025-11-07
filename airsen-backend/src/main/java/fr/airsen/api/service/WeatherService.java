@@ -247,8 +247,6 @@ public class WeatherService {
 
                                 if (tempMax != null && tempMin != null) {
                                     weatherData.setTemperature((tempMax + tempMin) / 2);
-                                    weatherData.setMaxTemperature(tempMax);
-                                    weatherData.setMinTemperature(tempMin);
                                 }
 
                                 // Set wind speed
@@ -262,8 +260,8 @@ public class WeatherService {
                                 }
 
                                 // Note: humidity and wind direction are not in daily forecast data
-                                weatherData.setHumidity(0.0);
-                                weatherData.setWindDirection(0.0);
+                                weatherData.setHumidity(0);
+                                weatherData.setWindDirection(0);
 
                                 return weatherData;
                             });
@@ -413,9 +411,9 @@ public class WeatherService {
         
         if (response.current() != null) {
             weatherData.setTemperature(response.current().temperature() != null ? response.current().temperature() : 0.0);
-            weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity().doubleValue() : 0.0);
+            weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity() : 0);
             weatherData.setWindSpeed(response.current().windSpeed() != null ? response.current().windSpeed() : 0.0);
-            weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection().doubleValue() : 0.0);
+            weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection() : 0);
             weatherData.setWeatherCode(response.current().weatherCode() != null ? response.current().weatherCode() : 0);
         }
         
@@ -442,9 +440,7 @@ public class WeatherService {
         weatherData.setCommune(commune);
         weatherData.setMeasurementDate(date);
         weatherData.setTemperature((tempMax + tempMin) / 2); // Average temperature
-        weatherData.setMaxTemperature(tempMax);
-        weatherData.setMinTemperature(tempMin);
-        
+
         return weatherData;
     }
 }

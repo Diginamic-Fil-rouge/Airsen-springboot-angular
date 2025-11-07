@@ -5,6 +5,7 @@ import fr.airsen.api.dto.WeatherUpdateResponse;
 import fr.airsen.api.dto.response.WeatherResponse;
 import fr.airsen.api.entity.WeatherData;
 import fr.airsen.api.exception.ResourceNotFoundException;
+import fr.airsen.api.mapper.WeatherMapper;
 import fr.airsen.api.service.WeatherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,9 +50,11 @@ public class WeatherController {
     private static final Logger log = LoggerFactory.getLogger(WeatherController.class);
 
     private final WeatherService weatherService;
+    private final WeatherMapper weatherMapper;
 
-    public WeatherController(WeatherService weatherService) {
+    public WeatherController(WeatherService weatherService, WeatherMapper weatherMapper) {
         this.weatherService = weatherService;
+        this.weatherMapper = weatherMapper;
     }
 
     /**
@@ -155,8 +158,12 @@ public class WeatherController {
         log.info("REST request to get current weather for commune: {}", inseeCode);
 
         try {
-            // Service now returns WeatherResponse directly with smart caching and geodistance fallback
-            WeatherResponse response = weatherService.getCurrentWeatherForCommune(inseeCode);
+            // Get weather data from service and convert to response DTO
+            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(inseeCode).block();
+            if (weatherData == null) {
+                throw new ResourceNotFoundException("No weather data available for commune: " + inseeCode);
+            }
+            WeatherResponse response = weatherMapper.toDirectResponse(weatherData);
             return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException e) {
             log.error("Commune not found: {}", inseeCode);
@@ -235,20 +242,19 @@ public class WeatherController {
         log.info("========================================");
 
         try {
-            int communesUpdated = weatherService.updateWeatherDataInTransaction();
+            weatherService.updateAllWeatherData();
 
             java.time.LocalDateTime endTime = java.time.LocalDateTime.now();
             java.time.Duration duration = java.time.Duration.between(startTime, endTime);
 
             log.info("========================================");
             log.info("MANUAL WEATHER SYNC COMPLETED at {}", endTime);
-            log.info("Updated {} communes in {} seconds", communesUpdated, duration.getSeconds());
+            log.info("Sync completed in {} seconds", duration.getSeconds());
             log.info("========================================");
 
             java.util.Map<String, Object> response = new java.util.HashMap<>();
             response.put("success", true);
             response.put("message", "Weather data synchronization completed successfully");
-            response.put("communesUpdated", communesUpdated);
             response.put("startTime", startTime.toString());
             response.put("endTime", endTime.toString());
             response.put("durationSeconds", duration.getSeconds());
