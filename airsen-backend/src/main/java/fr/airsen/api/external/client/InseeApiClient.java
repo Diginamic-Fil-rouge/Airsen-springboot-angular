@@ -4,6 +4,9 @@ import fr.airsen.api.external.config.InseeApiConfig;
 import fr.airsen.api.external.dto.insee.InseeCommuneResponse;
 import fr.airsen.api.external.dto.insee.InseeDemographicData;
 import fr.airsen.api.external.exception.InseeApiException;
+import fr.airsen.api.service.ratelimit.RateLimiterService;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +36,20 @@ public class InseeApiClient {
     private final WebClient webClient;
     private final InseeApiConfig config;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RateLimiterService rateLimiterService;
+    private final CircuitBreaker circuitBreaker;
 
     @Autowired
     public InseeApiClient(@Qualifier("inseeWebClient") WebClient webClient,
                          InseeApiConfig config,
-                         @Autowired(required = false) RedisTemplate<String, Object> redisTemplate) {
+                         @Autowired(required = false) RedisTemplate<String, Object> redisTemplate,
+                         RateLimiterService rateLimiterService,
+                         @Qualifier("inseeCircuitBreaker") CircuitBreaker circuitBreaker) {
         this.webClient = webClient;
         this.config = config;
         this.redisTemplate = redisTemplate;
+        this.rateLimiterService = rateLimiterService;
+        this.circuitBreaker = circuitBreaker;
     }
 
     /**
@@ -52,18 +61,24 @@ public class InseeApiClient {
     @Retryable(value = {InseeApiException.class}, maxAttempts = 2, backoff = @Backoff(delay = 500))
     public Mono<InseeCommuneResponse> getCommuneData(String inseeCode) {
         log.info("Fetching INSEE commune data for: {}", inseeCode);
-        
-        return webClient
-            .get()
-            .uri("/communes/{code}", inseeCode)
-            .retrieve()
-            .onStatus(HttpStatusCode::is4xxClientError, response -> 
-                Mono.error(new InseeApiException("Commune not found: " + inseeCode)))
-            .onStatus(HttpStatusCode::is5xxServerError, response -> 
-                Mono.error(new InseeApiException("INSEE API server error: " + response.statusCode())))
-            .bodyToMono(InseeCommuneResponse.class)
-            .doOnSuccess(response -> log.info("Successfully fetched INSEE data for commune: {}", inseeCode))
-            .doOnError(error -> log.error("Failed to fetch INSEE data for commune: {}", inseeCode, error))
+
+        // Check rate limit before making API call
+        return Mono.fromCallable(() -> {
+                rateLimiterService.tryConsumeInsee();
+                return true;
+            })
+            .flatMap(ignored -> webClient
+                .get()
+                .uri("/communes/{code}", inseeCode)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response ->
+                    Mono.error(new InseeApiException("Commune not found: " + inseeCode)))
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                    Mono.error(new InseeApiException("INSEE API server error: " + response.statusCode())))
+                .bodyToMono(InseeCommuneResponse.class)
+                .doOnSuccess(response -> log.info("Successfully fetched INSEE data for commune: {}", inseeCode))
+                .doOnError(error -> log.error("Failed to fetch INSEE data for commune: {}", inseeCode, error)))
+            .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
             .timeout(Duration.ofMillis(config.getTimeoutMs()));
     }
 
@@ -76,17 +91,23 @@ public class InseeApiClient {
     @Retryable(value = {InseeApiException.class}, maxAttempts = 2, backoff = @Backoff(delay = 500))
     public Mono<InseeDemographicData> getDemographicData(String inseeCode) {
         log.info("Fetching demographic data for commune: {}", inseeCode);
-        
-        return webClient
-            .get()
-            .uri("/communes/{code}/donnees-demographiques", inseeCode)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> 
-                Mono.error(new InseeApiException("Demographic data API error: " + response.statusCode())))
-            .bodyToMono(InseeDemographicData.class)
-            .doOnSuccess(response -> log.info("Successfully fetched demographic data for commune: {}", inseeCode))
-            .doOnError(error -> log.error("Failed to fetch demographic data for commune: {}", 
-                                        inseeCode, error))
+
+        // Check rate limit before making API call
+        return Mono.fromCallable(() -> {
+                rateLimiterService.tryConsumeInsee();
+                return true;
+            })
+            .flatMap(ignored -> webClient
+                .get()
+                .uri("/communes/{code}/donnees-demographiques", inseeCode)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response ->
+                    Mono.error(new InseeApiException("Demographic data API error: " + response.statusCode())))
+                .bodyToMono(InseeDemographicData.class)
+                .doOnSuccess(response -> log.info("Successfully fetched demographic data for commune: {}", inseeCode))
+                .doOnError(error -> log.error("Failed to fetch demographic data for commune: {}",
+                                            inseeCode, error)))
+            .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
             .timeout(Duration.ofMillis(config.getTimeoutMs()));
     }
 
@@ -100,22 +121,28 @@ public class InseeApiClient {
     public Flux<InseeCommuneResponse> searchCommunesByName(String name) {
         log.info("Searching communes by name: {} (fetching ALL results)", name);
 
-        return webClient
-            .get()
-            .uri("/communes", builder -> builder
-                .queryParam("nom", name)
-                .queryParam("fields", "code,nom,codeDepartement,codeRegion,centre,population,departement,region")
-                .queryParam("format", "json")
-                .queryParam("boost", "population")
-                .build())
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response ->
-                Mono.error(new InseeApiException("INSEE API search error: " + response.statusCode())))
-            .bodyToFlux(InseeCommuneResponse.class)
-            .doOnNext(commune -> log.debug("Found commune: {} ({}) - pop: {}",
-                commune.name(), commune.inseeCode(), commune.population()))
-            .doOnComplete(() -> log.info("Completed fetching communes for: {}", name))
-            .doOnError(error -> log.error("Failed to search communes by name: {}", name, error))
+        // Check rate limit before making API call
+        return Mono.fromCallable(() -> {
+                rateLimiterService.tryConsumeInsee();
+                return true;
+            })
+            .flatMapMany(ignored -> webClient
+                .get()
+                .uri("/communes", builder -> builder
+                    .queryParam("nom", name)
+                    .queryParam("fields", "code,nom,codeDepartement,codeRegion,centre,population,departement,region")
+                    .queryParam("format", "json")
+                    .queryParam("boost", "population")
+                    .build())
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response ->
+                    Mono.error(new InseeApiException("INSEE API search error: " + response.statusCode())))
+                .bodyToFlux(InseeCommuneResponse.class)
+                .doOnNext(commune -> log.debug("Found commune: {} ({}) - pop: {}",
+                    commune.name(), commune.inseeCode(), commune.population()))
+                .doOnComplete(() -> log.info("Completed fetching communes for: {}", name))
+                .doOnError(error -> log.error("Failed to search communes by name: {}", name, error)))
+            .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
             .timeout(Duration.ofMillis(config.getTimeoutMs()));
     }
 
@@ -147,23 +174,29 @@ public class InseeApiClient {
      */
     public Flux<InseeCommuneResponse> getMajorCommunes(int populationThreshold, int limit) {
         log.info("Fetching major communes with population > {} (limit: {})", populationThreshold, limit);
-        
-        return webClient
-            .get()
-            .uri("/communes", builder -> builder
-                .queryParam("fields", "code,nom,codeDepartement,codeRegion,centre,population,departement,region")
-                .queryParam("format", "json")
-                .queryParam("boost", "population")
-                .build())
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> 
-                Mono.error(new InseeApiException("INSEE API error: " + response.statusCode())))
-            .bodyToFlux(InseeCommuneResponse.class)
-            .filter(commune -> commune.population() != null && commune.population() >= populationThreshold)
-            .take(limit)
-            .doOnNext(commune -> log.debug("Found major commune: {} ({}) - pop: {}", 
-                                          commune.name(), commune.inseeCode(), commune.population()))
-            .doOnError(error -> log.error("Failed to fetch major communes", error))
+
+        // Check rate limit before making API call
+        return Mono.fromCallable(() -> {
+                rateLimiterService.tryConsumeInsee();
+                return true;
+            })
+            .flatMapMany(ignored -> webClient
+                .get()
+                .uri("/communes", builder -> builder
+                    .queryParam("fields", "code,nom,codeDepartement,codeRegion,centre,population,departement,region")
+                    .queryParam("format", "json")
+                    .queryParam("boost", "population")
+                    .build())
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response ->
+                    Mono.error(new InseeApiException("INSEE API error: " + response.statusCode())))
+                .bodyToFlux(InseeCommuneResponse.class)
+                .filter(commune -> commune.population() != null && commune.population() >= populationThreshold)
+                .take(limit)
+                .doOnNext(commune -> log.debug("Found major commune: {} ({}) - pop: {}",
+                                              commune.name(), commune.inseeCode(), commune.population()))
+                .doOnError(error -> log.error("Failed to fetch major communes", error)))
+            .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
             .timeout(Duration.ofMillis(config.getTimeoutMs() * 2));
     }
 }
