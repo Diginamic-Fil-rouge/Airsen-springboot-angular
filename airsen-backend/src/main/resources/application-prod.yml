@@ -159,6 +159,9 @@ alert:
 
 # Production Rate Limiting - Based on external API limits
 rate-limiter:
+  # Burst capacity percentage (allow short bursts above the limit)
+  burst-capacity-percentage: 20
+
   # ATMO API - 60 requests/minute
   atmo:
     requests-per-minute: 60

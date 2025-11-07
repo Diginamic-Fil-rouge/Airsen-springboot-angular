@@ -103,19 +103,37 @@ alert:
 
 # Rate Limiting - CONSERVATIVE FOR DEVELOPMENT
 rate-limiter:
+  # Burst capacity percentage (allow short bursts above the limit)
+  burst-capacity-percentage: 20
+
   atmo:
     # Half of production rate (30 requests/min instead of 60)
     requests-per-minute: ${ATMO_RATE_LIMIT:30}
     # Reject requests when limit exceeded (vs. queuing)
     reject-on-limit: true
+    # Circuit breaker configuration
+    circuit-breaker:
+      failure-threshold: 0.5  # Open circuit at 50% failure rate
+      wait-duration-seconds: 60  # Wait 1 minute before retry
+      permitted-calls-half-open: 10  # Allow 10 test calls in half-open state
+
   weather:
     # Half of production rate (5 requests/min instead of 10)
     requests-per-minute: ${WEATHER_RATE_LIMIT:5}
     reject-on-limit: true
+    circuit-breaker:
+      failure-threshold: 0.5
+      wait-duration-seconds: 60
+      permitted-calls-half-open: 5
+
   insee:
     # Conservative limit for INSEE API
     requests-per-minute: ${INSEE_RATE_LIMIT:10}
     reject-on-limit: true
+    circuit-breaker:
+      failure-threshold: 0.5
+      wait-duration-seconds: 120
+      permitted-calls-half-open: 5
 
 # External API Configuration - Development overrides
 external:

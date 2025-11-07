@@ -79,15 +79,31 @@ alert:
 
 # Rate limiter - Permissive for tests (no real API calls anyway)
 rate-limiter:
+  burst-capacity-percentage: 20
+
   atmo:
     requests-per-minute: 1000
     reject-on-limit: false
+    circuit-breaker:
+      failure-threshold: 0.9  # Very permissive for tests
+      wait-duration-seconds: 1
+      permitted-calls-half-open: 100
+
   weather:
     requests-per-minute: 1000
     reject-on-limit: false
+    circuit-breaker:
+      failure-threshold: 0.9
+      wait-duration-seconds: 1
+      permitted-calls-half-open: 100
+
   insee:
     requests-per-minute: 1000
     reject-on-limit: false
+    circuit-breaker:
+      failure-threshold: 0.9
+      wait-duration-seconds: 1
+      permitted-calls-half-open: 100
 
 # External API Configuration - MOCK MODE
 external:
