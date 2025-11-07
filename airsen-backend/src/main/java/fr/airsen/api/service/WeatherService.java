@@ -119,10 +119,14 @@ public class WeatherService {
      * 3. CacheEvictionListener will only evict caches AFTER transaction commits
      * 4. If transaction fails, event is never published and caches remain intact
      *
+     * Can be called by:
+     * - Scheduled task (daily at 10:30 AM)
+     * - Manual trigger via REST endpoint (POST /api/v1/weather/update)
+     *
      * @return number of communes successfully updated
      */
     @Transactional
-    protected int updateWeatherDataInTransaction() {
+    public int updateWeatherDataInTransaction() {
         List<Commune> communes = communeRepository.findAll();
         log.info("Found {} communes to update weather data", communes.size());
 

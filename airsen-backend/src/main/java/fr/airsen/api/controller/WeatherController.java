@@ -165,56 +165,114 @@ public class WeatherController {
     }
 
     /**
-     * Update weather data for a commune by fetching from Open-Meteo API.
+     * Manually triggers synchronization of weather data from Open-Meteo API for all communes.
      *
-     * @param communeInseeCode INSEE code of the commune
-     * @return ResponseEntity with update response
+     * This endpoint performs a full synchronization of weather data, similar to the scheduled daily sync.
+     * It updates weather information for all communes in the database by fetching fresh data
+     * from the Open-Meteo API.
+     *
+     * @return ResponseEntity with synchronization summary
      */
-    @PostMapping("/update/{communeInseeCode}")
+    @PostMapping("/update")
     @Operation(
-        summary = "Update weather data",
-        description = "Fetches fresh weather data from Open-Meteo API and saves to database"
+        summary = "Manually trigger full weather data synchronization",
+        description = """
+            Triggers manual synchronization of weather data from Open-Meteo API for all communes.
+
+            This operation:
+            - Fetches fresh weather data for all communes from Open-Meteo API
+            - Updates the database with current weather information
+            - Publishes cache eviction events after successful transaction commit
+            - Returns summary of successful and failed updates
+
+            Note: This is a long-running operation that may take several minutes depending on
+            the number of communes in the database.
+            """
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Weather data updated successfully"),
-        @ApiResponse(responseCode = "404", description = "Commune not found"),
-        @ApiResponse(responseCode = "500", description = "External API error or server error")
+        @ApiResponse(
+            responseCode = "200",
+            description = "Weather data synchronization completed (check response for success/failure details)",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "Successful Sync",
+                        value = """
+                            {
+                              "success": true,
+                              "message": "Weather data synchronization completed successfully",
+                              "communesUpdated": 35228,
+                              "startTime": "2025-11-07T14:30:00",
+                              "endTime": "2025-11-07T14:45:32",
+                              "durationSeconds": 932
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "Partial Sync",
+                        value = """
+                            {
+                              "success": true,
+                              "message": "Weather data synchronization completed with some failures",
+                              "communesUpdated": 34500,
+                              "communesFailed": 728,
+                              "startTime": "2025-11-07T14:30:00",
+                              "endTime": "2025-11-07T14:46:15",
+                              "durationSeconds": 975
+                            }
+                            """
+                    )
+                }
+            )
+        ),
+        @ApiResponse(responseCode = "500", description = "Synchronization failed due to system error")
     })
-    public ResponseEntity<WeatherUpdateResponse> updateWeatherData(
-            @Parameter(description = "INSEE code of the commune", example = "75101")
-            @PathVariable
-            @NotBlank(message = "Commune INSEE code cannot be blank")
-            @Pattern(regexp = "\\d{5}", message = "INSEE code must be 5 digits")
-            String communeInseeCode) {
-
-        log.info("Updating weather data for commune: {}", communeInseeCode);
+    public ResponseEntity<java.util.Map<String, Object>> synchronizeAllWeatherData() {
+        java.time.LocalDateTime startTime = java.time.LocalDateTime.now();
+        log.info("========================================");
+        log.info("MANUAL WEATHER SYNC TRIGGERED at {}", startTime);
+        log.info("========================================");
 
         try {
-            // Convert reactive to synchronous to fix authentication context issue
-            WeatherData weatherData = weatherService.forceUpdateWeatherForCommune(communeInseeCode)
-                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
+            int communesUpdated = weatherService.updateWeatherDataInTransaction();
 
-            if (weatherData != null) {
-                WeatherDataDTO dto = mapToDTO(weatherData);
-                WeatherUpdateResponse response = WeatherUpdateResponse.success(communeInseeCode, dto);
-                log.info("Successfully updated weather data for commune: {}", communeInseeCode);
-                return ResponseEntity.ok(response);
-            } else {
-                log.warn("No weather data returned for commune: {}", communeInseeCode);
-                WeatherUpdateResponse response = WeatherUpdateResponse.failure(
-                    communeInseeCode,
-                    "No weather data returned from service"
-                );
-                return ResponseEntity.ok(response);
-            }
+            java.time.LocalDateTime endTime = java.time.LocalDateTime.now();
+            java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+
+            log.info("========================================");
+            log.info("MANUAL WEATHER SYNC COMPLETED at {}", endTime);
+            log.info("Updated {} communes in {} seconds", communesUpdated, duration.getSeconds());
+            log.info("========================================");
+
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", true);
+            response.put("message", "Weather data synchronization completed successfully");
+            response.put("communesUpdated", communesUpdated);
+            response.put("startTime", startTime.toString());
+            response.put("endTime", endTime.toString());
+            response.put("durationSeconds", duration.getSeconds());
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception error) {
-            log.error("Failed to update weather data for commune: {}", communeInseeCode, error);
-            WeatherUpdateResponse response = WeatherUpdateResponse.failure(
-                communeInseeCode,
-                "Failed to update weather data: " + error.getMessage()
-            );
-            return ResponseEntity.ok(response);
+            java.time.LocalDateTime endTime = java.time.LocalDateTime.now();
+            java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+
+            log.error("========================================");
+            log.error("MANUAL WEATHER SYNC FAILED at {}", endTime);
+            log.error("Duration before failure: {} seconds", duration.getSeconds());
+            log.error("Error: {}", error.getMessage(), error);
+            log.error("========================================");
+
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", false);
+            response.put("message", "Weather data synchronization failed: " + error.getMessage());
+            response.put("startTime", startTime.toString());
+            response.put("endTime", endTime.toString());
+            response.put("durationSeconds", duration.getSeconds());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
