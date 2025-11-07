@@ -1,7 +1,12 @@
 package fr.airsen.api.mapper;
 
+import fr.airsen.api.dto.ForumThreadDTO;
 import fr.airsen.api.dto.ForumVoteDTO;
+import fr.airsen.api.dto.auth.UserDTO;
+import fr.airsen.api.entity.ForumCategory;
+import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.ForumVote;
+import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.VoteType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,15 +20,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ForumVoteMapperTest {
 
     private ForumVoteMapper mapper;
+    private User user;
+    private ForumThread thread;
 
     @BeforeEach
     void setUp() {
         mapper = new ForumVoteMapper();
+        ForumCategory category = new ForumCategory();
+        category.setId(1L);
+        user = new User();
+        user.setId(1L);
+        thread = new ForumThread();
+        thread.setCategory(category);
+        thread.setId(1L);
     }
 
     @Test
     void testToDTO() {
         ForumVote entity = new ForumVote();
+        entity.setThread(thread);
+        entity.setUser(user);
         entity.setId(1L);
         entity.setVoteType(VoteType.LIKE);
 
@@ -37,6 +53,8 @@ class ForumVoteMapperTest {
     @Test
     void testToEntity() {
         ForumVoteDTO dto = new ForumVoteDTO();
+        dto.setUser(new UserDTO(user));
+        dto.setThread(new ForumThreadDTO(thread, false));
         dto.setId(2L);
         dto.setVoteType(VoteType.DISLIKE);
 
@@ -50,8 +68,12 @@ class ForumVoteMapperTest {
     @Test
     void testToDTOs() {
         ForumVote v1 = new ForumVote();
+        v1.setUser(user);
+        v1.setThread(thread);
         v1.setId(1L);
         ForumVote v2 = new ForumVote();
+        v2.setThread(thread);
+        v2.setUser(user);
         v2.setId(2L);
 
         List<ForumVoteDTO> dtos = mapper.toDTOs(Arrays.asList(v1, v2));
@@ -64,8 +86,12 @@ class ForumVoteMapperTest {
     @Test
     void testToEntities() {
         ForumVoteDTO dto1 = new ForumVoteDTO();
+        dto1.setUser(new UserDTO(user));
+        dto1.setThread(new ForumThreadDTO(thread, false));
         dto1.setId(1L);
         ForumVoteDTO dto2 = new ForumVoteDTO();
+        dto2.setThread(new ForumThreadDTO(thread, false));
+        dto2.setUser(new UserDTO(user));
         dto2.setId(2L);
 
         List<ForumVote> entities = mapper.toEntities(Arrays.asList(dto1, dto2));
@@ -84,10 +110,12 @@ class ForumVoteMapperTest {
     @Test
     void testNullFields() {
         ForumVote entity = new ForumVote(); // all fields null
+        entity.setThread(thread);
+        entity.setUser(user);
         ForumVoteDTO dto = mapper.toDTO(entity);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getId()).isNull();
+        assertThat(dto.getId()).isEqualTo(0L);
         assertThat(dto.getVoteType()).isNull();
     }
 }

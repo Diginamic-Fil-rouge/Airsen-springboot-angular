@@ -3,7 +3,9 @@ package fr.airsen.api.mapper;
 import fr.airsen.api.dto.ForumMessageDTO;
 
 import fr.airsen.api.dto.auth.UserDTO;
+import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumMessage;
+import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,11 +39,19 @@ class ForumMessageMapperTest {
         author.setFirstName("john");
         author.setLastName("doe");
 
+        ForumCategory category = new ForumCategory();
+        category.setId(1L);
+
+        ForumThread thread = new ForumThread();
+        thread.setId(1L);
+        thread.setCategory(category);
+
         ForumMessage entity = new ForumMessage();
         entity.setId(10L);
         entity.setContent("Hello world");
         entity.setCreatedDate(LocalDateTime.now());
         entity.setAuthor(author);
+        entity.setThread(thread);
 
         ForumMessageDTO dto = mapper.toDTO(entity);
 
@@ -123,10 +133,21 @@ class ForumMessageMapperTest {
 
     @Test
     void testToDTOs() {
+        User author = new User();
+        author.setId(1L);
+        ForumCategory category = new ForumCategory();
+        category.setId(1L);
+        ForumThread thread = new ForumThread();
+        thread.setId(1L);
+        thread.setCategory(category);
         ForumMessage m1 = new ForumMessage();
         m1.setId(1L);
+        m1.setAuthor(author);
+        m1.setThread(thread);
         ForumMessage m2 = new ForumMessage();
         m2.setId(2L);
+        m2.setAuthor(author);
+        m2.setThread(thread);
 
         List<ForumMessageDTO> dtos = mapper.toDTOs(Arrays.asList(m1, m2));
 

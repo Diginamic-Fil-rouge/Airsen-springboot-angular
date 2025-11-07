@@ -185,12 +185,15 @@ class ForumThreadTest {
 
     @Test
     void testGetVotesValue_withVotes() {
-        ForumVote vote1 = mock(ForumVote.class);
-        ForumVote vote2 = mock(ForumVote.class);
-        when(vote1.getVoteType()).thenReturn(VoteType.LIKE);
-        when(vote2.getVoteType()).thenReturn(VoteType.DISLIKE);
-        when(vote1.getVoteType().toInt()).thenReturn(1);
-        when(vote2.getVoteType().toInt()).thenReturn(-1);
+        ForumVote vote1 = new ForumVote();
+        vote1.setUser(activeUser);
+        vote1.setThread(thread);
+        vote1.setVoteType(VoteType.LIKE);
+        ForumVote vote2 = new ForumVote();
+        vote2.setUser(activeUser);
+        vote2.setThread(thread);
+        vote2.setVoteType(VoteType.DISLIKE);
+
 
         thread.setVotes(List.of(vote1, vote2));
         assertEquals(0, thread.getVotesValue());

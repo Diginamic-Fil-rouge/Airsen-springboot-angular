@@ -10,6 +10,7 @@ import fr.airsen.api.mapper.ForumVoteMapper;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.ForumVoteRepository;
 import fr.airsen.api.repository.UserRepository;
+import fr.airsen.api.security.UserPrincipal;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 
 import java.util.Collections;
@@ -97,8 +101,17 @@ class ForumVoteServiceTest {
     void testVoteThread_Success() {
         ForumThread thread = new ForumThread();
         ForumThread updatedThread = new ForumThread();
-        User user = new User();
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
         ForumThreadDTO dto = new ForumThreadDTO();
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(forumThreadRepository.findByIdWithMessages(1L)).thenReturn(Optional.of(thread));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -124,8 +137,17 @@ class ForumVoteServiceTest {
     @Test
     void testVoteThread_UserAlreadyVoted() {
         ForumThread thread = new ForumThread();
-        User user = new User();
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
         ForumVote existingVote = new ForumVote();
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(forumThreadRepository.findByIdWithMessages(1L)).thenReturn(Optional.of(thread));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -139,8 +161,17 @@ class ForumVoteServiceTest {
     @Test
     void testUnvoteThread_Success() {
         ForumThread thread = new ForumThread();
-        User user = new User();
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
         ForumVote vote = new ForumVote();
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(forumThreadRepository.findById(1L)).thenReturn(Optional.of(thread));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -161,7 +192,16 @@ class ForumVoteServiceTest {
     @Test
     void testUnvoteThread_VoteNotFound() {
         ForumThread thread = new ForumThread();
-        User user = new User();
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(forumThreadRepository.findById(1L)).thenReturn(Optional.of(thread));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));

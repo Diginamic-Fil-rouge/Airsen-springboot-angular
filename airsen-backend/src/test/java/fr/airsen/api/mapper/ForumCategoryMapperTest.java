@@ -104,7 +104,7 @@ class ForumCategoryMapperTest {
         ForumCategoryDTO dto = mapper.toDTO(entity);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getId()).isNull();
+        assertThat(dto.getId()).isEqualTo(0L);
         assertThat(dto.getName()).isNull();
         assertThat(dto.getDescription()).isNull();
         assertThat(dto.getColor()).isNull();

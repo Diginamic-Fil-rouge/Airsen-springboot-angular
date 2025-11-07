@@ -10,6 +10,7 @@ import fr.airsen.api.mapper.ForumThreadMapper;
 import fr.airsen.api.repository.ForumCategoryRepository;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.UserRepository;
+import fr.airsen.api.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,11 +21,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -63,7 +65,13 @@ class ForumThreadServiceTest {
 
     @Test
     void testFindAllWithPaginationAndFilters() {
-        Page<ForumThread> page = new PageImpl<>(Collections.singletonList(new ForumThread()));
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
+        ForumCategory category = new ForumCategory();
+        category.setId(1L);
+        ForumThread forumThread = new ForumThread(user, category, "title", "content", LocalDateTime.now(), LocalDateTime.now(), 0, false, false, 0);
+        forumThread.setId(1L);
+        Page<ForumThread> page = new PageImpl<>(Collections.singletonList(forumThread));
         Pageable pageable = mock(Pageable.class);
 
         when(forumThreadRepository.findAll(pageable)).thenReturn(page);
@@ -128,13 +136,22 @@ class ForumThreadServiceTest {
 
     @Test
     void testCreateThread_Success() {
-        User user = new User();
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
         ForumCategory category = new ForumCategory();
 
         ForumThreadCreateRequest request = new ForumThreadCreateRequest();
         request.setTitle("Title");
         request.setContent("Content");
         request.setCategoryId(1L);
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(forumCategoryRepository.findById(1L)).thenReturn(Optional.of(category));
@@ -146,8 +163,18 @@ class ForumThreadServiceTest {
 
     @Test
     void testCreateThread_UserNotFound() {
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
         ForumThreadCreateRequest request = new ForumThreadCreateRequest();
         request.setCategoryId(1L);
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> forumThreadService.createThread(request));
@@ -156,13 +183,22 @@ class ForumThreadServiceTest {
 
     @Test
     void testAddThreadToCategory_Success() {
-        User user = new User();
+        User user = new User("test@test.com", "test", "test", "test");
+        user.setId(1L);
         ForumCategory category = new ForumCategory();
         category.setThreads(Collections.emptyList());
 
         ForumThreadCreateRequest request = new ForumThreadCreateRequest();
         request.setTitle("Title");
         request.setContent("Content");
+
+        // Mock Security Context
+        UserPrincipal principal = UserPrincipal.create(user);
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(principal);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
         when(forumCategoryRepository.findById(1L)).thenReturn(Optional.of(category));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -199,9 +235,9 @@ class ForumThreadServiceTest {
     void testDeleteThread_Success() {
         ForumThread thread = new ForumThread();
         User author = new User();
-        author.setThreads(Collections.singletonList(thread));
+        author.setThreads(new ArrayList<>(List.of(thread)));
         ForumCategory category = new ForumCategory();
-        category.setThreads(Collections.singletonList(thread));
+        category.setThreads(new ArrayList<>(List.of(thread)));
         thread.setAuthor(author);
         thread.setCategory(category);
 
