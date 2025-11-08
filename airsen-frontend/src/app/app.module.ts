@@ -1,7 +1,9 @@
-import { NgModule, APP_INITIALIZER } from "@angular/core";
+import { NgModule, APP_INITIALIZER, LOCALE_ID } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
+import { registerLocaleData } from "@angular/common";
+import localeFr from "@angular/common/locales/fr";
 
 // Core & Shared Modules
 import { CoreModule } from "./core/core.module";
@@ -22,6 +24,9 @@ import { NotFoundComponent } from "./features/not-found/not-found.component";
 import { authInterceptorFn } from "./core/interceptors/auth.interceptor";
 import { CommuneDataService } from "./core/services/commune-data.service";
 import { initializeCommunes } from "./core/initializers/commune-loader.initializer";
+
+// Register French locale data for pipes (date, number, currency, etc.)
+registerLocaleData(localeFr);
 
 /**
  * AppModule - Root module for AIRSEN Angular application
@@ -71,6 +76,7 @@ import { initializeCommunes } from "./core/initializers/commune-loader.initializ
   providers: [
     provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptorFn])),
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
     {
       provide: APP_INITIALIZER,
       useFactory: initializeCommunes,
