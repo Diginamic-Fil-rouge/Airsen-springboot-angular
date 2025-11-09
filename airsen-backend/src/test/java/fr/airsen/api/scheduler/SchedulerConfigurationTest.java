@@ -1,10 +1,5 @@
 package fr.airsen.api.scheduler;
 
-import fr.airsen.api.scheduler.cache.CacheRefreshScheduler;
-import fr.airsen.api.scheduler.cache.CacheAwareTieredScheduler;
-import fr.airsen.api.service.atmo.AtmoIntegrationService;
-import fr.airsen.api.service.weather.WeatherService;
-import fr.airsen.api.service.alert.AlertSignalDetectionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;

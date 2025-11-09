@@ -240,8 +240,8 @@ class AtmoApiClientRateLimiterIntegrationTest {
 
         // Verify only 1 authentication call (token was cached)
         // But still only 3 data calls (rate limiter active)
-        verify(atLeast(1), postRequestedFor(urlEqualTo("/api/login")));
-        verify(exactly(3), getRequestedFor(urlPathEqualTo("/api/v2/data/indices/atmo")));
+        wireMockServer.verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/api/login")));
+        wireMockServer.verify(exactly(3), getRequestedFor(urlPathEqualTo("/api/v2/data/indices/atmo")));
     }
 
     // Helper methods for WireMock stubs

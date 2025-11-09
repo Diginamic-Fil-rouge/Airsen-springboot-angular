@@ -12,13 +12,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -128,11 +128,7 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null, // inseeApiClient not needed for this test
             weatherDataRepository,
-            communeRepository,
-            null, // geoDistanceService not needed
-            null, // smartCacheService not needed
-            null, // weatherMapper not needed
-            null  // eventPublisher not needed
+            communeRepository
         );
 
         // When
@@ -195,11 +191,7 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository,
-            null,
-            null,
-            null,
-            null
+            communeRepository
         );
 
         // When
@@ -237,11 +229,7 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository,
-            null,
-            null,
-            null,
-            null
+            communeRepository
         );
 
         // When
@@ -276,11 +264,7 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository,
-            null,
-            null,
-            null,
-            null
+            communeRepository
         );
 
         // When
@@ -310,11 +294,7 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository,
-            null,
-            null,
-            null,
-            null
+            communeRepository
         );
 
         // When
@@ -370,11 +350,7 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository,
-            null,
-            null,
-            null,
-            null
+            communeRepository
         );
 
         // When
