@@ -23,7 +23,6 @@ import { NotFoundComponent } from "./features/not-found/not-found.component";
 // Services & Interceptors
 import { authInterceptorFn } from "./core/interceptors/auth.interceptor";
 import { CommuneDataService } from "./core/services/commune-data.service";
-import { initializeCommunes } from "./core/initializers/commune-loader.initializer";
 
 // Register French locale data for pipes (date, number, currency, etc.)
 registerLocaleData(localeFr);
@@ -77,12 +76,6 @@ registerLocaleData(localeFr);
     provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptorFn])),
     { provide: LOCALE_ID, useValue: 'fr-FR' },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeCommunes,
-      deps: [CommuneDataService],
-      multi: true,
-    },
   ],
   bootstrap: [AppComponent],
 })
