@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, OnInit, OnDestroy } from "@angular/core";
 import { Subject, takeUntil, catchError, of } from "rxjs";
-import { AirQualityService } from "@/app/features/map/services/air-quality.service";
+import { AirQualityService } from "@/core/services/air-quality.service";
 
 export interface AirQualityData {
   aqi: number;
@@ -60,7 +60,7 @@ export class AirQualityWidgetComponent implements OnInit, OnDestroy {
     this.error = null;
 
     this.airQualityService
-      .getAirLatestQuality(this.communeCode)
+      .getAirQuality(this.communeCode)
       .pipe(
         takeUntil(this.destroy$),
         catchError((error) => {
@@ -71,7 +71,7 @@ export class AirQualityWidgetComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           if (response) {
             this.airQuality = this.processAirQualityData(response);
           }

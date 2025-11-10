@@ -1,6 +1,0 @@
-@use 'styles/design-system' as *;
-
-.legend-card { padding: $space-3; }
-.legend-item { display: flex; align-items: center; gap: $space-2; margin-bottom: $space-1; }
-.marker { display: inline-block; width: 14px; height: 14px; border-radius: $radius-sm; }
-

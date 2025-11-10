@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { GeographicService } from "@/app/features/map/services/geographic.service";
+import { GeographicService } from "./geographic.service";
 import { Commune } from "@/shared/models";
 
 /**
@@ -60,12 +60,12 @@ export class CommuneDataService {
 
     // Start background loading
     this.geographicService.getAllCommunesWithCoordinates().subscribe({
-      next: (communes) => {
+      next: (communes: Commune[]) => {
         this.communesSubject.next(communes);
         this.loadingSubject.next(false);
         console.log(`Successfully loaded ${communes.length} communes on startup`);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error("Failed to load communes on startup:", error);
         this.loadingSubject.next(false);
         // Keep empty array as fallback - application can still function

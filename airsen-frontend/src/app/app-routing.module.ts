@@ -33,13 +33,6 @@ const routes: Routes = [
     canActivate: [GuestGuard], // Prevent authenticated users from login/register
   },
 
-  // AQI Map Route (air quality map interface - protected)
-  {
-    path: "aqi-map",
-    loadChildren: () => import("./features/map/map.module").then((m) => m.MapModule),
-    canActivate: [AuthGuard],
-  },
-
   // Protected Routes (require authentication with AuthGuard)
   {
     path: "dashboard",

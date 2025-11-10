@@ -1,16 +1,16 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Component, Input, OnInit, OnDestroy } from "@angular/core";
+import { Router } from "@angular/router";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
-import { AuthService } from '@/auth/services/auth.service';
-import { AuthUser } from '@/auth/models/auth.model';
+import { AuthService } from "@/auth/services/auth.service";
+import { AuthUser } from "@/auth/models/auth.model";
 
 @Component({
   standalone: false,
-  selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  selector: "app-header",
+  templateUrl: "./header.component.html",
+  styleUrls: ["./header.component.scss"],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   @Input() isAuthenticated = false;
@@ -19,27 +19,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
   unreadNotifications = 0;
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    this.authService.isAuthenticated$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(isAuth => {
-        if (isAuth) {
-          this.loadNotificationPreview();
-        } else {
-          this.unreadNotifications = 0;
-        }
-      });
+    this.authService.isAuthenticated$.pipe(takeUntil(this.destroy$)).subscribe((isAuth) => {
+      if (isAuth) {
+        this.loadNotificationPreview();
+      } else {
+        this.unreadNotifications = 0;
+      }
+    });
 
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        this.currentUser = user;
-      });
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      this.currentUser = user;
+    });
   }
 
   ngOnDestroy(): void {
@@ -50,45 +43,44 @@ export class HeaderComponent implements OnInit, OnDestroy {
   onLogout(): void {
     this.authService.logout().subscribe({
       next: () => {
-        this.router.navigate(['/']);
+        this.router.navigate(["/"]);
       },
       error: (error) => {
-        console.error('Logout error:', error);
+        console.error("Logout error:", error);
         // Navigate anyway for user experience
-        this.router.navigate(['/']);
-      }
+        this.router.navigate(["/"]);
+      },
     });
   }
 
   navigateToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(["/profile"]);
   }
 
   navigateToLogin(): void {
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(["/auth/login"]);
   }
 
   navigateToAlerts(): void {
-    this.router.navigate(['/map'], {
-      queryParams: { view: 'alerts' }
-    });
+    // TODO: Implement map feature to navigate to alerts view
+    console.warn("Map feature not yet implemented");
   }
 
   get userDisplayName(): string {
-    return this.currentUser ? `${this.currentUser.firstName} ${this.currentUser.lastName}` : '';
+    return this.currentUser ? `${this.currentUser.firstName} ${this.currentUser.lastName}` : "";
   }
 
   get userInitials(): string {
     if (!this.currentUser) {
-      return 'AA';
+      return "AA";
     }
 
-    const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? '';
-    const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? '';
-    let initials = `${first}${last}`.replace(/\s+/g, '');
+    const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? "";
+    const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? "";
+    let initials = `${first}${last}`.replace(/\s+/g, "");
 
     if (!initials) {
-      return 'AA';
+      return "AA";
     }
 
     if (initials.length === 1) {
