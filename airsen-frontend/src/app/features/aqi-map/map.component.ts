@@ -5,7 +5,7 @@ import { takeUntil } from "rxjs/operators";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MapService } from "./services/map.service";
 import { CommuneWithAirQuality } from "@/shared/models/commune.model";
-import { MapFilter, PollutantType, TimeRange, MapStyle } from "./models/map-filter.model";
+import { MapStyle } from "./models/map-filter.model";
 import { MapViewComponent } from "./components/map-view/map-view.component";
 import { ExportDataService } from "@/core/services/export-data.service";
 import { PdfGenerationService } from "@/core/services/pdf-generation.service";
@@ -45,7 +45,6 @@ export class MapComponent implements OnInit, OnDestroy {
   isMobileView = false;
   selectedCommune: CommuneWithAirQuality | null = null;
   communes: CommuneWithAirQuality[] = [];
-  currentFilter: MapFilter | null = null;
   isExportingPDF = false;
   mapStyleDefault = MapStyle.STREETS;
 
@@ -116,11 +115,6 @@ export class MapComponent implements OnInit, OnDestroy {
     this.mapService.communes$.pipe(takeUntil(this.destroy$)).subscribe((communes) => {
       this.communes = communes;
     });
-
-    // Subscribe to filter changes
-    this.mapService.filter$.pipe(takeUntil(this.destroy$)).subscribe((filter) => {
-      this.currentFilter = filter;
-    });
   }
 
   /**
@@ -172,12 +166,6 @@ export class MapComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Handle filter changes from side panel
-   */
-  onFilterChanged(filter: Partial<MapFilter>): void {
-    this.mapService.updateFilter(filter);
-  }
 
   /**
    * Close commune details
@@ -213,20 +201,6 @@ export class MapComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Filter control handlers
-   */
-  onPollutantChanged(pollutant: PollutantType): void {
-    this.mapService.updateFilter({ pollutantType: pollutant });
-  }
-
-  onTimeRangeChanged(timeRange: TimeRange): void {
-    this.mapService.updateFilter({ timeRange });
-  }
-
-  onHeatmapToggled(showHeatmap: boolean): void {
-    this.mapService.updateFilter({ showHeatmap });
-  }
 
   onLayerChanged(mapStyle: MapStyle): void {
     this.mapService.updateFilter({ mapStyle });
@@ -388,7 +362,7 @@ export class MapComponent implements OnInit, OnDestroy {
           return null; // Return null instead of throwing to allow partial data display
         }),
 
-        firstValueFrom(this.airQualityService.getAirLatestQuality(inseeCode)).catch((error) => {
+        firstValueFrom(this.airQualityService.getAirQuality(inseeCode)).catch((error) => {
           console.warn(`Air quality service failed for commune ${inseeCode}:`, error);
           return null; // Return null instead of throwing to allow partial data display
         }),

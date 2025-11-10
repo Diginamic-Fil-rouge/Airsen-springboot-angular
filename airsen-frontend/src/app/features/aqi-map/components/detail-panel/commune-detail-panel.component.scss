@@ -1,0 +1,379 @@
+@use '../../../../../styles/design-system.scss' as *;
+
+// =============================================================================
+// COMMUNE DETAIL PANEL COMPONENT
+// =============================================================================
+// Full-height left panel displaying selected commune information
+// Features:
+// - Light theme with white background
+// - Fixed positioning on desktop (left side)
+// - Bottom sheet on mobile (60vh height)
+// - Scrollable content with custom scrollbar
+// - Loading skeleton UI
+// - Error state handling
+// =============================================================================
+
+.commune-detail-panel {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 380px;
+  background: $airsen-white;
+  box-shadow: $shadow-lg;
+  z-index: $z-index-fixed;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0);
+  transition: transform $duration-normal $ease-in-out;
+
+  // Mobile: bottom sheet pattern
+  @include respond-max('md') {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 60vh;
+    border-radius: $radius-xl $radius-xl 0 0;
+    box-shadow: $shadow-xl;
+  }
+
+  // Hidden state (slide out)
+  &.hidden {
+    transform: translateX(-100%);
+
+    @include respond-max('md') {
+      transform: translateY(100%);
+    }
+  }
+
+  // Panel header with commune name and close button
+  .panel-header {
+    padding: $space-6;
+    border-bottom: 1px solid $airsen-gray-200;
+    background: $airsen-white;
+    flex-shrink: 0;
+    position: relative;
+
+    @include respond-max('md') {
+      padding: $space-4;
+    }
+
+    .commune-title {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $airsen-gray-900;
+      line-height: $line-height-tight;
+      margin: 0 $space-10 0 0; // Space for close button
+      @include multiline-truncate(2);
+
+      @include respond-max('md') {
+        font-size: $font-size-xl;
+      }
+    }
+
+    .commune-subtitle {
+      font-size: $font-size-sm;
+      color: $airsen-gray-600;
+      margin-top: $space-2;
+      display: flex;
+      align-items: center;
+      gap: $space-2;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    // Close button (top-right)
+    .close-button {
+      position: absolute;
+      top: $space-4;
+      right: $space-4;
+      color: $airsen-gray-600;
+      transition: $transition-colors;
+
+      &:hover {
+        background: $airsen-gray-100;
+        color: $airsen-gray-900;
+      }
+
+      &:focus-visible {
+        @include focus-ring();
+      }
+    }
+  }
+
+  // Scrollable content area
+  .panel-content {
+    padding: $space-6;
+    overflow-y: auto;
+    flex: 1;
+    @include custom-scrollbar();
+
+    @include respond-max('md') {
+      padding: $space-4;
+    }
+  }
+
+  // Section spacing within content
+  .section {
+    margin-bottom: $space-6;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $airsen-gray-800;
+      margin-bottom: $space-4;
+      display: flex;
+      align-items: center;
+      gap: $space-2;
+
+      mat-icon {
+        color: $airsen-primary;
+      }
+    }
+  }
+
+  // Demographics info display
+  .demographics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-4;
+
+    @include respond-max('md') {
+      grid-template-columns: 1fr;
+      gap: $space-3;
+    }
+
+    .demo-item {
+      background: $airsen-gray-50;
+      padding: $space-4;
+      border-radius: $radius-md;
+      border-left: 3px solid $airsen-primary;
+
+      .demo-label {
+        font-size: $font-size-sm;
+        color: $airsen-gray-600;
+        margin-bottom: $space-1;
+      }
+
+      .demo-value {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+        color: $airsen-gray-900;
+      }
+    }
+  }
+
+  // Action buttons footer
+  .panel-footer {
+    padding: $space-6;
+    border-top: 1px solid $airsen-gray-200;
+    background: $airsen-white;
+    flex-shrink: 0;
+    display: flex;
+    gap: $space-4;
+
+    @include respond-max('md') {
+      padding: $space-4;
+      flex-direction: column;
+    }
+
+    .btn-favorite {
+      @include button('secondary', 'md');
+      flex: 1;
+      gap: $space-2;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .btn-export {
+      @include button('primary', 'md');
+      flex: 1;
+      gap: $space-2;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  // Loading skeleton UI
+  .loading-skeleton {
+    .skeleton-header {
+      height: 80px;
+      background: linear-gradient(
+        90deg,
+        $airsen-gray-100 25%,
+        $airsen-gray-200 50%,
+        $airsen-gray-100 75%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+      border-radius: $radius-md;
+      margin-bottom: $space-6;
+    }
+
+    .skeleton-card {
+      height: 200px;
+      background: linear-gradient(
+        90deg,
+        $airsen-gray-100 25%,
+        $airsen-gray-200 50%,
+        $airsen-gray-100 75%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+      border-radius: $radius-lg;
+      margin-bottom: $space-4;
+    }
+
+    .skeleton-line {
+      height: 20px;
+      background: linear-gradient(
+        90deg,
+        $airsen-gray-100 25%,
+        $airsen-gray-200 50%,
+        $airsen-gray-100 75%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+      border-radius: $radius-sm;
+      margin-bottom: $space-3;
+
+      &.short {
+        width: 60%;
+      }
+    }
+  }
+
+  // Error state
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $space-12;
+    text-align: center;
+    color: $airsen-gray-500;
+
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: $airsen-gray-300;
+      margin-bottom: $space-4;
+    }
+
+    .error-title {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $airsen-gray-700;
+      margin-bottom: $space-2;
+    }
+
+    .error-message {
+      font-size: $font-size-sm;
+      color: $airsen-gray-500;
+    }
+  }
+
+  // No data state (when sections have missing data)
+  .no-data {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    padding: $space-4;
+    background: $airsen-gray-50;
+    border-radius: $radius-md;
+    border-left: 3px solid $airsen-warning;
+
+    mat-icon {
+      color: $airsen-warning;
+      flex-shrink: 0;
+    }
+
+    p {
+      margin: 0;
+      font-size: $font-size-sm;
+      color: $airsen-gray-700;
+    }
+  }
+
+  // Data source indicator
+  .data-source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-1 $space-3;
+    background: $airsen-gray-100;
+    border-radius: $badge-border-radius;
+    font-size: $font-size-xs;
+    color: $airsen-gray-700;
+    font-weight: $font-weight-medium;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    &.direct {
+      background: color.adjust($airsen-success, $lightness: 45%);
+      color: $airsen-success;
+    }
+
+    &.estimated {
+      background: color.adjust($airsen-warning, $lightness: 35%);
+      color: color.adjust($airsen-warning, $lightness: -20%);
+    }
+
+    &.unavailable {
+      background: $airsen-gray-100;
+      color: $airsen-gray-600;
+    }
+  }
+}
+
+// Skeleton loading animation
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Accessibility
+.commune-detail-panel {
+  // Ensure focus styles are visible
+  *:focus-visible {
+    @include focus-ring();
+  }
+
+  // High contrast mode support
+  @media (prefers-contrast: high) {
+    border-left: 2px solid $airsen-gray-900;
+
+    .panel-header {
+      border-bottom-width: 2px;
+    }
+
+    .panel-footer {
+      border-top-width: 2px;
+    }
+  }
+}

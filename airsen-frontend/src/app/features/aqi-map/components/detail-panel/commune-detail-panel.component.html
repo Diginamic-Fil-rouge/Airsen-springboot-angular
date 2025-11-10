@@ -1,0 +1,84 @@
+<div class="commune-detail-panel" *ngIf="commune">
+  <!-- Header -->
+  <div class="panel-header">
+    <div class="header-titles">
+      <h2 class="title">{{ commune.name }}</h2>
+      <div class="subtitle" *ngIf="commune.inseeCode">INSEE: {{ commune.inseeCode }}</div>
+    </div>
+    <button mat-icon-button aria-label="Fermer" (click)="onClose()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="panel-content">
+    <!-- AQI Summary Card -->
+    <section class="card aqi-card">
+      <div class="aqi-main" [style.background]="aqiColor">
+        <div class="aqi-value">{{ aqiValue ?? '—' }}</div>
+        <div class="aqi-status">{{ aqiLabel }}</div>
+      </div>
+      <div class="aqi-extra" *ngIf="commune?.pollutants as pol">
+        <div class="pollutant">
+          <span class="label">PM2.5</span>
+          <span class="value">{{ pol.pm25 ?? '—' }} µg/m³</span>
+        </div>
+        <div class="pollutant">
+          <span class="label">PM10</span>
+          <span class="value">{{ pol.pm10 ?? '—' }} µg/m³</span>
+        </div>
+        <div class="pollutant">
+          <span class="label">NO₂</span>
+          <span class="value">{{ pol.no2 ?? '—' }} µg/m³</span>
+        </div>
+        <div class="pollutant">
+          <span class="label">O₃</span>
+          <span class="value">{{ pol.o3 ?? '—' }} µg/m³</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Weather Card -->
+    <section class="card weather-card" *ngIf="weatherData as w">
+      <div class="weather-main">
+        <div class="temp">{{ w.temperature | number: '1.0-0' }}°C</div>
+        <div class="desc">Code météo: {{ w.weatherCode }}</div>
+      </div>
+      <div class="weather-extra">
+        <div class="meta"><mat-icon>air</mat-icon> Vent: {{ w.windSpeed }} km/h</div>
+        <div class="meta"><mat-icon>water_drop</mat-icon> Humidité: {{ w.humidity }}%</div>
+      </div>
+    </section>
+
+    <!-- Demographics Card -->
+    <section class="card demo-card">
+      <div class="demo-row">
+        <div class="metric">
+          <div class="label">Population</div>
+          <div class="value">{{ commune.population ?? '—' }}</div>
+        </div>
+        <div class="metric">
+          <div class="label">Superficie</div>
+          <div class="value">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Densité</div>
+          <div class="value">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button mat-stroked-button color="primary" (click)="onAddToFavorites()">
+        <mat-icon>favorite_border</mat-icon>
+        <span>Ajouter aux favoris</span>
+      </button>
+      <button mat-raised-button color="primary" (click)="onExportPDF()">
+        <mat-icon>picture_as_pdf</mat-icon>
+        <span>Exporter PDF</span>
+      </button>
+    </div>
+  </div>
+</div>
+

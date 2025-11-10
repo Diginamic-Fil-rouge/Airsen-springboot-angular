@@ -10,7 +10,6 @@ import { environment } from "@/environments/environment";
  * including current air quality measurements with AIRSEN's geodistance fallback system.
  *
  * Backend endpoints:
- * - GET /api/v1/atmo/air-quality/{inseeCode}/latest (latest air quality data)
  * - GET /api/v1/atmo/air-quality/{inseeCode} (current air quality data)
  *
  * Data Sources (from backend):
@@ -24,17 +23,6 @@ export class AirQualityService {
   private readonly BASE_URL = `${environment.apiUrl}/atmo`;
 
   constructor(private http: HttpClient) {}
-
-  /**
-   * Get latest stored air quality data for a commune
-   * Returns the most recent air quality measurements from the database
-   *
-   * @param inseeCode 5-digit INSEE code
-   * @returns Observable<any> - Latest air quality response from backend
-   */
-  getAirLatestQuality(inseeCode: string): Observable<any> {
-    return this.http.get(`${this.BASE_URL}/air-quality/${inseeCode}/latest`);
-  }
 
   /**
    * Get current air quality data for a commune

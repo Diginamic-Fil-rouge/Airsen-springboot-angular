@@ -25,16 +25,6 @@
 
       <!-- Panel Content -->
       <div class="panel-content">
-        <!-- Filters -->
-        <app-filter-controls (pollutantChanged)="onPollutantChanged($event)"
-          (timeRangeChanged)="onTimeRangeChanged($event)" (heatmapToggled)="onHeatmapToggled($event)">
-        </app-filter-controls>
-
-        <!-- Commune List -->
-        <app-commune-list [communes]="communes" [selectedCommune]="selectedCommune"
-          (communeSelected)="onCommuneSelected($event)">
-        </app-commune-list>
-
         <!-- Commune Details (when selected) -->
         <app-commune-detail-card *ngIf="selectedCommune" [commune]="selectedCommune" (close)="closeCommuneDetails()"
           (addToFavorites)="addToFavorites()" (exportPDF)="exportToPDF()">
@@ -52,7 +42,7 @@
 
       <!-- Map View Component -->
       <app-map-view [communes]="communes" [selectedCommune]="selectedCommune"
-        [showHeatmap]="currentFilter?.showHeatmap || false" [mapStyle]="currentFilter?.mapStyle || mapStyleDefault"
+        [showHeatmap]="false" [mapStyle]="mapStyleDefault"
         (communeSelected)="onCommuneSelected($event)" #mapView>
       </app-map-view>
 

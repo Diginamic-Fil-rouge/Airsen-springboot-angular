@@ -1,0 +1,335 @@
+@use '../../../../../styles/design-system.scss' as *;
+
+// =============================================================================
+// WEATHER SUMMARY CARD COMPONENT
+// =============================================================================
+// Displays current weather conditions with icon and details
+// Features:
+// - Large temperature display with weather icon
+// - Secondary details (wind, humidity, direction)
+// - Measurement timestamp
+// - Material Design weather icons
+// - Null-safe rendering
+// =============================================================================
+
+.weather-summary-card {
+  @include card();
+  margin-bottom: $space-6;
+  padding: $space-6;
+  border-radius: $radius-lg;
+  background: linear-gradient(
+    135deg,
+    $airsen-white 0%,
+    color.adjust($airsen-secondary-light, $lightness: 35%) 100%
+  );
+
+  // Primary weather display (temperature + icon)
+  .primary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $space-6;
+    padding-bottom: $space-4;
+    border-bottom: 1px solid $airsen-gray-200;
+
+    .weather-icon-container {
+      flex-shrink: 0;
+
+      .weather-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: $airsen-secondary;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+
+        @include respond-max('md') {
+          font-size: 56px;
+          width: 56px;
+          height: 56px;
+        }
+      }
+    }
+
+    .temp-container {
+      flex: 1;
+      margin-left: $space-4;
+
+      .temp {
+        font-size: $font-size-data;
+        font-weight: $font-weight-light;
+        color: $airsen-gray-900;
+        line-height: $line-height-tight;
+        margin-bottom: $space-2;
+
+        @include respond-max('md') {
+          font-size: $font-size-3xl;
+        }
+      }
+
+      .desc {
+        font-size: $font-size-base;
+        color: $airsen-gray-700;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+
+  // Secondary weather details (wind, humidity, direction)
+  .secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-4;
+    margin-bottom: $space-4;
+
+    @include respond-max('md') {
+      gap: $space-3;
+    }
+
+    .item {
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: $space-3;
+      background: $airsen-white;
+      border-radius: $radius-md;
+      box-shadow: $shadow-sm;
+      transition: $transition-all;
+
+      &:hover {
+        box-shadow: $shadow-md;
+        transform: translateY(-2px);
+      }
+
+      .detail-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+        color: $airsen-secondary;
+        margin-bottom: $space-2;
+      }
+
+      .detail-label {
+        font-size: $font-size-sm;
+        color: $airsen-gray-600;
+        margin-bottom: $space-1;
+        text-align: center;
+      }
+
+      .detail-value {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-bold;
+        color: $airsen-gray-900;
+        font-family: $font-family-mono;
+      }
+    }
+
+    // Single column on very small screens
+    @media (max-width: 360px) {
+      flex-direction: column;
+
+      .item {
+        min-width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .detail-icon {
+          margin-bottom: 0;
+        }
+
+        .detail-label,
+        .detail-value {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  // Measurement time
+  .measurement-time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-2;
+    padding: $space-2 $space-4;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    color: $airsen-gray-600;
+    font-weight: $font-weight-medium;
+
+    .time-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .time-text {
+      letter-spacing: $letter-spacing-normal;
+    }
+  }
+
+  // No data state
+  .no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $space-8 $space-4;
+    text-align: center;
+    color: $airsen-gray-500;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: $airsen-gray-300;
+      margin-bottom: $space-3;
+    }
+
+    p {
+      margin: 0;
+      font-size: $font-size-sm;
+      color: $airsen-gray-600;
+    }
+  }
+
+  // Accessibility: focus styles
+  &:focus-visible {
+    @include focus-ring();
+  }
+}
+
+// Weather condition specific styling (optional enhancements)
+.weather-summary-card {
+  // Sunny conditions - warmer gradient
+  &.condition-sunny {
+    background: linear-gradient(
+      135deg,
+      $airsen-white 0%,
+      color.adjust($airsen-yellow-moderate, $lightness: 35%) 100%
+    );
+
+    .weather-icon {
+      color: color.adjust($airsen-yellow-moderate, $lightness: -10%);
+    }
+  }
+
+  // Rainy conditions - cooler gradient
+  &.condition-rain {
+    background: linear-gradient(
+      135deg,
+      $airsen-white 0%,
+      color.adjust($airsen-secondary, $lightness: 40%) 100%
+    );
+
+    .weather-icon {
+      color: $airsen-secondary;
+    }
+  }
+
+  // Cloudy conditions - neutral gradient
+  &.condition-cloudy {
+    background: linear-gradient(
+      135deg,
+      $airsen-white 0%,
+      $airsen-gray-100 100%
+    );
+
+    .weather-icon {
+      color: $airsen-gray-600;
+    }
+  }
+
+  // Stormy conditions - dramatic gradient
+  &.condition-storm {
+    background: linear-gradient(
+      135deg,
+      $airsen-white 0%,
+      color.adjust($airsen-gray-300, $lightness: 10%) 100%
+    );
+
+    .weather-icon {
+      color: color.adjust($airsen-secondary-dark, $lightness: 10%);
+    }
+  }
+
+  // Snowy conditions - cool gradient
+  &.condition-snow {
+    background: linear-gradient(
+      135deg,
+      $airsen-white 0%,
+      color.adjust($airsen-secondary-light, $lightness: 45%) 100%
+    );
+
+    .weather-icon {
+      color: $airsen-secondary-light;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .weather-summary-card {
+    border: 2px solid $airsen-gray-900;
+
+    .primary {
+      border-bottom-width: 2px;
+    }
+
+    .secondary .item {
+      border: 1px solid $airsen-gray-900;
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .weather-summary-card,
+  .weather-summary-card .secondary .item {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// Dark mode support (optional, for future enhancement)
+@media (prefers-color-scheme: dark) {
+  .weather-summary-card {
+    background: linear-gradient(
+      135deg,
+      $airsen-gray-800 0%,
+      $airsen-gray-900 100%
+    );
+
+    .primary {
+      border-bottom-color: $airsen-gray-700;
+
+      .temp,
+      .desc {
+        color: $airsen-gray-100;
+      }
+    }
+
+    .secondary .item {
+      background: $airsen-gray-800;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+      .detail-label {
+        color: $airsen-gray-400;
+      }
+
+      .detail-value {
+        color: $airsen-gray-100;
+      }
+    }
+
+    .measurement-time {
+      background: rgba(0, 0, 0, 0.3);
+      color: $airsen-gray-300;
+    }
+  }
+}

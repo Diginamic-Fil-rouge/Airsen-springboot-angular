@@ -60,17 +60,6 @@ export class GeographicService {
     );
   }
 
-  /**
-   * Get detailed commune data (including air quality snapshot) used by map service
-   */
-  getCommuneDatas(inseeCode: string): Observable<CommuneDatas> {
-    return this.http.get<CommuneDatas>(`${this.BASE_URL}/communes/${inseeCode}/detail`).pipe(
-      catchError((error) => {
-        console.error(`Failed to fetch commune data ${inseeCode}:`, error);
-        throw error;
-      })
-    );
-  }
 
   /**
    * Get all communes with coordinates (used by map service)

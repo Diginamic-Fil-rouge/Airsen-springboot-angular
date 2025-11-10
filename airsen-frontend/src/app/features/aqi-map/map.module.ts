@@ -7,12 +7,10 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { MatSlideToggleModule } from "@angular/material/slide-toggle";
-import { MatSelectModule } from "@angular/material/select";
+import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { MatChipsModule } from "@angular/material/chips";
-import { MatCardModule } from "@angular/material/card";
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
 
 // Routing
 import { MapRoutingModule } from "./map-routing.module";
@@ -20,10 +18,12 @@ import { MapRoutingModule } from "./map-routing.module";
 // Components
 import { MapComponent } from "./map.component";
 import { MapViewComponent } from "./components/map-view/map-view.component";
-import { FilterControlsComponent } from "./components/side-panel/filter-controls.component";
-import { CommuneListComponent } from "./components/side-panel/commune-list.component";
 import { LayerSwitcherComponent } from "./components/map-view/map-controls/layer-switcher.component";
 import { CommuneDetailCardComponent } from "./components/commune-details/commune-detail-card.component";
+import { MapSearchBarComponent } from "./components/search/map-search-bar.component";
+import { CommuneDetailPanelComponent } from "./components/detail-panel/commune-detail-panel.component";
+import { AqiSummaryCardComponent } from "./components/detail-panel/aqi-summary-card.component";
+import { WeatherSummaryCardComponent } from "./components/detail-panel/weather-summary-card.component";
 
 // Services
 import { MapService } from "./services/map.service";
@@ -32,27 +32,27 @@ import { MapService } from "./services/map.service";
   declarations: [
     MapComponent,
     MapViewComponent,
-    FilterControlsComponent,
-    CommuneListComponent,
     LayerSwitcherComponent,
     CommuneDetailCardComponent,
+    MapSearchBarComponent,
+    CommuneDetailPanelComponent,
+    AqiSummaryCardComponent,
+    WeatherSummaryCardComponent,
   ],
   imports: [
     CommonModule,
+    MapRoutingModule,
     FormsModule,
     ReactiveFormsModule,
-    MapRoutingModule,
     // Material
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatSlideToggleModule,
-    MatSelectModule,
+    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatChipsModule,
-    MatCardModule,
+    MatAutocompleteModule,
   ],
   providers: [MapService],
 })

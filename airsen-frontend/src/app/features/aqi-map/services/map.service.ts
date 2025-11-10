@@ -1,12 +1,11 @@
 import { Injectable, inject } from "@angular/core";
-import { Observable, BehaviorSubject, combineLatest, of } from "rxjs";
+import { Observable, BehaviorSubject, of } from "rxjs";
 import { map, catchError, tap } from "rxjs/operators";
 import { GeographicService } from "./geographic.service";
 import { AirQualityService } from "./air-quality.service";
 import { FavoriteService } from "@/features/favorites/services/favorite.service";
 import { AuthService } from "@/auth/services/auth.service";
 import { Commune, CommuneWithAirQuality } from "@/shared/models/commune.model";
-import { MapFilter, DEFAULT_MAP_FILTER } from "../models/map-filter.model";
 
 /**
  * Map Service
@@ -24,11 +23,9 @@ export class MapService {
   private authService = inject(AuthService);
 
   // State management
-  private filterSubject = new BehaviorSubject<MapFilter>(DEFAULT_MAP_FILTER);
   private selectedCommuneSubject = new BehaviorSubject<CommuneWithAirQuality | null>(null);
   private communesSubject = new BehaviorSubject<CommuneWithAirQuality[]>([]);
 
-  public filter$ = this.filterSubject.asObservable();
   public selectedCommune$ = this.selectedCommuneSubject.asObservable();
   public communes$ = this.communesSubject.asObservable();
 
@@ -55,7 +52,7 @@ export class MapService {
    * Get commune details by INSEE code
    */
   getCommuneDetails(inseeCode: string): Observable<CommuneWithAirQuality | null> {
-    return this.geographicService.getCommuneDatas(inseeCode).pipe(
+    return this.geographicService.getCommuneDetails(inseeCode).pipe(
       map((data) => {
         if (!data) return null;
 
@@ -79,8 +76,8 @@ export class MapService {
             o3: data.airQuality?.pollutants?.o3,
             no2: data.airQuality?.pollutants?.no2,
             so2: data.airQuality?.pollutants?.so2,
-            co: (data as any)?.airQuality?.pollutants?.co
-          }
+            co: (data as any)?.airQuality?.pollutants?.co,
+          },
         };
 
         this.selectedCommuneSubject.next(commune);
@@ -93,12 +90,13 @@ export class MapService {
     );
   }
 
+
   /**
-   * Update map filter
+   * Update map filter (used for mapStyle changes)
    */
-  updateFilter(filter: Partial<MapFilter>): void {
-    const currentFilter = this.filterSubject.value;
-    this.filterSubject.next({ ...currentFilter, ...filter });
+  updateFilter(filter: Partial<any>): void {
+    // Simplified implementation - only handles mapStyle now
+    // Filter state management removed as part of UI redesign
   }
 
   /**
@@ -108,52 +106,6 @@ export class MapService {
     this.selectedCommuneSubject.next(commune);
   }
 
-  /**
-   * Get filtered communes based on current filter
-   */
-  getFilteredCommunes(): Observable<CommuneWithAirQuality[]> {
-    return combineLatest([this.communes$, this.filter$]).pipe(
-      map(([communes, filter]) => {
-        let filtered = communes;
-
-        // Filter by search query
-        if (filter.searchQuery) {
-          const query = filter.searchQuery.toLowerCase();
-          filtered = filtered.filter((c) => c.name.toLowerCase().includes(query) || c.inseeCode.includes(query));
-        }
-
-        // Filter by ATMO index levels (backend provides the index)
-        if (filter.aqiLevels.length > 0) {
-          filtered = filtered.filter((c) => {
-            const atmoIndex = c.currentAirQuality?.atmoIndex || 0;
-            // Map ATMO index to level string for filtering
-            const levelMap: Record<number, string> = {
-              1: "GOOD",
-              2: "MODERATE",
-              3: "UNHEALTHY_SENSITIVE",
-              4: "UNHEALTHY",
-              5: "VERY_UNHEALTHY",
-              6: "HAZARDOUS",
-            };
-            const level = levelMap[atmoIndex] || "UNKNOWN";
-            return filter.aqiLevels.includes(level);
-          });
-        }
-
-        // Filter by departments
-        if (filter.departments.length > 0) {
-          filtered = filtered.filter((c) => c.departmentCode && filter.departments.includes(c.departmentCode));
-        }
-
-        // Filter by regions
-        if (filter.regions.length > 0) {
-          filtered = filtered.filter((c) => c.regionCode && filter.regions.includes(c.regionCode));
-        }
-
-        return filtered;
-      })
-    );
-  }
 
   /**
    * Check if user has favorited a commune
