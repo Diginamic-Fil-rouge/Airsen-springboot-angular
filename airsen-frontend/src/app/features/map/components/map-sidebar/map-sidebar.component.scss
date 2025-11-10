@@ -1,0 +1,13 @@
+@use 'styles/design-system' as *;
+
+.map-sidebar {
+  display: block;
+  padding: $space-4;
+  background: $airsen-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+}
+
+.sidebar-section {
+  margin-bottom: $space-4;
+}

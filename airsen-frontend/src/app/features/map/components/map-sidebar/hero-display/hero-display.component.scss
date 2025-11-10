@@ -1,0 +1,16 @@
+@use 'styles/design-system' as *;
+
+.hero-card {
+  text-align: center;
+  padding: $space-6;
+}
+
+.aqi-value {
+  font-size: $font-size-5xl;
+  font-weight: $font-weight-bold;
+}
+
+.aqi-label {
+  color: $airsen-gray-600;
+}
+

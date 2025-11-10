@@ -24,6 +24,18 @@ import { MapSearchBarComponent } from "./components/search/map-search-bar.compon
 import { CommuneDetailPanelComponent } from "./components/detail-panel/commune-detail-panel.component";
 import { AqiSummaryCardComponent } from "./components/detail-panel/aqi-summary-card.component";
 import { WeatherSummaryCardComponent } from "./components/detail-panel/weather-summary-card.component";
+// New scaffolding components (Task 1.3)
+import { MapSidebarComponent } from "./components/map-sidebar/map-sidebar.component";
+import { SearchBarComponent } from "./components/map-sidebar/search-bar/search-bar.component";
+import { LocationHeaderComponent } from "./components/map-sidebar/location-header/location-header.component";
+import { HeroDisplayComponent } from "./components/map-sidebar/hero-display/hero-display.component";
+import { HealthRecommendationsComponent } from "./components/map-sidebar/health-recommendations/health-recommendations.component";
+import { PollutantBreakdownComponent } from "./components/map-sidebar/pollutant-breakdown/pollutant-breakdown.component";
+import { TrendChartComponent } from "./components/map-sidebar/trend-chart/trend-chart.component";
+import { WeatherSummaryComponent } from "./components/map-sidebar/weather-summary/weather-summary.component";
+import { LeafletMapComponent } from "./components/leaflet-map/leaflet-map.component";
+import { MapControlsComponent } from "./components/leaflet-map/map-controls/map-controls.component";
+import { MapLegendComponent } from "./components/map-legend/map-legend.component";
 
 // Services
 import { MapService } from "./services/map.service";
@@ -38,6 +50,18 @@ import { MapService } from "./services/map.service";
     CommuneDetailPanelComponent,
     AqiSummaryCardComponent,
     WeatherSummaryCardComponent,
+    // New scaffolded components
+    MapSidebarComponent,
+    SearchBarComponent,
+    LocationHeaderComponent,
+    HeroDisplayComponent,
+    HealthRecommendationsComponent,
+    PollutantBreakdownComponent,
+    TrendChartComponent,
+    WeatherSummaryComponent,
+    LeafletMapComponent,
+    MapControlsComponent,
+    MapLegendComponent,
   ],
   imports: [
     CommonModule,

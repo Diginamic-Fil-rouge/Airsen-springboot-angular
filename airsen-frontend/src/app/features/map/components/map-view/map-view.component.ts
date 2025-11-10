@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, OnDestroy, Input, Output, EventEmitter, inject } from "@angular/core";
 import * as L from "leaflet";
+import "leaflet.markercluster";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { CommuneWithAirQuality } from "@/shared/models/commune.model";
@@ -24,21 +25,20 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
   @Output() communeSelected = new EventEmitter<CommuneWithAirQuality>();
 
   private map: L.Map | null = null;
-  private markerLayer: L.LayerGroup | null = null;
+  private markerClusterGroup: L.MarkerClusterGroup | null = null;
   private heatmapLayer: L.LayerGroup | null = null;
   private tileLayers: Map<MapStyle, L.TileLayer> = new Map();
   private markers: Map<string, L.Marker> = new Map();
   private destroy$ = new Subject<void>();
   private currentZoom: number = 6;
 
-  // Population thresholds based on zoom level
+  // Population thresholds based on zoom level (ATMO France standard)
   private readonly ZOOM_POPULATION_THRESHOLDS = {
-    3: 1000000, // Zoom 3-5: Very large cities (1M+)
-    6: 200000, // Zoom 6-7: Large cities (200K+)
-    8: 100000, // Zoom 8-9: Medium cities (100K+)
-    10: 50000, // Zoom 10-11: Small cities (50K+)
-    12: 20000, // Zoom 12-13: Towns (20K+)
-    14: 5000, // Zoom 14+: All communes (5K+)
+    0: 100000, // Zoom 0-5: Large cities (100K+)
+    6: 50000,  // Zoom 6-7: Medium cities (50K+)
+    8: 20000,  // Zoom 8-9: Small cities (20K+)
+    10: 10000, // Zoom 10-11: Towns (10K+)
+    12: 0,     // Zoom 12+: All communes
   };
 
   ngAfterViewInit(): void {
@@ -120,12 +120,11 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
   private getPopulationThreshold(): number {
     const zoom = Math.floor(this.currentZoom);
 
-    if (zoom <= 5) return this.ZOOM_POPULATION_THRESHOLDS[3];
+    if (zoom <= 5) return this.ZOOM_POPULATION_THRESHOLDS[0];
     if (zoom <= 7) return this.ZOOM_POPULATION_THRESHOLDS[6];
     if (zoom <= 9) return this.ZOOM_POPULATION_THRESHOLDS[8];
     if (zoom <= 11) return this.ZOOM_POPULATION_THRESHOLDS[10];
-    if (zoom <= 13) return this.ZOOM_POPULATION_THRESHOLDS[12];
-    return this.ZOOM_POPULATION_THRESHOLDS[14];
+    return this.ZOOM_POPULATION_THRESHOLDS[12];
   }
 
   /**
@@ -194,21 +193,83 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Create marker layer
+   * Create marker cluster group with custom cluster icons
    */
   private createMarkerLayer(): void {
     if (!this.map) return;
-    this.markerLayer = L.layerGroup().addTo(this.map);
+
+    this.markerClusterGroup = L.markerClusterGroup({
+      iconCreateFunction: (cluster) => this.createClusterIcon(cluster),
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      maxClusterRadius: 50,
+    });
+
+    this.map.addLayer(this.markerClusterGroup);
+  }
+
+  /**
+   * Create custom cluster icon showing average AQI with color
+   */
+  private createClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
+    const markers = cluster.getAllChildMarkers();
+    const count = markers.length;
+
+    // Calculate average AQI from all markers in cluster
+    let totalAqi = 0;
+    let validCount = 0;
+
+    markers.forEach((marker: any) => {
+      const commune = marker.options.communeData as CommuneWithAirQuality;
+      if (commune?.currentAirQuality?.atmoIndex) {
+        totalAqi += commune.currentAirQuality.atmoIndex;
+        validCount++;
+      }
+    });
+
+    const averageAqi = validCount > 0 ? Math.round(totalAqi / validCount) : 0;
+    const color = this.getAqiColorForIndex(averageAqi);
+
+    return L.divIcon({
+      html: `
+        <div class="marker-cluster-custom" style="background-color: ${color}; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+          <span style="color: white; font-weight: bold; font-size: 14px;">${count}</span>
+          <span style="color: white; font-size: 10px; display: block; margin-top: -4px;">AQI ${averageAqi}</span>
+        </div>
+      `,
+      className: "marker-cluster",
+      iconSize: L.point(50, 50),
+      iconAnchor: [25, 25],
+    });
+  }
+
+  /**
+   * Get AQI color for a given index
+   * Uses backend colors when available, falls back to standard ATMO colors
+   */
+  private getAqiColorForIndex(index: number): string {
+    // Standard ATMO France colors (fallback)
+    const colorMap: { [key: number]: string } = {
+      1: "#50f0e6", // Bon (cyan/turquoise)
+      2: "#50ccaa", // Moyen (teal)
+      3: "#f0e641", // Dégradé (yellow)
+      4: "#ff8c00", // Mauvais (orange)
+      5: "#ff0000", // Très mauvais (red)
+      6: "#990000", // Extrêmement mauvais (dark red)
+    };
+
+    return colorMap[index] || "#999999";
   }
 
   /**
    * Update markers - filtered by population based on zoom level
    */
   private updateMarkers(): void {
-    if (!this.map || !this.markerLayer) return;
+    if (!this.map || !this.markerClusterGroup) return;
 
     // Clear existing markers
-    this.markerLayer.clearLayers();
+    this.markerClusterGroup.clearLayers();
     this.markers.clear();
 
     // Get population threshold for current zoom
@@ -226,7 +287,7 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
       if (!commune.latitude || !commune.longitude) return;
 
       const marker = this.createMarker(commune);
-      marker.addTo(this.markerLayer!);
+      this.markerClusterGroup!.addLayer(marker);
       this.markers.set(commune.inseeCode, marker);
     });
 
@@ -238,7 +299,7 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
       this.selectedCommune.longitude
     ) {
       const marker = this.createMarker(this.selectedCommune);
-      marker.addTo(this.markerLayer);
+      this.markerClusterGroup.addLayer(marker);
       this.markers.set(this.selectedCommune.inseeCode, marker);
     }
   }
@@ -251,7 +312,7 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
     const qualifier = commune.currentAirQuality?.qualifier || "Inconnu";
     const atmoIndex = commune.currentAirQuality?.atmoIndex || 0;
 
-    // Create custom icon with AQI color
+    // Create custom icon with AQI color (from backend)
     const icon = L.divIcon({
       className: "aqi-custom-marker",
       html: `
@@ -265,7 +326,11 @@ export class MapViewComponent implements AfterViewInit, OnDestroy {
       iconAnchor: [18, 18],
     });
 
-    const marker = L.marker([commune.latitude!, commune.longitude!], { icon });
+    // Store commune data in marker options for cluster icon calculation
+    const marker = L.marker([commune.latitude!, commune.longitude!], {
+      icon,
+      communeData: commune
+    } as any);
 
     // Add popup
     const popupContent = `

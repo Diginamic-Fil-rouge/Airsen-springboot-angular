@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { AirQualityWidgetComponent } from "./air-quality-widget";
-import { AirQualityService } from "@/features/aqi-map/services/air-quality.service";
+import { AirQualityService } from "@/app/features/map/services/air-quality.service";
 import { of, throwError } from "rxjs";
 import { By } from "@angular/platform-browser";
 import { MatIconModule } from "@angular/material/icon";

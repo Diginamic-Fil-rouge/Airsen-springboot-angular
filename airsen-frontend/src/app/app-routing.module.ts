@@ -36,7 +36,7 @@ const routes: Routes = [
   // AQI Map Route (air quality map interface - protected)
   {
     path: "aqi-map",
-    loadChildren: () => import("./features/aqi-map/map.module").then((m) => m.MapModule),
+    loadChildren: () => import("./features/map/map.module").then((m) => m.MapModule),
     canActivate: [AuthGuard],
   },
 

@@ -1,0 +1,11 @@
+@use 'styles/design-system' as *;
+
+.health-card {
+  padding: $space-4;
+}
+
+.title {
+  font-weight: $font-weight-semibold;
+  margin-bottom: $space-2;
+}
+
