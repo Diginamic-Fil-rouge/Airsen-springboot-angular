@@ -33,8 +33,6 @@ import { HealthRecommendationsComponent } from "./components/map-sidebar/health-
 import { PollutantBreakdownComponent } from "./components/map-sidebar/pollutant-breakdown/pollutant-breakdown.component";
 import { TrendChartComponent } from "./components/map-sidebar/trend-chart/trend-chart.component";
 import { WeatherSummaryComponent } from "./components/map-sidebar/weather-summary/weather-summary.component";
-import { LeafletMapComponent } from "./components/leaflet-map/leaflet-map.component";
-import { MapControlsComponent } from "./components/leaflet-map/map-controls/map-controls.component";
 import { MapLegendComponent } from "./components/map-legend/map-legend.component";
 
 // Services
@@ -59,8 +57,6 @@ import { MapService } from "./services/map.service";
     PollutantBreakdownComponent,
     TrendChartComponent,
     WeatherSummaryComponent,
-    LeafletMapComponent,
-    MapControlsComponent,
     MapLegendComponent,
   ],
   imports: [
