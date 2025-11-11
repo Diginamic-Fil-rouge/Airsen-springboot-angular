@@ -151,4 +151,74 @@ export class CommuneDataService {
   isLoading(): boolean {
     return this.loadingSubject.value;
   }
+
+  /**
+   * Fetch detailed commune data including pollutant breakdown.
+   *
+   * This endpoint returns comprehensive commune information including:
+   * - Air quality index (ATMO index, qualifier, color)
+   * - Detailed pollutant concentrations (PM2.5, PM10, SO2, NO2, O3)
+   * - Geographic and demographic information
+   * - Measurement timestamps and data source
+   *
+   * @param inseeCode INSEE code of the commune (e.g., "75056" for Paris)
+   * @returns Observable<CommuneWithAirQuality> Detailed commune data with pollutants
+   *
+   * @example
+   * getCommuneDetail("75056").subscribe(commune => {
+   *   console.log(commune.pollutants); // { pm25: 15, pm10: 25, ... }
+   * });
+   */
+  getCommuneDetail(inseeCode: string): Observable<CommuneWithAirQuality> {
+    console.log(`[CommuneDataService] Fetching detail for commune ${inseeCode}`);
+
+    return this.http.get<any>(`${environment.apiUrl}/communes/${inseeCode}/detail`).pipe(
+      tap((response) => {
+        console.log(`[CommuneDataService] Loaded detail for ${response.name}`);
+      }),
+      map((response) => this.transformDetailResponseToCommuneWithAirQuality(response)),
+      catchError((error) => {
+        console.error(`[CommuneDataService] Failed to fetch commune detail for ${inseeCode}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Transforms backend commune detail response to CommuneWithAirQuality format.
+   *
+   * Backend returns nested airQuality object with pollutants inside,
+   * Frontend expects pollutants at the top level for component usage.
+   *
+   * @param response Backend API response from /communes/{inseeCode}/detail
+   * @returns CommuneWithAirQuality Transformed commune data
+   */
+  private transformDetailResponseToCommuneWithAirQuality(response: any): CommuneWithAirQuality {
+    return {
+      id: 0,
+      inseeCode: response.inseeCode,
+      name: response.name,
+      departmentCode: response.departmentCode,
+      regionCode: response.regionCode,
+      population: response.population,
+      latitude: response.latitude,
+      longitude: response.longitude,
+      currentAirQuality: response.airQuality
+        ? {
+            atmoIndex: response.airQuality.atmoIndex,
+            qualifier: response.airQuality.qualifier,
+            color: response.airQuality.color,
+          }
+        : undefined,
+      pollutants: response.airQuality?.pollutants
+        ? {
+            pm25: response.airQuality.pollutants.pm25,
+            pm10: response.airQuality.pollutants.pm10,
+            so2: response.airQuality.pollutants.so2,
+            no2: response.airQuality.pollutants.no2,
+            o3: response.airQuality.pollutants.o3,
+          }
+        : undefined,
+    };
+  }
 }

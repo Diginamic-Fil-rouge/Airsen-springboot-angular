@@ -58,10 +58,7 @@ export class MapComponent implements OnInit, OnDestroy {
     mobile: "(max-width: 639px)",
   };
 
-  constructor(
-    private communeDataService: CommuneDataService,
-    private breakpointObserver: BreakpointObserver,
-  ) {
+  constructor(private communeDataService: CommuneDataService, private breakpointObserver: BreakpointObserver) {
     this.isLoading$ = this.communeDataService.loading$;
   }
 
@@ -147,15 +144,32 @@ export class MapComponent implements OnInit, OnDestroy {
 
   /**
    * Handles commune marker click events.
-   * Phase 2 will show sidebar with detailed commune information.
+   * Fetches detailed commune data including pollutant breakdown
+   * and displays it in the sidebar.
    */
   onCommuneClicked(commune: CommuneWithAirQuality): void {
-    console.log("[Map] Commune clicked:", commune.name, commune.currentAirQuality);
-    this.selectedCommune = commune;
+    console.log("[Map] Commune clicked:", commune.name, "Fetching detailed data...");
 
-    if (this.sidebarDisplayMode !== "desktop") {
-      this.isSidebarOpen = true;
-    }
+    // Fetch detailed commune data including pollutants
+    this.communeDataService.getCommuneDetail(commune.inseeCode).subscribe({
+      next: (detailedCommune) => {
+        console.log("[Map] Detailed data loaded:", detailedCommune.pollutants);
+        this.selectedCommune = detailedCommune;
+
+        if (this.sidebarDisplayMode !== "desktop") {
+          this.isSidebarOpen = true;
+        }
+      },
+      error: (error) => {
+        console.error("[Map] Failed to load commune detail:", error);
+        // Fallback: show basic commune data without pollutants
+        this.selectedCommune = commune;
+
+        if (this.sidebarDisplayMode !== "desktop") {
+          this.isSidebarOpen = true;
+        }
+      },
+    });
   }
 
   onSidebarOpenChange(open: boolean): void {

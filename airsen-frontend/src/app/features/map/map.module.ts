@@ -2,6 +2,7 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MapRoutingModule } from "./map-routing.module";
 import { SharedModule } from "@/shared/shared.module";
+import { BaseChartDirective } from "ng2-charts";
 
 // Components
 import { MapComponent } from "./map.component";
@@ -51,6 +52,6 @@ import { MapLegendComponent } from "./components/map-sidebar/map-legend/map-lege
     TrendChartComponent,
     MapLegendComponent,
   ],
-  imports: [CommonModule, MapRoutingModule, SharedModule],
+  imports: [CommonModule, MapRoutingModule, SharedModule, BaseChartDirective],
 })
 export class MapModule {}
