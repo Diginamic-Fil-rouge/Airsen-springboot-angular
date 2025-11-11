@@ -47,6 +47,18 @@ export class CommuneDataService {
    */
   public loading$ = this.loadingSubject.asObservable();
 
+  /**
+   * BehaviorSubject tracking error state.
+   * Holds error message when API calls fail, null when no error.
+   */
+  private errorSubject = new BehaviorSubject<string | null>(null);
+
+  /**
+   * Observable error state stream for components.
+   * Components subscribe to show error messages or retry UI.
+   */
+  public error$ = this.errorSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
   /**
@@ -90,12 +102,29 @@ export class CommuneDataService {
       tap((communeMapData) => {
         console.log(`[CommuneDataService] Loaded ${communeMapData.length} communes ${filterMsg}`);
         this.loadingSubject.next(false);
+        this.setError(null);
       }),
       // Transform backend format to frontend format
       map((communeMapData) => this.transformMapDataToCommunesWithAirQuality(communeMapData)),
       catchError((error) => {
         console.error("[CommuneDataService] Failed to fetch communes:", error);
         this.loadingSubject.next(false);
+
+        let errorMessage = "Impossible de charger les communes. Veuillez réessayer.";
+
+        if (error.status === 401) {
+          errorMessage = "Authentification requise. Veuillez vous reconnecter.";
+        } else if (error.status === 403) {
+          errorMessage = "Accès refusé. Vous n'avez pas les permissions nécessaires.";
+        } else if (error.status === 404) {
+          errorMessage = "Les communes n'ont pas pu être trouvées.";
+        } else if (error.status === 500) {
+          errorMessage = "Erreur serveur. Veuillez réessayer plus tard.";
+        } else if (error.status === 0) {
+          errorMessage = "Impossible de contacter le serveur. Vérifiez votre connexion.";
+        }
+
+        this.setError(errorMessage);
         return of([]);
       })
     );
@@ -153,6 +182,32 @@ export class CommuneDataService {
   }
 
   /**
+   * Gets the current error message synchronously.
+   *
+   * @returns string | null Current error message or null if no error
+   */
+  getError(): string | null {
+    return this.errorSubject.value;
+  }
+
+  /**
+   * Sets the error state. Called internally when API calls fail.
+   * Components can also clear errors by passing null.
+   *
+   * @param error Error message or null to clear error
+   */
+  private setError(error: string | null): void {
+    this.errorSubject.next(error);
+  }
+
+  /**
+   * Clears any current error state.
+   */
+  clearError(): void {
+    this.setError(null);
+  }
+
+  /**
    * Fetch detailed commune data including pollutant breakdown.
    *
    * This endpoint returns comprehensive commune information including:
@@ -175,10 +230,27 @@ export class CommuneDataService {
     return this.http.get<any>(`${environment.apiUrl}/communes/${inseeCode}/detail`).pipe(
       tap((response) => {
         console.log(`[CommuneDataService] Loaded detail for ${response.name}`);
+        this.setError(null);
       }),
       map((response) => this.transformDetailResponseToCommuneWithAirQuality(response)),
       catchError((error) => {
         console.error(`[CommuneDataService] Failed to fetch commune detail for ${inseeCode}:`, error);
+
+        let errorMessage = "Impossible de charger les détails de la commune.";
+
+        if (error.status === 401) {
+          errorMessage = "Authentification requise. Veuillez vous reconnecter.";
+        } else if (error.status === 403) {
+          errorMessage = "Accès refusé pour cette commune.";
+        } else if (error.status === 404) {
+          errorMessage = "Commune non trouvée.";
+        } else if (error.status === 500) {
+          errorMessage = "Erreur serveur. Veuillez réessayer plus tard.";
+        } else if (error.status === 0) {
+          errorMessage = "Impossible de contacter le serveur.";
+        }
+
+        this.setError(errorMessage);
         throw error;
       })
     );
@@ -267,9 +339,7 @@ export class CommuneDataService {
 
     console.log(`[CommuneDataService] Searching communes with AQI for "${trimmedQuery}" (limit=${limit})`);
 
-    const params = new HttpParams()
-      .set('q', trimmedQuery)
-      .set('limit', limit.toString());
+    const params = new HttpParams().set("q", trimmedQuery).set("limit", limit.toString());
 
     return this.http.get<CommuneMapData[]>(`${environment.apiUrl}/communes/search`, { params }).pipe(
       map((communeMapData) => {

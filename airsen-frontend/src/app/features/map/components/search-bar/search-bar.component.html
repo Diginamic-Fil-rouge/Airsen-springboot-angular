@@ -21,7 +21,7 @@
   <!-- Results Dropdown -->
   <ng-container *ngIf="filteredCommunes$ | async as communes">
     <div class="results-card"
-      *ngIf="showResults && (communes.length > 0 || isLoading || (hasTyped && communes.length === 0))">
+      *ngIf="showResults && (communes.length > 0 || isLoading || (hasTyped && communes.length === 0) || searchError)">
       <!-- Cities Section -->
       <div class="results-section" *ngIf="communes.length > 0">
         <div class="results-list">
@@ -43,9 +43,15 @@
       </div>
 
       <!-- No Results -->
-      <div class="no-results" *ngIf="communes.length === 0 && hasTyped && !isLoading">
+      <div class="no-results" *ngIf="communes.length === 0 && hasTyped && !isLoading && !searchError">
         <mat-icon>search_off</mat-icon>
         <p>Aucune commune trouvée</p>
+      </div>
+
+      <!-- Search Error -->
+      <div class="search-error" *ngIf="searchError">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ searchError }}</p>
       </div>
 
       <!-- Loading -->

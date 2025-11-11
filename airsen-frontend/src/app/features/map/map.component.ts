@@ -43,6 +43,7 @@ import { MapSidebarDisplayMode } from "./components/map-sidebar/map-sidebar.type
 export class MapComponent implements OnInit, OnDestroy {
   communes: CommuneWithAirQuality[] = [];
   isLoading$: Observable<boolean>;
+  error$: Observable<string | null>;
   selectedCommune: CommuneWithAirQuality | null = null;
   isSidebarOpen = true;
   sidebarDisplayMode: MapSidebarDisplayMode = "desktop";
@@ -61,6 +62,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
   constructor(private communeDataService: CommuneDataService, private breakpointObserver: BreakpointObserver) {
     this.isLoading$ = this.communeDataService.loading$;
+    this.error$ = this.communeDataService.error$;
   }
 
   ngOnInit(): void {
@@ -226,6 +228,16 @@ export class MapComponent implements OnInit, OnDestroy {
 
   openSidebar(): void {
     this.isSidebarOpen = true;
+  }
+
+  /**
+   * Retries loading communes after an error.
+   * Clears error state and reloads initial communes.
+   */
+  retryLoadCommunes(): void {
+    console.log("[Map] Retrying commune load after error");
+    this.communeDataService.clearError();
+    this.loadCommunes(50000);
   }
 
   get isMobileView(): boolean {
