@@ -252,6 +252,28 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
     List<Object[]> findCommunesWithCoordinatesAndAirQuality();
 
     /**
+     * Gets communes with valid coordinates and latest air quality data, filtered by minimum population.
+     * Used for progressive map loading (show major cities first).
+     *
+     * @param minPopulation Minimum population threshold for filtering
+     * @return list of object arrays containing [Commune entity, atmoIndex, qualifier, color]
+     */
+    @Query("SELECT c, aq.atmIndex, aq.atmoQual, aq.atmoColor " +
+           "FROM Commune c " +
+           "LEFT JOIN c.airQuality aq " +
+           "WHERE c.latitude IS NOT NULL AND c.longitude IS NOT NULL " +
+           "AND c.latitude <> 0 AND c.longitude <> 0 " +
+           "AND c.latitude BETWEEN 41 AND 51 AND c.longitude BETWEEN -5 AND 10 " +
+           "AND c.population >= :minPopulation " +
+           "AND (aq.measurementDate = (" +
+           "    SELECT MAX(aq2.measurementDate) " +
+           "    FROM AirQuality aq2 " +
+           "    WHERE aq2.commune.id = c.id" +
+           ") OR aq IS NULL) " +
+           "ORDER BY c.population DESC")
+    List<Object[]> findCommunesWithCoordinatesAndAirQualityByMinPopulation(@Param("minPopulation") Integer minPopulation);
+
+    /**
      * Finds communes by department ID (for external API integration).
      *
      * @param departmentId department identifier

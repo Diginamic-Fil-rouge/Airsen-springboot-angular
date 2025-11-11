@@ -218,6 +218,66 @@ public class CommuneService {
     }
 
     /**
+     * Get communes with coordinates, filtered by minimum population
+     *
+     * PERFORMANCE OPTIMIZATION: Use minPopulation filter for initial map load to prevent
+     * loading 35,000+ communes (~5MB) on page load. Progressive loading strategy loads
+     * more communes as user zooms in.
+     *
+     * Population thresholds:
+     * - Zoom 6 (initial): minPopulation=50000 → ~200 communes (~50KB) - Major cities only
+     * - Zoom 8-9: minPopulation=20000 → ~500 communes (~150KB)
+     * - Zoom 10-11: minPopulation=10000 → ~1000 communes (~300KB)
+     * - Zoom 12+: minPopulation=undefined → All 35K communes (~5MB)
+     *
+     * @param minPopulation Minimum population threshold
+     * @return List of communes matching criteria with coordinates and air quality data
+     */
+    @Transactional(readOnly = true)
+    public List<CommuneDTO> getCommunesWithCoordinates(int minPopulation) {
+        log.debug("Fetching communes with valid coordinates and population >= {}", minPopulation);
+
+        List<Object[]> results = communeRepository
+            .findCommunesWithCoordinatesAndAirQualityByMinPopulation(minPopulation);
+
+        log.debug("Found {} communes matching population filter >= {}", results.size(), minPopulation);
+
+        // Calculate statistics for monitoring air quality data coverage
+        long communesWithAirQuality = results.stream()
+            .filter(row -> row[1] != null) // atmoIndex is not null
+            .count();
+        long communesWithoutAirQuality = results.size() - communesWithAirQuality;
+
+        log.info("Population filter >= {}: {} communes ({} with AQ data, {} without)",
+            minPopulation, results.size(), communesWithAirQuality, communesWithoutAirQuality);
+
+        // Map Object[] results to CommuneDTO with populated air quality fields
+        return results.stream()
+            .map(row -> {
+                Commune c = (Commune) row[0];
+                Integer atmoIndex = JpqlResultConverter.toIntegerNullable(row[1]);
+                String qualifier = JpqlResultConverter.toStringNullable(row[2]);
+                String color = JpqlResultConverter.toStringNullable(row[3]);
+
+                return new CommuneDTO(
+                    c.getId(),
+                    c.getInseeCode(),
+                    c.getName(),
+                    c.getDepartment() != null ? c.getDepartment().getDepartmentCode() : null,
+                    c.getDepartment() != null && c.getDepartment().getRegion() != null
+                        ? c.getDepartment().getRegion().getRegionCode() : null,
+                    c.getPopulation(),
+                    c.getLatitude(),
+                    c.getLongitude(),
+                    atmoIndex,   // populated or null
+                    qualifier,   // populated or null
+                    color        // populated or null
+                );
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
      * Gets all communes that have valid coordinates for map display.
      *
      * This method is used by the interactive map component to render commune markers.
