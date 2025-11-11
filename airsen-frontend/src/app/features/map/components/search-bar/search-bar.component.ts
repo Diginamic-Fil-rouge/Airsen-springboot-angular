@@ -12,6 +12,7 @@ import { Observable, of } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, startWith, switchMap, tap } from "rxjs/operators";
 import { CommuneWithAirQuality } from "@/shared/models/commune.model";
 import { CommuneDataService } from "@/core/services/commune-data.service";
+import { getDepartmentName } from "@/shared/utils";
 
 @Component({
   standalone: false,
@@ -43,7 +44,7 @@ export class SearchBarComponent implements OnInit {
   }
 
   private setupSearchStream(): void {
-    console.log('[SearchBar] Setting up search stream');
+    console.log("[SearchBar] Setting up search stream");
 
     this.filteredCommunes$ = this.searchControl.valueChanges.pipe(
       startWith(""),
@@ -51,12 +52,12 @@ export class SearchBarComponent implements OnInit {
       distinctUntilChanged(),
       tap((value) => {
         const query = value || "";
-        console.log('[SearchBar] Search value changed:', query);
+        console.log("[SearchBar] Search value changed:", query);
         this.hasTyped = query.length > 0;
         this.showResults = query.length >= this.minSearchLength;
         this.searchError = null;
 
-        console.log('[SearchBar] hasTyped:', this.hasTyped, 'showResults:', this.showResults);
+        console.log("[SearchBar] hasTyped:", this.hasTyped, "showResults:", this.showResults);
 
         if (query.length < this.minSearchLength) {
           this.isLoading = false;
@@ -67,24 +68,24 @@ export class SearchBarComponent implements OnInit {
         const query = value || "";
 
         if (!query || query.length < this.minSearchLength) {
-          console.log('[SearchBar] Query too short, returning empty array');
+          console.log("[SearchBar] Query too short, returning empty array");
           return of([]);
         }
 
-        console.log('[SearchBar] Searching for:', query);
+        console.log("[SearchBar] Searching for:", query);
         this.isLoading = true;
         this.searchError = null;
         this.markForCheck();
 
         return this.communeDataService.searchCommunesWithAirQuality(query, this.maxResults).pipe(
           tap((results) => {
-            console.log('[SearchBar] Search results:', results.length, 'communes');
+            console.log("[SearchBar] Search results:", results.length, "communes");
             this.isLoading = false;
             this.searchError = null;
             this.markForCheck();
           }),
           catchError((error) => {
-            console.error('[SearchBar] Search error:', error);
+            console.error("[SearchBar] Search error:", error);
             this.isLoading = false;
 
             let errorMessage = "Erreur lors de la recherche. Veuillez réessayer.";
@@ -114,6 +115,17 @@ export class SearchBarComponent implements OnInit {
     this.showResults = false;
     this.searchCleared.emit();
     this.markForCheck();
+  }
+
+  /**
+   * Gets the full department name from department code.
+   * Uses the shared utility for consistent naming across the app.
+   *
+   * @param code Department code (e.g., "75", "13")
+   * @returns Full department name (e.g., "Paris", "Bouches-du-Rhône")
+   */
+  getDepartmentName(code: string): string {
+    return getDepartmentName(code);
   }
 
   private markForCheck(): void {

@@ -30,7 +30,7 @@
               <div class="result-info">
                 <span class="commune-name">{{ commune.name }}</span>
                 <small class="commune-meta" *ngIf="commune.departmentCode">
-                  {{ commune.departmentCode }}
+                  {{ getDepartmentName(commune.departmentCode) }} ({{ commune.departmentCode }})
                 </small>
               </div>
             </div>
