@@ -1,10 +1,4 @@
-@import '@/styles/design-system';
-
-/* Leaflet Map Component Styles */
-
-// Component-specific marker dimensions (from 4px/8px spacing grid)
-$marker-size: 32px;
-$cluster-size: 40px;
+@use 'styles/design-system' as *;
 
 .leaflet-map-container {
     position: relative;
@@ -19,70 +13,67 @@ $cluster-size: 40px;
 }
 
 // Custom marker styles (injected via DivIcon)
-// Uses Airsen design system for consistency
 :host ::ng-deep .aqi-marker {
-    width: $marker-size;
-    height: $marker-size;
+    width: 32px;
+    height: 32px;
     border-radius: $radius-full;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid $airsen-white;
-    box-shadow: $shadow-sm; // Consistent shadow scale
+    box-shadow: $shadow-sm;
     cursor: pointer;
     transition: transform $duration-normal $ease-in-out;
 
     .aqi-value {
         color: $airsen-white;
         font-weight: $font-weight-bold;
-        font-size: $font-size-sm; // 14px - readable size
+        font-size: $font-size-sm;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
 
     &:hover {
         transform: scale(1.2);
-        z-index: $z-index-modal; // Consistent z-index scale
+        z-index: $z-index-modal;
     }
 }
 
 // Cluster marker styles
-// Uses Airsen accent color (cyan) for visual consistency
 :host ::ng-deep .marker-cluster-custom {
-    width: $cluster-size;
-    height: $cluster-size;
+    width: 40px;
+    height: 40px;
     border-radius: $radius-full;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: $airsen-accent; // Cyan highlight from design system
+    background-color: $airsen-accent;
     border: 3px solid $airsen-white;
-    box-shadow: $shadow-md; // Consistent shadow scale
+    box-shadow: $shadow-md;
 
     .cluster-count {
         color: $airsen-white;
         font-weight: $font-weight-bold;
-        font-size: $font-size-base; // 16px - readable, meets 16px minimum rule
+        font-size: $font-size-base;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
 }
 
 // Popup styles
-// Uses Airsen neutral palette for consistent text hierarchy
 :host ::ng-deep .marker-popup {
     h3 {
-        margin: 0 0 $space-3 0; // 12px from spacing scale
-        color: $airsen-gray-900; // Primary text from neutral palette
-        font-size: $font-size-base; // 16px - readable
+        margin: 0 0 $space-2 0;
+        color: $airsen-gray-900;
+        font-size: $font-size-base;
         font-weight: $font-weight-semibold;
     }
 
     p {
-        margin: $space-1 0; // 4px from spacing scale
-        font-size: $font-size-sm; // 14px
-        color: $airsen-gray-600; // Secondary text from neutral palette
+        margin: $space-1 0;
+        font-size: $font-size-sm;
+        color: $airsen-gray-600;
 
         strong {
-            color: $airsen-gray-900; // Primary text color
+            color: $airsen-gray-900;
             font-weight: $font-weight-semibold;
         }
     }

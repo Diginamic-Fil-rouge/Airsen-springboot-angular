@@ -1,5 +1,17 @@
 <!-- Map Container Template -->
 <div class="map-page">
-    <!-- Implementation will be completed in Step 6 -->
-    <p>Map Component - Implementation in progress</p>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" *ngIf="isLoading$ | async">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p>Chargement de la carte...</p>
+    </div>
+
+    <!-- Map -->
+    <app-leaflet-map *ngIf="!(isLoading$ | async)" [communes]="communes" (communeClicked)="onCommuneClicked($event)"
+        (zoomChanged)="onMapZoomChanged($event)"></app-leaflet-map>
+
+    <!-- Debug Info (remove in production) -->
+    <div class="debug-info" *ngIf="communes.length > 0">
+        <small>{{ communes.length }} communes chargées</small>
+    </div>
 </div>
