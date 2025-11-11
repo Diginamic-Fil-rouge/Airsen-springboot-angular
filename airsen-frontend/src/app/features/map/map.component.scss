@@ -1,86 +1,125 @@
 @use 'styles/design-system' as *;
 
 .map-page {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - #{$header-height});
-  background: $airsen-gray-100;
-  overflow: hidden;
-
-  .map-layout {
-    display: flex;
-    height: 100%;
     position: relative;
-  }
-
-  app-map-sidebar.map-layout__sidebar {
-    display: block;
-    flex: 0 0 400px;
-    position: relative;
-    z-index: $z-index-fixed;
-
-    &.overlay-mode {
-      flex: 0 0 0;
-      width: 0;
-    }
-  }
-
-  .map-layout__canvas {
-    flex: 1;
-    position: relative;
-  }
-
-  .loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: $airsen-white;
-    z-index: $z-index-modal;
+    height: calc(100vh - #{$header-height});
+    background: $airsen-gray-100;
+    overflow: hidden;
 
-    p {
-      margin-top: $space-4;
-      font-size: $font-size-base;
-      color: $airsen-gray-500;
+    .map-layout {
+        display: flex;
+        height: 100%;
+        position: relative;
     }
-  }
 
-  app-leaflet-map {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
+    app-map-sidebar.map-layout__sidebar {
+        display: block;
+        flex: 0 0 400px;
+        position: relative;
+        z-index: $z-index-fixed;
+        height: 100%;
+        overflow: hidden; // Prevent content from exceeding sidebar bounds
 
-  .debug-info {
-    position: absolute;
-    bottom: $space-4;
-    left: $space-4;
-    background: rgba(255, 255, 255, 0.9);
-    padding: $space-2 $space-3;
-    border-radius: $radius-sm;
-    font-size: $font-size-xs;
-    color: $airsen-gray-600;
-    box-shadow: $shadow-sm;
-    z-index: $z-index-modal;
-  }
+        &.overlay-mode {
+            flex: 0 0 0;
+            width: 0;
+        }
 
-  .sidebar-toggle {
-    position: absolute;
-    bottom: $space-6;
-    right: $space-6;
-    z-index: $z-index-fixed;
-    box-shadow: $shadow-lg;
-  }
+        // Responsive sidebar width for larger screens
+        @include breakpoint(xl) {
+            flex: 0 0 450px;
+        }
 
-  .sidebar-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: $z-index-modal-backdrop;
-  }
+        // Hide sidebar on tablet/mobile (will appear as overlay instead)
+        @include respond-max(lg) {
+            display: none;
+        }
+    }
+
+    .map-layout__canvas {
+        flex: 1;
+        position: relative;
+        min-width: 0; // Allows flex item to shrink below content size
+        overflow: hidden;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: $airsen-white;
+        z-index: $z-index-modal;
+
+        p {
+            margin-top: $space-4;
+            font-size: $font-size-base;
+            color: $airsen-gray-500;
+        }
+    }
+
+    app-leaflet-map {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .debug-info {
+        position: absolute;
+        bottom: $space-4;
+        left: $space-4;
+        background: rgba(255, 255, 255, 0.9);
+        padding: $space-2 $space-3;
+        border-radius: $radius-sm;
+        font-size: $font-size-xs;
+        color: $airsen-gray-600;
+        box-shadow: $shadow-sm;
+        z-index: $z-index-modal;
+    }
+
+    .sidebar-toggle {
+        position: fixed;
+        bottom: $space-6;
+        right: $space-6;
+        z-index: calc(#{$z-index-modal} - 1);
+        box-shadow: $shadow-lg;
+
+        // Adjust position for larger screens
+        @include breakpoint(md) {
+            bottom: $space-8;
+            right: $space-8;
+        }
+
+        // Hide on desktop when sidebar is visible
+        @include breakpoint(lg) {
+            display: none;
+        }
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        top: $header-height;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: calc(#{$z-index-modal} - 1);
+        transition: opacity $duration-normal $ease-in-out;
+        pointer-events: none; // Allow clicking through when invisible
+
+        &.visible {
+            pointer-events: auto; // Enable clicking when visible
+        }
+
+        // Hide on desktop when sidebar is always visible
+        @include breakpoint(lg) {
+            display: none;
+        }
+    }
 }

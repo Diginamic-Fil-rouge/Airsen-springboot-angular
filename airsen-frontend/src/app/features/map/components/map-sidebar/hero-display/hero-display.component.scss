@@ -1,42 +1,87 @@
 @use "styles/design-system" as *;
 
-.hero-display {
+.hero-display-container {
   display: flex;
   flex-direction: column;
-  gap: $space-3;
-  padding: $space-4;
+  align-items: center;
+  padding: $space-6;
+  background: linear-gradient(135deg, $airsen-gray-50 0%, $airsen-white 100%);
   border-radius: $radius-lg;
-  background: linear-gradient(135deg, rgba(102, 187, 106, 0.18), rgba(46, 125, 50, 0.08));
+  box-shadow: $shadow-sm;
 
-  &__value {
-    border-left: 4px solid $airsen-primary;
-    padding-left: $space-4;
+  .aqi-stacked {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-3;
+    margin-bottom: $space-6;
 
-    .index {
-      font-size: $font-size-5xl;
+    .aqi-value-stacked {
+      font-size: $font-size-3xl;
       font-weight: $font-weight-bold;
-      line-height: $line-height-tight;
-      display: block;
+      color: $airsen-white;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      width: 70px;
+      height: 70px;
+      border-radius: $radius-full;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid $airsen-white;
+      box-shadow: $shadow-md;
+      transition: transform $duration-normal $ease-in-out,
+        box-shadow $duration-normal $ease-in-out;
+
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: $shadow-lg;
+      }
     }
 
-    .qualifier {
-      font-size: $font-size-lg;
-      color: $airsen-gray-700;
+    .qualifier-stacked {
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      padding: $space-2 $space-4;
+      border-radius: 20px;
+      box-shadow: $shadow-sm;
+      white-space: nowrap;
     }
   }
 
-  &__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: $space-2;
-    font-size: $font-size-sm;
-    color: $airsen-gray-600;
+  .context-text {
+    text-align: center;
 
-    .badge-pill {
-      width: 32px;
-      height: 12px;
-      border-radius: 999px;
-      background-color: $airsen-primary;
+    .subtitle {
+      font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
+      color: $airsen-gray-600;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: $letter-spacing-wide;
+    }
+  }
+}
+
+// Responsive adjustments
+@include respond-max(md) {
+  .hero-display-container {
+    padding: $space-4;
+
+    .aqi-stacked {
+      gap: $space-2;
+      margin-bottom: $space-4;
+
+      .aqi-value-stacked {
+        width: 60px;
+        height: 60px;
+        font-size: $font-size-2xl;
+        border-width: 2px;
+      }
+
+      .qualifier-stacked {
+        font-size: $font-size-sm;
+        padding: $space-1 $space-3;
+      }
     }
   }
 }
