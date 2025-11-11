@@ -28,6 +28,10 @@ const routes: Routes = [
     loadChildren: () => import("./features/home/home.module").then((m) => m.HomeModule),
   },
   {
+    path: "map",
+    loadChildren: () => import("./features/map/map.module").then((m) => m.MapModule),
+  },
+  {
     path: "auth",
     loadChildren: () => import("./features/auth/auth.module").then((m) => m.AuthModule),
     canActivate: [GuestGuard], // Prevent authenticated users from login/register

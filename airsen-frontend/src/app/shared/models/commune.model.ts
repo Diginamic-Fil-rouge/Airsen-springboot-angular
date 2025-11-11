@@ -1,4 +1,3 @@
-
 export interface Commune {
   id: number;
   inseeCode: string;
@@ -86,7 +85,28 @@ export interface CommuneWithAirQuality extends Commune {
   };
 }
 
-export interface CommuneDatas{
+/**
+ * Backend API response format for communes with coordinates and air quality
+ * Matches the exact structure returned by GET /communes/with-coordinates
+ *
+ * Used for map progressive loading where air quality data is directly
+ * included in the commune object (flattened structure)
+ */
+export interface CommuneMapData {
+  id: number;
+  inseeCode: string;
+  name: string;
+  departmentCode: string;
+  regionCode: string;
+  population: number;
+  latitude: number;
+  longitude: number;
+  atmoIndex: number | null;
+  qualifier: string | null;
+  color: string | null;
+}
+
+export interface CommuneDatas {
   inseeCode: string;
   name: string;
   departmentCode: string;

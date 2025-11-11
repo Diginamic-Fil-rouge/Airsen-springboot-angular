@@ -1,0 +1,89 @@
+@import '@/styles/design-system';
+
+/* Leaflet Map Component Styles */
+
+// Component-specific marker dimensions (from 4px/8px spacing grid)
+$marker-size: 32px;
+$cluster-size: 40px;
+
+.leaflet-map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    .map {
+        width: 100%;
+        height: 100%;
+        z-index: $z-index-fixed;
+    }
+}
+
+// Custom marker styles (injected via DivIcon)
+// Uses Airsen design system for consistency
+:host ::ng-deep .aqi-marker {
+    width: $marker-size;
+    height: $marker-size;
+    border-radius: $radius-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid $airsen-white;
+    box-shadow: $shadow-sm; // Consistent shadow scale
+    cursor: pointer;
+    transition: transform $duration-normal $ease-in-out;
+
+    .aqi-value {
+        color: $airsen-white;
+        font-weight: $font-weight-bold;
+        font-size: $font-size-sm; // 14px - readable size
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    &:hover {
+        transform: scale(1.2);
+        z-index: $z-index-modal; // Consistent z-index scale
+    }
+}
+
+// Cluster marker styles
+// Uses Airsen accent color (cyan) for visual consistency
+:host ::ng-deep .marker-cluster-custom {
+    width: $cluster-size;
+    height: $cluster-size;
+    border-radius: $radius-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $airsen-accent; // Cyan highlight from design system
+    border: 3px solid $airsen-white;
+    box-shadow: $shadow-md; // Consistent shadow scale
+
+    .cluster-count {
+        color: $airsen-white;
+        font-weight: $font-weight-bold;
+        font-size: $font-size-base; // 16px - readable, meets 16px minimum rule
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+}
+
+// Popup styles
+// Uses Airsen neutral palette for consistent text hierarchy
+:host ::ng-deep .marker-popup {
+    h3 {
+        margin: 0 0 $space-3 0; // 12px from spacing scale
+        color: $airsen-gray-900; // Primary text from neutral palette
+        font-size: $font-size-base; // 16px - readable
+        font-weight: $font-weight-semibold;
+    }
+
+    p {
+        margin: $space-1 0; // 4px from spacing scale
+        font-size: $font-size-sm; // 14px
+        color: $airsen-gray-600; // Secondary text from neutral palette
+
+        strong {
+            color: $airsen-gray-900; // Primary text color
+            font-weight: $font-weight-semibold;
+        }
+    }
+}

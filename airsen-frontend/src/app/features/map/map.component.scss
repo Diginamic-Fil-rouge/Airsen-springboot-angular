@@ -1,0 +1,10 @@
+@import '@/styles/design-system';
+
+/* Map Container Styles */
+.map-page {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - #{$header-height}); // Subtract header height from design system
+
+    // Styles will be completed in Step 6
+}
