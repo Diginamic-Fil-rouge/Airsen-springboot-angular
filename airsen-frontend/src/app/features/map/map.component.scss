@@ -70,6 +70,23 @@
         height: 100%;
     }
 
+    // Search Bar Overlay - Positioned on the right side
+    .search-overlay {
+        position: absolute;
+        top: $space-4;
+        right: $space-4;
+        z-index: calc(#{$z-index-modal} + 1);
+        width: 380px;
+        max-width: calc(100vw - #{$space-8});
+
+        @include respond-max(md) {
+            top: $space-3;
+            right: $space-3;
+            left: $space-3;
+            width: auto;
+        }
+    }
+
     .debug-info {
         position: absolute;
         bottom: $space-4;

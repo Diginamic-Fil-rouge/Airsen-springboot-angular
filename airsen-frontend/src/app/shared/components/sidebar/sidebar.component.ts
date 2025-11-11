@@ -63,6 +63,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // General Section - Home/Dashboard
     { label: "Accueil", icon: "home", route: "/dashboard" },
 
+    // Map/Air Quality
+    { label: "Carte", icon: "map", route: "/map" },
+
     // Alerts (with badge count - ADMIN only)
     { label: "Alertes", icon: "notifications", route: "/alerts", roles: ["ADMIN"] },
 

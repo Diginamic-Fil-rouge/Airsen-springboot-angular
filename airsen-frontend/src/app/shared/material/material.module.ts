@@ -13,6 +13,7 @@ import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatListModule } from "@angular/material/list";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatChipsModule } from "@angular/material/chips";
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
@@ -49,6 +50,7 @@ const MATERIAL_MODULES = [
   MatListModule,
   MatGridListModule,
   MatChipsModule,
+  MatAutocompleteModule,
   MatProgressSpinnerModule,
   MatProgressBarModule,
   MatSnackBarModule,

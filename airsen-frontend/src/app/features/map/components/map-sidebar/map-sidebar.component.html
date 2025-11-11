@@ -1,5 +1,10 @@
-<div class="map-sidebar" [class.desktop]="isDesktop" [class.tablet]="isTablet" [class.mobile]="isMobile"
-  [class.open]="open">
+<div
+  class="map-sidebar"
+  [class.desktop]="isDesktop"
+  [class.tablet]="isTablet"
+  [class.mobile]="isMobile"
+  [class.open]="open"
+>
   <mat-card class="map-sidebar__card">
     <header class="map-sidebar__toolbar">
       <button mat-icon-button class="close-btn" *ngIf="!isDesktop" (click)="handleClose()">
@@ -10,9 +15,11 @@
     <section class="map-sidebar__content" *ngIf="commune; else emptyState">
       <app-location-header [commune]="commune"></app-location-header>
 
-      <app-hero-display [atmoIndex]="commune?.currentAirQuality?.atmoIndex ?? null"
+      <app-hero-display
+        [atmoIndex]="commune?.currentAirQuality?.atmoIndex ?? null"
         [qualifier]="commune?.currentAirQuality?.qualifier || null"
-        [color]="commune?.currentAirQuality?.color || null"></app-hero-display>
+        [color]="commune?.currentAirQuality?.color || null"
+      ></app-hero-display>
 
       <app-pollutant-breakdown [pollutants]="commune?.pollutants || null"></app-pollutant-breakdown>
 
@@ -20,8 +27,13 @@
 
       <app-map-legend></app-map-legend>
 
-      <button mat-stroked-button color="primary" class="clear-selection-btn" type="button"
-        (click)="handleClearSelection()">
+      <button
+        mat-stroked-button
+        color="primary"
+        class="clear-selection-btn"
+        type="button"
+        (click)="handleClearSelection()"
+      >
         Effacer la sélection
       </button>
     </section>

@@ -1,5 +1,6 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { ReactiveFormsModule } from "@angular/forms";
 import { MapRoutingModule } from "./map-routing.module";
 import { SharedModule } from "@/shared/shared.module";
 import { BaseChartDirective } from "ng2-charts";
@@ -13,6 +14,7 @@ import { HeroDisplayComponent } from "./components/map-sidebar/hero-display/hero
 import { PollutantBreakdownComponent } from "./components/map-sidebar/pollutant-breakdown/pollutant-breakdown.component";
 import { TrendChartComponent } from "./components/map-sidebar/trend-chart/trend-chart.component";
 import { MapLegendComponent } from "./components/map-sidebar/map-legend/map-legend.component";
+import { SearchBarComponent } from "./components/search-bar/search-bar.component";
 
 /**
  * Map Feature Module
@@ -51,7 +53,8 @@ import { MapLegendComponent } from "./components/map-sidebar/map-legend/map-lege
     PollutantBreakdownComponent,
     TrendChartComponent,
     MapLegendComponent,
+    SearchBarComponent,
   ],
-  imports: [CommonModule, MapRoutingModule, SharedModule, BaseChartDirective],
+  imports: [CommonModule, ReactiveFormsModule, MapRoutingModule, SharedModule, BaseChartDirective],
 })
 export class MapModule {}

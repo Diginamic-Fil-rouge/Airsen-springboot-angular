@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { BehaviorSubject, Observable, of } from "rxjs";
-import { catchError, tap, map } from "rxjs/operators";
+import { catchError, tap, map, shareReplay } from "rxjs/operators";
 import { Commune, CommuneWithAirQuality, CommuneMapData } from "@/shared/models";
 import { environment } from "@/environments/environment";
 
@@ -220,5 +220,67 @@ export class CommuneDataService {
           }
         : undefined,
     };
+  }
+
+  /**
+   * Searches communes by name or INSEE code with server-side autocomplete.
+   *
+   * @param query User input (must be at least 2 characters after trimming)
+   * @param limit Maximum number of results to return (default: 10)
+   * @returns Observable<Commune[]> Matching communes or empty array when invalid query/errors
+   */
+  searchCommunes(query: string, limit: number = 10): Observable<Commune[]> {
+    const trimmedQuery = query?.trim();
+
+    if (!trimmedQuery || trimmedQuery.length < 2) {
+      return of([]);
+    }
+
+    let params = new HttpParams().set("q", trimmedQuery);
+    params = params.set("limit", limit.toString());
+
+    console.log(`[CommuneDataService] Searching communes for "${trimmedQuery}" (limit=${limit})`);
+
+    return this.http.get<Commune[]>(`${environment.apiUrl}/communes/search`, { params }).pipe(
+      tap((results) => console.log(`[CommuneDataService] Search returned ${results.length} communes`)),
+      catchError((error) => {
+        console.error(`[CommuneDataService] Search failed for "${trimmedQuery}":`, error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Search communes with air quality data for map search bar
+   * Uses dedicated search endpoint to avoid triggering global loading state
+   *
+   * @param query Search query string (minimum 2 characters)
+   * @param limit Maximum number of results (default: 10)
+   * @returns Observable<CommuneWithAirQuality[]> Communes with air quality data
+   */
+  searchCommunesWithAirQuality(query: string, limit: number = 10): Observable<CommuneWithAirQuality[]> {
+    const trimmedQuery = query?.trim();
+
+    if (!trimmedQuery || trimmedQuery.length < 2) {
+      return of([]);
+    }
+
+    console.log(`[CommuneDataService] Searching communes with AQI for "${trimmedQuery}" (limit=${limit})`);
+
+    const params = new HttpParams()
+      .set('q', trimmedQuery)
+      .set('limit', limit.toString());
+
+    return this.http.get<CommuneMapData[]>(`${environment.apiUrl}/communes/search`, { params }).pipe(
+      map((communeMapData) => {
+        const communes = this.transformMapDataToCommunesWithAirQuality(communeMapData);
+        console.log(`[CommuneDataService] Search returned ${communes.length} communes with AQI`);
+        return communes;
+      }),
+      catchError((error) => {
+        console.error(`[CommuneDataService] Search with AQI failed for "${trimmedQuery}":`, error);
+        return of([]);
+      })
+    );
   }
 }
