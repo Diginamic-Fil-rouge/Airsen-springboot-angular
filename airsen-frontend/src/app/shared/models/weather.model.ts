@@ -3,15 +3,29 @@
  * Simplified representation of current weather measurements for a commune
  */
 export interface WeatherData {
-  inseeCode: string;
-  temperature: number;
-  feelsLike: number;
-  humidity: number;
-  windSpeed: number;
-  weatherCode: number;
-  weatherDescription: string;
-  timestamp: Date;
-}
+    inseeCode: string;
+    temperature: number;
+    feelsLike: number;
+    humidity: number;
+    windSpeed: number;
+    weatherCode: number;
+    weatherDescription: string;
+    timestamp: Date;
+
+    apparentTemperature?: number;
+    precipitation?: number;
+    rain?: number;
+    showers?: number;
+    snowfall?: number;
+    cloudCover?: number;
+    windGusts?: number;
+    pressureMsl?: number;
+
+    dataSource: 'DIRECT' | 'ESTIMATED' | 'NOT_AVAILABLE';
+    estimatedFromCommune?: string;
+    distanceKm?: number;
+    dataQualityNote?: string;
+    }
 
 /**
  * Detailed weather measurements with additional fields

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -44,14 +45,18 @@ public class CommuneController {
      * GET /departments/{departmentId}/communes
      *
      * Lists all communes belonging to a specific department.
+     *
+     * Validates department existence before querying communes to distinguish
+     * between "department has no communes" (HTTP 200) and "department doesn't exist" (HTTP 404).
      */
     @GetMapping("/departments/{departmentId}/communes")
     @Operation(
         summary = "Get communes by department",
-        description = "Retrieves paginated list of communes for a specific department with optional search"
+        description = "Retrieves paginated list of communes for a specific department with optional search. " +
+                     "Returns 404 if department doesn't exist, or 200 with empty list if department has no communes."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Communes retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Communes retrieved successfully (may be empty list)"),
         @ApiResponse(responseCode = "404", description = "Department not found")
     })
     public ResponseEntity<List<CommuneDTO>> getCommunesByDepartment(
@@ -112,23 +117,35 @@ public class CommuneController {
      * Returns all communes that have valid coordinates for map display.
      * Used by interactive map component to render commune markers.
      */
-    @GetMapping("/communes/with-coordinates")
-    @Operation(
-        summary = "Get all communes with coordinates",
-        description = "Retrieves all communes that have valid latitude and longitude coordinates. " +
-                     "Used for interactive map display to show commune markers with air quality data."
+ @GetMapping("/communes/with-coordinates")
+@Operation(
+    summary = "Get communes with coordinates, optionally filtered by minimum population",
+    description = "Returns communes that have valid coordinates for map display. " +
+                 "Use minPopulation parameter for progressive loading (e.g., 50000 for initial zoom 6 view). " +
+                 "Performance optimization: Filters server-side to reduce payload size."
+)
+@ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Communes retrieved successfully"),
+    @ApiResponse(responseCode = "400", description = "Invalid minPopulation parameter")
+})
+public ResponseEntity<List<CommuneDTO>> getCommunesWithCoordinates(
+    @Parameter(
+        description = "Minimum population threshold for filtering (optional). " +
+                     "Examples: 50000 for zoom 6 (~200 communes), 10000 for zoom 10 (~1000 communes), " +
+                     "omit for all communes",
+        example = "50000"
     )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Communes with coordinates retrieved successfully")
-    })
-    public ResponseEntity<List<CommuneDTO>> getCommunesWithCoordinates() {
-        log.info("Fetching all communes with coordinates for map display");
+    @RequestParam(required = false) @Min(0) Integer minPopulation
+) {
+    log.info("GET /communes/with-coordinates (minPopulation: {})", minPopulation);
 
-        List<CommuneDTO> communes = communeService.getAllCommunesWithCoordinates();
-        log.info("Successfully retrieved {} communes with coordinates", communes.size());
+    List<CommuneDTO> communes = minPopulation != null
+        ? communeService.getCommunesWithCoordinates(minPopulation)
+        : communeService.getAllCommunesWithCoordinates();
 
-        return ResponseEntity.ok(communes);
-    }
+    log.info("Retrieved {} communes for map display", communes.size());
+    return ResponseEntity.ok(communes);
+}
 
     /**
      * GET /communes/{inseeCode}/detail

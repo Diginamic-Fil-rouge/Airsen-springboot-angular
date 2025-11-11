@@ -1,0 +1,63 @@
+@use "styles/design-system" as *;
+
+.pollutant-breakdown {
+  padding: $space-4;
+  border-radius: $radius-lg;
+  background: $airsen-gray-50;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-2;
+
+    h4 {
+      margin: 0;
+      font-size: $font-size-lg;
+    }
+
+    .subtitle {
+      color: $airsen-gray-500;
+      font-size: $font-size-sm;
+    }
+  }
+
+  .pollutant-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  .pollutant {
+    display: grid;
+    grid-template-columns: 80px 1fr 60px;
+    align-items: center;
+    gap: $space-3;
+
+    &__label {
+      font-weight: $font-weight-medium;
+      color: $airsen-gray-700;
+    }
+
+    mat-progress-bar {
+      height: 6px;
+      border-radius: $radius-full;
+      background-color: $airsen-gray-200;
+    }
+
+    &__value {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: $airsen-gray-600;
+    }
+  }
+
+  &__footnote {
+    margin: 0;
+    font-size: $font-size-xs;
+    color: $airsen-gray-500;
+  }
+}

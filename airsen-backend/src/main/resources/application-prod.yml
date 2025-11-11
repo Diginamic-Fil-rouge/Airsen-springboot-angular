@@ -1,0 +1,455 @@
+# Production Profile Configuration
+# This profile is optimized for production deployment with full scheduling and monitoring
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # Disable DevTools in production
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+  # Production JPA settings
+  jpa:
+    show-sql: false  # Disable SQL logging in production
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+        # Production-specific optimizations
+        jdbc:
+          batch_size: 20
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+
+  # Production database pool settings
+  datasource:
+    hikari:
+      maximum-pool-size: 20  # Increased for production load
+      minimum-idle: 10
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      leak-detection-threshold: 60000  # Detect connection leaks
+
+  # Production cache settings
+  cache:
+    redis:
+      time-to-live: 21600000  # 6 hours (aligned with tiered scheduler)
+      cache-null-values: false
+      use-key-prefix: true
+      key-prefix: "airsen:prod:"
+
+  # Production Redis connection
+  data:
+    redis:
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 16  # Increased for production
+          max-idle: 8
+          min-idle: 4
+        shutdown-timeout: 200ms
+
+# PRODUCTION SCHEDULING CONFIGURATION
+scheduling:
+  # Master switch - ENABLED in production
+  enabled: true
+
+  # ATMO air quality sync - Daily at 10:00 AM
+  atmo:
+    cron: ${ATMO_SCHEDULE_CRON:0 0 10 * * *}
+    timezone: Europe/Paris
+    batch-size: 50
+    max-retries: 3
+    # Enable failure notifications
+    notify-on-failure: true
+    notification-email: ${ADMIN_EMAIL:admin@airsen.fr}
+
+  # Weather sync - Daily at 10:30 AM (30 min after ATMO)
+  weather:
+    cron: ${WEATHER_SCHEDULE_CRON:0 30 10 * * *}
+    timezone: Europe/Paris
+    batch-size: 100
+    delay-between-batches-ms: 60000  # 1 minute
+    delay-between-requests-ms: 6000  # 6 seconds (~10 requests/min)
+    # Update all communes in production
+    sample-size: -1  # -1 means all
+    # Enable failure notifications
+    notify-on-failure: true
+    notification-email: ${ADMIN_EMAIL:admin@airsen.fr}
+
+# Cache Refresh Scheduling - OPTIMIZED FOR PRODUCTION
+cache:
+  refresh:
+    # Air quality cache - Every hour
+    air-quality-cron: 0 0 * * * *
+    # Weather cache - Every 30 minutes
+    weather-cron: 0 */30 * * * *
+    # Cache statistics - Every 15 minutes
+    statistics-cron: 0 */15 * * * *
+    # Daily cleanup - 3 AM
+    cleanup-cron: 0 0 3 * * *
+    # Disable manual refresh endpoints in production
+    manual-refresh-enabled: false
+
+# Intelligent Tiered Scheduler - ENABLED IN PRODUCTION
+tiered-scheduler:
+  # Enable for 98% API call reduction
+  enabled: true
+
+  # Tier 1: Major cities (≥100,000 population) - Every 2 hours
+  tier1:
+    cron: 0 0 */2 * * *
+    population-threshold: 100000
+    stagger-ms: 100
+    inter-request-delay-ms: 50
+    max-communes: -1  # All communes in tier
+
+  # Tier 2: Medium cities (10,000-99,999) - Every 6 hours
+  tier2:
+    cron: 0 0 1,7,13,19 * * *
+    population-min: 10000
+    population-max: 99999
+    stagger-ms: 200
+    inter-request-delay-ms: 75
+    max-communes: -1
+
+  # Tier 3: Small communes (<10,000) - Daily
+  tier3:
+    cron: 0 0 2 * * *
+    population-threshold: 10000
+    batch-size: 1000
+    stagger-ms: 300
+    inter-request-delay-ms: 100
+    batch-pause-ms: 5000
+    max-communes: -1
+
+  # Statistics and monitoring - Every 30 minutes
+  statistics-cron: 0 */30 * * * *
+
+  # Enable monitoring and alerts
+  monitoring:
+    enabled: true
+    alert-on-failure-rate: 0.05  # Alert if >5% failure rate
+    notification-email: ${ADMIN_EMAIL:admin@airsen.fr}
+
+# Alert Detection - Hourly in production
+alert:
+  detection:
+    enabled: true
+    cron: 0 0 * * * *  # Every hour
+    # Weather alert thresholds
+    thresholds:
+      temperature-heat: 35  # Celsius
+      temperature-cold: -10  # Celsius
+      wind-speed: 70  # km/h
+      rainfall: 30  # mm
+    # ATMO alert thresholds
+    air-quality:
+      alert-threshold: 4  # Mauvais (Bad)
+    # Notification settings
+    notify-users: true
+    notification-channels: [ email, push ]
+
+# Production Rate Limiting - Based on external API limits
+rate-limiter:
+  # Burst capacity percentage (allow short bursts above the limit)
+  burst-capacity-percentage: 20
+
+  # ATMO API - 60 requests/minute
+  atmo:
+    requests-per-minute: 60
+    reject-on-limit: true
+    # Enable circuit breaker
+    circuit-breaker:
+      enabled: true
+      failure-threshold: 0.5  # 50% failure rate
+      wait-duration-seconds: 60
+      permitted-calls-half-open: 10
+
+  # OpenMeteo API - ~10 requests/minute
+  weather:
+    requests-per-minute: 10
+    reject-on-limit: true
+    circuit-breaker:
+      enabled: true
+      failure-threshold: 0.5
+      wait-duration-seconds: 60
+      permitted-calls-half-open: 5
+
+  # INSEE API
+  insee:
+    requests-per-minute: 30
+    reject-on-limit: true
+    circuit-breaker:
+      enabled: true
+      failure-threshold: 0.5
+      wait-duration-seconds: 120
+      permitted-calls-half-open: 5
+
+# External API Configuration - Production settings
+external:
+  atmo-api:
+    baseUrl: ${ATMO_API_URL:https://admindata.atmo-france.org}
+    jwtToken: ${ATMO_JWT_TOKEN}
+    username: ${ATMO_USERNAME}
+    password: ${ATMO_PASSWORD}
+    timeoutMs: 10000
+    retryAttempts: 3
+    # Disable request/response logging in production
+    log-requests: false
+    log-responses: false
+    # Connection pool settings
+    max-connections: 20
+    connection-timeout-ms: 5000
+
+  open-meteo:
+    base-url: ${OPEN_METEO_URL:https://api.open-meteo.com/v1}
+    timeout-ms: 20000
+    retry-attempts: 3
+    log-requests: false
+    log-responses: false
+    max-connections: 20
+    connection-timeout-ms: 5000
+
+  insee-api:
+    base-url: ${INSEE_API_URL:https://geo.api.gouv.fr}
+    timeout-ms: 5000
+    retry-attempts: 3
+    log-requests: false
+    log-responses: false
+    max-connections: 10
+    connection-timeout-ms: 5000
+
+# Production Logging - Optimized for monitoring
+logging:
+  level:
+    root: WARN
+    fr.airsen.api: INFO
+    # Scheduler logging - INFO level for monitoring
+    fr.airsen.api.scheduler: INFO
+    fr.airsen.api.scheduler.CacheRefreshScheduler: INFO
+    fr.airsen.api.scheduler.CacheAwareTieredScheduler: INFO
+    # Service logging - INFO for operations
+    fr.airsen.api.service.WeatherService: INFO
+    fr.airsen.api.service.AtmoIntegrationService: INFO
+    fr.airsen.api.service.AlertSignalDetectionService: INFO
+    # External API - WARN (only errors)
+    fr.airsen.api.external.client: WARN
+    # Cache - WARN (only errors)
+    org.springframework.cache: WARN
+    org.springframework.data.redis: WARN
+    # HTTP - WARN (only errors)
+    org.springframework.web.reactive.function.client: WARN
+    reactor.core.publisher: WARN
+    # Hibernate - WARN (only errors)
+    org.hibernate: WARN
+    org.springframework.orm.jpa: WARN
+
+  # Production logging pattern
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+  # Log to file in production
+  file:
+    name: ${LOG_FILE:/var/log/airsen/application.log}
+    max-size: 100MB
+    max-history: 30  # Keep 30 days
+    total-size-cap: 3GB
+
+# Production Management Endpoints - Secure and limited
+management:
+  endpoints:
+    web:
+      exposure:
+        # Only expose essential endpoints
+        include: health,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  # Prometheus metrics for monitoring
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    enable:
+      jvm: true
+      process: true
+      system: true
+      cache: true
+      http: true
+    tags:
+      application: ${spring.application.name}
+      environment: production
+  health:
+    redis:
+      enabled: true
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+      threshold: 10GB  # Alert if less than 10GB free
+
+# Security - Production hardening
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api/v1
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+  http2:
+    enabled: true
+  # Connection timeout
+  connection-timeout: 20000
+
+spring:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: 86400000  # 24 hours
+      refresh-expiration: 604800000  # 7 days
+      clock-skew: 300
+
+# Production Performance Tuning
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 10  # Increased for production
+      thread-name-prefix: airsen-scheduled-
+    execution:
+      pool:
+        core-size: 8
+        max-size: 16
+        queue-capacity: 100
+
+# Production Monitoring & Alerting
+monitoring:
+  # Enable application metrics
+  enabled: true
+
+  # Alert thresholds
+  alerts:
+    # API call metrics
+    api-calls:
+      atmo-daily-limit: 50000
+      weather-daily-limit: 15000
+      alert-at-percentage: 0.8  # Alert at 80% of limit
+
+    # Performance metrics
+    performance:
+      response-time-threshold-ms: 5000
+      error-rate-threshold: 0.05  # 5%
+
+    # Cache metrics
+    cache:
+      hit-rate-threshold: 0.7  # Alert if hit rate < 70%
+
+    # Database metrics
+    database:
+      connection-pool-threshold: 0.8  # Alert if >80% pool usage
+      slow-query-threshold-ms: 2000
+
+  # Notification settings
+  notifications:
+    email: ${ADMIN_EMAIL:admin@airsen.fr}
+    slack-webhook: ${SLACK_WEBHOOK_URL:}
+    enabled: true
+
+# Production Data Retention
+data:
+  retention:
+    # Weather data retention
+    weather:
+      keep-days: 90  # Keep 3 months of historical data
+      cleanup-cron: 0 0 4 * * *  # Daily at 4 AM
+
+    # Air quality data retention
+    air-quality:
+      keep-days: 90
+      cleanup-cron: 0 0 4 * * *
+
+    # Alert history retention
+    alerts:
+      keep-days: 180  # Keep 6 months
+      cleanup-cron: 0 0 4 * * SUN  # Weekly
+
+    # User activity logs
+    logs:
+      keep-days: 30
+      cleanup-cron: 0 0 5 * * *
+
+# Production Backup Configuration
+backup:
+  # Database backup schedule
+  database:
+    enabled: ${BACKUP_ENABLED:false}
+    cron: 0 0 2 * * *  # Daily at 2 AM
+    retention-days: 7
+    location: ${BACKUP_LOCATION:/var/backups/airsen}
+
+  # Redis cache snapshot
+  redis:
+    enabled: ${REDIS_BACKUP_ENABLED:false}
+    cron: 0 0 3 * * *  # Daily at 3 AM
+
+# Production Notes
+# =================
+# IMPORTANT: This profile is for PRODUCTION DEPLOYMENT ONLY
+#
+# Key Features:
+# 1. Full scheduling enabled with optimized timings
+# 2. Intelligent tiered refresh for 98% API call reduction
+# 3. Rate limiting and circuit breakers for resilience
+# 4. Comprehensive monitoring and alerting
+# 5. Performance optimizations (connection pooling, batching)
+# 6. Security hardening (disabled debug logs, limited endpoints)
+# 7. Data retention policies
+#
+# Required Environment Variables:
+# - DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD
+# - REDIS_HOST, REDIS_PORT
+# - JWT_SECRET (min 256 bits)
+# - ATMO_JWT_TOKEN or ATMO_USERNAME/ATMO_PASSWORD
+# - OPEN_METEO_URL
+# - INSEE_API_URL
+# - ADMIN_EMAIL (for alerts)
+# - LOG_FILE (optional, defaults to /var/log/airsen/application.log)
+#
+# Optional Monitoring:
+# - SLACK_WEBHOOK_URL (for Slack alerts)
+#
+# Pre-deployment Checklist:
+# ☐ All environment variables set
+# ☐ Database migrations completed
+# ☐ Redis accessible and configured
+# ☐ External API credentials verified
+# ☐ Monitoring dashboards configured (Grafana/Prometheus)
+# ☐ Alert email/Slack tested
+# ☐ Log rotation configured
+# ☐ Backup location accessible
+# ☐ Health check endpoints responding
+# ☐ SSL/TLS certificates installed
+#
+# Monitoring Endpoints (secure with authorization):
+# - /actuator/health - Health status
+# - /actuator/metrics - Application metrics
+# - /actuator/prometheus - Prometheus metrics
+#
+# Performance Expectations:
+# - API calls: ~47,000/day (vs 2.6M without tiering)
+# - Cache hit rate: >70%
+# - Average response time: <500ms
+# - Database pool usage: <80%

@@ -1,0 +1,245 @@
+# Development Profile Configuration
+# This profile is designed to minimize API calls and prevent rate limiting during development
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # DevTools + Redis compatibility settings
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 2000
+      quiet-period: 1000
+      # Prevent classloader issues with Redis cached objects
+      additional-exclude: "fr/airsen/api/external/dto/**,fr/airsen/api/entity/**"
+
+  # Development database settings
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  # Mail debug mode
+  mail:
+    properties:
+      mail:
+        debug: true
+
+  # Cache Configuration - Development settings
+  cache:
+    redis:
+      # Shorter TTL for development (30 minutes instead of 1 hour)
+      time-to-live: 1800000
+      cache-null-values: false
+      use-key-prefix: true
+      key-prefix: "airsen:dev:"
+
+# Scheduling Configuration - RELAXED FOR DEVELOPMENT
+scheduling:
+  # Master switch to enable/disable all scheduled tasks
+  # Set to 'false' to completely disable scheduling during development
+  enabled: ${ENABLE_SCHEDULING:false}
+
+  # ATMO air quality sync - Weekly instead of daily
+  atmo:
+    # Run only on Monday mornings to conserve API quota
+    cron: ${ATMO_SCHEDULE_CRON:0 0 10 * * MON}
+    timezone: ${ATMO_SCHEDULE_TIMEZONE:Europe/Paris}
+    # Smaller batch size for testing
+    batch-size: ${ATMO_BATCH_SIZE:25}
+    # Longer delays to respect rate limits
+    max-retries: 3
+
+  # Weather sync - Weekly instead of daily
+  weather:
+    # Run only on Monday mornings, 30 minutes after ATMO
+    cron: ${WEATHER_SCHEDULE_CRON:0 30 10 * * MON}
+    timezone: ${WEATHER_SCHEDULE_TIMEZONE:Europe/Paris}
+    # Small batch size for development testing
+    batch-size: ${WEATHER_BATCH_SIZE:10}
+    # Longer delays between batches (2 minutes)
+    delay-between-batches-ms: ${WEATHER_BATCH_DELAY:120000}
+    # Longer delays between individual requests (12 seconds = 5 requests/min)
+    delay-between-requests-ms: ${WEATHER_REQUEST_DELAY:12000}
+    # Sample only a subset of communes for testing
+    sample-size: ${WEATHER_SAMPLE_SIZE:50}
+    # Strategy: 'random', 'top-population', or 'all' (-1 disables sampling)
+    sample-strategy: ${WEATHER_SAMPLE_STRATEGY:top-population}
+
+# Cache Refresh Scheduling - LESS FREQUENT IN DEV
+cache:
+  refresh:
+    # Air quality cache - Every 6 hours instead of hourly
+    air-quality-cron: ${CACHE_AIR_QUALITY_CRON:0 0 */6 * * *}
+    # Weather cache - Every 3 hours instead of every 30 minutes
+    weather-cron: ${CACHE_WEATHER_CRON:0 0 */3 * * *}
+    # Cache statistics - Every hour instead of every 15 minutes
+    statistics-cron: ${CACHE_STATS_CRON:0 0 * * * *}
+    # Daily cleanup - Keep at 3 AM
+    cleanup-cron: ${CACHE_CLEANUP_CRON:0 0 3 * * *}
+    # Enable manual cache refresh via endpoints
+    manual-refresh-enabled: true
+
+# Tiered Scheduler - DISABLED BY DEFAULT IN DEV
+tiered-scheduler:
+  # Disable intelligent tiered refresh to prevent excessive API calls
+  enabled: ${TIERED_SCHEDULER_ENABLED:false}
+  # If enabled, use very conservative settings
+  tier1:
+    cron: 0 0 */12 * * *  # Every 12 hours instead of 2
+    stagger-ms: 100
+    inter-request-delay-ms: 200
+  tier2:
+    cron: 0 0 2 * * *  # Once daily instead of every 6 hours
+    stagger-ms: 200
+    inter-request-delay-ms: 300
+  tier3:
+    cron: 0 0 3 * * MON  # Weekly instead of daily
+    batch-size: 500
+    stagger-ms: 300
+    inter-request-delay-ms: 500
+    batch-pause-ms: 10000
+
+# Alert Detection - Less frequent in dev
+alert:
+  detection:
+    # Every 6 hours instead of hourly
+    cron: ${ALERT_DETECTION_CRON:0 0 */6 * * *}
+    enabled: ${ALERT_DETECTION_ENABLED:false}
+
+# Rate Limiting - CONSERVATIVE FOR DEVELOPMENT
+rate-limiter:
+  # Burst capacity percentage (allow short bursts above the limit)
+  burst-capacity-percentage: 20
+
+  atmo:
+    # Half of production rate (30 requests/min instead of 60)
+    requests-per-minute: ${ATMO_RATE_LIMIT:30}
+    # Reject requests when limit exceeded (vs. queuing)
+    reject-on-limit: true
+    # Circuit breaker configuration
+    circuit-breaker:
+      failure-threshold: 0.5  # Open circuit at 50% failure rate
+      wait-duration-seconds: 60  # Wait 1 minute before retry
+      permitted-calls-half-open: 10  # Allow 10 test calls in half-open state
+
+  weather:
+    # Half of production rate (5 requests/min instead of 10)
+    requests-per-minute: ${WEATHER_RATE_LIMIT:5}
+    reject-on-limit: true
+    circuit-breaker:
+      failure-threshold: 0.5
+      wait-duration-seconds: 60
+      permitted-calls-half-open: 5
+
+  insee:
+    # Conservative limit for INSEE API
+    requests-per-minute: ${INSEE_RATE_LIMIT:10}
+    reject-on-limit: true
+    circuit-breaker:
+      failure-threshold: 0.5
+      wait-duration-seconds: 120
+      permitted-calls-half-open: 5
+
+# External API Configuration - Development overrides
+external:
+  atmo-api:
+    # Longer timeout for debugging
+    timeoutMs: ${ATMO_TIMEOUT:15000}
+    retryAttempts: ${ATMO_RETRY:2}
+    # Enable request/response logging
+    log-requests: true
+    log-responses: true
+
+  open-meteo:
+    # Longer timeout for debugging
+    timeout-ms: ${OPEN_METEO_TIMEOUT:30000}
+    retry-attempts: ${OPEN_METEO_RETRY:2}
+    log-requests: true
+    log-responses: true
+
+  insee-api:
+    timeout-ms: ${INSEE_TIMEOUT:10000}
+    retry-attempts: ${INSEE_RETRY:2}
+    log-requests: true
+    log-responses: true
+
+# Logging Configuration - Verbose for development
+logging:
+  level:
+    root: INFO
+    fr.airsen.api: DEBUG
+    # Scheduler logging
+    fr.airsen.api.scheduler: DEBUG
+    fr.airsen.api.scheduler.CacheRefreshScheduler: DEBUG
+    fr.airsen.api.scheduler.CacheAwareTieredScheduler: DEBUG
+    # Service logging
+    fr.airsen.api.service.WeatherService: DEBUG
+    fr.airsen.api.service.AtmoIntegrationService: DEBUG
+    fr.airsen.api.service.AlertSignalDetectionService: DEBUG
+    # External API logging
+    fr.airsen.api.external.client: DEBUG
+    fr.airsen.api.external.client.OpenMeteoApiClient: TRACE
+    fr.airsen.api.external.client.AtmoApiClient: TRACE
+    # Cache logging
+    org.springframework.cache: DEBUG
+    org.springframework.data.redis: DEBUG
+    fr.airsen.api.config.RedisConfig: DEBUG
+    fr.airsen.api.service.cacheData.SmartCacheService: DEBUG
+    # Mail logging
+    org.springframework.mail: DEBUG
+    fr.airsen.api.service.NotificationService: DEBUG
+    # Reactive streams
+    reactor.core.publisher: DEBUG
+    # HTTP client logging
+    org.springframework.web.reactive.function.client: DEBUG
+
+# Development-specific features
+management:
+  endpoints:
+    web:
+      exposure:
+        # Expose additional endpoints for development
+        include: health,info,metrics,caches,scheduledtasks,loggers,env,configprops
+  endpoint:
+    health:
+      show-details: always
+    scheduledtasks:
+      enabled: true
+    loggers:
+      enabled: true
+    env:
+      enabled: true
+      show-values: always
+
+# Development notes and documentation
+# ===========================================
+# IMPORTANT: This profile is designed for LOCAL DEVELOPMENT ONLY
+#
+# Key features:
+# 1. Scheduling is DISABLED by default (scheduling.enabled=false)
+#    - To enable for testing, set ENABLE_SCHEDULING=true
+# 2. When enabled, schedules run WEEKLY instead of daily
+# 3. Small sample sizes (50 communes) to conserve API quota
+# 4. Conservative rate limits (half of production)
+# 5. Verbose logging for debugging
+#
+# To manually trigger tasks during development:
+# - Use management endpoints (if implemented)
+# - Or temporarily enable specific schedulers
+# - Or call service methods directly from tests
+#
+# Environment variables to control behavior:
+# - ENABLE_SCHEDULING=true/false (master switch)
+# - TIERED_SCHEDULER_ENABLED=true/false (intelligent refresh)
+# - ALERT_DETECTION_ENABLED=true/false (alert detection)
+# - WEATHER_SAMPLE_SIZE=50 (number of communes to update)
+# - WEATHER_SAMPLE_STRATEGY=top-population (or 'random')
+#
+# Recommended .env settings for development:
+# ENABLE_SCHEDULING=false
+# TIERED_SCHEDULER_ENABLED=false
+# ALERT_DETECTION_ENABLED=false

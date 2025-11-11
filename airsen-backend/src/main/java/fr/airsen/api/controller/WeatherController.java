@@ -5,6 +5,7 @@ import fr.airsen.api.dto.WeatherUpdateResponse;
 import fr.airsen.api.dto.response.WeatherResponse;
 import fr.airsen.api.entity.WeatherData;
 import fr.airsen.api.exception.ResourceNotFoundException;
+import fr.airsen.api.mapper.WeatherMapper;
 import fr.airsen.api.service.WeatherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,9 +50,11 @@ public class WeatherController {
     private static final Logger log = LoggerFactory.getLogger(WeatherController.class);
 
     private final WeatherService weatherService;
+    private final WeatherMapper weatherMapper;
 
-    public WeatherController(WeatherService weatherService) {
+    public WeatherController(WeatherService weatherService, WeatherMapper weatherMapper) {
         this.weatherService = weatherService;
+        this.weatherMapper = weatherMapper;
     }
 
     /**
@@ -91,6 +94,19 @@ public class WeatherController {
                               \"communeName\": \"Paris\",
                               \"measurementDate\": \"2025-11-04\",
                               \"temperature\": 15.5,
+                              \"humidity\": 62,
+                              \"windSpeed\": 12.3,
+                              \"windDirection\": 210,
+                              \"weatherCode\": 3,
+                              \"weatherDescription\": \"Overcast\",
+                              \"apparentTemperature\": 14.2,
+                              \"precipitation\": 0.2,
+                              \"rain\": 0.1,
+                              \"showers\": 0.0,
+                              \"snowfall\": 0.0,
+                              \"cloudCover\": 85,
+                              \"windGusts\": 22.5,
+                              \"pressureMsl\": 1014.3,
                               \"dataSource\": \"DIRECT\",
                               \"dataQualityNote\": \"Données mesurées pour cette commune\"
                             }
@@ -100,10 +116,23 @@ public class WeatherController {
                         name = "Estimated Data",
                         value = """
                             {
-                              \"inseeCode\": \"75057\",
-                              \"communeName\": \"Versailles\",
+                              \"inseeCode\": \"78646\",
+                              \"communeName\": \"Vélizy-Villacoublay\",
                               \"measurementDate\": \"2025-11-04\",
                               \"temperature\": 15.2,
+                              \"humidity\": 60,
+                              \"windSpeed\": 13.1,
+                              \"windDirection\": 205,
+                              \"weatherCode\": 2,
+                              \"weatherDescription\": \"Partly cloudy\",
+                              \"apparentTemperature\": 14.8,
+                              \"precipitation\": 0.0,
+                              \"rain\": 0.0,
+                              \"showers\": 0.0,
+                              \"snowfall\": 0.0,
+                              \"cloudCover\": 50,
+                              \"windGusts\": 20.0,
+                              \"pressureMsl\": 1013.8,
                               \"dataSource\": \"ESTIMATED\",
                               \"estimatedFromCommune\": \"Paris\",
                               \"distanceKm\": 17.3,
@@ -129,15 +158,12 @@ public class WeatherController {
         log.info("REST request to get current weather for commune: {}", inseeCode);
 
         try {
-            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(inseeCode)
-                .block(java.time.Duration.ofSeconds(15));
-
+            // Get weather data from service and convert to response DTO
+            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(inseeCode).block();
             if (weatherData == null) {
-                log.warn("No weather data available: No data within 20km for {}", inseeCode);
-                throw new fr.airsen.api.exception.WeatherDataNotFoundException("No weather data within 20km");
+                throw new ResourceNotFoundException("No weather data available for commune: " + inseeCode);
             }
-
-            WeatherResponse response = mapToWeatherResponse(weatherData);
+            WeatherResponse response = weatherMapper.toDirectResponse(weatherData);
             return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException e) {
             log.error("Commune not found: {}", inseeCode);
@@ -146,56 +172,113 @@ public class WeatherController {
     }
 
     /**
-     * Update weather data for a commune by fetching from Open-Meteo API.
+     * Manually triggers synchronization of weather data from Open-Meteo API for all communes.
      *
-     * @param communeInseeCode INSEE code of the commune
-     * @return ResponseEntity with update response
+     * This endpoint performs a full synchronization of weather data, similar to the scheduled daily sync.
+     * It updates weather information for all communes in the database by fetching fresh data
+     * from the Open-Meteo API.
+     *
+     * @return ResponseEntity with synchronization summary
      */
-    @PostMapping("/update/{communeInseeCode}")
+    @PostMapping("/update")
     @Operation(
-        summary = "Update weather data",
-        description = "Fetches fresh weather data from Open-Meteo API and saves to database"
+        summary = "Manually trigger full weather data synchronization",
+        description = """
+            Triggers manual synchronization of weather data from Open-Meteo API for all communes.
+
+            This operation:
+            - Fetches fresh weather data for all communes from Open-Meteo API
+            - Updates the database with current weather information
+            - Publishes cache eviction events after successful transaction commit
+            - Returns summary of successful and failed updates
+
+            Note: This is a long-running operation that may take several minutes depending on
+            the number of communes in the database.
+            """
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Weather data updated successfully"),
-        @ApiResponse(responseCode = "404", description = "Commune not found"),
-        @ApiResponse(responseCode = "500", description = "External API error or server error")
+        @ApiResponse(
+            responseCode = "200",
+            description = "Weather data synchronization completed (check response for success/failure details)",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "Successful Sync",
+                        value = """
+                            {
+                              "success": true,
+                              "message": "Weather data synchronization completed successfully",
+                              "communesUpdated": 35228,
+                              "startTime": "2025-11-07T14:30:00",
+                              "endTime": "2025-11-07T14:45:32",
+                              "durationSeconds": 932
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "Partial Sync",
+                        value = """
+                            {
+                              "success": true,
+                              "message": "Weather data synchronization completed with some failures",
+                              "communesUpdated": 34500,
+                              "communesFailed": 728,
+                              "startTime": "2025-11-07T14:30:00",
+                              "endTime": "2025-11-07T14:46:15",
+                              "durationSeconds": 975
+                            }
+                            """
+                    )
+                }
+            )
+        ),
+        @ApiResponse(responseCode = "500", description = "Synchronization failed due to system error")
     })
-    public ResponseEntity<WeatherUpdateResponse> updateWeatherData(
-            @Parameter(description = "INSEE code of the commune", example = "75101")
-            @PathVariable
-            @NotBlank(message = "Commune INSEE code cannot be blank")
-            @Pattern(regexp = "\\d{5}", message = "INSEE code must be 5 digits")
-            String communeInseeCode) {
-
-        log.info("Updating weather data for commune: {}", communeInseeCode);
+    public ResponseEntity<java.util.Map<String, Object>> synchronizeAllWeatherData() {
+        java.time.LocalDateTime startTime = java.time.LocalDateTime.now();
+        log.info("========================================");
+        log.info("MANUAL WEATHER SYNC TRIGGERED at {}", startTime);
+        log.info("========================================");
 
         try {
-            // Convert reactive to synchronous to fix authentication context issue
-            WeatherData weatherData = weatherService.forceUpdateWeatherForCommune(communeInseeCode)
-                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
+            weatherService.updateAllWeatherData();
 
-            if (weatherData != null) {
-                WeatherDataDTO dto = mapToDTO(weatherData);
-                WeatherUpdateResponse response = WeatherUpdateResponse.success(communeInseeCode, dto);
-                log.info("Successfully updated weather data for commune: {}", communeInseeCode);
-                return ResponseEntity.ok(response);
-            } else {
-                log.warn("No weather data returned for commune: {}", communeInseeCode);
-                WeatherUpdateResponse response = WeatherUpdateResponse.failure(
-                    communeInseeCode,
-                    "No weather data returned from service"
-                );
-                return ResponseEntity.ok(response);
-            }
+            java.time.LocalDateTime endTime = java.time.LocalDateTime.now();
+            java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+
+            log.info("========================================");
+            log.info("MANUAL WEATHER SYNC COMPLETED at {}", endTime);
+            log.info("Sync completed in {} seconds", duration.getSeconds());
+            log.info("========================================");
+
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", true);
+            response.put("message", "Weather data synchronization completed successfully");
+            response.put("startTime", startTime.toString());
+            response.put("endTime", endTime.toString());
+            response.put("durationSeconds", duration.getSeconds());
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception error) {
-            log.error("Failed to update weather data for commune: {}", communeInseeCode, error);
-            WeatherUpdateResponse response = WeatherUpdateResponse.failure(
-                communeInseeCode,
-                "Failed to update weather data: " + error.getMessage()
-            );
-            return ResponseEntity.ok(response);
+            java.time.LocalDateTime endTime = java.time.LocalDateTime.now();
+            java.time.Duration duration = java.time.Duration.between(startTime, endTime);
+
+            log.error("========================================");
+            log.error("MANUAL WEATHER SYNC FAILED at {}", endTime);
+            log.error("Duration before failure: {} seconds", duration.getSeconds());
+            log.error("Error: {}", error.getMessage(), error);
+            log.error("========================================");
+
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", false);
+            response.put("message", "Weather data synchronization failed: " + error.getMessage());
+            response.put("startTime", startTime.toString());
+            response.put("endTime", endTime.toString());
+            response.put("durationSeconds", duration.getSeconds());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -344,46 +427,6 @@ public class WeatherController {
     }
 
     /**
-     * Get weather data for all communes in a region.
-     *
-     * @param regionCode INSEE region code
-     * @return Flux of weather data for the region
-     */
-    @GetMapping("/region/{regionCode}")
-    @Operation(
-        summary = "Get weather data for region",
-        description = "Retrieves current weather data for all communes in a region"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Region weather data retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Region not found")
-    })
-    public ResponseEntity<List<WeatherDataDTO>> getRegionWeatherData(
-            @Parameter(description = "INSEE region code", example = "11")
-            @PathVariable
-            @NotBlank(message = "Region code cannot be blank")
-            @Pattern(regexp = "\\d{1,2}", message = "Region code must be 1-2 digits")
-            String regionCode) {
-
-        log.info("Fetching weather data for region: {}", regionCode);
-
-        try {
-            // Convert reactive to synchronous to fix authentication context issue
-            List<WeatherDataDTO> weatherData = weatherService.getRegionWeatherData(regionCode)
-                .map(this::mapToDTO)
-                .collectList()
-                .block(java.time.Duration.ofSeconds(10)); // 10 second timeout
-
-            log.info("Successfully retrieved weather data for region: {}", regionCode);
-            return ResponseEntity.ok(weatherData != null ? weatherData : List.of());
-
-        } catch (Exception error) {
-            log.error("Error in region weather data for region: {}", regionCode, error);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    /**
      * Maps WeatherData entity to WeatherDataDTO.
      *
      * @param weatherData the weather data entity
@@ -401,6 +444,14 @@ public class WeatherController {
             weatherData.getWindSpeed(),
             weatherData.getWindDirection(),
             weatherData.getWeatherCode(),
+            weatherData.getApparentTemperature(),
+            weatherData.getPrecipitation(),
+            weatherData.getRain(),
+            weatherData.getShowers(),
+            weatherData.getSnowfall(),
+            weatherData.getCloudCover(),
+            weatherData.getWindGusts(),
+            weatherData.getPressureMsl(),
             weatherData.getCreatedAt()
         );
     }
@@ -412,11 +463,19 @@ public class WeatherController {
             weatherData.getCommune().getName(),
             weatherData.getMeasurementDate(),
             weatherData.getTemperature(),
-            (int) Math.round(weatherData.getHumidity()),
+            weatherData.getHumidity(),
             weatherData.getWindSpeed(),
-            (int) Math.round(weatherData.getWindDirection()),
+            weatherData.getWindDirection(),
             weatherData.getWeatherCode(),
-            description
+            description,
+            weatherData.getApparentTemperature(),
+            weatherData.getPrecipitation(),
+            weatherData.getRain(),
+            weatherData.getShowers(),
+            weatherData.getSnowfall(),
+            weatherData.getCloudCover(),
+            weatherData.getWindGusts(),
+            weatherData.getPressureMsl()
         );
     }
 

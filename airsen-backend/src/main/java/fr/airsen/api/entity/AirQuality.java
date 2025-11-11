@@ -1,6 +1,7 @@
 package fr.airsen.api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -28,6 +29,7 @@ public class AirQuality {
 
     @Column(name = "atm_index")
     @Min(value = 1, message = "The ATM index must be at least 1")
+    @Max(value = 6, message = "The ATM index must be at most 6")
     private Integer atmIndex;
 
     @Column(name = "atmo_qual")
@@ -88,7 +90,7 @@ public class AirQuality {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -230,7 +232,7 @@ public class AirQuality {
     }
 
     public Integer getPm10Concentration() {
-        return (Integer) Pm10;
+        return Pm10;
     }
 
     public void setPm10Concentration(Integer pm10) {
@@ -238,11 +240,11 @@ public class AirQuality {
     }
 
     public Integer getPm25Concentration() {
-        return Pm25 != null ? Pm25.intValue() : 0;
+        return Pm25 != null ? Pm25 : 0;
     }
 
     public void setPm25Concentration(Integer pm25) {
-        this.Pm25 = pm25 != null ? pm25.intValue() : 0;
+        this.Pm25 = pm25 != null ? pm25 : 0;
     }
 
     public Integer getSo2Concentration() {

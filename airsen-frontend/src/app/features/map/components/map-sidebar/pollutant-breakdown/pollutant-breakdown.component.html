@@ -1,0 +1,25 @@
+<div class="pollutant-breakdown">
+  <div class="pollutant-breakdown__header">
+    <h4>Concentration des polluants</h4>
+    <span class="subtitle">μg/m³</span>
+  </div>
+
+  <div class="pollutant-list">
+    <div class="pollutant" *ngFor="let pollutant of pollutantList">
+      <div class="pollutant__label">
+        <span>{{ pollutant.label }}</span>
+      </div>
+      <mat-progress-bar
+        mode="determinate"
+        [value]="getProgressValue(pollutant.value)"
+      ></mat-progress-bar>
+      <div class="pollutant__value">
+        {{ pollutant.value ?? "—" }}
+      </div>
+    </div>
+  </div>
+
+  <p class="pollutant-breakdown__footnote">
+    Données indicatives basées sur les dernières mesures disponibles.
+  </p>
+</div>

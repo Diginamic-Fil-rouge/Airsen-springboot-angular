@@ -1,8 +1,8 @@
-import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, filter } from 'rxjs/operators';
-import { AuthService } from '@/auth/services/auth.service';
+import { Component, OnInit, HostListener, OnDestroy } from "@angular/core";
+import { Router, NavigationEnd } from "@angular/router";
+import { Subject } from "rxjs";
+import { takeUntil, filter } from "rxjs/operators";
+import { AuthService } from "@/auth/services/auth.service";
 
 /**
  * Navigation item interface with optional role restrictions and badge count
@@ -24,9 +24,9 @@ interface NavItem {
  */
 @Component({
   standalone: false,
-  selector: 'app-sidebar',
-  templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.scss']
+  selector: "app-sidebar",
+  templateUrl: "./sidebar.component.html",
+  styleUrls: ["./sidebar.component.scss"],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
   isExpanded: boolean = true;
@@ -35,22 +35,22 @@ export class SidebarComponent implements OnInit, OnDestroy {
   showBackdrop: boolean = false;
 
   /** Current user's full name */
-  userName: string = '';
+  userName: string = "";
 
   /** Current user's email address */
-  userEmail: string = '';
+  userEmail: string = "";
 
   /** User's initial for avatar display */
-  userInitial: string = '';
+  userInitial: string = "";
 
   /** Current active route */
-  currentRoute: string = '';
+  currentRoute: string = "";
 
   /** Subject for cleanup on destroy */
   private destroy$ = new Subject<void>();
 
   /** Application version */
-  appVersion: string = '1.2.0';
+  appVersion: string = "1.2.0";
 
   /** Sidebar width in pixels */
   sidebarWidth: number = 240;
@@ -61,34 +61,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
    */
   navItems: NavItem[] = [
     // General Section - Home/Dashboard
-    { label: 'Accueil', icon: 'home', route: '/dashboard' },
-
-    // Map/Air Quality
-    { label: 'Carte', icon: 'map', route: '/map' },
+    { label: "Accueil", icon: "home", route: "/dashboard" },
 
     // Alerts (with badge count - ADMIN only)
-    { label: 'Alertes', icon: 'notifications', route: '/alerts', roles: ['ADMIN']},
+    { label: "Alertes", icon: "notifications", route: "/alerts", roles: ["ADMIN"] },
 
     // Community
-    { label: 'Forum', icon: 'forum', route: '/forum' },
+    { label: "Forum", icon: "forum", route: "/forum" },
 
     // Favorites
-    { label: 'Favoris', icon: 'favorite', route: '/favorites' },
+    { label: "Favoris", icon: "favorite", route: "/favorites" },
 
     // Export/Download
-    { label: 'Exports', icon: 'download', route: '/export' },
+    { label: "Exports", icon: "download", route: "/export" },
 
     // User Profile
-    { label: 'Profil', icon: 'person', route: '/profile' },
+    { label: "Profil", icon: "person", route: "/profile" },
 
     // Settings
-    { label: 'Paramètres', icon: 'settings', route: '/settings' }
+    { label: "Paramètres", icon: "settings", route: "/settings" },
   ];
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -108,9 +102,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private loadUserData(): void {
     const user = this.authService.getCurrentUser();
     if (user) {
-      this.userName = `${user.firstName} ${user.lastName}`.trim() || 'User Name';
-      this.userEmail = user.email || '';
-      this.userInitial = user.firstName?.charAt(0).toUpperCase() || 'U';
+      this.userName = `${user.firstName} ${user.lastName}`.trim() || "User Name";
+      this.userEmail = user.email || "";
+      this.userInitial = user.firstName?.charAt(0).toUpperCase() || "U";
     }
   }
 
@@ -118,7 +112,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * Load sidebar expansion state from localStorage
    */
   private loadSidebarState(): void {
-    const savedState = localStorage.getItem('sidebarExpanded');
+    const savedState = localStorage.getItem("sidebarExpanded");
     if (savedState !== null) {
       this.isExpanded = JSON.parse(savedState);
     }
@@ -130,7 +124,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
    */
   toggleSidebar(): void {
     this.isExpanded = !this.isExpanded;
-    localStorage.setItem('sidebarExpanded', JSON.stringify(this.isExpanded));
+    localStorage.setItem("sidebarExpanded", JSON.stringify(this.isExpanded));
     this.updateBackdropVisibility();
   }
 
@@ -139,17 +133,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * Clears authentication state and redirects to login
    */
   onLogout(): void {
-    this.authService.logout()
+    this.authService
+      .logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.router.navigate(['auth//login']);
+          this.router.navigate(["auth//login"]);
         },
         error: (error) => {
-          console.error('Logout error:', error);
+          console.error("Logout error:", error);
           // Navigate to login even if logout request fails
-          this.router.navigate(['auth/login']);
-        }
+          this.router.navigate(["auth/login"]);
+        },
       });
   }
 
@@ -157,7 +152,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * Handle window resize events
    * Updates backdrop visibility based on screen size
    */
-  @HostListener('window:resize')
+  @HostListener("window:resize")
   onResize(): void {
     this.updateBackdropVisibility();
   }
@@ -199,7 +194,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
 
     // Check if user has at least one of the required roles
-    return navItem.roles.some(role => this.authService.hasRole(role));
+    return navItem.roles.some((role) => this.authService.hasRole(role));
   }
 
   /**
@@ -207,7 +202,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * @returns Array of navigation items visible to current user
    */
   get visibleNavItems(): NavItem[] {
-    return this.navItems.filter(item => this.shouldShowNavItem(item));
+    return this.navItems.filter((item) => this.shouldShowNavItem(item));
   }
 
   /**

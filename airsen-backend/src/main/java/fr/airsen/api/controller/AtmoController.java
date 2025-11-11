@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * REST controller for ATMO France air quality data integration.
@@ -128,7 +129,14 @@ public class AtmoController {
         log.info("REST request to get air quality for commune: {}", inseeCode);
 
         try {
-            AirQualityResponse response = atmoIntegrationService.getAirQualityWithFallback(inseeCode);
+            Optional<AirQualityResponseDTO> optionalData = atmoIntegrationService.getAirQualityForCommuneSync(inseeCode);
+
+            if (optionalData.isEmpty()) {
+                throw new AirQualityDataNotFoundException("No air quality data available for commune: " + inseeCode);
+            }
+
+            AirQualityResponseDTO dto = optionalData.get();
+            AirQualityResponse response = convertToAirQualityResponse(dto);
             return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException e) {
             log.error("Commune not found: {}", inseeCode);
@@ -285,5 +293,35 @@ public class AtmoController {
         response.put("lastUpdated", airQuality.createdAt());
 
         return response;
+    }
+
+    /**
+     * Helper method to convert AirQualityResponseDTO to AirQualityResponse.
+     * This is a temporary conversion until the service layer is refactored.
+     *
+     * @param dto The DTO from the service layer
+     * @return AirQualityResponse for the controller response
+     */
+    private AirQualityResponse convertToAirQualityResponse(AirQualityResponseDTO dto) {
+        Map<String, Integer> pollutants = new HashMap<>();
+        pollutants.put("NO2", dto.no2Concentration());
+        pollutants.put("O3", dto.o3Concentration());
+        pollutants.put("PM10", dto.pm10Concentration());
+        pollutants.put("PM25", dto.pm25Concentration());
+        pollutants.put("SO2", dto.so2Concentration());
+
+        return new AirQualityResponse(
+            dto.communeInseeCode(),
+            dto.communeName(),
+            dto.measurementDate(),
+            dto.atmoIndex(),
+            dto.qualifier(),
+            dto.color(),
+            pollutants,
+            AirQualityResponse.DataSource.DIRECT, // Default to DIRECT for now
+            null, // No estimated commune
+            null, // No distance
+            "Données mesurées pour cette commune" // Default quality note
+        );
     }
 }

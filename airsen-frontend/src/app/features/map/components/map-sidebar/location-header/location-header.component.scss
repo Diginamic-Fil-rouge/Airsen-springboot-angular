@@ -1,0 +1,62 @@
+@use "styles/design-system" as *;
+
+.location-header {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-4;
+  border-radius: $radius-lg;
+  background: $airsen-gray-50;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+
+    mat-icon {
+      color: $airsen-primary;
+    }
+
+    .label {
+      margin: 0;
+      font-size: $font-size-xs;
+      text-transform: uppercase;
+      letter-spacing: $letter-spacing-wide;
+      color: $airsen-gray-500;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: $font-size-xl;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+    color: $airsen-gray-600;
+    font-size: $font-size-sm;
+  }
+
+  &.empty {
+    align-items: center;
+    text-align: center;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: $airsen-gray-400;
+    }
+
+    p {
+      margin: 0;
+      font-weight: $font-weight-medium;
+    }
+
+    small {
+      color: $airsen-gray-500;
+    }
+  }
+}

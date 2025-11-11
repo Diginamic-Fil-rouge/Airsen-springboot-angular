@@ -1,0 +1,9 @@
+<div class="map-legend">
+  <span class="title">Échelle AQI</span>
+  <div class="legend-entries">
+    <div class="legend-entry" *ngFor="let item of legend">
+      <span class="swatch" [style.backgroundColor]="item.color"></span>
+      <span class="label">{{ item.label }}</span>
+    </div>
+  </div>
+</div>

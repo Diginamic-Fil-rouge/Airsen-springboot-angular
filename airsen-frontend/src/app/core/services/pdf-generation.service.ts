@@ -53,7 +53,7 @@ export class PdfGenerationService {
       yPosition = this.addWeatherSection(doc, data, yPosition);
 
       // Section 4: Data Quality (optional - only if provided by backend)
-      if (data.dataQuality) {
+      if (data.exportMetadata) {
         yPosition = this.addDataQualitySection(doc, data, yPosition);
       }
 
@@ -126,8 +126,8 @@ export class PdfGenerationService {
     const rows = [
       { label: 'Nom', value: data.commune.name || 'N/A' },
       { label: 'Code INSEE', value: data.commune.inseeCode || 'N/A' },
-      { label: 'Département', value: data.commune.departmentName || 'N/A' },
-      { label: 'Région', value: data.commune.regionName || 'N/A' },
+      { label: 'Département', value: data.commune.department?.name || 'N/A' },
+      { label: 'Région', value: data.commune.department?.region?.name || 'N/A' },
       { label: 'Population', value: data.commune.population ? `${this.formatNumber(data.commune.population)} habitants` : 'N/A' },
       { label: 'Coordonnées', value: (data.commune.latitude && data.commune.longitude) ? `${data.commune.latitude.toFixed(4)}, ${data.commune.longitude.toFixed(4)}` : 'N/A' }
     ];
@@ -161,9 +161,9 @@ export class PdfGenerationService {
     }
 
     // AQI with color badge
-    const aqi = data.airQuality.aqi ?? 0;
-    const aqiColor = this.getAQIColor(aqi);
-    const aqiLabel = this.getAQILabel(aqi);
+    const aqi = data.airQuality.atmIndex ?? 0;
+    const aqiColor = data.airQuality.atmoColor ?? this.getAQIColor(aqi);
+    const aqiLabel = data.airQuality.atmoQual ?? this.getAQILabel(aqi);
 
     // Draw AQI badge
     doc.setFillColor(...this.hexToRgb(aqiColor));
@@ -262,11 +262,9 @@ export class PdfGenerationService {
     doc.setFont('helvetica', 'normal');
 
     const rows = [
-      { label: 'Fraîcheur AQI', value: data.dataQuality.airQualityFreshness },
-      { label: 'Fraîcheur Météo', value: data.dataQuality.weatherFreshness },
-      { label: 'Source', value: data.dataQuality.dataSource },
-      { label: 'Âge du cache', value: data.dataQuality.cacheAge },
-      { label: 'Fraîcheur', value: `${data.dataQuality.cacheFreshness.toFixed(1)}%` }
+      { label: 'Fraîcheur AQI', value: data.exportMetadata?.dataFreshness?.airQuality || 'N/A' },
+      { label: 'Fraîcheur Météo', value: data.exportMetadata?.dataFreshness?.weather || 'N/A' },
+      { label: 'Généré le', value: data.exportMetadata?.generatedAt ? this.formatDateFull(new Date(data.exportMetadata.generatedAt)) : 'N/A' }
     ];
 
     yPosition = this.addTable(doc, rows, yPosition);

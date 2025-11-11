@@ -146,8 +146,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
      * @param inseeCode commune INSEE code
      * @return optional latest weather data
      */
-    @Query(value = "SELECT w.id, w.commune_id, w.measurement_date, w.temperature, w.humidity, " +
-           "w.wind_speed, w.wind_direction, w.weather_code, w.created_at " +
+    @Query(value = "SELECT w.* " +
            "FROM weather_data w JOIN communes c ON w.commune_id = c.id " +
            "WHERE c.insee_code = :inseeCode ORDER BY w.measurement_date DESC, w.created_at DESC LIMIT 1",
            nativeQuery = true)
@@ -221,6 +220,14 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
             w.wind_speed,
             w.wind_direction,
             w.weather_code,
+            w.apparent_temperature,
+            w.precipitation,
+            w.rain,
+            w.showers,
+            w.snowfall,
+            w.cloud_cover,
+            w.wind_gusts,
+            w.pressure_msl,
             (6371 * acos(
                 cos(radians(:lat)) * cos(radians(c.latitude))
                 * cos(radians(c.longitude) - radians(:lon))

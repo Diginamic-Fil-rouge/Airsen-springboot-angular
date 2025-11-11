@@ -1,0 +1,45 @@
+@use "styles/design-system" as *;
+
+.trend-chart {
+  padding: $space-4;
+  border-radius: $radius-lg;
+  border: 1px dashed $airsen-gray-200;
+  text-align: center;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $space-3;
+
+    h4 {
+      margin: 0;
+      font-size: $font-size-lg;
+    }
+
+    .mode-label {
+      font-size: $font-size-xs;
+      color: $airsen-gray-500;
+      letter-spacing: $letter-spacing-wide;
+    }
+  }
+
+  &__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-2;
+    color: $airsen-gray-500;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: $airsen-gray-400;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}

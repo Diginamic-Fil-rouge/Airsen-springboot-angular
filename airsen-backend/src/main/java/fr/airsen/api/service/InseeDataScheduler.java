@@ -3,6 +3,7 @@ package fr.airsen.api.service;
 import fr.airsen.api.external.client.InseeApiClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,15 +30,22 @@ public class InseeDataScheduler {
 
     /**
      * Yearly INSEE data synchronization.
-     * 
+     *
      * Executes every January 1st at 2:00 AM to sync all French communes
      * with the latest INSEE data including:
      * - code commune, name commune, coordinates
-     * - code department, name department  
+     * - code department, name department
      * - code region, name region
      * - population
+     *
+     * Can be disabled by setting scheduling.enabled=false in application.yml
      */
     @Scheduled(cron = "0 0 2 1 1 *") // January 1st at 2:00 AM every year
+    @ConditionalOnProperty(
+        value = "scheduling.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void yearlyInseeSync() {
         log.info("=== Starting yearly INSEE data synchronization ===");
         

@@ -9,6 +9,7 @@ import fr.airsen.api.service.cacheData.SmartCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -58,8 +59,14 @@ public class CacheAwareTieredScheduler {
      * - 12 cycles/day = 3,600 calls/day for Tier 1
      *
      * Run times: 00:00, 02:00, 04:00, 06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00
+     * Can be disabled by setting tiered-scheduler.enabled=false in application.yml
      */
     @Scheduled(fixedDelay = 7200000, initialDelay = 300000)  // 2 hours, 5 min initial delay
+    @ConditionalOnProperty(
+        value = "tiered-scheduler.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+    )
     public void refreshTier1Communes() {
         long startTime = System.currentTimeMillis();
         log.info("Starting Tier 1 cache refresh (population >= 100,000)");
@@ -120,8 +127,14 @@ public class CacheAwareTieredScheduler {
      * - 4 cycles/day = 10,000 calls/day for Tier 2
      *
      * Run times: 01:00, 07:00, 13:00, 19:00
+     * Can be disabled by setting tiered-scheduler.enabled=false in application.yml
      */
     @Scheduled(fixedDelay = 21600000, initialDelay = 3600000)  // 6 hours, 1 hour initial delay
+    @ConditionalOnProperty(
+        value = "tiered-scheduler.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+    )
     public void refreshTier2Communes() {
         long startTime = System.currentTimeMillis();
         log.info("Starting Tier 2 cache refresh (population 10,000-99,999)");
@@ -180,8 +193,14 @@ public class CacheAwareTieredScheduler {
      * - 1 cycle/day = 33,000 calls/day for Tier 3
      *
      * Run time: 02:00 (off-peak hours)
+     * Can be disabled by setting tiered-scheduler.enabled=false in application.yml
      */
     @Scheduled(fixedDelay = 86400000, initialDelay = 7200000)  // 24 hours, 2 hour initial delay
+    @ConditionalOnProperty(
+        value = "tiered-scheduler.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+    )
     public void refreshTier3Communes() {
         long startTime = System.currentTimeMillis();
         log.info("Starting Tier 3 cache refresh (population < 10,000)");
@@ -238,8 +257,14 @@ public class CacheAwareTieredScheduler {
      * - Total communes by tier
      * - Cache coverage
      * - Estimated API call reduction
+     * Can be disabled by setting tiered-scheduler.enabled=false in application.yml
      */
     @Scheduled(fixedDelay = 1800000)  // 30 minutes
+    @ConditionalOnProperty(
+        value = "tiered-scheduler.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+    )
     public void reportCacheStatistics() {
         try {
             long tier1Count = communeRepository.countTier1Communes();

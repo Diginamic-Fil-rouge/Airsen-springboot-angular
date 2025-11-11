@@ -1,0 +1,26 @@
+<ng-container *ngIf="commune; else emptyState">
+  <div class="location-header">
+    <div class="location-header__title">
+      <mat-icon fontIcon="location_on"></mat-icon>
+      <div>
+        <p class="label">Commune sélectionnée</p>
+        <h3>{{ commune?.name }}</h3>
+      </div>
+    </div>
+
+    <div class="location-header__meta">
+      <span *ngIf="commune?.departmentCode">Dept {{ commune?.departmentCode }}</span>
+      <span *ngIf="commune?.population">{{ commune?.population | number }} habitants</span>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #emptyState>
+  <div class="location-header empty">
+    <mat-icon fontIcon="travel_explore"></mat-icon>
+    <div>
+      <p>Aucune commune sélectionnée</p>
+      <small>Touchez un marqueur sur la carte pour voir les détails.</small>
+    </div>
+  </div>
+</ng-template>

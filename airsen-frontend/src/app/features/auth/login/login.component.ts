@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { AuthService } from '@/auth/services/auth.service';
-import { StorageService } from '@/auth/services/storage.service';
+import { Component, OnInit, OnDestroy, inject } from "@angular/core";
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { Router, ActivatedRoute } from "@angular/router";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import { AuthService } from "@/auth/services/auth.service";
+import { StorageService } from "@/auth/services/storage.service";
 
 /**
  * LoginComponent - User authentication interface
@@ -19,9 +19,9 @@ import { StorageService } from '@/auth/services/storage.service';
  */
 @Component({
   standalone: false,
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  selector: "app-login",
+  templateUrl: "./login.component.html",
+  styleUrls: ["./login.component.scss"],
 })
 export class LoginComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
@@ -54,9 +54,14 @@ export class LoginComponent implements OnInit, OnDestroy {
    */
   private initializeForm(): void {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      email: ["", [Validators.required, Validators.email]],
+      password: ["", [Validators.required, Validators.minLength(6)]],
+      rememberMe: [false],
+    });
+
+    // Clear error when user starts typing in any form field
+    this.loginForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.authService.clearError();
     });
 
     // Clear error when user starts typing in any form field
@@ -71,11 +76,9 @@ export class LoginComponent implements OnInit, OnDestroy {
    * Check for session expiration query parameter
    */
   private checkSessionExpiration(): void {
-    this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        this.sessionExpired = params['sessionExpired'] === 'true';
-      });
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      this.sessionExpired = params["sessionExpired"] === "true";
+    });
   }
 
   /**
@@ -89,19 +92,20 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     const { email, password } = this.loginForm.value;
 
-    this.authService.login({ email, password })
+    this.authService
+      .login({ email, password })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Get return URL or default to map
-          const returnUrl = this.storageService.getReturnUrl() || '/map';
+          // Get return URL or default to dashboard
+          const returnUrl = this.storageService.getReturnUrl() || "/dashboard";
           this.storageService.clearReturnUrl();
           this.router.navigate([returnUrl]);
         },
         error: (error) => {
-          console.error('Login failed:', error);
+          console.error("Login failed:", error);
           // Error is handled by AuthService and exposed via error$ observable
-        }
+        },
       });
   }
 
@@ -109,7 +113,7 @@ export class LoginComponent implements OnInit, OnDestroy {
    * Navigate to register page
    */
   goToRegister(): void {
-    this.router.navigate(['/auth/register']);
+    this.router.navigate(["/auth/register"]);
   }
 
   /**
@@ -119,23 +123,23 @@ export class LoginComponent implements OnInit, OnDestroy {
     const field = this.loginForm.get(fieldName);
 
     if (!field || !field.touched) {
-      return '';
+      return "";
     }
 
-    if (field.hasError('required')) {
+    if (field.hasError("required")) {
       return `${this.getFieldLabel(fieldName)} est requis`;
     }
 
-    if (field.hasError('email')) {
-      return 'Veuillez entrer une adresse e-mail valide';
+    if (field.hasError("email")) {
+      return "Veuillez entrer une adresse e-mail valide";
     }
 
-    if (field.hasError('minlength')) {
-      const minLength = field.errors?.['minlength'].requiredLength;
+    if (field.hasError("minlength")) {
+      const minLength = field.errors?.["minlength"].requiredLength;
       return `Le mot de passe doit contenir au moins ${minLength} caractères`;
     }
 
-    return '';
+    return "";
   }
 
   /**
@@ -143,8 +147,8 @@ export class LoginComponent implements OnInit, OnDestroy {
    */
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      email: 'L\'adresse e-mail',
-      password: 'Le mot de passe'
+      email: "L'adresse e-mail",
+      password: "Le mot de passe",
     };
     return labels[fieldName] || fieldName;
   }

@@ -132,6 +132,13 @@ public class GeoDistanceService {
         JpqlResultConverter.UnwrapResult unwrapResult = JpqlResultConverter.unwrapNestedArray(row);
         row = unwrapResult.data;
 
+        // Check if unwrapped array is empty
+        if (row.length == 0) {
+            log.warn("Unwrapped array is empty, no weather data found within {} km of commune {}",
+                     maxDistanceKm, inseeCode);
+            return Optional.empty();
+        }
+
         NearestWeatherResult nearestResult = parseWeatherResult(row);
 
         log.info("Found nearest weather data: commune {} at distance {:.2f} km",
@@ -187,6 +194,13 @@ public class GeoDistanceService {
         JpqlResultConverter.UnwrapResult unwrapResult = JpqlResultConverter.unwrapNestedArray(row);
         row = unwrapResult.data;
 
+        // Check if unwrapped array is empty
+        if (row.length == 0) {
+            log.warn("Unwrapped array is empty, no air quality data found within {} km of commune {}",
+                     maxDistanceKm, inseeCode);
+            return Optional.empty();
+        }
+
         NearestAirQualityResult nearestResult = parseAirQualityResult(row);
 
         log.info("Found nearest air quality data: commune {} at distance {:.2f} km",
@@ -229,12 +243,23 @@ public class GeoDistanceService {
             JpqlResultConverter.toDoubleNullable(row[2]),          // latitude (BigDecimal → Double)
             JpqlResultConverter.toDoubleNullable(row[3]),          // longitude (BigDecimal → Double)
             JpqlResultConverter.toLocalDateNullable(row[4]),       // measurementDate
+            // Basic weather measurements
             JpqlResultConverter.toDoubleNullable(row[5]),          // temperature (BigDecimal → Double)
-            JpqlResultConverter.toIntegerNullable(row[6]),         // humidity (BigDecimal/Integer → Integer)
+            JpqlResultConverter.toIntegerNullable(row[6]),         // humidity (INT → Integer)
             JpqlResultConverter.toDoubleNullable(row[7]),          // windSpeed (BigDecimal → Double)
-            JpqlResultConverter.toIntegerNullable(row[8]),         // windDirection (BigDecimal/Integer → Integer)
-            JpqlResultConverter.toIntegerNullable(row[9]),         // weatherCode (BigDecimal/Integer → Integer)
-            JpqlResultConverter.toDoubleNullable(row[10])          // distanceKm (BigDecimal → Double)
+            JpqlResultConverter.toIntegerNullable(row[8]),         // windDirection (INT → Integer)
+            JpqlResultConverter.toIntegerNullable(row[9]),         // weatherCode (INT → Integer)
+            // Advanced weather measurements
+            JpqlResultConverter.toDoubleNullable(row[10]),         // apparentTemperature (BigDecimal → Double)
+            JpqlResultConverter.toDoubleNullable(row[11]),         // precipitation (BigDecimal → Double)
+            JpqlResultConverter.toDoubleNullable(row[12]),         // rain (BigDecimal → Double)
+            JpqlResultConverter.toDoubleNullable(row[13]),         // showers (BigDecimal → Double)
+            JpqlResultConverter.toDoubleNullable(row[14]),         // snowfall (BigDecimal → Double)
+            JpqlResultConverter.toIntegerNullable(row[15]),        // cloudCover (INT → Integer)
+            JpqlResultConverter.toDoubleNullable(row[16]),         // windGusts (BigDecimal → Double)
+            JpqlResultConverter.toDoubleNullable(row[17]),         // pressureMsl (BigDecimal → Double)
+            // Distance calculation result
+            JpqlResultConverter.toDoubleNullable(row[18])          // distanceKm (BigDecimal → Double)
         );
     }
 

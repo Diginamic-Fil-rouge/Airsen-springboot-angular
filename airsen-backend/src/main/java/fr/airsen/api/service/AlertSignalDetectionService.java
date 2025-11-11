@@ -13,6 +13,7 @@ import fr.airsen.api.repository.RegionRepository;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -61,11 +62,22 @@ public class AlertSignalDetectionService {
 
     /**
      * Scheduled task that runs hourly to detect all alert signals.
-     * 
+     *
      * This method is automatically executed every hour and orchestrates
      * the detection of both ATMO pollution episodes and weather alerts.
+     *
+     * Configuration:
+     * - alert.detection.cron: Cron expression (default: 0 0 * * * *)
+     * - alert.detection.enabled: Enable/disable alert detection (default: true in prod, false in dev)
+     *
+     * Can be disabled by setting alert.detection.enabled=false in application.yml
      */
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "${alert.detection.cron:0 0 * * * *}")
+    @ConditionalOnProperty(
+        value = "alert.detection.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void detectAllSignals() {
         log.info("Starting scheduled alert signal detection");
         

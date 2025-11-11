@@ -2,6 +2,7 @@ package fr.airsen.api.scheduler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -31,8 +32,14 @@ public class CacheRefreshScheduler {
     /**
      * Refreshes air quality cache every hour.
      * Scheduled at the top of every hour (HH:00:00).
+     * Can be disabled by setting scheduling.enabled=false in application.yml
      */
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "${cache.refresh.air-quality-cron:0 0 * * * *}")
+    @ConditionalOnProperty(
+        value = "scheduling.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void refreshAirQualityCache() {
         Cache cache = cacheManager.getCache("air-quality");
         if (cache != null) {
@@ -46,8 +53,14 @@ public class CacheRefreshScheduler {
     /**
      * Refreshes weather cache every 30 minutes.
      * Scheduled at HH:00:00 and HH:30:00.
+     * Can be disabled by setting scheduling.enabled=false in application.yml
      */
-    @Scheduled(cron = "0 */30 * * * *")
+    @Scheduled(cron = "${cache.refresh.weather-cron:0 */30 * * * *}")
+    @ConditionalOnProperty(
+        value = "scheduling.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void refreshWeatherCache() {
         Cache cache = cacheManager.getCache("weather");
         if (cache != null) {
@@ -61,8 +74,14 @@ public class CacheRefreshScheduler {
     /**
      * Logs cache statistics every 15 minutes for monitoring.
      * Helps track cache usage and identify performance issues.
+     * Can be disabled by setting scheduling.enabled=false in application.yml
      */
-    @Scheduled(cron = "0 */15 * * * *")
+    @Scheduled(cron = "${cache.refresh.statistics-cron:0 */15 * * * *}")
+    @ConditionalOnProperty(
+        value = "scheduling.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void logCacheStats() {
         log.debug("=== Cache Statistics ===");
         cacheManager.getCacheNames().forEach(cacheName -> {
@@ -78,8 +97,14 @@ public class CacheRefreshScheduler {
      * Daily cache cleanup at 3:00 AM.
      * Clears all caches to ensure fresh data at the start of each day.
      * Scheduled during low-traffic hours to minimize user impact.
+     * Can be disabled by setting scheduling.enabled=false in application.yml
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "${cache.refresh.cleanup-cron:0 0 3 * * *}")
+    @ConditionalOnProperty(
+        value = "scheduling.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void dailyCacheCleanup() {
         log.info("Starting daily cache cleanup...");
         int clearedCount = 0;

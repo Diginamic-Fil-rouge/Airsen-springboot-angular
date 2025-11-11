@@ -1,317 +1,125 @@
 @use 'styles/design-system' as *;
 
-.page-container {
-  background-color: $airsen-gray-100;
-  border-radius: $radius-lg;
-  position: relative;
-
-  // Loading State
-  .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    gap: $space-4;
-
-    p {
-      color: $airsen-gray-700;
-      font-size: $font-size-base;
-    }
-  }
-
-  // Error State
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-    gap: $space-4;
-
-  mat-icon {
-    font-size: $space-16;
-    width: $space-16;
-    height: $space-16;
-    color: $airsen-error;
-  }
-
-  h2 {
-    margin: 0;
-    color: $airsen-gray-900;
-  }
-
-  p {
-    color: $airsen-gray-700;
-  }
-
-
-}
-
-.search-bar{
-  width: 300px;
-  border: 1px solid $airsen-gray-300;
-  border-radius: $radius-lg;
-  background-color: $airsen-gray-50;
-  padding: $space-1;
-  position: absolute;
-  right: 0;
-  z-index: $z-index-sticky * 450;
-
-  .search-input{
-    display: flex;
-    align-items: center;
-
-    svg{
-      color: $airsen-gray-800;
-      width: $space-6;
-      height: $space-6;
-    }
-
-    input{
-      padding: $space-3;
-      width: 275px;
-      border-radius: $radius-lg;
-      border: none;
-      outline: none
-    }
-  }
-
-  .search-input:focus{
-    outline: 2px solid $airsen-primary;
-  }
-
-  .search-results{
-    position: absolute;
-    z-index: $z-index-tooltip * 1428;
-    background-color: $airsen-gray-50;
-    color: $airsen-gray-800;
-    border-radius: $radius-lg;
-    border: 1px solid $airsen-gray-300;
-    width: 300px;
-
-    li{
-      list-style: none;
-      cursor: pointer;
-      transition: $transition-all;
-    }
-
-    li:hover{
-      color: $airsen-primary;
-    }
-  }
-
-}
-
-  app-map-view{
+.map-page {
+    position: relative;
     width: 100%;
-  }
+    height: calc(100vh - #{$header-height});
+    background: $airsen-gray-100;
+    overflow: hidden;
 
-  .map-info-card {
-    display: flex;
-    flex-direction: column;
-    width: 400px;
-    max-width: 90vw;
-    height: fit-content;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: absolute;
-    left: $space-4;
-    top: 12%;
-    z-index: 8999;
-
-    // Apply card mixin
-    background: $card-background;
-    border-radius: $card-border-radius;
-    box-shadow: $shadow-md;
-    padding: $space-6;
-    transition: box-shadow $duration-normal;
-    color: $airsen-gray-800;
-
-    &:hover {
-      box-shadow: $shadow-lg;
-    }
-
-    @include custom-scrollbar();
-
-    // Responsive adjustments
-    @include respond-max(md) {
-      width: 350px;
-      padding: $space-4;
-      left: $space-2;
-      max-height: 80vh;
-    }
-
-    @include respond-max(sm) {
-      width: calc(100vw - #{$space-8});
-      left: $space-4;
-      right: $space-4;
-      padding: $space-4;
-      top: auto;
-      bottom: $space-4;
-      max-height: 60vh;
-    }
-
-    // Header Section
-    .card-header {
-      display: flex;
-      flex-direction: column;
-      gap: $space-2;
-      padding-bottom: $space-4;
-      border-bottom: 1px solid $airsen-gray-200;
-      margin-bottom: $space-4;
-
-      .header-top {
+    .map-layout {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: $space-4;
-
-        @include respond-max(sm) {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: $space-3;
-        }
-      }
-
-      .commune-name {
-        display: flex;
-        align-items: center;
-        gap: $space-2;
-        font-size: $font-size-2xl;
-        font-weight: $font-weight-bold;
-        color: $airsen-gray-900;
-        margin: 0;
-        line-height: $line-height-tight;
-        flex-shrink: 0;
-
-        .pin-icon {
-          font-size: $font-size-2xl;
-        }
-
-        @include respond-max(sm) {
-          font-size: $font-size-xl;
-        }
-      }
-
-      .commune-population {
-        font-size: $font-size-base;
-        color: $airsen-gray-700;
-        margin: 0;
-      }
-
-      .last-updated {
-        font-size: $font-size-sm;
-        color: $airsen-gray-500;
-        margin: 0;
-      }
+        height: 100%;
+        position: relative;
     }
 
-    // Action Buttons Section
-    .action-buttons {
-      display: flex;
-      gap: $space-2;
-      align-items: center;
-      flex-shrink: 0;
+    app-map-sidebar.map-layout__sidebar {
+        display: block;
+        flex: 0 0 400px;
+        position: relative;
+        z-index: $z-index-fixed;
+        height: 100%;
+        overflow: hidden; // Prevent content from exceeding sidebar bounds
 
-      @include respond-max(sm) {
-        gap: $space-2;
+        &.overlay-mode {
+            flex: 0 0 0;
+            width: 0;
+        }
+
+        // Responsive sidebar width for larger screens
+        @include breakpoint(xl) {
+            flex: 0 0 450px;
+        }
+
+        // Hide sidebar on tablet/mobile (will appear as overlay instead)
+        @include respond-max(lg) {
+            display: none;
+        }
+    }
+
+    .map-layout__canvas {
+        flex: 1;
+        position: relative;
+        min-width: 0; // Allows flex item to shrink below content size
+        overflow: hidden;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
-      }
-
-      .export-button {
-        border: none;
-        background: rgba(76, 175, 80, 0.1);
-        cursor: pointer;
-        transition: transform 0.2s ease, background-color 0.2s ease;
-        display: inline-flex;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        position: relative;
-        border-radius: 50%;
-        padding: 8px;
-        min-width: 40px;
-        height: 40px;
+        background: $airsen-white;
+        z-index: $z-index-modal;
 
-        mat-icon {
-          font-size: 24px;
-          width: 24px;
-          height: 24px;
-          color: var(--airsen-gray-500);
+        p {
+            margin-top: $space-4;
+            font-size: $font-size-base;
+            color: $airsen-gray-500;
         }
-
-        mat-spinner {
-          display: inline-flex;
-        }
-
-        &:hover:not(:disabled) {
-          transform: scale(1.1);
-          background: rgba(76, 175, 80, 0.15);
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        @include respond-max(sm) {
-          min-width: 36px;
-          height: 36px;
-
-          mat-icon {
-            font-size: 20px;
-            width: 20px;
-            height: 20px;
-          }
-        }
-      }
     }
 
-    // Loading State
-    .loading-data {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: $space-4;
-      padding: $space-8 0;
+    app-leaflet-map {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
 
-      p {
+    .debug-info {
+        position: absolute;
+        bottom: $space-4;
+        left: $space-4;
+        background: rgba(255, 255, 255, 0.9);
+        padding: $space-2 $space-3;
+        border-radius: $radius-sm;
+        font-size: $font-size-xs;
         color: $airsen-gray-600;
-        font-size: $font-size-sm;
-        margin: 0;
-      }
+        box-shadow: $shadow-sm;
+        z-index: $z-index-modal;
     }
 
-    // Empty State
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: $space-4;
-      padding: $space-12 $space-4;
-      text-align: center;
+    .sidebar-toggle {
+        position: fixed;
+        bottom: $space-6;
+        right: $space-6;
+        z-index: calc(#{$z-index-modal} - 1);
+        box-shadow: $shadow-lg;
 
-      mat-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        color: $airsen-gray-400;
-      }
+        // Adjust position for larger screens
+        @include breakpoint(md) {
+            bottom: $space-8;
+            right: $space-8;
+        }
 
-      p {
-        color: $airsen-gray-600;
-        font-size: $font-size-base;
-        margin: 0;
-        max-width: 300px;
-      }
+        // Hide on desktop when sidebar is visible
+        @include breakpoint(lg) {
+            display: none;
+        }
     }
 
-    app-map-data {
-      width: 100%;
+    .sidebar-backdrop {
+        position: fixed;
+        top: $header-height;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: calc(#{$z-index-modal} - 1);
+        transition: opacity $duration-normal $ease-in-out;
+        pointer-events: none; // Allow clicking through when invisible
+
+        &.visible {
+            pointer-events: auto; // Enable clicking when visible
+        }
+
+        // Hide on desktop when sidebar is always visible
+        @include breakpoint(lg) {
+            display: none;
+        }
     }
-  }
 }
-  
-  
-
