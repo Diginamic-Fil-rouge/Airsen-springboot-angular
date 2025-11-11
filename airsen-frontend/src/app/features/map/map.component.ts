@@ -1,7 +1,10 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { BreakpointObserver } from "@angular/cdk/layout";
 import { CommuneDataService } from "@/core/services/commune-data.service";
 import { CommuneWithAirQuality } from "@/shared/models/commune.model";
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import { MapSidebarDisplayMode } from "./components/map-sidebar/map-sidebar.types";
 
 /**
  * Map Container Component
@@ -37,22 +40,42 @@ import { Observable } from "rxjs";
   templateUrl: "./map.component.html",
   styleUrls: ["./map.component.scss"],
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements OnInit, OnDestroy {
   communes: CommuneWithAirQuality[] = [];
   isLoading$: Observable<boolean>;
+  selectedCommune: CommuneWithAirQuality | null = null;
+  isSidebarOpen = true;
+  sidebarDisplayMode: MapSidebarDisplayMode = "desktop";
 
   // Progressive loading state tracking
   private currentZoom = 6;
   private loadedPopulationThreshold = 50000; // Track what we've already loaded
+  private destroy$ = new Subject<void>();
 
-  constructor(private communeDataService: CommuneDataService) {
+  private readonly breakpointQueries = {
+    desktop: "(min-width: 1024px)",
+    tablet: "(min-width: 640px) and (max-width: 1023px)",
+    mobile: "(max-width: 639px)",
+  };
+
+  constructor(
+    private communeDataService: CommuneDataService,
+    private breakpointObserver: BreakpointObserver,
+  ) {
     this.isLoading$ = this.communeDataService.loading$;
   }
 
   ngOnInit(): void {
+    this.setupSidebarModeListener();
+
     // INITIAL LOAD: Only major cities (50K+ population)
     console.log("[Map] Initial load: Fetching major cities (pop >= 50000)");
     this.loadCommunes(50000);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -128,6 +151,68 @@ export class MapComponent implements OnInit {
    */
   onCommuneClicked(commune: CommuneWithAirQuality): void {
     console.log("[Map] Commune clicked:", commune.name, commune.currentAirQuality);
-    // Phase 2: Show sidebar with commune details, pollutants, weather, etc.
+    this.selectedCommune = commune;
+
+    if (this.sidebarDisplayMode !== "desktop") {
+      this.isSidebarOpen = true;
+    }
+  }
+
+  onSidebarOpenChange(open: boolean): void {
+    if (this.sidebarDisplayMode === "desktop") {
+      this.isSidebarOpen = true;
+      return;
+    }
+
+    this.isSidebarOpen = open;
+  }
+
+  onSidebarClearSelection(): void {
+    this.selectedCommune = null;
+  }
+
+  openSidebar(): void {
+    this.isSidebarOpen = true;
+  }
+
+  get isMobileView(): boolean {
+    return this.sidebarDisplayMode === "mobile";
+  }
+
+  get isTabletView(): boolean {
+    return this.sidebarDisplayMode === "tablet";
+  }
+
+  get isOverlayMode(): boolean {
+    return this.sidebarDisplayMode !== "desktop";
+  }
+
+  private setupSidebarModeListener(): void {
+    this.breakpointObserver
+      .observe(Object.values(this.breakpointQueries))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        const previousMode = this.sidebarDisplayMode;
+
+        let nextMode: MapSidebarDisplayMode = "desktop";
+        if (state.breakpoints[this.breakpointQueries.desktop]) {
+          nextMode = "desktop";
+        } else if (state.breakpoints[this.breakpointQueries.tablet]) {
+          nextMode = "tablet";
+        } else {
+          nextMode = "mobile";
+        }
+
+        this.sidebarDisplayMode = nextMode;
+
+        if (nextMode === "desktop") {
+          this.isSidebarOpen = true;
+          return;
+        }
+
+        if (previousMode !== nextMode) {
+          this.isSidebarOpen = false;
+        }
+      });
   }
 }

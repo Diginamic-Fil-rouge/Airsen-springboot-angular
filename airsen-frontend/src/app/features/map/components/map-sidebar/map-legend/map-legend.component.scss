@@ -1,0 +1,38 @@
+@use "styles/design-system" as *;
+
+.map-legend {
+  padding: $space-4;
+  border-radius: $radius-lg;
+  background: $airsen-gray-50;
+
+  .title {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-600;
+  }
+
+  .legend-entries {
+    margin-top: $space-3;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: $space-3;
+  }
+
+  .legend-entry {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-size: $font-size-sm;
+
+    .swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: $radius-sm;
+      box-shadow: $shadow-sm;
+    }
+
+    .label {
+      color: $airsen-gray-700;
+    }
+  }
+}

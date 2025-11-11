@@ -1,0 +1,11 @@
+<div class="hero-display">
+  <div class="hero-display__value" [style.border-color]="color || '#2E7D32'">
+    <span class="index">{{ atmoIndex ?? "--" }}</span>
+    <span class="qualifier">{{ displayQualifier }}</span>
+  </div>
+
+  <div class="hero-display__badge">
+    <div class="badge-pill" [style.backgroundColor]="color || '#66BB6A'"></div>
+    <span>Niveau ATMO</span>
+  </div>
+</div>

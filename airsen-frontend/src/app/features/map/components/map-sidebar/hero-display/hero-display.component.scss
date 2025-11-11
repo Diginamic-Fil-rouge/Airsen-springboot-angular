@@ -1,0 +1,42 @@
+@use "styles/design-system" as *;
+
+.hero-display {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-4;
+  border-radius: $radius-lg;
+  background: linear-gradient(135deg, rgba(102, 187, 106, 0.18), rgba(46, 125, 50, 0.08));
+
+  &__value {
+    border-left: 4px solid $airsen-primary;
+    padding-left: $space-4;
+
+    .index {
+      font-size: $font-size-5xl;
+      font-weight: $font-weight-bold;
+      line-height: $line-height-tight;
+      display: block;
+    }
+
+    .qualifier {
+      font-size: $font-size-lg;
+      color: $airsen-gray-700;
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2;
+    font-size: $font-size-sm;
+    color: $airsen-gray-600;
+
+    .badge-pill {
+      width: 32px;
+      height: 12px;
+      border-radius: 999px;
+      background-color: $airsen-primary;
+    }
+  }
+}

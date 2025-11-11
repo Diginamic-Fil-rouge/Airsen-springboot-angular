@@ -94,7 +94,6 @@ export class LeafletMapComponent implements OnInit, AfterViewInit, OnChanges, On
 
     // Add OpenStreetMap tile layer
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(this.map);
 

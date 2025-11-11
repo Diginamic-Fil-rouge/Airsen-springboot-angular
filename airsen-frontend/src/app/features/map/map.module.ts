@@ -6,6 +6,12 @@ import { SharedModule } from "@/shared/shared.module";
 // Components
 import { MapComponent } from "./map.component";
 import { LeafletMapComponent } from "./components/leaflet-map/leaflet-map.component";
+import { MapSidebarComponent } from "./components/map-sidebar/map-sidebar.component";
+import { LocationHeaderComponent } from "./components/map-sidebar/location-header/location-header.component";
+import { HeroDisplayComponent } from "./components/map-sidebar/hero-display/hero-display.component";
+import { PollutantBreakdownComponent } from "./components/map-sidebar/pollutant-breakdown/pollutant-breakdown.component";
+import { TrendChartComponent } from "./components/map-sidebar/trend-chart/trend-chart.component";
+import { MapLegendComponent } from "./components/map-sidebar/map-legend/map-legend.component";
 
 /**
  * Map Feature Module
@@ -35,7 +41,16 @@ import { LeafletMapComponent } from "./components/leaflet-map/leaflet-map.compon
  * - Shared module for common functionality
  */
 @NgModule({
-  declarations: [MapComponent, LeafletMapComponent],
+  declarations: [
+    MapComponent,
+    LeafletMapComponent,
+    MapSidebarComponent,
+    LocationHeaderComponent,
+    HeroDisplayComponent,
+    PollutantBreakdownComponent,
+    TrendChartComponent,
+    MapLegendComponent,
+  ],
   imports: [CommonModule, MapRoutingModule, SharedModule],
 })
 export class MapModule {}
