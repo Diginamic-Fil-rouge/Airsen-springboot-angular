@@ -16,38 +16,29 @@
         </div>
       </div>
       <button class="cta-primary" type="button" (click)="onQuickAction('map')">
-Consulter la Carte de la Qualité de l'Air Maintenant
+        Consulter la Carte de la Qualité de l'Air Maintenant
       </button>
     </section>
 
-    <app-quick-actions
-      [actions]="quickActions"
-      (actionClick)="onQuickAction($event)"
-    ></app-quick-actions>
+    <app-quick-actions [actions]="quickActions" (actionClick)="onQuickAction($event)"></app-quick-actions>
 
     <div class="dashboard-grid">
-      <app-alert-summary
-        [alerts]="recentAlerts"
-        [showPagination]="false"
-        [showFavoritesFilter]="true"
-        (alertClick)="onAlertClick($event)"
-        (viewAllAlerts)="onViewAllAlerts()"
-        (filterByFavorites)="onFilterAlertsByFavorites()"
-      ></app-alert-summary>
+      <app-alert-summary [alerts]="recentAlerts" [showPagination]="false" [showFavoritesFilter]="true"
+        (alertClick)="onAlertClick($event)" (viewAllAlerts)="onViewAllAlerts()"
+        (filterByFavorites)="onFilterAlertsByFavorites()"></app-alert-summary>
 
-      <app-stats-panel
-        [stats]="userStats"
-        [showProgressBar]="true"
-        (statClick)="onStatClick($event)"
-      ></app-stats-panel>
+      <app-stats-panel [stats]="userStats" [showProgressBar]="true" (statClick)="onStatClick($event)"></app-stats-panel>
     </div>
 
+    <!-- TODO: Implement AirQualityService before enabling this widget -->
+    <!--
     <app-air-quality-widget
       *ngIf="currentUser.commune"
       [communeCode]="currentUser.commune"
       [showRefreshButton]="true"
       [autoRefreshInterval]="15"
     ></app-air-quality-widget>
+    -->
 
     <section class="cta-banner">
       <div class="cta-content">
@@ -55,7 +46,7 @@ Consulter la Carte de la Qualité de l'Air Maintenant
         <p>Comparez les modèles quotidiens et partagez vos insights avec votre communauté.</p>
       </div>
       <button class="cta-secondary" type="button" (click)="goToHistoricData()">
-Voir les Tendances du Jour
+        Voir les Tendances du Jour
       </button>
     </section>
   </ng-container>
