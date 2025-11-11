@@ -45,18 +45,8 @@
   flex-direction: column;
   transition: margin-left $duration-slow $ease-in-out;
 
-  // Authenticated with expanded sidebar
-  &.authenticated.sidebar-expanded {
+  &.authenticated {
     margin-left: $sidebar-width;
-
-    @include respond-max(lg) {
-      margin-left: 0;
-    }
-  }
-
-  // Authenticated with collapsed sidebar
-  &.authenticated:not(.sidebar-expanded) {
-    margin-left: $sidebar-width-collapsed;
 
     @include respond-max(lg) {
       margin-left: 0;

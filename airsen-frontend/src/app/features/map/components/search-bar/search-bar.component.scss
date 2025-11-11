@@ -3,7 +3,7 @@
 .search-bar-container {
   width: 100%;
 
-  // Search Card - Rounded input with search icon
+  // Search Card - input with search icon
   .search-card {
     background: $airsen-white;
     border-radius: $radius-lg;
@@ -26,8 +26,15 @@
 
         .mat-mdc-form-field-flex {
           align-items: center;
-          padding: 6px $space-3;
-          min-height: 40px;
+          padding: 6px $space-2; // Minimal vertical padding
+          min-height: 36px; // More compact
+          gap: 6px; // Tighter spacing
+
+          // Responsive: Slightly larger on mobile/tablet for touch targets
+          @include respond-max(lg) {
+            min-height: 40px;
+            padding: 8px $space-2;
+          }
         }
 
         .mdc-notched-outline {
@@ -51,28 +58,68 @@
         }
 
         input {
-          font-size: $font-size-base;
+          font-size: 14px; // Smaller than body text for map context
           padding: 0;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+
+          @include respond-max(lg) {
+            font-size: $font-size-base; // 16px on mobile for readability
+          }
         }
       }
 
       .search-icon {
         color: $airsen-gray-500;
-        margin-right: 8px;
+        margin-right: 0;
         font-size: 18px;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        @include respond-max(lg) {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
       }
 
       .action-btn {
         width: 32px;
         height: 32px;
         color: $airsen-gray-500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        padding: 0; // No padding, icon is centered in the button
 
         mat-icon {
           font-size: 16px;
+          width: 16px;
+          height: 16px;
+          line-height: 16px;
         }
 
-        &.location-btn {
-          color: $airsen-accent;
+        &:hover {
+          color: $airsen-gray-700;
+        }
+
+        @include respond-max(lg) {
+          width: 36px;
+          height: 36px;
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+          }
         }
       }
     }

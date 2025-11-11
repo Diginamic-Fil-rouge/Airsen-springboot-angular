@@ -12,7 +12,7 @@
   <app-sidebar *ngIf="isAuthenticated"></app-sidebar>
 
   <!-- Main Layout Wrapper -->
-  <div class="main-layout" [class.authenticated]="isAuthenticated" [class.sidebar-expanded]="isSidebarExpanded">
+  <div class="main-layout" [class.authenticated]="isAuthenticated">
     <!-- Header Navigation (Public Pages) -->
     <app-header
       *ngIf="shouldShowNavigation && !isAuthenticated"

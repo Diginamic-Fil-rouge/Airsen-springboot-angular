@@ -4,7 +4,6 @@ import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 
 import { AuthService } from './core/auth/services/auth.service';
-import { SidebarService } from './shared/services/sidebar.service';
 
 // TODO: Uncomment when services are implemented
 // import { NotificationService } from './services/notification.service';
@@ -18,7 +17,6 @@ import { SidebarService } from './shared/services/sidebar.service';
 export class AppComponent implements OnInit, OnDestroy {
   title = 'Airsen - Plateforme de Qualité de l\'Air';
   isAuthenticated = false;
-  isSidebarExpanded = true;
   isLoading = false;
   currentRoute = '';
 
@@ -27,7 +25,6 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     // TODO: Add services when they are implemented
     private authService: AuthService,
-    private sidebarService: SidebarService,
     // private notificationService: NotificationService,
     private router: Router
   ) {}
@@ -37,7 +34,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.setupRouterEvents();
     // TODO: Uncomment when AuthService is implemented
     this.setupAuthStateListener();
-    this.setupSidebarStateListener();
   }
 
   ngOnDestroy(): void {
@@ -93,16 +89,5 @@ export class AppComponent implements OnInit, OnDestroy {
   get shouldShowBreadcrumb(): boolean {
     const noBreadcrumbRoutes = ['/', '/login', '/register', '/forgot-password'];
     return !noBreadcrumbRoutes.includes(this.currentRoute);
-  }
-
-  /**
-   * Setup sidebar state listener to update layout when sidebar is toggled
-   */
-  private setupSidebarStateListener(): void {
-    this.sidebarService.sidebarExpanded$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(isExpanded => {
-        this.isSidebarExpanded = isExpanded;
-      });
   }
 }
