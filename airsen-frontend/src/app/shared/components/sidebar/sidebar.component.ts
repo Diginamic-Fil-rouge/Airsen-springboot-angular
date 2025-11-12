@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from "@angular/router";
 import { Subject } from "rxjs";
 import { takeUntil, filter } from "rxjs/operators";
 import { AuthService } from "@/auth/services/auth.service";
+import { SidebarService } from "@/shared/services/sidebar.service";
 
 /**
  * Navigation item interface with optional role restrictions and badge count
@@ -85,7 +86,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { label: "Paramètres", icon: "settings", route: "/settings" },
   ];
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private sidebarService: SidebarService
+  ) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -112,23 +117,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load sidebar expansion state from localStorage
+   * Load sidebar expansion state from SidebarService
    */
   private loadSidebarState(): void {
-    const savedState = localStorage.getItem("sidebarExpanded");
-    if (savedState !== null) {
-      this.isExpanded = JSON.parse(savedState);
-    }
+    this.isExpanded = this.sidebarService.getSidebarState();
+    // Listen to sidebar state changes
+    this.sidebarService.sidebarExpanded$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isExpanded: boolean) => {
+        this.isExpanded = isExpanded;
+        this.updateBackdropVisibility();
+      });
   }
 
   /**
    * Toggle sidebar expansion state
-   * Saves state to localStorage for persistence
+   * Uses SidebarService to broadcast state changes globally
    */
   toggleSidebar(): void {
-    this.isExpanded = !this.isExpanded;
-    localStorage.setItem("sidebarExpanded", JSON.stringify(this.isExpanded));
-    this.updateBackdropVisibility();
+    this.sidebarService.toggleSidebar();
   }
 
   /**
