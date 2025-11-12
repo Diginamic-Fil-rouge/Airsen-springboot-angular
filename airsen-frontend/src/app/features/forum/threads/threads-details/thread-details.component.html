@@ -2,7 +2,7 @@
   
   @if (thread && !isLoading) {
     <div class="thread-container">
-    <back-button route="/forum" textContent="Retour au forum"></back-button>
+    <app-back-button route="/forum" textContent="Retour au forum"></app-back-button>
     <div class="thread-content">
       <div class="thread-infos">
         <div class="thread-header">
@@ -37,10 +37,10 @@
       @if(currentUser){
         <div class="separator"></div>
         <div class="thread-data">
-          <thread-voting
+          <app-thread-voting
             [thread]="thread"
             [voteCount]="thread.likeCount"
-          ></thread-voting>
+          ></app-thread-voting>
         </div>
       }
     </div>
@@ -49,7 +49,7 @@
     </h3>
     <div class="messages-container">
       @for (message of thread.messages; track $index) {
-        <forum-message [message]="message" (messageEvent)="refreshThread()" ></forum-message>
+        <app-forum-message [message]="message" (messageEvent)="refreshThread()" ></app-forum-message>
       }
     </div>
     @if (currentUser) {

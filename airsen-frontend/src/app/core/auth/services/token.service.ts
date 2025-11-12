@@ -17,7 +17,7 @@ export class TokenService {
     try {
       localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
     } catch (_error) {
-      console.error('Failed to store access token:', error);
+      console.error('Failed to store access token:', _error);
     }
   }
 
@@ -28,7 +28,7 @@ export class TokenService {
     try {
       localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
     } catch (_error) {
-      console.error('Failed to store refresh token:', error);
+      console.error('Failed to store refresh token:', _error);
     }
   }
 
@@ -39,7 +39,7 @@ export class TokenService {
     try {
       return localStorage.getItem(this.ACCESS_TOKEN_KEY);
     } catch (_error) {
-      console.error('Failed to retrieve access token:', error);
+      console.error('Failed to retrieve access token:', _error);
       return null;
     }
   }
@@ -51,7 +51,7 @@ export class TokenService {
     try {
       return localStorage.getItem(this.REFRESH_TOKEN_KEY);
     } catch (_error) {
-      console.error('Failed to retrieve refresh token:', error);
+      console.error('Failed to retrieve refresh token:', _error);
       return null;
     }
   }
@@ -64,7 +64,7 @@ export class TokenService {
       localStorage.removeItem(this.ACCESS_TOKEN_KEY);
       localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     } catch (_error) {
-      console.error('Failed to clear tokens:', error);
+      console.error('Failed to clear tokens:', _error);
     }
   }
 

@@ -123,6 +123,7 @@ export class ExportDataService {
           id: exportId,
           userId: 0, // Will be set by component if needed
           inseeCode: data.commune.inseeCode,
+          locationName: data.commune.name,
           exportType: ExportType.COMBINED,
           format: ExportFormat.PDF,
           fileSize: fileSize,
@@ -165,6 +166,7 @@ export class ExportDataService {
           id: exportId,
           userId: 0,
           inseeCode: data.commune.inseeCode,
+          locationName: data.commune.name,
           exportType: ExportType.COMBINED,
           format: ExportFormat.CSV,
           fileSize: fileSize,
