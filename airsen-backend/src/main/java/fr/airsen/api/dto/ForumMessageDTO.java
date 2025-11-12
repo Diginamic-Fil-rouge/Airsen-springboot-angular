@@ -71,4 +71,15 @@ public class ForumMessageDTO {
     public void setCreatedDate(LocalDateTime createdDate) {
         this.createdDate = createdDate;
     }
+
+    @Override
+    public String toString() {
+        return "ForumMessageDTO{" +
+                "id=" + id +
+                ", author=" + author +
+                ", thread=" + thread +
+                ", content='" + content + '\'' +
+                ", createdDate=" + createdDate +
+                '}';
+    }
 }

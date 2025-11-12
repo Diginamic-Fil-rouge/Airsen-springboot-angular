@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -34,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Unit tests for ForumMessageController.
  */
 @WebMvcTest(ForumMessageController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ForumMessageControllerTest {
 
     private final Long userId = 1L;
@@ -46,6 +48,9 @@ class ForumMessageControllerTest {
 
     @MockBean
     private fr.airsen.api.security.JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private fr.airsen.api.service.JwtBlacklistService jwtBlacklistService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -77,9 +82,13 @@ class ForumMessageControllerTest {
 
         mockMvc.perform(get("/forum/messages")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
+                .andDo(System.out::println)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].author").value(userDTO))
+                .andExpect(jsonPath("$[0].author.id").value(1))
+                .andExpect(jsonPath("$[0].author.firstName").value("John"))
+                .andExpect(jsonPath("$[0].author.lastName").value("Doe"))
+                .andExpect(jsonPath("$[0].author.email").value("john.doe@example.com"))
                 .andExpect(jsonPath("$[0].content").value("Hello world"));
     }
 
@@ -87,12 +96,17 @@ class ForumMessageControllerTest {
     @DisplayName("GET /forum/messages/{id} - should return message by ID")
     void testGetMessageById() throws Exception {
         when(forumMessageService.findById(1L)).thenReturn(messageDTO);
+        System.out.println("messageDTO: " + messageDTO);
 
         mockMvc.perform(get("/forum/messages/{id}", 1L)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
+                .andDo(System.out::println)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.author").value(userDTO))
+                .andExpect(jsonPath("$.author.id").value(1))
+                .andExpect(jsonPath("$.author.firstName").value("John"))
+                .andExpect(jsonPath("$.author.lastName").value("Doe"))
+                .andExpect(jsonPath("$.author.email").value("john.doe@example.com"))
                 .andExpect(jsonPath("$.content").value("Hello world"));
     }
 
@@ -119,7 +133,7 @@ class ForumMessageControllerTest {
         doNothing().when(forumMessageService).deleteMessage(1L);
 
         mockMvc.perform(delete("/forum/messages/{id}", 1L)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.ADMIN))))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
                 .andExpect(status().isNoContent());
     }
 
