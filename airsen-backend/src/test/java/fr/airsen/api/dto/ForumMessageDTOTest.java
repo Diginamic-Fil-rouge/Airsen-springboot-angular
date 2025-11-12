@@ -1,6 +1,7 @@
 package fr.airsen.api.dto;
 
 import fr.airsen.api.dto.auth.UserDTO;
+import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumMessage;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
@@ -15,12 +16,14 @@ import static org.mockito.Mockito.*;
 
 class ForumMessageDTOTest {
 
+    private ForumCategory category;
     private ForumMessage forumMessage;
     private User user;
     private ForumThread thread;
 
     @BeforeEach
     void setUp() {
+        category = mock(ForumCategory.class);
         forumMessage = mock(ForumMessage.class);
         user = mock(User.class);
         thread = mock(ForumThread.class);
@@ -33,6 +36,8 @@ class ForumMessageDTOTest {
         when(user.getTelephone()).thenReturn("123456789");
         when(user.getBio()).thenReturn("Bio");
         when(user.getRole()).thenReturn(UserRole.USER);
+
+        when(thread.getCategory()).thenReturn(category);
 
         when(forumMessage.getId()).thenReturn(10L);
         when(forumMessage.getAuthor()).thenReturn(user);

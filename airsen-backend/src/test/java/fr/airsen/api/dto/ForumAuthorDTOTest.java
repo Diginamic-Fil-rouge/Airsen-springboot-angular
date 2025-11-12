@@ -133,6 +133,6 @@ class ForumAuthorDTOTest {
         assertTrue(str.contains("id=3"));
         assertTrue(str.contains("Eve"));
         assertTrue(str.contains("Stone"));
-        assertTrue(str.contains("ADMIN"));
+        assertTrue(str.contains("Administrator"));
     }
 }
