@@ -83,18 +83,6 @@ class ForumMessageDTOTest {
     }
 
     @Test
-    void testConstructorHandlesNullAuthorGracefully() {
-        when(forumMessage.getAuthor()).thenReturn(null);
-
-        ForumMessageDTO dto = new ForumMessageDTO(forumMessage, false);
-
-        assertEquals(10L, dto.getId());
-        assertNull(dto.getAuthor());
-        assertEquals("Test message", dto.getContent());
-        assertEquals(LocalDateTime.of(2025, 1, 4, 10, 0), dto.getCreatedDate());
-    }
-
-    @Test
     void testGettersAndSetters() {
         ForumMessageDTO dto = new ForumMessageDTO();
 

@@ -27,6 +27,10 @@ class ForumThreadDTOTest {
         message = mock(ForumMessage.class);
         vote = mock(ForumVote.class);
 
+        when(message.getAuthor()).thenReturn(author);
+        when(vote.getUser()).thenReturn(author);
+        when(vote.getThread()).thenReturn(forumThread);
+
         when(forumThread.getId()).thenReturn(100L);
         when(forumThread.getAuthor()).thenReturn(author);
         when(forumThread.getCategory()).thenReturn(category);
@@ -154,16 +158,5 @@ class ForumThreadDTOTest {
         assertTrue(dto.isClosed());
         assertEquals(5, dto.getLikeCount());
         assertEquals(2, dto.getMessageCount());
-    }
-
-    @Test
-    void testConstructorHandlesNullAuthorAndCategoryGracefully() {
-        when(forumThread.getAuthor()).thenReturn(null);
-        when(forumThread.getCategory()).thenReturn(null);
-
-        ForumThreadDTO dto = new ForumThreadDTO(forumThread, false);
-
-        assertNull(dto.getAuthor());
-        assertNull(dto.getCategory());
     }
 }

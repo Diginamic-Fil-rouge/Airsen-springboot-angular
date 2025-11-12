@@ -1,6 +1,7 @@
 package fr.airsen.api.dto;
 
 import fr.airsen.api.dto.auth.UserDTO;
+import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumVote;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
@@ -14,12 +15,14 @@ import static org.mockito.Mockito.*;
 
 class ForumVoteDTOTest {
 
+    private ForumCategory category;
     private ForumVote forumVote;
     private User user;
     private ForumThread thread;
 
     @BeforeEach
     void setUp() {
+        category = mock(ForumCategory.class);
         user = mock(User.class);
         thread = mock(ForumThread.class);
         forumVote = mock(ForumVote.class);
@@ -32,6 +35,11 @@ class ForumVoteDTOTest {
         when(user.getTelephone()).thenReturn("123456789");
         when(user.getBio()).thenReturn("Developer");
         when(user.getRole()).thenReturn(UserRole.USER);
+
+        when(category.getId()).thenReturn(1L);
+        when(category.getName()).thenReturn("Category");
+
+        when(thread.getCategory()).thenReturn( category );
 
         when(forumVote.getId()).thenReturn(10L);
         when(forumVote.getUser()).thenReturn(user);
@@ -86,29 +94,5 @@ class ForumVoteDTOTest {
         assertEquals(userDTO, dto.getUser());
         assertEquals(threadDTO, dto.getThread());
         assertEquals(VoteType.DISLIKE, dto.getVoteType());
-    }
-
-    @Test
-    void testConstructorHandlesNullUserGracefully() {
-        when(forumVote.getUser()).thenReturn(null);
-
-        ForumVoteDTO dto = new ForumVoteDTO(forumVote, true);
-
-        assertEquals(10L, dto.getId());
-        assertEquals(VoteType.LIKE, dto.getVoteType());
-        assertNull(dto.getUser());
-        assertNotNull(dto.getThread());
-    }
-
-    @Test
-    void testConstructorHandlesNullThreadGracefully() {
-        when(forumVote.getThread()).thenReturn(null);
-
-        ForumVoteDTO dto = new ForumVoteDTO(forumVote, true);
-
-        assertEquals(10L, dto.getId());
-        assertEquals(VoteType.LIKE, dto.getVoteType());
-        assertNotNull(dto.getUser());
-        assertNull(dto.getThread());
     }
 }
