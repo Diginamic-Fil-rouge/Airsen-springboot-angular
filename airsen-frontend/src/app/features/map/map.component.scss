@@ -8,40 +8,48 @@
     overflow: hidden;
 
     .map-layout {
-        display: flex;
+        display: block;
         height: 100%;
+        width: 100%;
         position: relative;
     }
 
     app-map-sidebar.map-layout__sidebar {
-        display: block;
-        flex: 0 0 400px;
-        position: relative;
-        z-index: $z-index-fixed;
-        height: 100%;
-        overflow: hidden; // Prevent content from exceeding sidebar bounds
+        position: absolute;
+        top: $space-4;
+        left: $space-4;
+        bottom: $space-4;
+        z-index: $z-index-popover;
+        height: auto;
+        overflow: hidden;
 
         &.overlay-mode {
-            flex: 0 0 0;
-            width: 0;
+            // Hidden state handled by the component itself
         }
 
-        // Responsive sidebar width for larger screens
-        @include breakpoint(xl) {
-            flex: 0 0 450px;
-        }
-
-        // Hide sidebar on tablet/mobile (will appear as overlay instead)
+        // Hide sidebar on tablet/mobile (will appear as overlay with different positioning)
         @include respond-max(lg) {
             display: none;
+        }
+
+        // Slightly larger spacing on bigger screens
+        @include breakpoint(xl) {
+            top: $space-6;
+            left: $space-6;
+            bottom: $space-6;
         }
     }
 
     .map-layout__canvas {
-        flex: 1;
-        position: relative;
-        min-width: 0; // Allows flex item to shrink below content size
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
+        z-index: 1;
     }
 
     .loading-overlay {
@@ -64,10 +72,87 @@
         }
     }
 
+    .error-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: $airsen-gray-50;
+        z-index: $z-index-modal;
+
+        .error-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: $space-8;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: $shadow-lg;
+
+            .error-icon {
+                font-size: 64px;
+                width: 64px;
+                height: 64px;
+                color: $airsen-error;
+                margin-bottom: $space-4;
+            }
+
+            h2 {
+                margin: 0 0 $space-2 0;
+                font-size: $font-size-2xl;
+                color: $airsen-gray-900;
+            }
+
+            .error-message {
+                margin: 0 0 $space-6 0;
+                color: $airsen-gray-600;
+                font-size: $font-size-base;
+                line-height: $line-height-relaxed;
+            }
+
+            .error-actions {
+                display: flex;
+                gap: $space-3;
+                justify-content: center;
+                width: 100%;
+
+                button {
+                    display: flex;
+                    align-items: center;
+                    gap: $space-2;
+                    min-width: 120px;
+                }
+            }
+        }
+    }
+
     app-leaflet-map {
         display: block;
         width: 100%;
         height: 100%;
+    }
+
+    // Search Bar Overlay - Positioned on the right side
+    .search-overlay {
+        position: absolute;
+        top: $space-4;
+        right: $space-4;
+        z-index: calc(#{$z-index-modal} + 1);
+        width: 380px;
+        max-width: calc(100vw - #{$space-8});
+
+        @include respond-max(md) {
+            top: $space-3;
+            right: $space-3;
+            left: $space-3;
+            width: auto;
+        }
     }
 
     .debug-info {

@@ -7,16 +7,6 @@
 >
   <mat-card class="map-sidebar__card">
     <header class="map-sidebar__toolbar">
-      <div class="toolbar__title">
-        <div class="eyebrow">Qualité de l'air</div>
-        <h2 class="commune-name">
-          {{ commune?.name || "Sélectionnez une commune" }}
-        </h2>
-        <p class="commune-meta" *ngIf="commune">
-          {{ commune.departmentCode }} · {{ commune.regionCode }}
-        </p>
-      </div>
-
       <button mat-icon-button class="close-btn" *ngIf="!isDesktop" (click)="handleClose()">
         <mat-icon>close</mat-icon>
       </button>

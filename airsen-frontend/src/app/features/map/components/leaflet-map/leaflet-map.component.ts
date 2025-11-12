@@ -50,11 +50,14 @@ import { CommuneWithAirQuality } from "@/shared/models/commune.model";
 })
 export class LeafletMapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   @Input() communes: CommuneWithAirQuality[] = [];
+  @Input() selectedCommune: CommuneWithAirQuality | null = null;
   @Output() communeClicked = new EventEmitter<CommuneWithAirQuality>();
   @Output() zoomChanged = new EventEmitter<number>();
 
   private map!: L.Map;
   private markerClusterGroup!: L.MarkerClusterGroup;
+
+  constructor() {}
 
   ngOnInit(): void {
     // Component initialization - lifecycle hook for setup
@@ -78,6 +81,22 @@ export class LeafletMapComponent implements OnInit, AfterViewInit, OnChanges, On
     if (changes["communes"] && !changes["communes"].firstChange && this.map) {
       console.log(`[LeafletMap] Updating markers (${this.communes.length} communes)`);
       this.renderMarkers();
+    }
+
+    // Zoom to selected commune when it changes
+    if (changes["selectedCommune"]) {
+      const commune = changes["selectedCommune"].currentValue;
+      console.log('[LeafletMap] selectedCommune changed:', commune?.name, 'Map exists:', !!this.map);
+      console.log('[LeafletMap] Commune coordinates:', commune?.latitude, commune?.longitude);
+
+      if (commune && commune.latitude && commune.longitude) {
+        if (this.map) {
+          console.log(`[LeafletMap] Zooming to selected commune: ${commune.name}`);
+          this.zoomToLocation(commune.latitude, commune.longitude);
+        } else {
+          console.warn('[LeafletMap] Cannot zoom - map not initialized yet');
+        }
+      }
     }
   }
 
@@ -210,6 +229,31 @@ export class LeafletMapComponent implements OnInit, AfterViewInit, OnChanges, On
         <p><strong>Population:</strong> ${population}</p>
       </div>
     `;
+  }
+
+  /**
+   * Zoom and pan the map to a specific location
+   * @param latitude Latitude coordinate
+   * @param longitude Longitude coordinate
+   * @param zoomLevel Target zoom level (default: 13)
+   */
+  private zoomToLocation(latitude: number, longitude: number, zoomLevel: number = 13): void {
+    console.log(`[LeafletMap] zoomToLocation called - lat: ${latitude}, lng: ${longitude}, zoom: ${zoomLevel}`);
+    console.log('[LeafletMap] Map exists:', !!this.map);
+
+    if (this.map) {
+      console.log('[LeafletMap] Closing any open popups...');
+      this.map.closePopup();
+
+      console.log('[LeafletMap] Calling map.flyTo for smooth zoom...');
+      this.map.flyTo([latitude, longitude], zoomLevel, {
+        animate: true,
+        duration: 1.5,
+      });
+      console.log('[LeafletMap] Map flyTo initiated');
+    } else {
+      console.warn('[LeafletMap] Map not initialized, cannot zoom');
+    }
   }
 
   ngOnDestroy(): void {

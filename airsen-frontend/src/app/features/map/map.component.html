@@ -1,14 +1,8 @@
 <div class="map-page">
   <div class="map-layout">
-    <app-map-sidebar
-      class="map-layout__sidebar"
-      [class.overlay-mode]="isOverlayMode"
-      [commune]="selectedCommune"
-      [open]="isSidebarOpen"
-      [displayMode]="sidebarDisplayMode"
-      (openChange)="onSidebarOpenChange($event)"
-      (clearSelection)="onSidebarClearSelection()"
-    ></app-map-sidebar>
+    <app-map-sidebar class="map-layout__sidebar" [class.overlay-mode]="isOverlayMode" [commune]="selectedCommune"
+      [open]="isSidebarOpen" [displayMode]="sidebarDisplayMode" (openChange)="onSidebarOpenChange($event)"
+      (clearSelection)="onSidebarClearSelection()"></app-map-sidebar>
 
     <div class="map-layout__canvas">
       <div class="loading-overlay" *ngIf="isLoading$ | async">
@@ -16,12 +10,28 @@
         <p>Chargement de la carte...</p>
       </div>
 
-      <app-leaflet-map
-        *ngIf="!(isLoading$ | async)"
-        [communes]="communes"
-        (communeClicked)="onCommuneClicked($event)"
-        (zoomChanged)="onMapZoomChanged($event)"
-      ></app-leaflet-map>
+      <div class="error-overlay" *ngIf="error$ | async as error">
+        <mat-card class="error-content">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h2>Erreur de chargement</h2>
+          <p class="error-message">{{ error }}</p>
+          <div class="error-actions">
+            <button mat-raised-button color="primary" (click)="retryLoadCommunes()">
+              <mat-icon>refresh</mat-icon>
+              Réessayer
+            </button>
+          </div>
+        </mat-card>
+      </div>
+
+      <app-leaflet-map *ngIf="!(isLoading$ | async) && !(error$ | async)" [communes]="communes"
+        [selectedCommune]="selectedCommune" (communeClicked)="onCommuneClicked($event)"
+        (zoomChanged)="onMapZoomChanged($event)"></app-leaflet-map>
+
+      <!-- Search Bar Overlay -->
+      <div class="search-overlay" *ngIf="!(isLoading$ | async) && !(error$ | async)">
+        <app-search-bar (communeSelected)="onSearchCommuneSelected($event)"></app-search-bar>
+      </div>
 
       <div class="debug-info" *ngIf="communes.length > 0">
         <small>{{ communes.length }} communes chargées</small>
@@ -29,20 +39,10 @@
     </div>
   </div>
 
-  <button
-    mat-fab
-    color="primary"
-    class="sidebar-toggle"
-    *ngIf="isOverlayMode && !isSidebarOpen"
-    (click)="openSidebar()"
-    aria-label="Afficher les détails de la commune sélectionnée"
-  >
+  <button mat-fab color="primary" class="sidebar-toggle" *ngIf="isOverlayMode && !isSidebarOpen" (click)="openSidebar()"
+    aria-label="Afficher les détails de la commune sélectionnée">
     <mat-icon>insights</mat-icon>
   </button>
 
-  <div
-    class="sidebar-backdrop"
-    *ngIf="isOverlayMode && isSidebarOpen"
-    (click)="onSidebarOpenChange(false)"
-  ></div>
+  <div class="sidebar-backdrop" *ngIf="isOverlayMode && isSidebarOpen" (click)="onSidebarOpenChange(false)"></div>
 </div>

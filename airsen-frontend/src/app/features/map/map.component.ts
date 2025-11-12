@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { BreakpointObserver } from "@angular/cdk/layout";
 import { CommuneDataService } from "@/core/services/commune-data.service";
-import { CommuneWithAirQuality } from "@/shared/models/commune.model";
+import { Commune, CommuneWithAirQuality } from "@/shared/models/commune.model";
 import { Observable, Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { MapSidebarDisplayMode } from "./components/map-sidebar/map-sidebar.types";
@@ -43,6 +43,7 @@ import { MapSidebarDisplayMode } from "./components/map-sidebar/map-sidebar.type
 export class MapComponent implements OnInit, OnDestroy {
   communes: CommuneWithAirQuality[] = [];
   isLoading$: Observable<boolean>;
+  error$: Observable<string | null>;
   selectedCommune: CommuneWithAirQuality | null = null;
   isSidebarOpen = true;
   sidebarDisplayMode: MapSidebarDisplayMode = "desktop";
@@ -51,6 +52,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private currentZoom = 6;
   private loadedPopulationThreshold = 50000; // Track what we've already loaded
   private destroy$ = new Subject<void>();
+  private isProgrammaticZoom = false; // Flag to skip progressive loading during search zoom
 
   private readonly breakpointQueries = {
     desktop: "(min-width: 1024px)",
@@ -58,11 +60,9 @@ export class MapComponent implements OnInit, OnDestroy {
     mobile: "(max-width: 639px)",
   };
 
-  constructor(
-    private communeDataService: CommuneDataService,
-    private breakpointObserver: BreakpointObserver,
-  ) {
+  constructor(private communeDataService: CommuneDataService, private breakpointObserver: BreakpointObserver) {
     this.isLoading$ = this.communeDataService.loading$;
+    this.error$ = this.communeDataService.error$;
   }
 
   ngOnInit(): void {
@@ -115,6 +115,13 @@ export class MapComponent implements OnInit, OnDestroy {
 
     console.log(`[Map] Zoom: ${previousZoom} → ${zoom}`);
 
+    // Skip progressive loading if zoom is from search/commune selection (programmatic)
+    if (this.isProgrammaticZoom) {
+      console.log("[Map] Programmatic zoom from search, skipping progressive loading");
+      this.isProgrammaticZoom = false; // Reset flag
+      return;
+    }
+
     // Only load more data when zooming in (not out)
     if (zoom <= previousZoom) {
       console.log("[Map] Zooming out, no new data needed");
@@ -147,15 +154,35 @@ export class MapComponent implements OnInit, OnDestroy {
 
   /**
    * Handles commune marker click events.
-   * Phase 2 will show sidebar with detailed commune information.
+   * Fetches detailed commune data including pollutant breakdown
+   * and displays it in the sidebar.
    */
   onCommuneClicked(commune: CommuneWithAirQuality): void {
-    console.log("[Map] Commune clicked:", commune.name, commune.currentAirQuality);
-    this.selectedCommune = commune;
+    console.log("[Map] Commune clicked:", commune.name, "Fetching detailed data...");
 
-    if (this.sidebarDisplayMode !== "desktop") {
-      this.isSidebarOpen = true;
-    }
+    // Set flag to prevent progressive loading when map zooms to clicked commune
+    this.isProgrammaticZoom = true;
+
+    // Fetch detailed commune data including pollutants
+    this.communeDataService.getCommuneDetail(commune.inseeCode).subscribe({
+      next: (detailedCommune) => {
+        console.log("[Map] Detailed data loaded:", detailedCommune.pollutants);
+        this.selectedCommune = detailedCommune;
+
+        if (this.sidebarDisplayMode !== "desktop") {
+          this.isSidebarOpen = true;
+        }
+      },
+      error: (error) => {
+        console.error("[Map] Failed to load commune detail:", error);
+        // Fallback: show basic commune data without pollutants
+        this.selectedCommune = commune;
+
+        if (this.sidebarDisplayMode !== "desktop") {
+          this.isSidebarOpen = true;
+        }
+      },
+    });
   }
 
   onSidebarOpenChange(open: boolean): void {
@@ -171,8 +198,46 @@ export class MapComponent implements OnInit, OnDestroy {
     this.selectedCommune = null;
   }
 
+  onSearchCommuneSelected(commune: CommuneWithAirQuality): void {
+    console.log("[Map] Search commune selected:", commune.name, "Fetching detailed data...");
+
+    // Set flag to prevent progressive loading when map zooms to selected commune
+    this.isProgrammaticZoom = true;
+
+    this.communeDataService
+      .getCommuneDetail(commune.inseeCode)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (detail) => {
+          console.log("[Map] Detailed data from search loaded:", detail.pollutants);
+          this.selectedCommune = detail;
+          if (this.sidebarDisplayMode !== "desktop") {
+            this.isSidebarOpen = true;
+          }
+        },
+        error: (error) => {
+          console.error("[Map] Failed to load commune from search:", error);
+          // Fallback: show basic commune data
+          this.selectedCommune = commune;
+          if (this.sidebarDisplayMode !== "desktop") {
+            this.isSidebarOpen = true;
+          }
+        },
+      });
+  }
+
   openSidebar(): void {
     this.isSidebarOpen = true;
+  }
+
+  /**
+   * Retries loading communes after an error.
+   * Clears error state and reloads initial communes.
+   */
+  retryLoadCommunes(): void {
+    console.log("[Map] Retrying commune load after error");
+    this.communeDataService.clearError();
+    this.loadCommunes(50000);
   }
 
   get isMobileView(): boolean {

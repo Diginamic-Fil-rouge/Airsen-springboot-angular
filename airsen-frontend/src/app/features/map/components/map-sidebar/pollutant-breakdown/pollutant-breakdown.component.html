@@ -1,25 +1,53 @@
-<div class="pollutant-breakdown">
-  <div class="pollutant-breakdown__header">
-    <h4>Concentration des polluants</h4>
-    <span class="subtitle">μg/m³</span>
+<div class="pollutant-breakdown-container">
+  <h3 class="section-title">Polluants détectés</h3>
+
+  <div class="chart-wrapper">
+    <canvas baseChart [data]="chartData" [options]="chartOptions" type="bar"
+      [attr.aria-label]="'Graphique de concentration des polluants'"></canvas>
   </div>
 
-  <div class="pollutant-list">
-    <div class="pollutant" *ngFor="let pollutant of pollutantList">
-      <div class="pollutant__label">
-        <span>{{ pollutant.label }}</span>
+  <div class="pollutants-list">
+    <div *ngFor="let pollutant of pollutantConfig; trackBy: trackByName" class="pollutant-item"
+      [attr.aria-label]="getPollutantAriaLabel(pollutant)">
+      <div class="pollutant-header">
+        <div class="pollutant-name-wrapper">
+          <mat-icon class="pollutant-icon">{{ pollutant.icon }}</mat-icon>
+          <span class="pollutant-name">{{ pollutant.name }}</span>
+          <button mat-icon-button class="info-button" [matTooltip]="pollutant.description" matTooltipPosition="right"
+            [attr.aria-label]="'Informations sur ' + pollutant.name">
+            <mat-icon>info_outline</mat-icon>
+          </button>
+        </div>
+
+        <div class="pollutant-value">
+          <span class="value">{{ formatValue(pollutant.value) }}</span>
+          <span class="unit">{{ pollutant.unit }}</span>
+        </div>
       </div>
-      <mat-progress-bar
-        mode="determinate"
-        [value]="getProgressValue(pollutant.value)"
-      ></mat-progress-bar>
-      <div class="pollutant__value">
-        {{ pollutant.value ?? "—" }}
+
+      <div class="pollutant-status-row">
+        <mat-chip [style.background-color]="pollutant.color" class="status-chip">
+          {{ getStatusText(pollutant) }}
+        </mat-chip>
+        <span class="threshold-info" [matTooltip]="'Seuil OMS recommandé'">
+          Seuil: {{ pollutant.threshold }} {{ pollutant.unit }}
+        </span>
       </div>
     </div>
   </div>
 
-  <p class="pollutant-breakdown__footnote">
-    Données indicatives basées sur les dernières mesures disponibles.
-  </p>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color good"></div>
+      <span>Bon (&lt; seuil OMS)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color moderate"></div>
+      <span>Modéré</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color elevated"></div>
+      <span>Élevé</span>
+    </div>
+  </div>
 </div>

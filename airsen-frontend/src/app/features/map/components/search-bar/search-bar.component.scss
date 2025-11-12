@@ -1,0 +1,236 @@
+@use "styles/design-system" as *;
+
+.search-bar-container {
+  width: 100%;
+
+  // Search Card - input with search icon
+  .search-card {
+    background: $airsen-white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+    padding: 0;
+
+    .search-field {
+      width: 100%;
+      margin: 0;
+
+      ::ng-deep {
+        .mat-mdc-text-field-wrapper {
+          background: $airsen-white;
+          border-radius: $radius-lg;
+        }
+
+        .mat-mdc-form-field-focus-overlay {
+          background-color: transparent;
+        }
+
+        .mat-mdc-form-field-flex {
+          align-items: center;
+          padding: 6px $space-2; // Minimal vertical padding
+          min-height: 36px; // More compact
+          gap: 6px; // Tighter spacing
+
+          // Responsive: Slightly larger on mobile/tablet for touch targets
+          @include respond-max(lg) {
+            min-height: 40px;
+            padding: 8px $space-2;
+          }
+        }
+
+        .mdc-notched-outline {
+
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__notch,
+          .mdc-notched-outline__trailing {
+            border-color: transparent;
+          }
+        }
+
+        // Blue border on focus
+        &.mat-focused .mdc-notched-outline {
+
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__notch,
+          .mdc-notched-outline__trailing {
+            border-color: $airsen-accent;
+            border-width: 2px;
+          }
+        }
+
+        input {
+          font-size: 14px; // Smaller than body text for map context
+          padding: 0;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+
+          @include respond-max(lg) {
+            font-size: $font-size-base; // 16px on mobile for readability
+          }
+        }
+      }
+
+      .search-icon {
+        color: $airsen-gray-500;
+        margin-right: 0;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        @include respond-max(lg) {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        color: $airsen-gray-500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        padding: 0; // No padding, icon is centered in the button
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          line-height: 16px;
+        }
+
+        &:hover {
+          color: $airsen-gray-700;
+        }
+
+        @include respond-max(lg) {
+          width: 36px;
+          height: 36px;
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  // Results Card
+  .results-card {
+    margin-top: $space-3;
+    background: $airsen-white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+    overflow: hidden;
+    max-height: 400px;
+    overflow-y: auto;
+
+    .results-section {
+      .results-list {
+        .result-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: $space-3 $space-4;
+          cursor: pointer;
+          transition: background-color $duration-normal $ease-in-out;
+
+          &:hover {
+            background-color: $airsen-gray-50;
+          }
+
+          .result-left {
+            display: flex;
+            align-items: center;
+            gap: $space-3;
+            flex: 1;
+
+            .result-info {
+              display: flex;
+              flex-direction: column;
+              gap: $space-1;
+
+              .commune-name {
+                font-weight: $font-weight-semibold;
+                color: $airsen-gray-900;
+                font-size: $font-size-base;
+              }
+
+              .commune-meta {
+                color: $airsen-gray-500;
+                font-size: $font-size-sm;
+              }
+            }
+          }
+
+          .aqi-badge {
+            padding: $space-2 $space-4;
+            border-radius: $radius-md;
+            font-weight: $font-weight-bold;
+            font-size: $font-size-xl;
+            color: $airsen-white;
+            min-width: 64px;
+            text-align: center;
+          }
+        }
+      }
+    }
+
+    .no-results,
+    .loading-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: $space-8;
+      text-align: center;
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: $airsen-gray-400;
+        margin-bottom: $space-3;
+      }
+
+      p {
+        margin: 0;
+        color: $airsen-gray-600;
+        font-size: $font-size-base;
+      }
+    }
+
+    .search-error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: $space-6;
+      text-align: center;
+
+      mat-icon {
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
+        color: $airsen-error;
+        margin-bottom: $space-2;
+      }
+
+      p {
+        margin: 0;
+        color: $airsen-error;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+}

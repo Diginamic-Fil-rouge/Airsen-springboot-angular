@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './auth/services/auth.service';
 import { AlertService } from './services/alert.service';
 import { ExportDataService } from './services/export-data.service';
+import { SidebarService } from '@/shared/services/sidebar.service';
 
 // Guards
 import { AuthGuard } from './auth/guards/auth.guard';
@@ -39,6 +40,7 @@ import { GuestGuard } from './auth/guards/guest.guard';
     AuthService,
     AlertService,
     ExportDataService,
+    SidebarService,
     // Guards
     AuthGuard,
     RoleGuard,

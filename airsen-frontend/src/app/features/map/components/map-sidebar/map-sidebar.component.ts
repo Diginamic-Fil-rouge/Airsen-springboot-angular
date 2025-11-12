@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
-import { CommuneWithAirQuality } from "@/shared/models/commune.model";
+import { Commune, CommuneWithAirQuality } from "@/shared/models/commune.model";
 import { MapSidebarDisplayMode } from "./map-sidebar.types";
 
 /**
