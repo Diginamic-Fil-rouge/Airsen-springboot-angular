@@ -3,7 +3,7 @@
 .map-sidebar {
   position: relative;
   height: 100%;
-  max-height: calc(100vh - #{$header-height});
+  max-height: calc(100vh - #{$header-height} - #{$space-8});
   width: 400px;
   transition: $transition-transform;
 
@@ -13,8 +13,8 @@
     flex-direction: column;
     padding: $space-5;
     background: $airsen-white;
-    box-shadow: $shadow-lg;
-    border-radius: 0;
+    box-shadow: $shadow-xl;
+    border-radius: $radius-lg;
     min-height: 0; // Allows flex child to shrink below content size
   }
 

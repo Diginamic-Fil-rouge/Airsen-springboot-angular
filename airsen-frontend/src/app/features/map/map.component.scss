@@ -8,40 +8,48 @@
     overflow: hidden;
 
     .map-layout {
-        display: flex;
+        display: block;
         height: 100%;
+        width: 100%;
         position: relative;
     }
 
     app-map-sidebar.map-layout__sidebar {
-        display: block;
-        flex: 0 0 400px;
-        position: relative;
-        z-index: $z-index-fixed;
-        height: 100%;
-        overflow: hidden; // Prevent content from exceeding sidebar bounds
+        position: absolute;
+        top: $space-4;
+        left: $space-4;
+        bottom: $space-4;
+        z-index: $z-index-popover;
+        height: auto;
+        overflow: hidden;
 
         &.overlay-mode {
-            flex: 0 0 0;
-            width: 0;
+            // Hidden state handled by the component itself
         }
 
-        // Responsive sidebar width for larger screens
-        @include breakpoint(xl) {
-            flex: 0 0 450px;
-        }
-
-        // Hide sidebar on tablet/mobile (will appear as overlay instead)
+        // Hide sidebar on tablet/mobile (will appear as overlay with different positioning)
         @include respond-max(lg) {
             display: none;
+        }
+
+        // Slightly larger spacing on bigger screens
+        @include breakpoint(xl) {
+            top: $space-6;
+            left: $space-6;
+            bottom: $space-6;
         }
     }
 
     .map-layout__canvas {
-        flex: 1;
-        position: relative;
-        min-width: 0; // Allows flex item to shrink below content size
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
+        z-index: 1;
     }
 
     .loading-overlay {
