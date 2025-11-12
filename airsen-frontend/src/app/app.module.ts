@@ -1,4 +1,4 @@
-import { NgModule, APP_INITIALIZER, LOCALE_ID } from "@angular/core";
+import { NgModule, LOCALE_ID } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
@@ -22,7 +22,6 @@ import { NotFoundComponent } from "./features/not-found/not-found.component";
 
 // Services & Interceptors
 import { authInterceptorFn } from "./core/interceptors/auth.interceptor";
-import { CommuneDataService } from "./core/services/commune-data.service";
 
 // Register French locale data for pipes (date, number, currency, etc.)
 registerLocaleData(localeFr);
@@ -75,7 +74,7 @@ registerLocaleData(localeFr);
   providers: [
     provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptorFn])),
-    { provide: LOCALE_ID, useValue: 'fr-FR' },
+    { provide: LOCALE_ID, useValue: "fr-FR" },
   ],
   bootstrap: [AppComponent],
 })

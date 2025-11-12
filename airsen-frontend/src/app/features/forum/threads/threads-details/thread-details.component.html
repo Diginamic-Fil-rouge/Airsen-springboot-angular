@@ -8,7 +8,7 @@
         <div class="thread-header">
           <h1 class="title">{{ thread.title }}</h1>
           <div class="action-buttons">
-            @if (currentUser?.id == thread.author?.id || currentUser?.role == 'ADMIN') {
+            @if (currentUser?.id == thread.author?.id || currentUser?.role === 'ADMIN') {
               <a class="edit-button" routerLink="/forum/edit/thread/{{ thread.id }}"
                 >Modifier</a
               >

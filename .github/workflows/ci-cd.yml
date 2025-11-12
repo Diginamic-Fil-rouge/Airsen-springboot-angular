@@ -1,0 +1,518 @@
+name: Airsen GitFlow CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+      - 'feature/**'
+      - 'bugfix/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      cloud_provider:
+        description: 'Cloud provider'
+        required: true
+        type: choice
+        options:
+          - aws
+          - gcp
+          - railway
+          - render
+        default: 'railway'
+      run_e2e_tests:
+        description: 'Run E2E tests'
+        required: false
+        type: boolean
+        default: false
+      deploy_frontend:
+        description: 'Deploy frontend'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  # Project Configuration
+  PROJECT_NAME: airsen
+  JAVA_VERSION: '21'
+  NODE_VERSION: '22'
+
+  # Determine environment from branch
+  DEPLOY_ENV: ${{
+    github.ref == 'refs/heads/main' && 'production' ||
+    github.ref == 'refs/heads/develop' && 'staging' ||
+    startsWith(github.ref, 'refs/heads/release/') && 'staging' ||
+    startsWith(github.ref, 'refs/heads/hotfix/') && 'staging' ||
+    'dev'
+  }}
+
+  # API Rate Limiting
+  USE_API_MOCKS: ${{ startsWith(github.ref, 'refs/heads/feature/') && 'true' || 'false' }}
+
+jobs:
+    # JOB 1: VALIDATE BRANCH & SETUP
+  validate:
+    name:  Validate Branch
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      version: ${{ steps.set-version.outputs.version }}
+      should_deploy: ${{ steps.check-deploy.outputs.should_deploy }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for commit counting
+
+      - name: Validate GitFlow branch naming
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          echo "Branch: $BRANCH_NAME"
+
+          # Valid GitFlow branches
+          if [[ "$BRANCH_NAME" =~ ^(main|develop|feature/|release/|hotfix/|bugfix/).*$ ]]; then
+            echo " Valid GitFlow branch"
+          else
+            echo " Invalid branch name. Must follow GitFlow conventions."
+            exit 1
+          fi
+
+      - name: Check commit frequency (answers your question)
+        run: |
+          COMMITS_24H=$(git log --oneline --since='1 day ago' | wc -l)
+          echo " Commits in last 24 hours: $COMMITS_24H"
+          echo "commits_24h=$COMMITS_24H" >> $GITHUB_OUTPUT
+
+      - name: Set environment
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set version
+        id: set-version
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          VERSION="${BRANCH_NAME//\//-}-${{ github.run_number }}-${SHORT_SHA}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Check if should deploy
+        id: check-deploy
+        run: |
+          # Only deploy from main, develop, release, and hotfix branches
+          if [[ "${{ github.ref }}" =~ ^refs/heads/(main|develop|release/|hotfix/) ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+    # JOB 2: BUILD & TEST BACKEND
+
+  backend:
+    name: Backend Build & Test
+    runs-on: ubuntu-latest
+    needs: validate
+
+    # NOTE: use TestContainers for test infrastructure (MariaDB, Redis)
+    # TestContainers automatically manages container lifecycle during test execution
+    # - MariaDB 11.6 container spins up per test run
+    # - Redis 7-alpine container for cache tests
+    # - WireMock standalone (NOT as service) for external API mocking (ATMO, Open-Meteo, INSEE)
+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build backend
+        working-directory: airsen-backend
+        run: |
+          mvn clean compile -B -DskipTests
+          echo "Backend compiled successfully"
+
+      - name: Run unit tests with TestContainers
+        working-directory: airsen-backend
+        env:
+          # TestContainers will automatically start MariaDB and Redis containers
+          # using @Testcontainers annotation and @Container fields in test classes
+          SPRING_PROFILES_ACTIVE: test
+          # Hibernate will auto-create schema from JPA entities (ddl-auto=create-drop)
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+          # Enable TestContainers
+          TESTCONTAINERS_RYUK_DISABLED: false
+        run: |
+          mvn test -B
+          echo " Unit tests passed with TestContainers"
+
+      - name: Run integration tests with TestContainers
+        if: github.event_name == 'push' && needs.validate.outputs.environment != 'dev'
+        working-directory: airsen-backend
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+          TESTCONTAINERS_RYUK_DISABLED: false
+          # External API credentials (WireMock will mock these in tests)
+          USE_API_MOCKS: ${{ env.USE_API_MOCKS }}
+          ATMO_API_KEY: ${{ secrets.ATMO_API_KEY }}
+          INSEE_API_KEY: ${{ secrets.INSEE_API_KEY }}
+        run: |
+          mvn verify -B -DskipUnitTests
+          echo " Integration tests passed with TestContainers"
+
+      - name: Check code coverage
+        working-directory: airsen-backend
+        run: |
+          mvn jacoco:report
+          COVERAGE=$(grep -oP '(?<=<counter type="INSTRUCTION" missed="\d+" covered=")(\d+)' target/site/jacoco/jacoco.xml | head -1)
+          echo " Code coverage: ${COVERAGE}%"
+
+      # NOTE: use Hibernate ddl-auto for schema management
+      # Database schema is automatically created/updated from JPA entities
+      # ddl-auto:create-drop for Test environment
+      # ddl-auto:update for Dev environment
+
+      - name: Security scan with TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./airsen-backend
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+      - name: Package application
+        working-directory: airsen-backend
+        run: |
+          mvn package -B -DskipTests
+          echo " Application packaged"
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: airsen-backend/target/*.jar
+          retention-days: 7
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            airsen-backend/target/surefire-reports/
+            airsen-backend/target/site/jacoco/
+          retention-days: 7
+
+  # JOB 3: BUILD & TEST FRONTEND
+
+  frontend:
+    name:  Frontend Build & Test
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_frontend != 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: airsen-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: airsen-frontend
+        run: |
+          npm ci --prefer-offline --no-audit
+          echo " Dependencies installed"
+
+      - name: Run unit tests
+        working-directory: airsen-frontend
+        env:
+          CI: 'true'
+        run: |
+          npm run test -- --watch=false --browsers=ChromeHeadless
+          echo " Unit tests passed"
+
+      - name: Build frontend
+        working-directory: airsen-frontend
+        env:
+          NODE_ENV: production
+          API_BASE_URL: ${{
+            needs.validate.outputs.environment == 'production' && 'https://api.airsen.fr/api/v1' ||
+            needs.validate.outputs.environment == 'staging' && 'https://api-staging.airsen.fr/api/v1' ||
+            'http://localhost:8080/api/v1'
+          }}
+        run: |
+          BUILD_ENV="${{ needs.validate.outputs.environment }}"
+          if [[ "$BUILD_ENV" == "production" ]]; then
+            npm run build
+          else
+            npm run build:docker
+          fi
+          echo " Frontend built successfully"
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: airsen-frontend/dist/
+          retention-days: 7
+
+  # JOB 4: BUILD DOCKER IMAGES
+  docker:
+    name:  Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [validate, backend, frontend]
+    if: needs.validate.outputs.should_deploy == 'true' && (needs.frontend.result == 'success' || needs.frontend.result == 'skipped')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: airsen-backend/target/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./airsen-backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/backend:${{ needs.validate.outputs.version }}
+            ghcr.io/${{ github.repository }}/backend:${{ needs.validate.outputs.environment }}
+            ghcr.io/${{ github.repository }}/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ needs.validate.outputs.version }}
+            ENVIRONMENT=${{ needs.validate.outputs.environment }}
+
+      - name: Build and push frontend image
+        if: needs.frontend.result == 'success'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./airsen-frontend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/frontend:${{ needs.validate.outputs.version }}
+            ghcr.io/${{ github.repository }}/frontend:${{ needs.validate.outputs.environment }}
+            ghcr.io/${{ github.repository }}/frontend:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  # JOB 5: DEPLOY TO CLOUD
+
+  # NOTE: use Hibernate ddl-auto for schema management
+  # Schema is automatically managed by Spring Boot on application startup
+
+  deploy:
+    name:  Deploy to ${{ needs.validate.outputs.environment }}
+    runs-on: ubuntu-latest
+    needs: [validate, docker]
+    if: needs.validate.outputs.should_deploy == 'true'
+    environment:
+      name: ${{ needs.validate.outputs.environment }}
+      url: ${{ steps.deploy-step.outputs.url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download frontend artifact
+        if: github.event.inputs.deploy_frontend != 'false'
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: airsen-frontend/dist/
+
+      # Railway deployment
+      - name: Deploy to Railway
+        if: github.event.inputs.cloud_provider == 'railway' || vars.CLOUD_PROVIDER == 'railway'
+        uses: railwayapp/cli@v1
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        with:
+          command: up --service airsen-api --environment ${{ needs.validate.outputs.environment }}
+
+      # AWS deployment
+      - name: Deploy to AWS
+        if: github.event.inputs.cloud_provider == 'aws' || vars.CLOUD_PROVIDER == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Deploy backend to ECS
+        if: github.event.inputs.cloud_provider == 'aws' || vars.CLOUD_PROVIDER == 'aws'
+        run: |
+          aws ecs update-service \
+            --cluster airsen-${{ needs.validate.outputs.environment }} \
+            --service airsen-api \
+            --force-new-deployment
+
+      - name: Deploy frontend to S3
+        if: (github.event.inputs.cloud_provider == 'aws' || vars.CLOUD_PROVIDER == 'aws') && github.event.inputs.deploy_frontend != 'false'
+        run: |
+          aws s3 sync airsen-frontend/dist/ s3://airsen-${{ needs.validate.outputs.environment }}-frontend/ \
+            --delete \
+            --cache-control "max-age=3600"
+
+      # GCP deployment
+      - name: Deploy to Google Cloud Run
+        if: github.event.inputs.cloud_provider == 'gcp' || vars.CLOUD_PROVIDER == 'gcp'
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: airsen-api-${{ needs.validate.outputs.environment }}
+          image: ghcr.io/${{ github.repository }}/backend:${{ needs.validate.outputs.version }}
+          region: europe-west1
+          credentials: ${{ secrets.GCP_CREDENTIALS }}
+          env_vars: |
+            SPRING_PROFILES_ACTIVE=${{ needs.validate.outputs.environment }}
+            VERSION=${{ needs.validate.outputs.version }}
+
+      - name: Set deployment URL
+        id: deploy-step
+        run: |
+          case "${{ github.event.inputs.cloud_provider || vars.CLOUD_PROVIDER }}" in
+            railway)
+              echo "url=https://airsen-${{ needs.validate.outputs.environment }}.up.railway.app" >> $GITHUB_OUTPUT
+              ;;
+            aws)
+              echo "url=https://airsen-${{ needs.validate.outputs.environment }}.eu-west-1.elb.amazonaws.com" >> $GITHUB_OUTPUT
+              ;;
+            gcp)
+              echo "url=https://airsen-api-${{ needs.validate.outputs.environment }}.a.run.app" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "url=https://airsen.fr" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+
+  # JOB 7: E2E TESTS (POST-DEPLOYMENT)
+  e2e-tests:
+    name:  E2E Tests
+    runs-on: ubuntu-latest
+    needs: [validate, deploy]
+    if: github.event.inputs.run_e2e_tests == 'true' && needs.validate.outputs.environment != 'dev'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: airsen-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: airsen-frontend
+        run: npm ci
+
+      - name: Run Cypress E2E tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: airsen-frontend
+          start: npm run start -- --host=0.0.0.0 --port=4200 --configuration=development
+          wait-on: 'http://localhost:4200'
+          browser: chrome
+        env:
+          CYPRESS_BASE_URL: ${{ needs.deploy.outputs.url }}
+
+      - name: Upload E2E test videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-videos
+          path: airsen-frontend/cypress/videos/
+          retention-days: 7
+
+  # JOB 8: NOTIFY & TAG
+  notify:
+    name:  Notify & Tag
+    runs-on: ubuntu-latest
+    needs: [validate, deploy]
+    if: always() && needs.validate.outputs.should_deploy == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Git tag for production
+        if: needs.validate.outputs.environment == 'production' && needs.deploy.result == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ needs.validate.outputs.version }}" -m "Production deployment ${{ github.run_number }}"
+          git push origin "v${{ needs.validate.outputs.version }}"
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "AIRSEN DEPLOYMENT SUMMARY"
+          echo "=========================================="
+          echo "Environment: ${{ needs.validate.outputs.environment }}"
+          echo "Version: ${{ needs.validate.outputs.version }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Status: ${{ needs.deploy.result }}"
+          echo "URL: ${{ steps.deploy-step.outputs.url }}"
+          echo "=========================================="
+
+          if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "Deployment completed successfully!"
+          else
+            echo "Deployment failed. Check logs above."
+            exit 1
+          fi

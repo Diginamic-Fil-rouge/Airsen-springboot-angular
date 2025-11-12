@@ -30,31 +30,31 @@ interface NavItem {
   styleUrls: ["./sidebar.component.scss"],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-  isExpanded: boolean = true;
+  isExpanded = true;
 
   /** Show backdrop for overlay mode (mobile/tablet) */
-  showBackdrop: boolean = false;
+  showBackdrop = false;
 
   /** Current user's full name */
-  userName: string = "";
+  userName = "";
 
   /** Current user's email address */
-  userEmail: string = "";
+  userEmail = "";
 
   /** User's initial for avatar display */
-  userInitial: string = "";
+  userInitial = "";
 
   /** Current active route */
-  currentRoute: string = "";
+  currentRoute = "";
 
   /** Subject for cleanup on destroy */
   private destroy$ = new Subject<void>();
 
   /** Application version */
-  appVersion: string = "1.2.0";
+  appVersion = "1.2.0";
 
   /** Sidebar width in pixels */
-  sidebarWidth: number = 240;
+  sidebarWidth = 240;
 
   /**
    * Navigation items with role-based access control

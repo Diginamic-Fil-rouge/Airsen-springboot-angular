@@ -67,19 +67,18 @@
               "outputHashing": "all"
             },
             "docker": {
-							"budgets": [
-								{
-									"type": "anyComponentStyle",
-									"maximumWarning": "6kb",
-									"maximumError": "8kb"
-								}
-							],
-							"optimization": true,
-							"extractLicenses": true,
-							"outputHashing": "all",
-							"sourceMap": false
-						},
-            
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "8kb"
+                }
+              ],
+              "optimization": true,
+              "extractLicenses": true,
+              "outputHashing": "all",
+              "sourceMap": false
+            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
@@ -129,8 +128,22 @@
             ],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
+  },
+  "cli": {
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   }
 }

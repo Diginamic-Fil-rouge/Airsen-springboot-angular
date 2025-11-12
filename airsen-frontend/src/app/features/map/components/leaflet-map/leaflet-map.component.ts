@@ -237,7 +237,7 @@ export class LeafletMapComponent implements OnInit, AfterViewInit, OnChanges, On
    * @param longitude Longitude coordinate
    * @param zoomLevel Target zoom level (default: 13)
    */
-  private zoomToLocation(latitude: number, longitude: number, zoomLevel: number = 13): void {
+  private zoomToLocation(latitude: number, longitude: number, zoomLevel = 13): void {
     console.log(`[LeafletMap] zoomToLocation called - lat: ${latitude}, lng: ${longitude}, zoom: ${zoomLevel}`);
     console.log('[LeafletMap] Map exists:', !!this.map);
 

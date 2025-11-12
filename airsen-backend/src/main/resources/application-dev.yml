@@ -41,7 +41,7 @@ spring:
 scheduling:
   # Master switch to enable/disable all scheduled tasks
   # Set to 'false' to completely disable scheduling during development
-  enabled: ${ENABLE_SCHEDULING:false}
+  enabled: true
 
   # ATMO air quality sync - Weekly instead of daily
   atmo:

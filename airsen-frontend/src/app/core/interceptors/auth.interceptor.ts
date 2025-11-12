@@ -97,7 +97,7 @@ export class AuthInterceptor implements HttpInterceptor {
           // Retry the original request with new token
           return next.handle(this.addTokenToRequest(request, newAccessToken));
         }),
-        catchError((error) => {
+        catchError((_error) => {
           this.isRefreshing = false;
 
           // Refresh failed, logout user
@@ -199,7 +199,7 @@ export function authInterceptorFn(req: HttpRequest<any>, next: HttpHandlerFn): O
 
             return next(retryReq);
           }),
-          catchError((refreshError) => {
+          catchError((_refreshError) => {
             authService.logout();
             router.navigate(['/auth/login'], {
               queryParams: { sessionExpired: 'true' }

@@ -97,13 +97,13 @@ Choose the profile matching your needs:
 ```bash
 # Development Mode
 # Start all dev services with hot reload
-docker-compose --profile dev up
+docker-compose --env-file .env.dev --profile dev up
 
 # Start specific services
-docker-compose --profile dev up api-dev web-dev mariadb redis
+docker-compose --env-file .env.dev --profile dev up api-dev web-dev mariadb redis
 
 # With dev tools (Adminer, Redis Commander)
-docker-compose --profile dev up
+docker-compose --env-file .env.dev --profile dev up
 ```
 ```bash
 # Production Mode

@@ -144,7 +144,7 @@ export class ExportService {
     doc.setFont('helvetica', 'normal');
 
     if (data.airQuality && data.airQuality.measurements && data.airQuality.measurements.length > 0) {
-      data.airQuality.measurements.forEach((aqi, index) => {
+      data.airQuality.measurements.forEach((aqi) => {
         // ATMO Index with color coding
         const indexColor = this.getAQIColor(aqi.aqi);
         doc.setTextColor(indexColor.r, indexColor.g, indexColor.b);
@@ -181,7 +181,7 @@ export class ExportService {
     doc.setFont('helvetica', 'normal');
 
     if (data.weather && data.weather.measurements && data.weather.measurements.length > 0) {
-      data.weather.measurements.forEach((weather, index) => {
+      data.weather.measurements.forEach((weather) => {
         doc.text(`Date: ${weather.date}`, 25, yPosition);
         yPosition += 6;
         doc.text(`  Temperature: ${weather.temperature}°C, Feels Like: ${weather.feelsLike}°C, Humidity: ${weather.humidity}%`, 25, yPosition);

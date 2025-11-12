@@ -25,7 +25,7 @@ export interface ApiError {
   status: number;
   timestamp: Date;
   path: string;
-  details?: { [key: string]: any };
+  details?: Record<string, any>;
 }
 
 export interface ValidationError {
@@ -47,9 +47,7 @@ export interface PaginationParams {
 }
 
 // Filter parameters for search requests
-export interface FilterParams {
-  [key: string]: string | number | boolean | Date | null;
-}
+export type FilterParams = Record<string, string | number | boolean | Date | null>;
 
 // Generic search request
 export interface SearchRequest {
@@ -61,10 +59,8 @@ export interface SearchRequest {
 // Health check response
 export interface HealthResponse {
   status: 'UP' | 'DOWN';
-  components: {
-    [key: string]: {
+  components: Record<string, {
       status: 'UP' | 'DOWN';
-      details?: { [key: string]: any };
-    };
-  };
+      details?: Record<string, any>;
+    }>;
 }

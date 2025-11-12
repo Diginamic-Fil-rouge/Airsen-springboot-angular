@@ -109,10 +109,9 @@ export class ExportDataService {
    * 4. Auto-download PDF file
    *
    * @param inseeCode - 5-digit INSEE code
-   * @param locationName - Commune name for display
    * @returns Observable<ExportRecord> - Export metadata
    */
-  exportAsPDF(inseeCode: string, locationName: string): Observable<ExportRecord> {
+  exportCurrentData(inseeCode: string): Observable<ExportRecord> {
     return this.getExportData(inseeCode).pipe(
       map((data: ExportDataResponse) => {
         const exportId = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -123,7 +122,6 @@ export class ExportDataService {
         const exportRecord: ExportRecord = {
           id: exportId,
           userId: 0, // Will be set by component if needed
-          locationName: data.commune.name,
           inseeCode: data.commune.inseeCode,
           exportType: ExportType.COMBINED,
           format: ExportFormat.PDF,
@@ -147,14 +145,12 @@ export class ExportDataService {
    * 4. Auto-download CSV file
    *
    * @param inseeCode - 5-digit INSEE code
-   * @param locationName - Commune name for display
    * @param startDate - Start date in YYYY-MM-DD format
    * @param endDate - End date in YYYY-MM-DD format
    * @returns Observable<ExportRecord> - Export metadata
    */
   exportAsCSV(
     inseeCode: string,
-    locationName: string,
     startDate: string,
     endDate: string
   ): Observable<ExportRecord> {
@@ -168,7 +164,6 @@ export class ExportDataService {
         const exportRecord: ExportRecord = {
           id: exportId,
           userId: 0,
-          locationName: data.commune.name,
           inseeCode: data.commune.inseeCode,
           exportType: ExportType.COMBINED,
           format: ExportFormat.CSV,
