@@ -7,29 +7,24 @@ import fr.airsen.api.dto.request.ForumCategoryUpdateRequest;
 import fr.airsen.api.dto.request.ForumThreadCreateRequest;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.UserRole;
-import fr.airsen.api.security.JwtTokenFilter;
 import fr.airsen.api.security.UserPrincipal;
 import fr.airsen.api.service.ForumCategoryService;
 import fr.airsen.api.service.ForumThreadService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -77,7 +72,7 @@ class ForumCategoryControllerTest {
         categoryDTO.setDescription("General discussions");
 
         threadDTO = new ForumThreadDTO();
-        threadDTO.setId(10L);
+        threadDTO.setId(1L);
         threadDTO.setTitle("Welcome thread");
         threadDTO.setLastMessageDate(LocalDateTime.now());
     }
@@ -110,10 +105,12 @@ class ForumCategoryControllerTest {
     @Test
     @DisplayName("GET /forum/categories/{id}/threads - should return threads by category")
     void testListThreadsByCategory() throws Exception {
-        when(threadService.findByCategory(1L)).thenReturn(List.of(threadDTO));
+        when(threadService.findByCategory(1L)).thenReturn(new ArrayList<>(List.of(threadDTO)));
 
         mockMvc.perform(get("/forum/categories/{id}/threads", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
+                .andDo(System.out::println)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(threadDTO.getId()))
                 .andExpect(jsonPath("$[0].title").value("Welcome thread"));
@@ -124,6 +121,9 @@ class ForumCategoryControllerTest {
     void testAddThread() throws Exception {
         ForumThreadCreateRequest request = new ForumThreadCreateRequest();
         request.setTitle("New Topic");
+        request.setContent("Let's talk about air quality");
+        request.setCategoryId(1L);
+
         when(threadService.addThreadToCategory(eq(1L), any())).thenReturn(List.of(threadDTO));
 
         mockMvc.perform(post("/forum/categories/{id}/threads", 1L)
@@ -139,13 +139,15 @@ class ForumCategoryControllerTest {
     void testAddCategory() throws Exception {
         ForumCategoryCreateRequest request = new ForumCategoryCreateRequest();
         request.setName("New Category");
+        request.setDescription("New Category Description");
+        request.setColor("#FF0000");
 
         when(categoryService.addForumCategory(any())).thenReturn(List.of(categoryDTO));
 
         mockMvc.perform(post("/forum/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.USER))))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuthentication(userId, UserRole.ADMIN))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$[0].name").value("General"));
     }
