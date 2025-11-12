@@ -77,7 +77,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? "";
     const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? "";
-    let initials = `${first}${last}`.replace(/\s+/g, "");
+    const initials = `${first}${last}`.replace(/\s+/g, "");
 
     if (!initials) {
       return "AA";

@@ -16,7 +16,7 @@ export class TokenService {
   storeAccessToken(token: string): void {
     try {
       localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to store access token:', error);
     }
   }
@@ -27,7 +27,7 @@ export class TokenService {
   storeRefreshToken(token: string): void {
     try {
       localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to store refresh token:', error);
     }
   }
@@ -38,7 +38,7 @@ export class TokenService {
   getAccessToken(): string | null {
     try {
       return localStorage.getItem(this.ACCESS_TOKEN_KEY);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to retrieve access token:', error);
       return null;
     }
@@ -50,7 +50,7 @@ export class TokenService {
   getRefreshToken(): string | null {
     try {
       return localStorage.getItem(this.REFRESH_TOKEN_KEY);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to retrieve refresh token:', error);
       return null;
     }
@@ -63,7 +63,7 @@ export class TokenService {
     try {
       localStorage.removeItem(this.ACCESS_TOKEN_KEY);
       localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to clear tokens:', error);
     }
   }
@@ -102,7 +102,7 @@ export class TokenService {
           .join('')
       );
       return JSON.parse(jsonPayload);
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Invalid JWT token format');
     }
   }

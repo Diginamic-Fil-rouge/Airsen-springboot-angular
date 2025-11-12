@@ -34,7 +34,7 @@ export interface ExportData {
   inseeCode: string;
   generatedAt: Date;
   airQuality?: {
-    measurements: Array<{
+    measurements: {
       date: Date;
       aqi: number;
       aqiLabel: string;
@@ -42,17 +42,17 @@ export interface ExportData {
       pm10?: number;
       o3?: number;
       no2?: number;
-    }>;
+    }[];
   };
   weather?: {
-    measurements: Array<{
+    measurements: {
       date: Date;
       temperature: number;
       feelsLike: number;
       humidity: number;
       windSpeed: number;
       weatherDescription: string;
-    }>;
+    }[];
   };
 }
 

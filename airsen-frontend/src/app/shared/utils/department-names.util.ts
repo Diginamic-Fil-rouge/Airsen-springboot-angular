@@ -17,7 +17,7 @@
  * Comprehensive mapping of French department codes to their full names.
  * Includes all 101 departments (96 metropolitan + 5 overseas).
  */
-export const DEPARTMENT_NAMES: { [key: string]: string } = {
+export const DEPARTMENT_NAMES: Record<string, string> = {
   // Île-de-France
   "75": "Paris",
   "77": "Seine-et-Marne",
@@ -182,7 +182,7 @@ export function getDepartmentName(code: string): string {
  * getDepartmentShortName('13'); // Returns 'Bouches-du-Rhône'
  * getDepartmentShortName('04'); // Returns 'Alpes-de-Haute-Pro...'
  */
-export function getDepartmentShortName(code: string, maxLength: number = 20): string {
+export function getDepartmentShortName(code: string, maxLength = 20): string {
   const fullName = getDepartmentName(code);
 
   if (fullName.length <= maxLength) {
@@ -230,7 +230,7 @@ export function getAllDepartmentCodes(): string[] {
  * const departments = getAllDepartments();
  * // Returns [{ code: '01', name: 'Ain' }, { code: '02', name: 'Aisne' }, ...]
  */
-export function getAllDepartments(): Array<{ code: string; name: string }> {
+export function getAllDepartments(): { code: string; name: string }[] {
   return Object.entries(DEPARTMENT_NAMES)
     .map(([code, name]) => ({ code, name }))
     .sort((a, b) => a.code.localeCompare(b.code));

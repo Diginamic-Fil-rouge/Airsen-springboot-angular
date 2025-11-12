@@ -1,13 +1,13 @@
 import { Component, input, inject, Output, Input } from '@angular/core';
 import { Thread } from '../../models/thread.model';
-import { MessageService } from '../../services/message.service'
+import { MessageService } from '../../services/_message.service'
 import { EventEmitter } from '@angular/core';
 
 @Component({
     standalone : false,
     selector: 'app-add-message',
-    templateUrl: './add-message.component.html',
-    styleUrls: ['./add-message.component.scss']
+    templateUrl: './add-_message.component.html',
+    styleUrls: ['./add-_message.component.scss']
 })
 export class AddMessageComponent {
     thread = input<Thread | null | undefined>({
@@ -16,7 +16,7 @@ export class AddMessageComponent {
         content: '',
         author: null,
         category: null,
-        messages: [],
+        _messages: [],
         votes: [],
         createdDate: new Date(),
         lastMessageDate: new Date(),
@@ -24,37 +24,37 @@ export class AddMessageComponent {
         likeCount: 0,
         closed: false,
         pinned: false,
-        messageCount: 0
+        _messageCount: 0
     },);
     content = '';
 
     @Output() newMessageEvent = new EventEmitter<number>();
 
-    messageService = inject(MessageService);
+    _messageService = inject(MessageService);
 
     /**
-     * Creates a new message with the given content for the thread with the given id.
-     * Emits the newMessageEvent with the thread id when the message is successfully created.
-     * If there is an error while creating the message, logs the error to the console.
+     * Creates a new _message with the given content for the thread with the given id.
+     * Emits the newMessageEvent with the thread id when the _message is successfully created.
+     * If there is an error while creating the _message, logs the error to the console.
      */
     createMessage() {
         if (this.thread && this.content) {
-            this.messageService.addMessageToThread(this.thread()?.id, { content: this.content }).subscribe({
-                next: (message) => {
+            this._messageService.addMessageToThread(this.thread()?.id, { content: this.content }).subscribe({
+                next: (_message) => {
                     this.content = '';
                     this.emitThreadInfos(this.thread()?.id);
                 },
                 error: (error) => {
-                    console.error('Error creating message:', error);
+                    console.error('Error creating _message:', error);
                 }
             });
         }
     }
 
 /**
- * Emits the newMessageEvent with the thread id when a new message is successfully created for the thread.
- * This method is called after a new message is created for the thread.
- * @param threadId - the id of the thread for which a new message was created
+ * Emits the newMessageEvent with the thread id when a new _message is successfully created for the thread.
+ * This method is called after a new _message is created for the thread.
+ * @param threadId - the id of the thread for which a new _message was created
  */
     emitThreadInfos(threadId: number | undefined) {
     this.newMessageEvent.emit(threadId);

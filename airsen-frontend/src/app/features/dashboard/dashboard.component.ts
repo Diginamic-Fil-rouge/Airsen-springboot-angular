@@ -75,7 +75,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.handleQuickAction(action);
   }
 
-  onAlertClick(alertId: number): void {
+  onAlertClick(_alertId: number): void {
     // TODO: Implement map feature for alert view
     console.warn("Map feature not yet implemented");
   }
@@ -118,7 +118,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     const first = this.currentUser.firstName?.trim().charAt(0).toUpperCase() ?? "";
     const last = this.currentUser.lastName?.trim().charAt(0).toUpperCase() ?? "";
-    let initials = `${first}${last}`.replace(/\s+/g, "");
+    const initials = `${first}${last}`.replace(/\s+/g, "");
 
     if (!initials) {
       return "AA";

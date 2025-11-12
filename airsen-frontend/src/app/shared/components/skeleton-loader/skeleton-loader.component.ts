@@ -41,7 +41,7 @@ export class SkeletonLoaderComponent {
    * Number of lines for paragraph type
    * Default: 3
    */
-  @Input() lines: number = 3;
+  @Input() lines = 3;
 
   /**
    * Height of skeleton element (in pixels or with unit)
@@ -65,18 +65,18 @@ export class SkeletonLoaderComponent {
    * Border radius
    * Default: '8px' (for cards), '50%' (for avatars)
    */
-  @Input() borderRadius: string = '8px';
+  @Input() borderRadius = '8px';
 
   /**
    * Gap between skeleton lines (for paragraph type)
    * Default: '8px'
    */
-  @Input() lineGap: string = '8px';
+  @Input() lineGap = '8px';
 
   /**
    * CSS class for additional styling
    */
-  @Input() customClass: string = '';
+  @Input() customClass = '';
 
   /**
    * Computed properties based on type

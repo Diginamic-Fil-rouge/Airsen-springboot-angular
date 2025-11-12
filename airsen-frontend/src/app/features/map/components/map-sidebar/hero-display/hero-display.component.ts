@@ -50,7 +50,7 @@ export class HeroDisplayComponent {
   /**
    * Whether to show animated mascot emoji (default: true)
    */
-  @Input() showMascot: boolean = true;
+  @Input() showMascot = true;
 
   /**
    * Computed display value for AQI circle

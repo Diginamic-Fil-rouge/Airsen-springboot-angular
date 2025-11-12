@@ -301,7 +301,7 @@ export class CommuneDataService {
    * @param limit Maximum number of results to return (default: 10)
    * @returns Observable<Commune[]> Matching communes or empty array when invalid query/errors
    */
-  searchCommunes(query: string, limit: number = 10): Observable<Commune[]> {
+  searchCommunes(query: string, limit = 10): Observable<Commune[]> {
     const trimmedQuery = query?.trim();
 
     if (!trimmedQuery || trimmedQuery.length < 2) {
@@ -330,7 +330,7 @@ export class CommuneDataService {
    * @param limit Maximum number of results (default: 10)
    * @returns Observable<CommuneWithAirQuality[]> Communes with air quality data
    */
-  searchCommunesWithAirQuality(query: string, limit: number = 10): Observable<CommuneWithAirQuality[]> {
+  searchCommunesWithAirQuality(query: string, limit = 10): Observable<CommuneWithAirQuality[]> {
     const trimmedQuery = query?.trim();
 
     if (!trimmedQuery || trimmedQuery.length < 2) {

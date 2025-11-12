@@ -146,7 +146,7 @@ export class LoginComponent implements OnInit, OnDestroy {
    * Get human-readable field label
    */
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       email: "L'adresse e-mail",
       password: "Le mot de passe",
     };

@@ -209,7 +209,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
    * Get human-readable field label
    */
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       firstName: "Le prénom",
       lastName: "Le nom",
       email: "L'adresse e-mail",

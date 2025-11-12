@@ -85,7 +85,7 @@ export class AirQualityChartComponent implements OnChanges, AfterViewInit {
   @Input() aqiData: AirQualityTrend[] = [];
   @Input() pollutantData?: PollutantData;
   @Input() chartMode: 'line' | 'bar' = 'line';
-  @Input() isMapDisplay: boolean = false; // New input for map-specific styling
+  @Input() isMapDisplay = false; // New input for map-specific styling
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   chartType: ChartType = 'line';

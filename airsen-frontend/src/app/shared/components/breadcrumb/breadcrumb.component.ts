@@ -20,7 +20,7 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Mapping of routes to friendly labels
-  private readonly routeLabelMap: { [key: string]: string } = {
+  private readonly routeLabelMap: Record<string, string> = {
     'dashboard': 'Tableau de bord',
     'map': 'Carte interactive',
     'favorites': 'Favoris',
@@ -71,7 +71,7 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
 
   private createBreadcrumbs(
     route: ActivatedRoute,
-    url: string = '',
+    url = '',
     breadcrumbs: Breadcrumb[] = []
   ): Breadcrumb[] {
     const children: ActivatedRoute[] = route.children;

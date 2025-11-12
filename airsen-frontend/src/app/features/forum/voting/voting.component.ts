@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VotingService } from '../services/voting.service';
 import { Thread } from '../models/thread.model';
@@ -9,11 +9,11 @@ import { Vote } from '../models/vote.model';
 
 @Component({
     standalone: false,
-    selector: 'thread-voting',
+    selector: 'app-thread-voting',
     templateUrl: './voting.component.html',
     styleUrls: ['./voting.component.scss']
 })
-export class VotingComponent {
+export class VotingComponent implements OnChanges {
 
     thread = input<Thread | null | undefined>(undefined);
     voteCount = input<number | undefined>(0);

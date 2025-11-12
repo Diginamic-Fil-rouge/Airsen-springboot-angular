@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 
 @Component({
   standalone: false,
-  selector: 'back-button',
+  selector: 'app-back-button',
   templateUrl: './back-button.component.html',
   styleUrls: ['./back-button.component.scss']
 })
