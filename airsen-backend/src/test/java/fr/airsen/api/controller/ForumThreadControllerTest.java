@@ -25,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -100,17 +101,17 @@ class ForumThreadControllerTest {
 
     @Test
     void getAllForumThreads_ShouldReturnPagedThreads() throws Exception {
-        // Arrange
+        Pageable pageable = PageRequest.of(0, 20);
         ForumThreadDTO thread2 = new ForumThreadDTO();
         thread2.setId(1L);
-        thread2.setTitle("First Thread");
-        thread2.setContent("Content A");
+        thread2.setTitle("Second Thread");
+        thread2.setContent("Content thread 2");
         thread2.setLikeCount(10);
         thread2.setCreatedDate(LocalDateTime.now());
 
 
-        List<ForumThreadDTO> threadList = List.of(threadDTO, thread2);
-        Page<ForumThreadDTO> mockPage = new PageImpl<>(threadList);
+        List<ForumThreadDTO> threadList = new ArrayList<>(List.of(threadDTO, thread2));
+        Page<ForumThreadDTO> mockPage = new PageImpl<>(threadList, pageable, 2);
 
         when(forumThreadService.findAll(
                 eq(null),
@@ -128,7 +129,7 @@ class ForumThreadControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(2)))
-                .andExpect(jsonPath("$.content[0].title").value("First Thread"))
+                .andExpect(jsonPath("$.content[0].title").value("Air Quality Discussion"))
                 .andExpect(jsonPath("$.content[1].title").value("Second Thread"));
 
         verify(forumThreadService, times(1))
