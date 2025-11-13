@@ -293,7 +293,9 @@ claude.md
 # Documentation directory (contains sensitive project info and design docs)
 /docs/
 docs/
+docs/*
 .specify/
+plan/*
 
 # Project design and specification files
 *.md
