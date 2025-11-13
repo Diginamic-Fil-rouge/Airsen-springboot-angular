@@ -1,6 +1,7 @@
 package fr.airsen.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.dto.response.AirQualityResponse;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
@@ -28,22 +29,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * including geodistance fallback mechanism with real spatial calculations
  * and ATMO index quality mapping.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-                properties = {
-                    "spring.profiles.active=test",
-                    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE",
-                    "spring.jpa.hibernate.ddl-auto=create",
-                    "spring.jpa.defer-datasource-initialization=true",
-                    "spring.sql.init.mode=always",
-                    "airsen.data.initialize=false"
-                })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {
     "/test-data/communes.sql",
     "/test-data/air-quality.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-class AtmoControllerIntegrationTest {
+class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
     private MockMvc mockMvc;
