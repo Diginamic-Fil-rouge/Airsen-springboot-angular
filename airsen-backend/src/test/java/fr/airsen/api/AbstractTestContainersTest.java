@@ -28,7 +28,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractTestContainersTest {
 
     @Container
-    static MariaDBContainer<?> mariadb = new MariaDBContainer<>(
+    protected static MariaDBContainer<?> mariadb = new MariaDBContainer<>(
             DockerImageName.parse("mariadb:11.6")
     )
             .withDatabaseName("airsen_test")
@@ -38,7 +38,7 @@ public abstract class AbstractTestContainersTest {
 
 
     @Container
-    static RedisContainer redis = new RedisContainer(
+    protected static RedisContainer redis = new RedisContainer(
             DockerImageName.parse("redis:7-alpine")
     )
             .withExposedPorts(6379)

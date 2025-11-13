@@ -1,5 +1,6 @@
 package fr.airsen.api.controller;
 
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.entity.*;
 import fr.airsen.api.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -31,9 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 @DisplayName("Export Data Controller Integration Tests")
-class ExportDataControllerIntegrationTest {
+class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -1,5 +1,6 @@
 package fr.airsen.api.integration;
 
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.dto.request.AddFavoriteRequest;
 import fr.airsen.api.dto.response.UserFavoriteResponse;
 import fr.airsen.api.entity.Commune;
@@ -24,7 +25,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,11 +35,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@ActiveProfiles("test")
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 @Transactional
 @DisplayName("UserFavoritesService integration tests")
-class UserFavoritesServiceIntegrationTest {
+class UserFavoritesServiceIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
     private UserFavoritesService favoritesService;

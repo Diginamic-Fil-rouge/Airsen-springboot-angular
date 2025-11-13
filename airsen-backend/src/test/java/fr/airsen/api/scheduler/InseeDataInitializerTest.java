@@ -1,5 +1,6 @@
 package fr.airsen.api.scheduler;
 
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.dto.CommuneDTO;
 import fr.airsen.api.external.client.InseeApiClient;
 import fr.airsen.api.external.dto.insee.InseeCommuneResponse;
@@ -14,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -36,9 +36,8 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ActiveProfiles("test")
 @DisplayName("InseeDataInitializer Integration Tests")
-class InseeDataInitializerTest {
+class InseeDataInitializerTest extends AbstractTestContainersTest {
 
     @Mock
     private InseeApiClient inseeApiClient;
