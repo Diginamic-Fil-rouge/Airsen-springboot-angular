@@ -43,13 +43,7 @@ env:
   NODE_VERSION: '22'
 
   # Determine environment from branch
-  DEPLOY_ENV: ${{
-    github.ref == 'refs/heads/main' && 'production' ||
-    github.ref == 'refs/heads/develop' && 'staging' ||
-    startsWith(github.ref, 'refs/heads/release/') && 'staging' ||
-    startsWith(github.ref, 'refs/heads/hotfix/') && 'staging' ||
-    'dev'
-  }}
+  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/develop' && 'staging' || startsWith(github.ref, 'refs/heads/release/') && 'staging' || startsWith(github.ref, 'refs/heads/hotfix/') && 'staging' || 'dev' }}
 
   # API Rate Limiting
   USE_API_MOCKS: ${{ startsWith(github.ref, 'refs/heads/feature/') && 'true' || 'false' }}
@@ -269,11 +263,7 @@ jobs:
         working-directory: airsen-frontend
         env:
           NODE_ENV: production
-          API_BASE_URL: ${{
-            needs.validate.outputs.environment == 'production' && 'https://api.airsen.fr/api/v1' ||
-            needs.validate.outputs.environment == 'staging' && 'https://api-staging.airsen.fr/api/v1' ||
-            'http://localhost:8080/api/v1'
-          }}
+          API_BASE_URL: ${{ needs.validate.outputs.environment == 'production' && 'https://api.airsen.fr/api/v1' || needs.validate.outputs.environment == 'staging' && 'https://api-staging.airsen.fr/api/v1' || 'http://localhost:8080/api/v1' }}
         run: |
           BUILD_ENV="${{ needs.validate.outputs.environment }}"
           if [[ "$BUILD_ENV" == "production" ]]; then
@@ -355,6 +345,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate, docker]
     if: needs.validate.outputs.should_deploy == 'true'
+    outputs:
+      deployment_url: ${{ steps.deploy-step.outputs.url }}
     environment:
       name: ${{ needs.validate.outputs.environment }}
       url: ${{ steps.deploy-step.outputs.url }}
@@ -465,7 +457,7 @@ jobs:
           wait-on: 'http://localhost:4200'
           browser: chrome
         env:
-          CYPRESS_BASE_URL: ${{ needs.deploy.outputs.url }}
+          CYPRESS_BASE_URL: ${{ needs.deploy.outputs.deployment_url }}
 
       - name: Upload E2E test videos
         if: always()
@@ -507,7 +499,7 @@ jobs:
           echo "Branch: ${{ github.ref_name }}"
           echo "Commit: ${{ github.sha }}"
           echo "Status: ${{ needs.deploy.result }}"
-          echo "URL: ${{ steps.deploy-step.outputs.url }}"
+          echo "URL: ${{ needs.deploy.outputs.deployment_url }}"
           echo "=========================================="
 
           if [[ "${{ needs.deploy.result }}" == "success" ]]; then
