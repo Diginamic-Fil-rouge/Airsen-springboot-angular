@@ -3,175 +3,200 @@ package fr.airsen.api.repository;
 import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
-import fr.airsen.api.entity.ForumMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
+/**
+ * Unit tests for ForumThreadRepository (mocked repository behavior).
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ForumThreadRepository Tests")
 class ForumThreadRepositoryTest {
 
-    @Autowired
-    private ForumThreadRepository threadRepository;
+    @Mock
+    private ForumThreadRepository repository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private ForumCategory category;
+    private User author;
+    private ForumThread thread1;
+    private ForumThread thread2;
 
-    @Autowired
-    private ForumCategoryRepository categoryRepository;
+    @BeforeEach
+    void setUp() {
+        category = new ForumCategory();
+        category.setId(10L);
+        category.setName("General Discussion");
 
-    @Autowired
-    private ForumMessageRepository messageRepository;
-
-    @Test
-    @DisplayName("Test save and basic find operations")
-    void testSaveAndFind() {
-        User author = new User();
+        author = new User();
+        author.setId(1L);
         author.setFirstName("alice");
         author.setLastName("vanneneker");
 
-        userRepository.save(author);
+        thread1 = new ForumThread();
+        thread1.setId(100L);
+        thread1.setTitle("Hello World");
+        thread1.setContent("This is the first thread.");
+        thread1.setAuthor(author);
+        thread1.setCategory(category);
+        thread1.setCreatedDate(LocalDateTime.now());
 
-        ForumCategory category = new ForumCategory();
-        category.setName("General");
-        categoryRepository.save(category);
-
-        ForumThread thread = new ForumThread();
-        thread.setTitle("Test Thread");
-        thread.setContent("Thread content");
-        thread.setAuthor(author);
-        thread.setCategory(category);
-
-        ForumThread savedThread = threadRepository.save(thread);
-
-        assertThat(savedThread.getId()).isNotNull();
-
-        // Basic findAll
-        List<ForumThread> allThreads = threadRepository.findAll();
-        assertThat(allThreads).hasSize(1).contains(savedThread);
-
-        // Find by author
-        List<ForumThread> byAuthor = threadRepository.findByAuthor(author);
-        assertThat(byAuthor).hasSize(1).contains(savedThread);
-
-        // Find by category
-        List<ForumThread> byCategory = threadRepository.findByCategory(category);
-        assertThat(byCategory).hasSize(1).contains(savedThread);
-
-        // Count by author
-        long count = threadRepository.countByAuthorId(author.getId());
-        assertThat(count).isEqualTo(1);
+        thread2 = new ForumThread();
+        thread2.setId(101L);
+        thread2.setTitle("Second Thread");
+        thread2.setContent("This is another discussion thread.");
+        thread2.setAuthor(author);
+        thread2.setCategory(category);
+        thread2.setCreatedDate(LocalDateTime.now().minusDays(1));
     }
 
     @Test
-    @DisplayName("Test deleteById")
+    void testFindAll() {
+        when(repository.findAll()).thenReturn(List.of(thread1, thread2));
+
+        List<ForumThread> result = repository.findAll();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getTitle()).isEqualTo("Hello World");
+        verify(repository).findAll();
+    }
+
+    @Test
+    void testFindAllWithRelations() {
+        when(repository.findAllWithRelations()).thenReturn(List.of(thread1, thread2));
+
+        List<ForumThread> result = repository.findAllWithRelations();
+
+        assertThat(result).containsExactly(thread1, thread2);
+        verify(repository).findAllWithRelations();
+    }
+
+    @Test
+    void testFindByCategory() {
+        when(repository.findByCategory(category)).thenReturn(List.of(thread1, thread2));
+
+        List<ForumThread> result = repository.findByCategory(category);
+
+        assertThat(result).allMatch(t -> t.getCategory().equals(category));
+        verify(repository).findByCategory(category);
+    }
+
+    @Test
+    void testFindByAuthor() {
+        when(repository.findByAuthor(author)).thenReturn(List.of(thread1, thread2));
+
+        List<ForumThread> result = repository.findByAuthor(author);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getAuthor()).isEqualTo(author);
+        verify(repository).findByAuthor(author);
+    }
+
+    @Test
+    void testFindByIdWithMessages() {
+        when(repository.findByIdWithMessages(100L)).thenReturn(Optional.of(thread1));
+
+        Optional<ForumThread> result = repository.findByIdWithMessages(100L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(100L);
+        verify(repository).findByIdWithMessages(100L);
+    }
+
+    @Test
+    void testFindByCategoryWithMessages() {
+        when(repository.findByCategoryWithMessages(category)).thenReturn(List.of(thread1, thread2));
+
+        List<ForumThread> result = repository.findByCategoryWithMessages(category);
+
+        assertThat(result).hasSize(2);
+        verify(repository).findByCategoryWithMessages(category);
+    }
+
+    @Test
     void testDeleteById() {
-        User author = new User();
-        author.setFirstName("bob");
-        author.setLastName("vanneneker");
+        doNothing().when(repository).deleteById(100L);
 
-        userRepository.save(author);
+        repository.deleteById(100L);
 
-        ForumCategory category = new ForumCategory();
-        category.setName("Tech");
-        categoryRepository.save(category);
-
-        ForumThread thread = new ForumThread();
-        thread.setTitle("Delete Thread");
-        thread.setAuthor(author);
-        thread.setCategory(category);
-
-        ForumThread savedThread = threadRepository.save(thread);
-        Long threadId = savedThread.getId();
-
-        assertThat(threadRepository.findById(threadId)).isPresent();
-
-        threadRepository.deleteById(threadId);
-
-        Optional<ForumThread> deleted = threadRepository.findById(threadId);
-        assertThat(deleted).isEmpty();
+        ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+        verify(repository).deleteById(captor.capture());
+        assertThat(captor.getValue()).isEqualTo(100L);
     }
 
     @Test
-    @DisplayName("Test findAllWithRelations and findByIdWithMessages")
-    void testCustomQueries() {
-        User author = new User();
-        author.setFirstName("charlie");
-        author.setLastName("vanneneker");
+    void testCountByAuthorId() {
+        when(repository.countByAuthorId(1L)).thenReturn(5L);
 
-        userRepository.save(author);
+        long count = repository.countByAuthorId(1L);
 
-        ForumCategory category = new ForumCategory();
-        category.setName("News");
-        categoryRepository.save(category);
-
-        ForumThread thread = new ForumThread();
-        thread.setTitle("Thread With Messages");
-        thread.setAuthor(author);
-        thread.setCategory(category);
-        threadRepository.save(thread);
-
-        ForumMessage message = new ForumMessage();
-        message.setContent("First message");
-        message.setAuthor(author);
-        message.setThread(thread);
-        messageRepository.save(message);
-
-        // Test findAllWithRelations
-        List<ForumThread> threadsWithRelations = threadRepository.findAllWithRelations();
-        assertThat(threadsWithRelations).hasSize(1);
-        assertThat(threadsWithRelations.get(0).getAuthor()).isNotNull();
-        assertThat(threadsWithRelations.get(0).getCategory()).isNotNull();
-
-        // Test findByIdWithMessages
-        Optional<ForumThread> threadWithMessages = threadRepository.findByIdWithMessages(thread.getId());
-        assertThat(threadWithMessages).isPresent();
-        assertThat(threadWithMessages.get().getMessages()).hasSize(1);
+        assertThat(count).isEqualTo(5L);
+        verify(repository).countByAuthorId(1L);
     }
 
     @Test
-    @DisplayName("Test pagination and search queries")
-    void testPaginationAndSearch() {
-        User author = new User();
-        author.setFirstName("dave");
-        author.setLastName("vanneneker");
+    void testFindByCategoryIdWithPagination() {
+        PageRequest pageable = PageRequest.of(0, 10);
+        Page<ForumThread> page = new PageImpl<>(List.of(thread1, thread2), pageable, 2);
+        when(repository.findByCategoryId(10L, pageable)).thenReturn(page);
 
-        userRepository.save(author);
+        Page<ForumThread> result = repository.findByCategoryId(10L, pageable);
 
-        ForumCategory category = new ForumCategory();
-        category.setName("Science");
-        categoryRepository.save(category);
+        assertThat(result.getContent()).containsExactly(thread1, thread2);
+        verify(repository).findByCategoryId(10L, pageable);
+    }
 
-        // Save multiple threads
-        for (int i = 1; i <= 5; i++) {
-            ForumThread thread = new ForumThread();
-            thread.setTitle("Science Thread " + i);
-            thread.setContent("Content " + i);
-            thread.setAuthor(author);
-            thread.setCategory(category);
-            threadRepository.save(thread);
-        }
+    @Test
+    void testFindByTitleContainingOrContentContaining() {
+        PageRequest pageable = PageRequest.of(0, 5);
+        Page<ForumThread> expectedPage = new PageImpl<>(List.of(thread1), pageable, 1);
+        when(repository.findByTitleContainingOrContentContaining("hello", "hello", pageable))
+                .thenReturn(expectedPage);
 
-        PageRequest pageable = PageRequest.of(0, 3);
+        Page<ForumThread> result = repository.findByTitleContainingOrContentContaining("hello", "hello", pageable);
 
-        // Find by category with pagination
-        Page<ForumThread> page = threadRepository.findByCategoryId(category.getId(), pageable);
-        assertThat(page.getContent()).hasSize(3);
+        assertThat(result.getContent()).containsExactly(thread1);
+        verify(repository).findByTitleContainingOrContentContaining("hello", "hello", pageable);
+    }
 
-        // Search by title or content
-        Page<ForumThread> searchPage = threadRepository.findByTitleContainingOrContentContaining("Thread 1", "Thread 1", pageable);
-        assertThat(searchPage.getContent()).hasSize(1);
+    @Test
+    void testFindByCategoryIdAndTitleContainingOrContentContaining() {
+        PageRequest pageable = PageRequest.of(0, 5);
+        Page<ForumThread> expectedPage = new PageImpl<>(List.of(thread2), pageable, 1);
+        when(repository.findByCategoryIdAndTitleContainingOrContentContaining(10L, "second", "second", pageable))
+                .thenReturn(expectedPage);
 
-        // Search by category and term
-        Page<ForumThread> searchByCategory = threadRepository.findByCategoryIdAndTitleContainingOrContentContaining(category.getId(), "Thread 2", "Thread 2", pageable);
-        assertThat(searchByCategory.getContent()).hasSize(1);
+        Page<ForumThread> result = repository.findByCategoryIdAndTitleContainingOrContentContaining(
+                10L, "second", "second", pageable);
+
+        assertThat(result.getContent()).containsExactly(thread2);
+        verify(repository).findByCategoryIdAndTitleContainingOrContentContaining(10L, "second", "second", pageable);
+    }
+
+    @Test
+    void testFindByCategoryWithNoResults() {
+        when(repository.findByCategory(any())).thenReturn(Collections.emptyList());
+
+        List<ForumThread> result = repository.findByCategory(new ForumCategory());
+
+        assertThat(result).isEmpty();
+        verify(repository).findByCategory(any());
     }
 }

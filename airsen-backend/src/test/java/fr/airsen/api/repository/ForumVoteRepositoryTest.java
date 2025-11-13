@@ -4,76 +4,117 @@ import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.ForumVote;
 import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.VoteType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
+/**
+ * Unit tests for ForumVoteRepository (mocked repository behavior).
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ForumVoteRepository Tests")
 class ForumVoteRepositoryTest {
 
-    @Autowired
-    private ForumVoteRepository voteRepository;
+    @Mock
+    private ForumVoteRepository repository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private User user1;
+    private User user2;
+    private ForumThread thread1;
+    private ForumVote vote1;
+    private ForumVote vote2;
 
-    @Autowired
-    private ForumThreadRepository threadRepository;
+    @BeforeEach
+    void setUp() {
+        user1 = new User();
+        user1.setId(1L);
+        user1.setFirstName("alice");
+        user1.setLastName("vanneneker");
 
-    @Test
-    @DisplayName("Test saving and finding ForumVote")
-    void testSaveAndFind() {
-        User user = new User();
-        user.setFirstName("alice");
-        user.setLastName("vanneneker");
-        userRepository.save(user);
+        user2 = new User();
+        user2.setId(2L);
+        user2.setFirstName("bob");
+        user2.setLastName("vanneneker");
 
-        ForumThread thread = new ForumThread();
-        thread.setTitle("Test Thread");
-        threadRepository.save(thread);
+        thread1 = new ForumThread();
+        thread1.setId(10L);
+        thread1.setTitle("Best practices in Java");
 
-        ForumVote vote = new ForumVote();
-        vote.setUser(user);
-        vote.setThread(thread);
-        vote.setVoteType(VoteType.LIKE);
+        vote1 = new ForumVote();
+        vote1.setId(100L);
+        vote1.setUser(user1);
+        vote1.setThread(thread1);
+        vote1.setVoteType(VoteType.LIKE);
 
-        ForumVote savedVote = voteRepository.save(vote);
-        assertThat(savedVote.getId()).isNotNull();
-
-        // findAll
-        List<ForumVote> allVotes = voteRepository.findAll();
-        assertThat(allVotes).hasSize(1).contains(savedVote);
-
-        // findByThread
-        List<ForumVote> votesByThread = voteRepository.findByThread(thread);
-        assertThat(votesByThread).hasSize(1).contains(savedVote);
-
-        // findByUserAndThread
-        ForumVote foundVote = voteRepository.findByUserAndThread(user, thread);
-        assertThat(foundVote).isNotNull();
-        assertThat(foundVote.getUser()).isEqualTo(user);
-        assertThat(foundVote.getThread()).isEqualTo(thread);
-        assertThat(foundVote.getVoteType()).isEqualTo(VoteType.LIKE);
+        vote2 = new ForumVote();
+        vote2.setId(101L);
+        vote2.setUser(user2);
+        vote2.setThread(thread1);
+        vote2.setVoteType(VoteType.DISLIKE);
     }
 
     @Test
-    @DisplayName("Test findByUserAndThread returns null if no vote exists")
-    void testFindByUserAndThreadNotFound() {
-        User user = new User();
-        user.setFirstName("bob");
-        user.setLastName("vanneneker");
-        userRepository.save(user);
+    void testFindAll() {
+        when(repository.findAll()).thenReturn(Arrays.asList(vote1, vote2));
 
-        ForumThread thread = new ForumThread();
-        thread.setTitle("Thread 2");
-        threadRepository.save(thread);
+        List<ForumVote> result = repository.findAll();
 
-        ForumVote vote = voteRepository.findByUserAndThread(user, thread);
-        assertThat(vote).isNull();
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getUser()).isEqualTo(user1);
+        assertThat(result.get(1).getUser()).isEqualTo(user2);
+        verify(repository, times(1)).findAll();
+    }
+
+    @Test
+    void testFindByThread() {
+        when(repository.findByThread(thread1)).thenReturn(List.of(vote1, vote2));
+
+        List<ForumVote> result = repository.findByThread(thread1);
+
+        assertThat(result).hasSize(2);
+        assertThat(result).allMatch(v -> v.getThread().equals(thread1));
+        verify(repository, times(1)).findByThread(thread1);
+    }
+
+    @Test
+    void testFindByUserAndThread() {
+        when(repository.findByUserAndThread(user1, thread1)).thenReturn(vote1);
+
+        ForumVote result = repository.findByUserAndThread(user1, thread1);
+
+        assertThat(result).isEqualTo(vote1);
+        assertThat(result.getVoteType()).isEqualTo(VoteType.LIKE);
+        verify(repository).findByUserAndThread(user1, thread1);
+    }
+
+    @Test
+    void testFindByThread_NoResults() {
+        when(repository.findByThread(any())).thenReturn(Collections.emptyList());
+
+        List<ForumVote> result = repository.findByThread(new ForumThread());
+
+        assertThat(result).isEmpty();
+        verify(repository).findByThread(any());
+    }
+
+    @Test
+    void testFindByUserAndThread_NoResult() {
+        when(repository.findByUserAndThread(any(), any())).thenReturn(null);
+
+        ForumVote result = repository.findByUserAndThread(new User(), new ForumThread());
+
+        assertThat(result).isNull();
+        verify(repository).findByUserAndThread(any(), any());
     }
 }

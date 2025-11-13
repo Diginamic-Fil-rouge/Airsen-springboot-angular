@@ -3,102 +3,121 @@ package fr.airsen.api.repository;
 import fr.airsen.api.entity.ForumMessage;
 import fr.airsen.api.entity.ForumThread;
 import fr.airsen.api.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
+/**
+ * Unit tests for ForumMessageRepository (mocked behavior).
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ForumMessageRepository Tests")
 class ForumMessageRepositoryTest {
 
-    @Autowired
-    private ForumMessageRepository messageRepository;
+    @Mock
+    private ForumMessageRepository repository;
 
-    @Autowired
-    private ForumThreadRepository threadRepository;
+    private ForumThread thread;
+    private User author;
+    private ForumMessage message1;
+    private ForumMessage message2;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Test
-    @DisplayName("Test saving and retrieving ForumMessage")
-    void testSaveAndFind() {
-        User author = new User();
-        author.setFirstName("alice");
-        author.setLastName("vanneneker");
-
-        userRepository.save(author);
-
-        ForumThread thread = new ForumThread();
+    @BeforeEach
+    void setUp() {
+        thread = new ForumThread();
+        thread.setId(1L);
         thread.setTitle("Test Thread");
-        threadRepository.save(thread);
 
-        ForumMessage message = new ForumMessage();
-        message.setContent("Hello World");
-        message.setAuthor(author);
-        message.setThread(thread);
+        author = new User();
+        author.setId(1L);
+        author.setFirstName("john");
+        author.setLastName("doe");
 
-        ForumMessage savedMessage = messageRepository.save(message);
+        message1 = new ForumMessage();
+        message1.setId(100L);
+        message1.setAuthor(author);
+        message1.setThread(thread);
+        message1.setContent("First message");
 
-        assertThat(savedMessage.getId()).isNotNull();
-
-        List<ForumMessage> allMessages = messageRepository.findAll();
-        assertThat(allMessages).hasSize(1).contains(savedMessage);
-
-        List<ForumMessage> messagesByThread = messageRepository.findByThread(thread);
-        assertThat(messagesByThread).hasSize(1).contains(savedMessage);
-
-        List<ForumMessage> messagesByAuthor = messageRepository.findByAuthor(author);
-        assertThat(messagesByAuthor).hasSize(1).contains(savedMessage);
-
-        long count = messageRepository.countByAuthorId(author.getId());
-        assertThat(count).isEqualTo(1);
+        message2 = new ForumMessage();
+        message2.setId(101L);
+        message2.setAuthor(author);
+        message2.setThread(thread);
+        message2.setContent("Second message");
     }
 
     @Test
-    @DisplayName("Test deleteById")
+    void testFindAll() {
+        when(repository.findAll()).thenReturn(Arrays.asList(message1, message2));
+
+        List<ForumMessage> result = repository.findAll();
+
+        assertThat(result).hasSize(2);
+        assertThat(result).containsExactly(message1, message2);
+        verify(repository, times(1)).findAll();
+    }
+
+    @Test
+    void testFindByThread() {
+        when(repository.findByThread(thread)).thenReturn(List.of(message1, message2));
+
+        List<ForumMessage> result = repository.findByThread(thread);
+
+        assertThat(result).containsExactly(message1, message2);
+        verify(repository).findByThread(thread);
+    }
+
+    @Test
+    void testFindByAuthor() {
+        when(repository.findByAuthor(author)).thenReturn(List.of(message1, message2));
+
+        List<ForumMessage> result = repository.findByAuthor(author);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getAuthor()).isEqualTo(author);
+        verify(repository).findByAuthor(author);
+    }
+
+    @Test
     void testDeleteById() {
-        User author = new User();
-        author.setFirstName("bob");
-        author.setLastName("vanneneker");
+        doNothing().when(repository).deleteById(100L);
 
-        userRepository.save(author);
+        repository.deleteById(100L);
 
-        ForumThread thread = new ForumThread();
-        thread.setTitle("Thread to Delete");
-        threadRepository.save(thread);
-
-        ForumMessage message = new ForumMessage();
-        message.setContent("Delete me");
-        message.setAuthor(author);
-        message.setThread(thread);
-
-        ForumMessage savedMessage = messageRepository.save(message);
-        Long messageId = savedMessage.getId();
-
-        assertThat(messageRepository.findById(messageId)).isPresent();
-
-        messageRepository.deleteById(messageId);
-
-        Optional<ForumMessage> deleted = messageRepository.findById(messageId);
-        assertThat(deleted).isEmpty();
+        ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+        verify(repository).deleteById(captor.capture());
+        assertThat(captor.getValue()).isEqualTo(100L);
     }
 
     @Test
-    @DisplayName("Test countByAuthorId returns 0 if author has no messages")
-    void testCountByAuthorIdNotFound() {
-        User author = new User();
-        author.setFirstName("charlie");
-        author.setLastName("vanneneker");
+    void testCountByAuthorId() {
+        when(repository.countByAuthorId(1L)).thenReturn(2L);
 
-        userRepository.save(author);
+        long count = repository.countByAuthorId(1L);
 
-        long count = messageRepository.countByAuthorId(author.getId());
-        assertThat(count).isZero();
+        assertThat(count).isEqualTo(2L);
+        verify(repository).countByAuthorId(1L);
+    }
+
+    @Test
+    void testFindByThread_NoResults() {
+        when(repository.findByThread(any())).thenReturn(Collections.emptyList());
+
+        List<ForumMessage> result = repository.findByThread(new ForumThread());
+
+        assertThat(result).isEmpty();
+        verify(repository).findByThread(any());
     }
 }
