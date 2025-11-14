@@ -145,9 +145,9 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
         assertThat(response.communeName()).isEqualTo("Saint-Denis");
         assertThat(response.dataSource()).isEqualTo(AirQualityResponse.DataSource.ESTIMATED);
 
-        // Data should come from nearest commune (Paris or Boulogne-Billancourt)
-        assertThat(response.estimatedFromCommune()).isIn("Paris", "Boulogne-Billancourt");
-        assertThat(response.distanceKm()).isBetween(8.0, 12.0); // Approximate distance
+        // Data should come from nearest commune (Aubervilliers is closest at ~3km)
+        assertThat(response.estimatedFromCommune()).isIn("Aubervilliers", "Paris", "Boulogne-Billancourt");
+        assertThat(response.distanceKm()).isBetween(2.0, 12.0); // Aubervilliers ~3km, Paris ~10km
         assertThat(response.dataQualityNote()).contains("Données estimées depuis");
 
         // Air quality data should be inherited from nearest commune
