@@ -156,17 +156,32 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
     }
 
     @Test
-    @DisplayName("Should return 404 when no weather data available within 20km radius")
+    @DisplayName("Should return direct weather data for commune with old data (scheduler handles freshness)")
     void shouldReturn404WhenNoDataWithin20km() throws Exception {
         // Given: Meaux (77001) is ~50km from Paris, outside 20km threshold
+        // BUT Meaux has its own weather data in the database (30 days old)
+        // So it should return 200 with DIRECT data (scheduler handles updating it)
         String meauxInseeCode = "77001";
 
         // When: Request weather for Meaux
-        mockMvc.perform(get("/weather/current/{inseeCode}", meauxInseeCode)
+        MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", meauxInseeCode)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("No weather data within 20km"));
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then: Response contains the old data with DIRECT source
+        WeatherResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
+            WeatherResponse.class
+        );
+
+        assertThat(response.inseeCode()).isEqualTo(meauxInseeCode);
+        assertThat(response.communeName()).isEqualTo("Meaux");
+        assertThat(response.dataSource()).isEqualTo(WeatherResponse.DataSource.DIRECT);
+        assertThat(response.temperature()).isEqualTo(12.8);
+        assertThat(response.measurementDate()).isBefore(LocalDate.now());
     }
 
     @Test
@@ -180,7 +195,7 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Commune not found"));
+                .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
 
     @Test
@@ -220,16 +235,18 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
     }
 
     @Test
-    @DisplayName("Should validate INSEE code format")
+    @DisplayName("Should return 404 when commune with invalid format does not exist")
     void shouldValidateInseeCodeFormat() throws Exception {
         // Given: Invalid INSEE code format (not 5 digits)
+        // Since "123" doesn't exist as a commune, it returns 404 "Commune not found"
         String invalidFormat = "123";
 
-        // When: Request weather with invalid format
+        // When: Request weather with invalid format (will try to find "123" as INSEE code)
         mockMvc.perform(get("/weather/current/{inseeCode}", invalidFormat)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
 
     @Test

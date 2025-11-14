@@ -27,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -156,19 +155,8 @@ public class WeatherController {
             @PathVariable @Parameter(description = "INSEE code of the commune") String inseeCode
     ) {
         log.info("REST request to get current weather for commune: {}", inseeCode);
-
-        try {
-            // Get weather data from service and convert to response DTO
-            WeatherData weatherData = weatherService.getCurrentWeatherForCommune(inseeCode).block();
-            if (weatherData == null) {
-                throw new ResourceNotFoundException("No weather data available for commune: " + inseeCode);
-            }
-            WeatherResponse response = weatherMapper.toDirectResponse(weatherData);
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            log.error("Commune not found: {}", inseeCode);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        WeatherResponse response = weatherService.getLatestStoredWeather(inseeCode);
+        return ResponseEntity.ok(response);
     }
 
     /**

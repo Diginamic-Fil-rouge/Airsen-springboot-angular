@@ -6,8 +6,10 @@ import fr.airsen.api.entity.Region;
 import fr.airsen.api.entity.WeatherData;
 import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoCurrentResponse;
+import fr.airsen.api.mapper.WeatherMapper;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.repository.WeatherDataRepository;
+import fr.airsen.api.service.cacheData.SmartCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ import java.util.Optional;
  * - Null safety and data validation
  * - Error handling
  *
- * Note: Tests for getCurrentWeatherForCommune (with caching and geodistance)
+ * Note: Tests for getLatestStoredWeather (with caching and geodistance)
  * are covered in integration tests due to complexity of SmartCacheService mocking.
  */
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +52,15 @@ class WeatherServiceTest {
 
     @Mock
     private CommuneRepository communeRepository;
+
+    @Mock
+    private GeoDistanceService geoDistanceService;
+
+    @Mock
+    private WeatherMapper weatherMapper;
+
+    @Mock
+    private SmartCacheService smartCacheService;
 
     // Note: We're not injecting WeatherService with @InjectMocks because it has many dependencies.
     // We'll create it manually for each test with minimal mocking.
@@ -128,7 +139,10 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null, // inseeApiClient not needed for this test
             weatherDataRepository,
-            communeRepository
+            communeRepository,
+            geoDistanceService,
+            weatherMapper,
+            smartCacheService
         );
 
         // When
@@ -191,7 +205,10 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository
+            communeRepository,
+            geoDistanceService,
+            weatherMapper,
+            smartCacheService
         );
 
         // When
@@ -229,7 +246,10 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository
+            communeRepository,
+            geoDistanceService,
+            weatherMapper,
+            smartCacheService
         );
 
         // When
@@ -264,7 +284,10 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository
+            communeRepository,
+            geoDistanceService,
+            weatherMapper,
+            smartCacheService
         );
 
         // When
@@ -294,7 +317,10 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository
+            communeRepository,
+            geoDistanceService,
+            weatherMapper,
+            smartCacheService
         );
 
         // When
@@ -350,7 +376,10 @@ class WeatherServiceTest {
             openMeteoApiClient,
             null,
             weatherDataRepository,
-            communeRepository
+            communeRepository,
+            geoDistanceService,
+            weatherMapper,
+            smartCacheService
         );
 
         // When
