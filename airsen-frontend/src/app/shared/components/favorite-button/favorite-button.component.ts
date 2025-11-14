@@ -183,7 +183,7 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
     this.isMaxReached = count.count >= count.maximum;
   }
 
-  private openSnack(message: string, isError: boolean = false): void {
+  private openSnack(message: string, isError = false): void {
     // Error messages stay longer (5s) so users can read them
     // Success messages disappear faster (3.5s)
     const duration = isError ? 5000 : 3500;

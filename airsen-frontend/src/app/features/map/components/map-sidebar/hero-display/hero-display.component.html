@@ -1,0 +1,20 @@
+<div class="hero-display-container" [attr.aria-label]="ariaLabel">
+  <!-- Stacked Display: AQI Index above Qualifier -->
+  <div class="aqi-stacked" role="status" [attr.aria-label]="'Indice ATMO ' + displayValue">
+    <!-- AQI Value with Background -->
+    <div class="aqi-value-stacked" [style.background-color]="color || '#CCCCCC'">
+      {{ displayValue }}
+    </div>
+
+    <!-- Qualifier Chip -->
+    <div class="qualifier-stacked" [style.background-color]="color || '#CCCCCC'"
+      [style.color]="getContrastColor(color)">
+      {{ qualifier || 'Inconnu' }}
+    </div>
+  </div>
+
+  <!-- Additional Context -->
+  <div class="context-text">
+    <p class="subtitle">Indice de qualité de l'air</p>
+  </div>
+</div>

@@ -1,14 +1,14 @@
-import { Component, EventEmitter, inject, input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, input, Output, OnInit } from '@angular/core';
 import { Message } from '../models/message.model';
 import { MessageService } from '../services/message.service';
 import { AuthService } from '@/app/core/auth/services/auth.service';
 @Component({
     standalone: false,
-    selector: 'forum-message',
+    selector: 'app-forum-message',
     templateUrl: './message.component.html',
     styleUrls: ['./message.component.scss']
 })
-export class MessageComponent {
+export class MessageComponent implements OnInit {
     service = inject(MessageService);
     authService = inject(AuthService);
     message = input<Message>();

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Thread } from '../../models/thread.model';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -7,11 +7,11 @@ import { Message } from '../../models/message.model';
 import { AuthService } from '@/app/core/auth/services/auth.service';
 @Component({
   standalone: false,
-  selector: 'forum-thread-details',
+  selector: 'app-forum-thread-details',
   templateUrl: './thread-details.component.html',
   styleUrls: ['./thread-details.component.scss']
 })
-export class ThreadDetailsComponent {
+export class ThreadDetailsComponent implements OnInit {
   activatedRoute = inject(ActivatedRoute);
   service: ThreadService = inject(ThreadService);
   authService = inject(AuthService);

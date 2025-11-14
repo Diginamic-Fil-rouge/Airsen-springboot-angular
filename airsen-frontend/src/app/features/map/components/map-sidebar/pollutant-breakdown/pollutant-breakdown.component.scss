@@ -1,0 +1,197 @@
+@use "styles/design-system" as *;
+
+.pollutant-breakdown-container {
+  padding: $space-4;
+  background: white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-900;
+    margin: 0;
+  }
+
+  .chart-wrapper {
+    width: 100%;
+    height: 280px;
+    padding: $space-3;
+    background: $airsen-gray-50;
+    border-radius: $radius-md;
+    margin-bottom: $space-2;
+  }
+
+  .pollutants-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+
+    .pollutant-item {
+      display: flex;
+      flex-direction: column;
+      gap: $space-2;
+      padding: $space-3;
+      background: $airsen-gray-50;
+      border-radius: $radius-md;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: $airsen-gray-100;
+      }
+
+      .pollutant-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .pollutant-name-wrapper {
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+
+          .pollutant-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            color: $airsen-gray-600;
+          }
+
+          .pollutant-name {
+            font-size: $font-size-base;
+            font-weight: $font-weight-medium;
+            color: $airsen-gray-900;
+          }
+
+          .info-button {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            mat-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+              color: $airsen-gray-500;
+            }
+
+            &:hover mat-icon {
+              color: $airsen-primary;
+            }
+          }
+        }
+
+        .pollutant-value {
+          display: flex;
+          align-items: baseline;
+          gap: $space-1;
+
+          .value {
+            font-size: $font-size-xl;
+            font-weight: $font-weight-semibold;
+            color: $airsen-gray-900;
+            font-variant-numeric: tabular-nums;
+          }
+
+          .unit {
+            font-size: $font-size-sm;
+            color: $airsen-gray-600;
+          }
+        }
+      }
+
+      .pollutant-status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: $space-2;
+
+        .status-chip {
+          font-size: $font-size-xs;
+          font-weight: $font-weight-medium;
+          padding: 4px 12px;
+          height: 28px;
+          color: white;
+          border-radius: $radius-full;
+        }
+
+        .threshold-info {
+          font-size: $font-size-xs;
+          color: $airsen-gray-600;
+          cursor: help;
+        }
+      }
+    }
+  }
+
+  .legend {
+    display: flex;
+    gap: $space-4;
+    padding: $space-3;
+    background: $airsen-gray-50;
+    border-radius: $radius-md;
+    flex-wrap: wrap;
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: $space-2;
+
+      .legend-color {
+        width: 18px;
+        height: 18px;
+        border-radius: $radius-sm;
+
+        &.good {
+          background-color: #50F0E6;
+        }
+
+        &.moderate {
+          background-color: #F0E641;
+        }
+
+        &.elevated {
+          background-color: #FF5050;
+        }
+      }
+
+      span {
+        font-size: $font-size-sm;
+        color: $airsen-gray-700;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .pollutant-breakdown-container {
+    padding: $space-3;
+
+    .chart-wrapper {
+      height: 240px;
+      padding: $space-2;
+    }
+
+    .pollutants-list .pollutant-item {
+      padding: $space-2;
+
+      .pollutant-header {
+        .pollutant-value {
+          .value {
+            font-size: $font-size-lg;
+          }
+        }
+      }
+    }
+
+    .legend {
+      gap: $space-3;
+      padding: $space-2;
+    }
+  }
+}

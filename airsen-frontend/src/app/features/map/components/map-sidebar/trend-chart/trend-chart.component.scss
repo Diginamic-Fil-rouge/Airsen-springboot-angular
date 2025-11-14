@@ -1,0 +1,210 @@
+@use "styles/design-system" as *;
+
+.trend-chart-container {
+  padding: $space-4;
+  background: white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  margin-bottom: $space-4;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-4;
+
+  h3 {
+    margin: 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-900;
+  }
+}
+
+.chart-mode-toggle {
+  ::ng-deep .mat-button-toggle {
+    font-size: $font-size-sm;
+    padding: 0 $space-3;
+    min-width: 70px;
+  }
+
+  ::ng-deep .mat-button-toggle-checked {
+    background-color: $airsen-primary;
+    color: white;
+
+    &:hover {
+      background-color: $airsen-primary-dark;
+    }
+  }
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  margin-top: $space-4;
+
+  canvas {
+    max-height: 250px;
+  }
+}
+
+.loading-state,
+.error-state,
+.no-data-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 250px;
+  text-align: center;
+  color: $airsen-gray-600;
+}
+
+.loading-state {
+  mat-spinner {
+    margin-bottom: $space-4;
+  }
+}
+
+.error-state {
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: $airsen-error;
+    margin-bottom: $space-3;
+  }
+
+  p {
+    margin: 0;
+    font-size: $font-size-base;
+    color: $airsen-error;
+  }
+}
+
+.no-data-state {
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: $airsen-gray-400;
+    margin-bottom: $space-3;
+  }
+
+  p {
+    margin: 0;
+    font-size: $font-size-base;
+  }
+}
+
+.chart-legend {
+  margin-top: $space-4;
+  padding-top: $space-4;
+  border-top: 1px solid $airsen-gray-200;
+  display: flex;
+  justify-content: space-around;
+  font-size: $font-size-sm;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: $radius-sm;
+    }
+
+    .legend-label {
+      color: $airsen-gray-600;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .trend-chart-container {
+    padding: $space-3;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $space-3;
+
+    h3 {
+      font-size: $font-size-base;
+    }
+  }
+
+  .chart-mode-toggle {
+    width: 100%;
+
+    ::ng-deep .mat-button-toggle-group {
+      width: 100%;
+    }
+
+    ::ng-deep .mat-button-toggle {
+      flex: 1;
+    }
+  }
+
+  .chart-wrapper {
+    height: 200px;
+
+    canvas {
+      max-height: 200px;
+    }
+  }
+
+  .chart-legend {
+    flex-direction: column;
+    gap: $space-2;
+  }
+}
+
+.trend-chart {
+  padding: $space-4;
+  border-radius: $radius-lg;
+  border: 1px dashed $airsen-gray-200;
+  text-align: center;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $space-3;
+
+    h4 {
+      margin: 0;
+      font-size: $font-size-lg;
+    }
+
+    .mode-label {
+      font-size: $font-size-xs;
+      color: $airsen-gray-500;
+      letter-spacing: $letter-spacing-wide;
+    }
+  }
+
+  &__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-2;
+    color: $airsen-gray-500;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: $airsen-gray-400;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}

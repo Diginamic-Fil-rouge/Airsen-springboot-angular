@@ -45,13 +45,13 @@ public class Commune {
     private long population;
 
     @Column(name = "latitude", precision = 10, scale = 8)
-    @DecimalMin(value = "41.0", message = "Latitude must be within French territory bounds")
-    @DecimalMax(value = "51.0", message = "Latitude must be within French territory bounds")
+    @DecimalMin(value = "41.3", message = "Latitude must be within Metropolitan France territory bounds")
+    @DecimalMax(value = "51.1", message = "Latitude must be within Metropolitan France territory bounds")
     private BigDecimal latitude;
 
     @Column(name = "longitude", precision = 11, scale = 8)
-    @DecimalMin(value = "-5.0", message = "Longitude must be within French territory bounds")
-    @DecimalMax(value = "10.0", message = "Longitude must be within French territory bounds")
+    @DecimalMin(value = "-5.2", message = "Longitude must be within Metropolitan France territory bounds")
+    @DecimalMax(value = "9.6", message = "Longitude must be within Metropolitan France territory bounds")
     private BigDecimal longitude;
 
     @OneToMany(mappedBy = "commune", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

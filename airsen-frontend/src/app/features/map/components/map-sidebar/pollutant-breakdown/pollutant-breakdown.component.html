@@ -1,0 +1,53 @@
+<div class="pollutant-breakdown-container">
+  <h3 class="section-title">Polluants détectés</h3>
+
+  <div class="chart-wrapper">
+    <canvas baseChart [data]="chartData" [options]="chartOptions" type="bar"
+      [attr.aria-label]="'Graphique de concentration des polluants'"></canvas>
+  </div>
+
+  <div class="pollutants-list">
+    <div *ngFor="let pollutant of pollutantConfig; trackBy: trackByName" class="pollutant-item"
+      [attr.aria-label]="getPollutantAriaLabel(pollutant)">
+      <div class="pollutant-header">
+        <div class="pollutant-name-wrapper">
+          <mat-icon class="pollutant-icon">{{ pollutant.icon }}</mat-icon>
+          <span class="pollutant-name">{{ pollutant.name }}</span>
+          <button mat-icon-button class="info-button" [matTooltip]="pollutant.description" matTooltipPosition="right"
+            [attr.aria-label]="'Informations sur ' + pollutant.name">
+            <mat-icon>info_outline</mat-icon>
+          </button>
+        </div>
+
+        <div class="pollutant-value">
+          <span class="value">{{ formatValue(pollutant.value) }}</span>
+          <span class="unit">{{ pollutant.unit }}</span>
+        </div>
+      </div>
+
+      <div class="pollutant-status-row">
+        <mat-chip [style.background-color]="pollutant.color" class="status-chip">
+          {{ getStatusText(pollutant) }}
+        </mat-chip>
+        <span class="threshold-info" [matTooltip]="'Seuil OMS recommandé'">
+          Seuil: {{ pollutant.threshold }} {{ pollutant.unit }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color good"></div>
+      <span>Bon (&lt; seuil OMS)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color moderate"></div>
+      <span>Modéré</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color elevated"></div>
+      <span>Élevé</span>
+    </div>
+  </div>
+</div>

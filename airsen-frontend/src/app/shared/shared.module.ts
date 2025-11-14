@@ -16,7 +16,6 @@ import { FavoriteButtonComponent } from './components/favorite-button/favorite-b
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
 // Pipes
-import { AqiLabelPipe } from './pipes/aqi-label.pipe';
 import { AqiColorPipe } from './pipes/aqi-color.pipe';
 
 /**
@@ -69,7 +68,6 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     FavoriteButtonComponent,
     ConfirmDialogComponent,
     // Pipes
-    AqiLabelPipe,
     AqiColorPipe
   ],
   imports: [
@@ -95,7 +93,6 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     FavoriteButtonComponent,
     ConfirmDialogComponent,
     // Pipes
-    AqiLabelPipe,
     AqiColorPipe
   ]
 })

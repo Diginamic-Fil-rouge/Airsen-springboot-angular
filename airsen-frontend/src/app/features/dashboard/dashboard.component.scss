@@ -148,11 +148,6 @@
   }
 }
 
-app-air-quality-widget {
-  display: block;
-  margin-top: 2rem;
-}
-
 .cta-banner {
   background: linear-gradient(135deg, rgba(45, 106, 79, 0.12), rgba(45, 106, 79, 0.05));
   border: 1px solid color.change($airsen-primary-light, $alpha: 0.25);

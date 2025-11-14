@@ -1,0 +1,118 @@
+@use "styles/design-system" as *;
+
+.location-header {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-4;
+  border-radius: $radius-lg;
+  background: linear-gradient(135deg, $airsen-primary-light 0%, $airsen-primary 100%);
+  color: $airsen-white;
+  box-shadow: $shadow-sm;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+
+    .location-icon {
+      flex-shrink: 0;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      color: $airsen-white;
+    }
+
+    .location-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .commune-name {
+      margin: 0;
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      line-height: $line-height-tight;
+      color: $airsen-white;
+      word-break: break-word;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+    padding-top: $space-2;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: $space-1;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $airsen-white;
+      opacity: 0.95;
+
+      .meta-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  &--empty {
+    background: $airsen-gray-50;
+    color: $airsen-gray-700;
+    flex-direction: row;
+    align-items: center;
+    gap: $space-3;
+
+    .empty-icon {
+      flex-shrink: 0;
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: $airsen-gray-400;
+    }
+
+    .empty-content {
+      flex: 1;
+    }
+
+    .empty-title {
+      margin: 0 0 $space-1 0;
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      color: $airsen-gray-700;
+    }
+
+    .empty-subtitle {
+      font-size: $font-size-sm;
+      color: $airsen-gray-500;
+      line-height: $line-height-normal;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .location-header {
+    padding: $space-3;
+
+    &__title {
+      .commune-name {
+        font-size: $font-size-xl;
+      }
+    }
+
+    &__meta {
+      gap: $space-2;
+
+      .meta-item {
+        font-size: $font-size-xs;
+      }
+    }
+  }
+}

@@ -37,11 +37,11 @@ export interface AirQuality {
 }
 
 export enum AirQualityLevel {
-  GOOD = 'GOOD',
-  MODERATE = 'MODERATE',
-  POOR = 'POOR',
-  VERY_POOR = 'VERY_POOR',
-  UNKNOWN = 'UNKNOWN'
+  GOOD = "GOOD",
+  MODERATE = "MODERATE",
+  POOR = "POOR",
+  VERY_POOR = "VERY_POOR",
+  UNKNOWN = "UNKNOWN",
 }
 
 export interface AirQualityHistory {
@@ -79,4 +79,20 @@ export interface AirQualityMapData {
   commune: string;
   color: string;
   popupContent: string;
+}
+
+/**
+ * Get health recommendation based on ATMO France index (1-6)
+ * ATMO index is the French standard for air quality measurement
+ */
+export function getHealthRecommendation(atmoIndex: number): string {
+  const recommendations: Record<number, string> = {
+    1: "La qualité de l'air est satisfaisante. Profitez de vos activités en plein air.",
+    2: "Qualité de l'air acceptable pour la plupart. Les personnes sensibles devraient limiter les efforts prolongés en extérieur.",
+    3: "Les personnes sensibles peuvent ressentir des effets. Limitez les activités extérieures prolongées.",
+    4: "Tout le monde peut commencer à ressentir des effets. Les personnes sensibles peuvent ressentir des effets plus graves. Évitez les activités extérieures prolongées.",
+    5: "Alerte sanitaire : tout le monde peut ressentir des effets plus graves sur la santé. Évitez toutes les activités extérieures.",
+    6: "Alerte d'urgence sanitaire. Toute la population est susceptible d'être affectée. Restez à l'intérieur et gardez les fenêtres fermées.",
+  };
+  return recommendations[atmoIndex] || "Données non disponibles.";
 }

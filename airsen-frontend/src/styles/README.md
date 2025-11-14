@@ -2,7 +2,7 @@
 
 This directory contains all global Angular Material customizations for the Airsen application.
 
-## 📁 File Structure
+## File Structure
 
 ```
 styles/
@@ -11,7 +11,7 @@ styles/
 └── README.md                  # This file
 ```
 
-## 🎨 Files Description
+## Files Description
 
 ### `_material-theme.scss`
 **Purpose:** Defines the Material Design theme for the entire application.
@@ -56,29 +56,29 @@ styles/
 
 ---
 
-## 🚫 What NOT to do
+## What NOT to do
 
-### ❌ Don't add these styles here:
+### Don't add these styles here:
 - Custom component styles (use component SCSS files)
 - Page-specific styles (use page component SCSS files)
 - Non-Material UI elements
 - Business logic related styles
 
-### ❌ Don't use `::ng-deep`:
+### Don't use `::ng-deep`:
 These files are already imported globally in `styles.scss`, so `::ng-deep` is unnecessary and deprecated.
 
 ---
 
-## ✅ Best Practices
+## Best Practices
 
 ### 1. **Separation of Concerns**
 ```scss
-// ✅ GOOD - In _material-components.scss
+// GOOD - In _material-components.scss
 .mat-mdc-form-field {
   // Global Material customization
 }
 
-// ❌ BAD - Don't mix with custom components
+// BAD - Don't mix with custom components
 .my-custom-form {
   // This belongs in component SCSS
 }
@@ -86,14 +86,14 @@ These files are already imported globally in `styles.scss`, so `::ng-deep` is un
 
 ### 2. **No ::ng-deep**
 ```scss
-// ✅ GOOD - Direct styling (already global)
+// GOOD - Direct styling (already global)
 .mat-mdc-checkbox {
   .mdc-checkbox__background {
     border-color: #e5e7eb;
   }
 }
 
-// ❌ BAD - Unnecessary ::ng-deep
+// BAD - Unnecessary ::ng-deep
 ::ng-deep .mat-mdc-checkbox {
   // Not needed here
 }
@@ -101,12 +101,12 @@ These files are already imported globally in `styles.scss`, so `::ng-deep` is un
 
 ### 3. **Use Theme Variables**
 ```scss
-// ✅ GOOD - Use theme colors
+// GOOD - Use theme colors
 .mat-mdc-raised-button.mat-primary {
   background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
 }
 
-// ❌ BAD - Hardcoded unrelated colors
+// BAD - Hardcoded unrelated colors
 .mat-mdc-raised-button {
   background: #ff0000; // Random color
 }
@@ -114,7 +114,7 @@ These files are already imported globally in `styles.scss`, so `::ng-deep` is un
 
 ---
 
-## 🔧 How to Use
+## How to Use
 
 ### Importing in `styles.scss`
 ```scss
@@ -128,7 +128,7 @@ These files are already imported globally in `styles.scss`, so `::ng-deep` is un
 They are already available globally.
 
 ```scss
-// ✅ GOOD - In component.scss
+// GOOD - In component.scss
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -136,13 +136,13 @@ They are already available globally.
   // Component-specific layout
 }
 
-// ❌ BAD - Don't re-import
+// BAD - Don't re-import
 @import 'styles/material-components'; // Already global!
 ```
 
 ---
 
-## 🎯 Common Customizations
+## Common Customizations
 
 ### Adding a new Material component style
 1. Open `_material-components.scss`
@@ -173,7 +173,7 @@ $airsen-primary-palette: (
 
 ---
 
-## 📚 References
+## References
 
 - [Angular Material Theming Guide](https://material.angular.io/guide/theming)
 - [Angular Material Component Styles](https://material.angular.io/guide/customizing-component-styles)
@@ -181,7 +181,7 @@ $airsen-primary-palette: (
 
 ---
 
-## 🔄 Maintenance
+## Maintenance
 
 **Last Updated:** October 2025
 **Angular Version:** 17+

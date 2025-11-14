@@ -1,0 +1,33 @@
+<ng-container *ngIf="commune; else emptyState">
+  <div class="location-header">
+    <div class="location-header__title">
+      <mat-icon class="location-icon">location_on</mat-icon>
+      <h3 class="commune-name">{{ commune.name }}</h3>
+    </div>
+
+    <div class="location-header__meta">
+      <span class="meta-item" *ngIf="commune.departmentCode">
+        <mat-icon class="meta-icon">place</mat-icon>
+        Dept. {{ commune.departmentCode }}
+      </span>
+      <span class="meta-item" *ngIf="commune.regionCode">
+        <mat-icon class="meta-icon">public</mat-icon>
+        Région {{ commune.regionCode }}
+      </span>
+      <span class="meta-item" *ngIf="commune.population">
+        <mat-icon class="meta-icon">people</mat-icon>
+        {{ commune.population | number : '1.0-0' : 'fr-FR' }} hab.
+      </span>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #emptyState>
+  <div class="location-header location-header--empty">
+    <mat-icon class="empty-icon">travel_explore</mat-icon>
+    <div class="empty-content">
+      <p class="empty-title">Aucune commune sélectionnée</p>
+      <small class="empty-subtitle">Cliquez sur un marqueur pour afficher les détails</small>
+    </div>
+  </div>
+</ng-template>

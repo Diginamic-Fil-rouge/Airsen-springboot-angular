@@ -16,6 +16,7 @@ import fr.airsen.api.exception.AirQualityDataNotFoundException;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -68,15 +69,23 @@ public class AtmoIntegrationService {
     /**
      * Scheduled task to fetch and store current ATMO air quality data.
      *
-     * Runs daily at midnight (configurable via scheduling.atmo.cron property).
-     * Default: 00:00 Europe/Paris timezone.
+     * Runs daily at 10:00 AM (configurable via scheduling.atmo.cron property).
+     * Default: 10:00 AM Europe/Paris timezone.
      *
      * Configuration:
-     * - scheduling.atmo.cron: Cron expression (default: 0 0 0 * * *)
+     * - scheduling.atmo.cron: Cron expression (default: 0 0 10 * * *)
      * - scheduling.atmo.timezone: Timezone (default: Europe/Paris)
+     * - scheduling.enabled: Master switch to enable/disable all scheduling (default: true)
+     *
+     * Can be disabled by setting scheduling.enabled=false in application.yml
      */
     @Scheduled(cron = "${scheduling.atmo.cron}", zone = "${scheduling.atmo.timezone}")
     @Async
+    @ConditionalOnProperty(
+        value = "scheduling.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void scheduledDataSync() {
         LocalDateTime startTime = LocalDateTime.now();
         log.info("========================================");

@@ -1,7 +1,7 @@
   <div class="page-header">
     <h1 class="page-title">Forum</h1>
     @if (currentUser){
-      <a routerLink="/forum/add/thread" >+ Nouveau sujet</a>
+      <a routerLink="/forum/thread/new" >+ Nouveau sujet</a>
     }
   </div>
 
@@ -10,7 +10,7 @@
       <h2>CATEGORIES</h2>
       <div class="all-category" (click)="getAllThreads()"><div class="dot"></div>All</div>
       @for (category of categories$ | async ; track category.id){
-      <forum-category [category]="category" (click)="getThreads(category.id)"></forum-category>
+      <app-forum-category [category]="category" (click)="getThreads(category.id)"></app-forum-category>
       }
     </div>
     <div class="threads-container">
@@ -22,13 +22,13 @@
       </div>
       @if ((allThreads$ | async)?.content) {
         @for (thread of (allThreads$ | async)?.content ; track thread.id){
-          <forum-thread [thread]="thread"></forum-thread>
+          <app-forum-thread [thread]="thread"></app-forum-thread>
         }
       }
       @else if (threads$ | async) {
         @for (thread of threads$ | async ; track thread.id){
-          <forum-thread [thread]="thread"></forum-thread>
-        }  
+          <app-forum-thread [thread]="thread"></app-forum-thread>
+        }
       }
       @else {
         <app-loader> </app-loader>

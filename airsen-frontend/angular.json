@@ -39,7 +39,9 @@
             "styles": [
               "@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss",
-              "node_modules/leaflet/dist/leaflet.css"
+              "node_modules/leaflet/dist/leaflet.css",
+              "node_modules/leaflet.markercluster/dist/MarkerCluster.css",
+              "node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
@@ -65,19 +67,18 @@
               "outputHashing": "all"
             },
             "docker": {
-							"budgets": [
-								{
-									"type": "anyComponentStyle",
-									"maximumWarning": "6kb",
-									"maximumError": "8kb"
-								}
-							],
-							"optimization": true,
-							"extractLicenses": true,
-							"outputHashing": "all",
-							"sourceMap": false
-						},
-            
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "8kb"
+                }
+              ],
+              "optimization": true,
+              "extractLicenses": true,
+              "outputHashing": "all",
+              "sourceMap": false
+            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
@@ -127,8 +128,22 @@
             ],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
+  },
+  "cli": {
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   }
 }

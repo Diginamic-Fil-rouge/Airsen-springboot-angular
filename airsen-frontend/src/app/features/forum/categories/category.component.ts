@@ -3,7 +3,7 @@ import { Category } from '../models/category.model';
 
 @Component({
   standalone : false,
-  selector: 'forum-category',
+  selector: 'app-forum-category',
   templateUrl: './category.component.html',
   styleUrls: ['./category.component.scss']
 })

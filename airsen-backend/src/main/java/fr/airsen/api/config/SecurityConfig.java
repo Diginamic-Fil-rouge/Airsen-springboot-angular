@@ -68,14 +68,14 @@ public class SecurityConfig {
 
                 // Other test endpoints (ATMO, Health, etc.) - public for integration testing
                 .requestMatchers("/test/**").permitAll()
-                
-                
+
+
                 // Forum endpoints - VISITOR can read, USER/ADMIN can write
                 .requestMatchers(HttpMethod.GET, "/forum/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/forum/**").hasAnyRole("USER", "ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/forum/**").hasAnyRole("USER", "ADMIN") 
+                .requestMatchers(HttpMethod.PUT, "/forum/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/forum/**").hasAnyRole("USER", "ADMIN")
-                
+
                 // Data endpoints - USER and ADMIN access required
                 .requestMatchers("/regions/**", "/departments/**", "/communes/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/weather/**", "/atmo/**").hasAnyRole("USER", "ADMIN")

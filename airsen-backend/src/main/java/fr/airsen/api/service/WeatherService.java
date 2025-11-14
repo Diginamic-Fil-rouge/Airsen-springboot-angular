@@ -1,22 +1,19 @@
 package fr.airsen.api.service;
 
-import fr.airsen.api.dto.response.NearestWeatherResult;
-import fr.airsen.api.dto.response.WeatherResponse;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.WeatherData;
-import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.external.client.InseeApiClient;
 import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoCurrentResponse;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoForecastResponse;
-import fr.airsen.api.mapper.WeatherMapper;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.repository.WeatherDataRepository;
-import fr.airsen.api.service.cacheData.SmartCacheService;
 import fr.airsen.api.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +25,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-
+/**
+ * Service for integrating weather data from Open-Meteo API.
+ *
+ * Uses INSEE API to get commune coordinates and Open-Meteo API for weather data.
+ * Handles data transformation, validation, and persistence for weather measurements.
+ */
 @Service
 @Transactional
 public class WeatherService {
@@ -39,41 +41,40 @@ public class WeatherService {
     private final InseeApiClient inseeApiClient;
     private final WeatherDataRepository weatherDataRepository;
     private final CommuneRepository communeRepository;
-    private final GeoDistanceService geoDistanceService;
-    private final SmartCacheService smartCacheService;
-    private final WeatherMapper weatherMapper;
 
     public WeatherService(OpenMeteoApiClient openMeteoApiClient,
                          InseeApiClient inseeApiClient,
                          WeatherDataRepository weatherDataRepository,
-                         CommuneRepository communeRepository,
-                         GeoDistanceService geoDistanceService,
-                         SmartCacheService smartCacheService,
-                         WeatherMapper weatherMapper) {
+                         CommuneRepository communeRepository) {
         this.openMeteoApiClient = openMeteoApiClient;
         this.inseeApiClient = inseeApiClient;
         this.weatherDataRepository = weatherDataRepository;
         this.communeRepository = communeRepository;
-        this.geoDistanceService = geoDistanceService;
-        this.smartCacheService = smartCacheService;
-        this.weatherMapper = weatherMapper;
     }
 
     /**
      * Updates weather data for all tracked communes.
      *
-     * Runs daily at 00:30 (configurable via scheduling.weather.cron property).
-     * Default: 00:30 Europe/Paris timezone (staggered 30 minutes after ATMO sync).
+     * Runs daily at 10:30 AM (configurable via scheduling.weather.cron property).
+     * Default: 10:30 AM Europe/Paris timezone (staggered 30 minutes after ATMO sync).
      *
      * Configuration:
-     * - scheduling.weather.cron: Cron expression (default: 0 30 0 * * *)
+     * - scheduling.weather.cron: Cron expression (default: 0 30 10 * * *)
      * - scheduling.weather.timezone: Timezone (default: Europe/Paris)
+     * - scheduling.enabled: Master switch to enable/disable all scheduling (default: true)
      *
      * Scheduler Integration:
      * Uses reactive Flux to process all communes in parallel with error handling.
      * The reactive chain is subscribed to immediately to ensure the scheduler task completes.
+     *
+     * Can be disabled by setting scheduling.enabled=false in application.yml
      */
     @Scheduled(cron = "${scheduling.weather.cron}", zone = "${scheduling.weather.timezone}")
+    @ConditionalOnProperty(
+        value = "scheduling.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+    )
     public void updateAllWeatherData() {
         LocalDateTime startTime = LocalDateTime.now();
         log.info("========================================");
@@ -151,93 +152,57 @@ public class WeatherService {
     }
 
     /**
-     * Gets current weather response for a commune with smart caching and geodistance fallback.
-     *
-     * Cache-Aware Data Retrieval Strategy:
-     * 1. Check SmartCache first (cache key: "weather:" + inseeCode)
-     * 2. If cache miss or stale, execute fetchWeatherWithFallback()
-     * 3. Cache result with 6-hour TTL (ON_DEMAND_FETCH)
-     *
-     * Fallback Strategy (preserved as-is):
-     * 1. Query database for recent data from requested commune
-     * 2. If no direct data exists, attempt geodistance fallback within 20km
-     * 3. Return WeatherResponse with proper DataSource metadata (DIRECT/ESTIMATED)
+     * Gets current weather data for a commune (cached for 30 minutes).
      *
      * @param communeInseeCode INSEE code of the commune
-     * @return WeatherResponse containing weather data with source transparency
-     * @throws ResourceNotFoundException if no weather data within 20km threshold
+     * @return Mono<WeatherData> containing current weather data
      */
-    @Transactional(readOnly = true)
-    public WeatherResponse getCurrentWeatherForCommune(String communeInseeCode) {
-        log.debug("Fetching weather for commune: {}", communeInseeCode);
+    @Cacheable(value = "weather", key = "#communeInseeCode", unless = "#result == null")
+    public Mono<WeatherData> getCurrentWeatherForCommune(String communeInseeCode) {
+        log.info("Cache miss - Fetching weather data from Open-Meteo API for INSEE code: {}", communeInseeCode);
 
-        String cacheKey = "weather:" + communeInseeCode;
+        // Try to get recent data from database first
+        Optional<WeatherData> existingOpt = weatherDataRepository.getMostRecentWeatherByInseeCode(communeInseeCode);
 
-        return smartCacheService.getOrFetch(
-            cacheKey,
-            WeatherResponse.class,
-            CacheMetadata.DataSource.ON_DEMAND_FETCH,
-            false, // forceRefresh
-            () -> fetchWeatherWithFallback(communeInseeCode)
-        ).getData();
+        if (existingOpt.isPresent()) {
+            WeatherData existing = existingOpt.get();
+            if (existing.getMeasurementDate().isAfter(LocalDate.now().minusDays(1))) {
+                log.debug("Returning recent weather data from database for commune: {}", communeInseeCode);
+                return Mono.just(existing);
+            }
+        }
+
+        // Fetch fresh data if no recent data exists
+        log.info("Fetching fresh weather data for commune: {}", communeInseeCode);
+        return updateWeatherForCommune(communeInseeCode);
     }
 
     /**
-     * Fetches weather data with geodistance fallback logic (extracted from cache wrapper).
-     *
-     * This method preserves the existing 20km Haversine fallback exactly as-is.
-     * Called by SmartCacheService when cache miss occurs or refresh is needed.
-     *
-     * @param communeInseeCode INSEE code of the commune
-     * @return WeatherResponse with proper DataSource metadata
-     * @throws ResourceNotFoundException if no weather data within 20km threshold
-     */
-    private WeatherResponse fetchWeatherWithFallback(String communeInseeCode) {
-        log.debug("Cache miss or refresh needed, fetching weather from database");
-
-        // Try direct database query
-        Optional<WeatherData> directData = weatherDataRepository
-            .getMostRecentWeatherByInseeCode(communeInseeCode);
-
-        if (directData.isPresent()) {
-            log.debug("Found direct weather data for commune: {}", communeInseeCode);
-            return weatherMapper.toDirectResponse(directData.get());
-        }
-
-        // Geodistance fallback (20km threshold) - PRESERVED AS-IS
-        log.debug("No direct data, attempting geodistance fallback within 20km");
-        Optional<NearestWeatherResult> nearestData = geoDistanceService
-            .findNearestCommuneWithWeather(communeInseeCode, 20.0);
-
-        if (nearestData.isPresent()) {
-            log.info("Using estimated weather from {} ({} km away)",
-                     nearestData.get().communeName(),
-                     nearestData.get().distanceKm());
-            return weatherMapper.toEstimatedResponse(nearestData.get());
-        }
-
-        throw new ResourceNotFoundException(
-            "No weather data within 20km for commune: " + communeInseeCode
-        );
-    }
-
-    /**
-     * Evicts weather cache for specific commune using SmartCacheService.
+     * Evicts weather cache for specific commune.
      *
      * @param communeInseeCode INSEE code of the commune
      */
+    @CacheEvict(value = "weather", key = "#communeInseeCode")
     public void evictWeatherCache(String communeInseeCode) {
-        String cacheKey = "weather:" + communeInseeCode;
-        smartCacheService.invalidate(cacheKey);
         log.info("Evicted weather cache for INSEE code: {}", communeInseeCode);
     }
 
     /**
-     * Clears all weather cache using SmartCacheService.
+     * Clears all weather cache.
      */
+    @CacheEvict(value = "weather", allEntries = true)
     public void evictAllWeatherCache() {
-        smartCacheService.clearAll();
         log.info("Cleared all weather cache");
+    }
+
+    /**
+     * Gets current weather data for a commune (alias for backward compatibility).
+     *
+     * @param communeInseeCode INSEE code of the commune
+     * @return Mono<WeatherData> containing current weather data
+     */
+    public Mono<WeatherData> getCurrentWeather(String communeInseeCode) {
+        return getCurrentWeatherForCommune(communeInseeCode);
     }
 
     /**
@@ -282,8 +247,6 @@ public class WeatherService {
 
                                 if (tempMax != null && tempMin != null) {
                                     weatherData.setTemperature((tempMax + tempMin) / 2);
-                                    weatherData.setMaxTemperature(tempMax);
-                                    weatherData.setMinTemperature(tempMin);
                                 }
 
                                 // Set wind speed
@@ -297,8 +260,8 @@ public class WeatherService {
                                 }
 
                                 // Note: humidity and wind direction are not in daily forecast data
-                                weatherData.setHumidity(0.0);
-                                weatherData.setWindDirection(0.0);
+                                weatherData.setHumidity(0);
+                                weatherData.setWindDirection(0);
 
                                 return weatherData;
                             });
@@ -374,6 +337,21 @@ public class WeatherService {
         return forceUpdateWeatherForCommune(communeInseeCode);
     }
 
+    /**
+     * Gets weather data for multiple communes in a region.
+     *
+     * @param regionCode INSEE region code
+     * @return Flux<WeatherData> containing weather data for all communes in the region
+     */
+    public Flux<WeatherData> getRegionWeatherData(String regionCode) {
+        log.info("Fetching weather data for all communes in region: {}", regionCode);
+
+        List<Commune> communes = communeRepository.findByRegionCode(regionCode);
+
+        return Flux.fromIterable(communes)
+            .flatMap(commune -> getCurrentWeather(commune.getInseeCode()))
+            .doOnComplete(() -> log.info("Completed weather data fetch for region: {}", regionCode));
+    }
 
     /**
      * Gets coordinates for a commune with fallback mechanism.
@@ -433,10 +411,18 @@ public class WeatherService {
 
         if (response.current() != null) {
             weatherData.setTemperature(response.current().temperature() != null ? response.current().temperature() : 0.0);
-            weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity().doubleValue() : 0.0);
+            weatherData.setHumidity(response.current().humidity() != null ? response.current().humidity() : 0);
             weatherData.setWindSpeed(response.current().windSpeed() != null ? response.current().windSpeed() : 0.0);
-            weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection().doubleValue() : 0.0);
+            weatherData.setWindDirection(response.current().windDirection() != null ? response.current().windDirection() : 0);
             weatherData.setWeatherCode(response.current().weatherCode() != null ? response.current().weatherCode() : 0);
+            weatherData.setApparentTemperature(response.current().apparentTemperature());
+            weatherData.setPrecipitation(response.current().precipitation());
+            weatherData.setRain(response.current().rain());
+            weatherData.setShowers(response.current().showers());
+            weatherData.setSnowfall(response.current().snowfall());
+            weatherData.setCloudCover(response.current().cloudCover());
+            weatherData.setWindGusts(response.current().windGusts());
+            weatherData.setPressureMsl(response.current().pressureMsl());
         }
 
         return weatherData;
@@ -462,39 +448,7 @@ public class WeatherService {
         weatherData.setCommune(commune);
         weatherData.setMeasurementDate(date);
         weatherData.setTemperature((tempMax + tempMin) / 2); // Average temperature
-        weatherData.setMaxTemperature(tempMax);
-        weatherData.setMinTemperature(tempMin);
 
         return weatherData;
     }
-
-    /**
-     * Converts NearestWeatherResult to WeatherData entity.
-     *
-     * Used when returning estimated weather data from nearest commune.
-     * The returned entity represents data from the nearest commune,
-     * not the originally requested commune.
-     *
-     * @param requestedCommuneInseeCode INSEE code of requested commune
-     * @param nearestResult Weather result from nearest commune
-     * @return WeatherData entity with estimated data
-     */
-    private WeatherData convertNearestResultToWeatherData(String requestedCommuneInseeCode,
-                                                          NearestWeatherResult nearestResult) {
-        Commune estimatedCommune = communeRepository.findByInseeCode(requestedCommuneInseeCode)
-            .orElseThrow(() -> new ResourceNotFoundException("Commune not found: " + requestedCommuneInseeCode));
-
-        WeatherData weatherData = new WeatherData();
-        weatherData.setCommune(estimatedCommune);
-        weatherData.setMeasurementDate(nearestResult.measurementDate());
-        weatherData.setCreatedAt(LocalDate.now());
-        weatherData.setTemperature(nearestResult.temperature() != null ? nearestResult.temperature() : 0.0);
-        weatherData.setHumidity(nearestResult.humidity() != null ? nearestResult.humidity().doubleValue() : 0.0);
-        weatherData.setWindSpeed(nearestResult.windSpeed() != null ? nearestResult.windSpeed() : 0.0);
-        weatherData.setWindDirection(nearestResult.windDirection() != null ? nearestResult.windDirection().doubleValue() : 0.0);
-        weatherData.setWeatherCode(nearestResult.weatherCode());
-
-        return weatherData;
-    }
-
 }

@@ -1,5 +1,6 @@
 import { Component, input, inject, Output, Input } from '@angular/core';
 import { Thread } from '../../models/thread.model';
+import { Message } from '../../models/message.model';
 import { MessageService } from '../../services/message.service'
 import { EventEmitter } from '@angular/core';
 
@@ -30,7 +31,7 @@ export class AddMessageComponent {
 
     @Output() newMessageEvent = new EventEmitter<number>();
 
-    messageService = inject(MessageService);
+    _messageService = inject(MessageService);
 
     /**
      * Creates a new message with the given content for the thread with the given id.
@@ -39,12 +40,12 @@ export class AddMessageComponent {
      */
     createMessage() {
         if (this.thread && this.content) {
-            this.messageService.addMessageToThread(this.thread()?.id, { content: this.content }).subscribe({
-                next: (message) => {
+            this._messageService.addMessageToThread(this.thread()?.id, { content: this.content }).subscribe({
+                next: (message: Message) => {
                     this.content = '';
                     this.emitThreadInfos(this.thread()?.id);
                 },
-                error: (error) => {
+                error: (error: Error) => {
                     console.error('Error creating message:', error);
                 }
             });

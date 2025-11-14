@@ -43,6 +43,14 @@ public record CommuneDetailResponse(
         Integer windDirection,
         Integer weatherCode,
         String weatherDescription,
+        Double apparentTemperature,
+        Double precipitation,
+        Double rain,
+        Double showers,
+        Double snowfall,
+        Integer cloudCover,
+        Double windGusts,
+        Double pressureMsl,
         String timezone,
         LocalDateTime timestamp
     ) {}

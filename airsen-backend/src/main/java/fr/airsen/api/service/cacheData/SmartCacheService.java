@@ -349,10 +349,51 @@ public class SmartCacheService {
     }
 
     /**
+     * Clear all cache entries matching a specific prefix.
+     *
+     * This method is used for targeted cache eviction, such as clearing all weather
+     * or air quality caches after scheduled updates. More efficient than clearAll()
+     * and safer than invalidating individual keys when multiple related entries need eviction.
+     *
+     * @param prefix The cache key prefix to match (e.g., "weather:", "air-quality:")
+     * @return The number of cache entries evicted
+     */
+    public int clearCacheByPrefix(String prefix) {
+        try {
+            String fullPattern = CACHE_PREFIX + prefix + "*";
+            java.util.Set<String> keys = redisTemplate.keys(fullPattern);
+
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+                int evicted = keys.size();
+                log.info("Cleared {} cache entries with prefix: {}", evicted, prefix);
+
+                meterRegistry.counter("cache.operations",
+                        "type", "clear-by-prefix",
+                        "prefix", prefix,
+                        "status", "success").increment();
+
+                return evicted;
+            }
+
+            log.debug("No cache entries found for prefix: {}", prefix);
+            return 0;
+
+        } catch (Exception e) {
+            log.error("Failed to clear cache by prefix: {}", prefix, e);
+            meterRegistry.counter("cache.operations",
+                    "type", "clear-by-prefix",
+                    "prefix", prefix,
+                    "status", "error").increment();
+            return 0;
+        }
+    }
+
+    /**
      * Clear all cache entries (use with caution).
      *
      * Useful for testing and maintenance operations.
-     * In production, prefer invalidate() for specific keys.
+     * In production, prefer invalidate() for specific keys or clearCacheByPrefix() for targeted eviction.
      */
     public void clearAll() {
         try {

@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.beans.TypeMismatchException;
+import jakarta.validation.ConstraintViolationException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import fr.airsen.api.dto.response.ErrorResponse;
 
 /** Weather exceptions */
@@ -26,20 +28,20 @@ import fr.airsen.api.exception.AirQualityDataNotFoundException;
 
 /**
  * Global exception handler for the Airsen API.
- * 
+ *
  * This component provides centralized exception handling across all controllers
  * in the application. It ensures consistent error response formats and proper
  * HTTP status codes for different types of exceptions, particularly focusing
  * on validation errors and format issues that should return 400 Bad Request
  * instead of 401 Unauthorized.
- * 
+ *
  * Key Responsibilities:
  * - Handle Bean Validation errors (@Valid annotation failures)
  * - Process malformed JSON and request body parsing errors
  * - Provide consistent error response format across the API
  * - Log exceptions appropriately for monitoring and debugging
  * - Return proper HTTP status codes for better client error handling
- * 
+ *
  * Error Response Format:
  * - success: false for all error responses
  * - message: Human-readable error description
@@ -54,11 +56,11 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles Bean Validation errors from @Valid annotations.
-     * 
+     *
      * This method is triggered when request DTOs fail validation constraints
      * (e.g., @NotBlank, @Email, @Size annotations). It processes all field errors
      * and returns a 400 Bad Request response with detailed validation messages.
-     * 
+     *
      * @param ex MethodArgumentNotValidException containing validation errors
      * @param request WebRequest for additional context
      * @return ResponseEntity with 400 status and validation error details
@@ -66,8 +68,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex, WebRequest request) {
-        
-        logger.debug("Validation error for request {}: {}", 
+
+        logger.debug("Validation error for request {}: {}",
                     request.getDescription(false), ex.getMessage());
 
         // Extract field validation errors
@@ -76,7 +78,7 @@ public class GlobalExceptionHandler {
             Map<String, String> fieldError = new HashMap<>();
             fieldError.put("field", error.getField());
             fieldError.put("message", error.getDefaultMessage());
-            fieldError.put("rejectedValue", error.getRejectedValue() != null ? 
+            fieldError.put("rejectedValue", error.getRejectedValue() != null ?
                           error.getRejectedValue().toString() : "null");
             fieldErrors.add(fieldError);
         }
@@ -93,16 +95,75 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles constraint violations from query parameters and path variables.
+     *
+     * This method is triggered when validation constraints on @RequestParam or @PathVariable
+     * fail (e.g., @Pattern, @Min, @Max, @NotEmpty annotations). It extracts field-level
+     * validation errors and returns a 400 Bad Request response with detailed messages.
+     *
+     * Common scenarios:
+     * - /api/v1/communes/search?query=P (query too short, min 2 characters)
+     * - /api/v1/weather/forecast/75056?days=20 (days exceeds max of 16)
+     *
+     * @param ex ConstraintViolationException containing constraint violations
+     * @param request WebRequest for additional context
+     * @return ResponseEntity with 400 status and detailed validation error messages
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolationException(
+            ConstraintViolationException ex, WebRequest request) {
+
+        logger.debug("Constraint violation for request {}: {}",
+                    request.getDescription(false), ex.getMessage());
+
+        // Extract field-level constraint violations
+        List<Map<String, String>> violations = ex.getConstraintViolations().stream()
+            .map(violation -> {
+                Map<String, String> error = new HashMap<>();
+
+                // Extract field name from property path (e.g., "getWeatherForecast.days" -> "days")
+                String propertyPath = violation.getPropertyPath().toString();
+                String fieldName = propertyPath.contains(".")
+                    ? propertyPath.substring(propertyPath.lastIndexOf('.') + 1)
+                    : propertyPath;
+
+                error.put("field", fieldName);
+                error.put("message", violation.getMessage());
+                error.put("rejectedValue", violation.getInvalidValue() != null
+                    ? violation.getInvalidValue().toString()
+                    : "null");
+
+                return error;
+            })
+            .collect(Collectors.toList());
+
+        // Create consolidated error message
+        String errorMessage = violations.stream()
+            .map(v -> v.get("field") + ": " + v.get("message"))
+            .collect(Collectors.joining(", "));
+
+        // Create error response
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", "Constraint validation failed - " + errorMessage);
+        errorResponse.put("code", "CONSTRAINT_VIOLATION");
+        errorResponse.put("timestamp", LocalDateTime.now());
+        errorResponse.put("details", violations);
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
      * Handles parameter type mismatch errors from @PathVariable and @RequestParam.
-     * 
+     *
      * This method is triggered when URL path variables or request parameters cannot
      * be converted to the expected type (e.g., "abc" cannot be converted to Long).
      * It returns a 400 Bad Request response with a clear parameter error message.
-     * 
+     *
      * Common scenarios:
      * - /api/v1/notifications/abc/read (abc cannot be converted to Long)
      * - /api/v1/categories/invalid-id (invalid-id cannot be converted to Long)
-     * 
+     *
      * @param ex MethodArgumentTypeMismatchException containing parameter conversion error
      * @param request WebRequest for additional context
      * @return ResponseEntity with 400 status and parameter error message
@@ -110,14 +171,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleTypeMismatchException(
             MethodArgumentTypeMismatchException ex, WebRequest request) {
-        
-        logger.debug("Parameter type mismatch for request {}: {}", 
+
+        logger.debug("Parameter type mismatch for request {}: {}",
                     request.getDescription(false), ex.getMessage());
 
         // Extract parameter details
         String parameterName = ex.getName();
         Object parameterValue = ex.getValue();
-        String requiredType = ex.getRequiredType() != null ? 
+        String requiredType = ex.getRequiredType() != null ?
                              ex.getRequiredType().getSimpleName() : "unknown";
 
         // Create descriptive error message
@@ -134,7 +195,7 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", errorMessage);
         errorResponse.put("code", "INVALID_PARAMETER_TYPE");
         errorResponse.put("timestamp", LocalDateTime.now());
-        
+
         // Add additional details for debugging
         Map<String, String> details = new HashMap<>();
         details.put("parameter", parameterName);
@@ -147,11 +208,11 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles general type mismatch errors as fallback for parameter conversion issues.
-     * 
+     *
      * This method catches TypeMismatchException instances that aren't caught by the more
      * specific MethodArgumentTypeMismatchException handler. It provides a fallback for
      * various parameter conversion errors.
-     * 
+     *
      * @param ex TypeMismatchException containing parameter conversion error
      * @param request WebRequest for additional context
      * @return ResponseEntity with 400 status and parameter error message
@@ -159,15 +220,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TypeMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleGeneralTypeMismatchException(
             TypeMismatchException ex, WebRequest request) {
-        
-        logger.debug("General type mismatch for request {}: {}", 
+
+        logger.debug("General type mismatch for request {}: {}",
                     request.getDescription(false), ex.getMessage());
 
         // Extract error information
         String errorMessage = "Invalid parameter format";
         Object value = ex.getValue();
         Class<?> requiredType = ex.getRequiredType();
-        
+
         if (value != null && requiredType != null) {
             errorMessage = String.format(
                 "Cannot convert value '%s' to required type %s",
@@ -182,7 +243,7 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", errorMessage);
         errorResponse.put("code", "PARAMETER_TYPE_MISMATCH");
         errorResponse.put("timestamp", LocalDateTime.now());
-        
+
         // Add additional details
         Map<String, String> details = new HashMap<>();
         if (value != null) {
@@ -198,11 +259,11 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles malformed JSON and request body parsing errors.
-     * 
+     *
      * This method is triggered when the request body cannot be parsed as valid JSON
      * or when JSON structure doesn't match expected DTO format. It returns a 400
      * Bad Request response with a clear format error message.
-     * 
+     *
      * @param ex HttpMessageNotReadableException containing parsing error
      * @param request WebRequest for additional context
      * @return ResponseEntity with 400 status and format error message
@@ -210,14 +271,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, WebRequest request) {
-        
-        logger.debug("JSON parsing error for request {}: {}", 
+
+        logger.debug("JSON parsing error for request {}: {}",
                     request.getDescription(false), ex.getMessage());
 
         // Determine specific error message based on exception details
         String errorMessage = "Invalid JSON format";
         String errorCode = "INVALID_JSON";
-        
+
         if (ex.getMessage() != null) {
             String message = ex.getMessage().toLowerCase();
             if (message.contains("unexpected end")) {
@@ -244,11 +305,11 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles illegal argument exceptions from service layer.
-     * 
+     *
      * This method catches IllegalArgumentException instances thrown by service
      * methods when business rule validation fails. It returns a 400 Bad Request
      * response with the specific error message.
-     * 
+     *
      * @param ex IllegalArgumentException containing business rule error
      * @param request WebRequest for additional context
      * @return ResponseEntity with 400 status and business rule error message
@@ -256,8 +317,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
             IllegalArgumentException ex, WebRequest request) {
-        
-        logger.debug("Business rule validation error for request {}: {}", 
+
+        logger.debug("Business rule validation error for request {}: {}",
                     request.getDescription(false), ex.getMessage());
 
         // Create error response
@@ -272,11 +333,11 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles runtime exceptions from service layer.
-     * 
+     *
      * This method catches RuntimeException instances that represent application
      * errors (not system errors). It determines appropriate HTTP status codes
      * based on exception message content.
-     * 
+     *
      * @param ex RuntimeException containing application error
      * @param request WebRequest for additional context
      * @return ResponseEntity with appropriate status and error message
@@ -284,8 +345,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(
             RuntimeException ex, WebRequest request) {
-        
-        logger.warn("Runtime error for request {}: {}", 
+
+        logger.warn("Runtime error for request {}: {}",
                    request.getDescription(false), ex.getMessage());
 
         // Determine HTTP status based on exception message
@@ -319,11 +380,11 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles generic exceptions as fallback.
-     * 
+     *
      * This method catches any unexpected exceptions that aren't handled by
      * more specific handlers. It returns a 500 Internal Server Error response
      * while logging the full exception for debugging.
-     * 
+     *
      * @param ex Exception containing unexpected error
      * @param request WebRequest for additional context
      * @return ResponseEntity with 500 status and generic error message
@@ -331,8 +392,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(
             Exception ex, WebRequest request) {
-        
-        logger.error("Unexpected error for request {}: {}", 
+
+        logger.error("Unexpected error for request {}: {}",
                     request.getDescription(false), ex.getMessage(), ex);
 
         // Create generic error response
@@ -477,7 +538,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Creates a standardized error response map.
-     * 
+     *
      * @param message error message
      * @param code error code
      * @param status HTTP status

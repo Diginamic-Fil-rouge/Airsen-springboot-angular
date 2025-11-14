@@ -3,7 +3,7 @@ import { Thread } from '../models/thread.model';
 import { Router } from '@angular/router';
 @Component({
     standalone : false,
-    selector: 'forum-thread',
+    selector: 'app-forum-thread',
     templateUrl: './thread.component.html',
     styleUrls: ['./thread.component.scss']
 })

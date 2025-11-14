@@ -1,0 +1,40 @@
+<div class="trend-chart-container">
+  <div class="chart-header">
+    <h3 class="chart-title">
+      {{
+      mode === "aqi"
+      ? "Tendance AQI - 24 dernières heures"
+      : "Tendance Température - 24 dernières heures"
+      }}
+    </h3>
+
+    <mat-button-toggle-group [(value)]="mode" (change)="onModeChange()" aria-label="Type de données"
+      class="mode-toggle">
+      <mat-button-toggle value="aqi">AQI</mat-button-toggle>
+      <mat-button-toggle value="temperature">Température</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement des données...</p>
+  </div>
+
+  <div *ngIf="hasError && !isLoading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="retryLoad()">Réessayer</button>
+  </div>
+
+  <div *ngIf="!isLoading && !hasError" class="chart-wrapper">
+    <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="lineChartType"
+      [attr.aria-label]="'Graphique de tendance des 24 dernières heures'"></canvas>
+  </div>
+
+  <div class="chart-footer" *ngIf="!isLoading && !hasError">
+    <p class="chart-info">
+      <mat-icon>info_outline</mat-icon>
+      <span>Données mesurées toutes les heures</span>
+    </p>
+  </div>
+</div>

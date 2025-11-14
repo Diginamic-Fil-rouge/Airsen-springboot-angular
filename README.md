@@ -51,7 +51,7 @@ cd Airsen-springboot-angular
 
 ### 2. Configure Environment
 
-Create `.env.local` file in project root:
+Create `.env.dev` file in project root:
 
 ```env
 # Database
@@ -97,13 +97,13 @@ Choose the profile matching your needs:
 ```bash
 # Development Mode
 # Start all dev services with hot reload
-docker-compose --profile dev up
+docker-compose --env-file .env.dev --profile dev up
 
 # Start specific services
-docker-compose --profile dev up api-dev web-dev mariadb redis
+docker-compose --env-file .env.dev --profile dev up api-dev web-dev mariadb redis
 
 # With dev tools (Adminer, Redis Commander)
-docker-compose --profile dev up
+docker-compose --env-file .env.dev --profile dev up
 ```
 ```bash
 # Production Mode
@@ -199,7 +199,7 @@ docker-compose exec -T mariadb mariadb -u airsen_dev -pdev_password airsen_dev <
 
 # Reset database (deletes all data!)
 docker-compose down -v
-docker-compose --env-file .env.local --profile backend up -d
+docker-compose --env-file .env.dev --profile backend up -d
 ```
 
 ## Redis Commands
@@ -252,7 +252,7 @@ BACKEND_PORT=8081
 
 # Restart
 docker-compose down
-docker-compose --env-file .env.local --profile backend up -d
+docker-compose --env-file .env.dev --profile backend up -d
 ```
 
 ### Database Issues

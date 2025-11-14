@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
-import { AuthUser } from '@/auth/models/auth.model';
+import { Injectable } from "@angular/core";
+import { AuthUser } from "@/auth/models/auth.model";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class StorageService {
-  private readonly USER_KEY = 'airsen_user';
-  private readonly RETURN_URL_KEY = 'airsen_return_url';
+  private readonly USER_KEY = "airsen_user";
+  private readonly RETURN_URL_KEY = "airsen_return_url";
 
   constructor() {}
 
@@ -17,7 +17,7 @@ export class StorageService {
     try {
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     } catch (error) {
-      console.error('Failed to store user data:', error);
+      console.error("Failed to store user data:", error);
     }
   }
 
@@ -29,7 +29,7 @@ export class StorageService {
       const userStr = localStorage.getItem(this.USER_KEY);
       return userStr ? JSON.parse(userStr) : null;
     } catch (error) {
-      console.error('Failed to retrieve user data:', error);
+      console.error("Failed to retrieve user data:", error);
       return null;
     }
   }
@@ -41,7 +41,7 @@ export class StorageService {
     try {
       localStorage.removeItem(this.USER_KEY);
     } catch (error) {
-      console.error('Failed to clear user data:', error);
+      console.error("Failed to clear user data:", error);
     }
   }
 
@@ -52,7 +52,7 @@ export class StorageService {
     try {
       localStorage.setItem(this.RETURN_URL_KEY, url);
     } catch (error) {
-      console.error('Failed to store return URL:', error);
+      console.error("Failed to store return URL:", error);
     }
   }
 
@@ -63,7 +63,7 @@ export class StorageService {
     try {
       return localStorage.getItem(this.RETURN_URL_KEY);
     } catch (error) {
-      console.error('Failed to retrieve return URL:', error);
+      console.error("Failed to retrieve return URL:", error);
       return null;
     }
   }
@@ -75,7 +75,7 @@ export class StorageService {
     try {
       localStorage.removeItem(this.RETURN_URL_KEY);
     } catch (error) {
-      console.error('Failed to clear return URL:', error);
+      console.error("Failed to clear return URL:", error);
     }
   }
 
@@ -92,7 +92,7 @@ export class StorageService {
    */
   isStorageAvailable(): boolean {
     try {
-      const test = '__storage_test__';
+      const test = "__storage_test__";
       localStorage.setItem(test, test);
       localStorage.removeItem(test);
       return true;
@@ -107,19 +107,19 @@ export class StorageService {
   getStorageInfo(): { used: number; available: boolean } {
     try {
       let used = 0;
-      for (let key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
+      for (const key in localStorage) {
+        if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
           used += localStorage[key].length + key.length;
         }
       }
       return {
         used: used,
-        available: this.isStorageAvailable()
+        available: this.isStorageAvailable(),
       };
     } catch {
       return {
         used: 0,
-        available: false
+        available: false,
       };
     }
   }

@@ -112,9 +112,9 @@ class ExportDataControllerIntegrationTest {
         testWeather.setCommune(testCommune);
         testWeather.setMeasurementDate(LocalDate.now());
         testWeather.setTemperature(22.5);
-        testWeather.setHumidity(65.0);
+        testWeather.setHumidity(65);
         testWeather.setWindSpeed(12.3);
-        testWeather.setWindDirection(180.0);
+        testWeather.setWindDirection(180);
         testWeather.setWeatherCode(1);
         testWeather.setCreatedAt(LocalDate.now());
         testWeather = weatherDataRepository.save(testWeather);

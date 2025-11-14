@@ -20,6 +20,14 @@ import java.time.LocalDate;
  * @param windDirection Wind direction in degrees (0-360)
  * @param weatherCode WMO weather code
  * @param weatherDescription Human-readable weather description
+ * @param apparentTemperature Feels-like temperature in Celsius
+ * @param precipitation Total precipitation in mm
+ * @param rain Rain amount in mm
+ * @param showers Shower intensity in mm
+ * @param snowfall Snowfall amount in cm
+ * @param cloudCover Cloud coverage percentage (0-100%)
+ * @param windGusts Wind gust speed in km/h
+ * @param pressureMsl Mean sea level pressure in hPa
  * @param dataSource Data source indicator (DIRECT, ESTIMATED, NOT_AVAILABLE)
  * @param estimatedFromCommune Name of nearest commune if data is estimated
  * @param distanceKm Distance in kilometers if data is estimated
@@ -36,6 +44,14 @@ public record WeatherResponse(
     Integer windDirection,
     Integer weatherCode,
     String weatherDescription,
+    Double apparentTemperature,
+    Double precipitation,
+    Double rain,
+    Double showers,
+    Double snowfall,
+    Integer cloudCover,
+    Double windGusts,
+    Double pressureMsl,
     DataSource dataSource,
     String estimatedFromCommune,
     Double distanceKm,
@@ -66,7 +82,15 @@ public record WeatherResponse(
             Double windSpeed,
             Integer windDirection,
             Integer weatherCode,
-            String weatherDescription) {
+            String weatherDescription,
+            Double apparentTemperature,
+            Double precipitation,
+            Double rain,
+            Double showers,
+            Double snowfall,
+            Integer cloudCover,
+            Double windGusts,
+            Double pressureMsl) {
         return new WeatherResponse(
             inseeCode,
             communeName,
@@ -77,6 +101,14 @@ public record WeatherResponse(
             windDirection,
             weatherCode,
             weatherDescription,
+            apparentTemperature,
+            precipitation,
+            rain,
+            showers,
+            snowfall,
+            cloudCover,
+            windGusts,
+            pressureMsl,
             DataSource.DIRECT,
             null,
             null,
@@ -96,6 +128,14 @@ public record WeatherResponse(
      * @param windDirection Wind direction from nearest commune
      * @param weatherCode WMO weather code from nearest commune
      * @param weatherDescription Weather description from nearest commune
+     * @param apparentTemperature Apparent temperature from nearest commune
+     * @param precipitation Precipitation from nearest commune
+     * @param rain Rain from nearest commune
+     * @param showers Showers from nearest commune
+     * @param snowfall Snowfall from nearest commune
+     * @param cloudCover Cloud cover from nearest commune
+     * @param windGusts Wind gusts from nearest commune
+     * @param pressureMsl Pressure from nearest commune
      * @param nearestCommuneName Name of commune where data was actually measured
      * @param distanceKm Distance between requested and nearest commune
      */
@@ -109,6 +149,14 @@ public record WeatherResponse(
             Integer windDirection,
             Integer weatherCode,
             String weatherDescription,
+            Double apparentTemperature,
+            Double precipitation,
+            Double rain,
+            Double showers,
+            Double snowfall,
+            Integer cloudCover,
+            Double windGusts,
+            Double pressureMsl,
             String nearestCommuneName,
             Double distanceKm) {
         String qualityNote = String.format(
@@ -125,6 +173,14 @@ public record WeatherResponse(
             windDirection,
             weatherCode,
             weatherDescription,
+            apparentTemperature,
+            precipitation,
+            rain,
+            showers,
+            snowfall,
+            cloudCover,
+            windGusts,
+            pressureMsl,
             DataSource.ESTIMATED,
             nearestCommuneName,
             distanceKm,
@@ -141,6 +197,14 @@ public record WeatherResponse(
         return new WeatherResponse(
             inseeCode,
             communeName,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
             null,
             null,
             null,

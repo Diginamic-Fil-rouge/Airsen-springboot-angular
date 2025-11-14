@@ -1,0 +1,49 @@
+<div
+  class="map-sidebar"
+  [class.desktop]="isDesktop"
+  [class.tablet]="isTablet"
+  [class.mobile]="isMobile"
+  [class.open]="open"
+>
+  <mat-card class="map-sidebar__card">
+    <header class="map-sidebar__toolbar">
+      <button mat-icon-button class="close-btn" *ngIf="!isDesktop" (click)="handleClose()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <section class="map-sidebar__content" *ngIf="commune; else emptyState">
+      <app-location-header [commune]="commune"></app-location-header>
+
+      <app-hero-display
+        [atmoIndex]="commune?.currentAirQuality?.atmoIndex ?? null"
+        [qualifier]="commune?.currentAirQuality?.qualifier || null"
+        [color]="commune?.currentAirQuality?.color || null"
+      ></app-hero-display>
+
+      <app-pollutant-breakdown [pollutants]="commune?.pollutants || null"></app-pollutant-breakdown>
+
+      <app-trend-chart [inseeCode]="commune?.inseeCode || null" mode="aqi"></app-trend-chart>
+
+      <app-map-legend></app-map-legend>
+
+      <button
+        mat-stroked-button
+        color="primary"
+        class="clear-selection-btn"
+        type="button"
+        (click)="handleClearSelection()"
+      >
+        Effacer la sélection
+      </button>
+    </section>
+
+    <ng-template #emptyState>
+      <section class="empty-state">
+        <mat-icon fontIcon="map"></mat-icon>
+        <h3>Aucune commune sélectionnée</h3>
+        <p>Sélectionnez un marqueur sur la carte pour afficher les données détaillées.</p>
+      </section>
+    </ng-template>
+  </mat-card>
+</div>

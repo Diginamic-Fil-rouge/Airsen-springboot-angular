@@ -1,0 +1,60 @@
+<div class="search-bar-container">
+  <!-- Search Input -->
+  <div class="search-card">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-icon matPrefix class="search-icon">search</mat-icon>
+
+      <input type="text" matInput [formControl]="searchControl" [placeholder]="placeholder"
+        aria-label="Recherche de communes françaises" />
+
+      <button mat-icon-button matSuffix type="button" class="action-btn" *ngIf="searchControl.value"
+        (click)="clearSearch()" aria-label="Effacer la recherche">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
+  <!-- Results Dropdown -->
+  <ng-container *ngIf="filteredCommunes$ | async as communes">
+    <div class="results-card"
+      *ngIf="showResults && (communes.length > 0 || isLoading || (hasTyped && communes.length === 0) || searchError)">
+      <!-- Cities Section -->
+      <div class="results-section" *ngIf="communes.length > 0">
+        <div class="results-list">
+          <div class="result-item" *ngFor="let commune of communes" (click)="onCommuneSelected(commune)">
+            <div class="result-left">
+              <div class="result-info">
+                <span class="commune-name">{{ commune.name }}</span>
+                <small class="commune-meta" *ngIf="commune.departmentCode">
+                  {{ getDepartmentName(commune.departmentCode) }} ({{ commune.departmentCode }})
+                </small>
+              </div>
+            </div>
+            <div class="aqi-badge" *ngIf="commune.currentAirQuality?.atmoIndex"
+              [style.background-color]="commune.currentAirQuality?.color">
+              {{ commune.currentAirQuality?.atmoIndex }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Results -->
+      <div class="no-results" *ngIf="communes.length === 0 && hasTyped && !isLoading && !searchError">
+        <mat-icon>search_off</mat-icon>
+        <p>Aucune commune trouvée</p>
+      </div>
+
+      <!-- Search Error -->
+      <div class="search-error" *ngIf="searchError">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ searchError }}</p>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-results" *ngIf="isLoading">
+        <mat-spinner diameter="32"></mat-spinner>
+        <p>Recherche en cours...</p>
+      </div>
+    </div>
+  </ng-container>
+</div>

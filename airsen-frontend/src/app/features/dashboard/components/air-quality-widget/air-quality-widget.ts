@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, Input, OnInit, OnDestroy } from '@angular/core';
-import { Subject, takeUntil, catchError, of } from 'rxjs';
-import { AirQualityService } from '@/features/map/services/air-quality.service';
+import { Component, ChangeDetectionStrategy, Input, OnInit, OnDestroy } from "@angular/core";
+import { Subject, takeUntil, catchError, of } from "rxjs";
+import { AirQualityService } from "@/features/map/services/air-quality.service";
 
 export interface AirQualityData {
   aqi: number;
@@ -11,11 +11,11 @@ export interface AirQualityData {
 }
 
 @Component({
-  selector: 'app-air-quality-widget',
+  selector: "app-air-quality-widget",
   standalone: false,
-  templateUrl: './air-quality-widget.html',
-  styleUrls: ['./air-quality-widget.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  templateUrl: "./air-quality-widget.html",
+  styleUrls: ["./air-quality-widget.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AirQualityWidgetComponent implements OnInit, OnDestroy {
   @Input() communeCode!: string;
@@ -59,43 +59,44 @@ export class AirQualityWidgetComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
 
-    this.airQualityService.getAirLatestQuality(this.communeCode)
+    this.airQualityService
+      .getAirLatestQuality(this.communeCode)
       .pipe(
         takeUntil(this.destroy$),
         catchError((error) => {
-          console.error('Error loading air quality data:', error);
-          this.error = 'Échec du chargement des données de qualité de l\'air';
+          console.error("Error loading air quality data:", error);
+          this.error = "Échec du chargement des données de qualité de l'air";
           this.isLoading = false;
           return of(null);
         })
       )
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           if (response) {
             this.airQuality = this.processAirQualityData(response);
           }
           this.isLoading = false;
-        }
+        },
       });
   }
 
   private processAirQualityData(response: any): AirQualityData {
     return {
       aqi: response.globalIndex || response.aqi || 0,
-      label: response.globalQuality || response.aqiLabel || 'Unknown',
+      label: response.globalQuality || response.aqiLabel || "Unknown",
       color: response.color || this.getAqiColor(response.globalIndex || response.aqi || 0),
-      commune: response.commune || 'Unknown',
-      timestamp: new Date(response.timestamp || response.measurementDate || Date.now())
+      commune: response.commune || "Unknown",
+      timestamp: new Date(response.timestamp || response.measurementDate || Date.now()),
     };
   }
 
   private getAqiColor(aqi: number): string {
-    if (aqi <= 50) return '#00E400'; // Green - Good
-    if (aqi <= 100) return '#FFFF00'; // Yellow - Moderate
-    if (aqi <= 150) return '#FF7E00'; // Orange - Unhealthy for Sensitive Groups
-    if (aqi <= 200) return '#FF0000'; // Red - Unhealthy
-    if (aqi <= 300) return '#8F3F97'; // Purple - Very Unhealthy
-    return '#7E0023'; // Maroon - Hazardous
+    if (aqi <= 50) return "#00E400"; // Green - Good
+    if (aqi <= 100) return "#FFFF00"; // Yellow - Moderate
+    if (aqi <= 150) return "#FF7E00"; // Orange - Unhealthy for Sensitive Groups
+    if (aqi <= 200) return "#FF0000"; // Red - Unhealthy
+    if (aqi <= 300) return "#8F3F97"; // Purple - Very Unhealthy
+    return "#7E0023"; // Maroon - Hazardous
   }
 
   private setupAutoRefresh(): void {
@@ -108,11 +109,11 @@ export class AirQualityWidgetComponent implements OnInit, OnDestroy {
   }
 
   get aqiColor(): string {
-    return this.airQuality?.color || '#CCCCCC';
+    return this.airQuality?.color || "#CCCCCC";
   }
 
   get aqiLabel(): string {
-    return this.airQuality?.label || 'N/D';
+    return this.airQuality?.label || "N/D";
   }
 
   get aqiValue(): number {
@@ -120,7 +121,7 @@ export class AirQualityWidgetComponent implements OnInit, OnDestroy {
   }
 
   get communeName(): string {
-    return this.airQuality?.commune || 'Inconnu';
+    return this.airQuality?.commune || "Inconnu";
   }
 
   get lastUpdated(): Date {

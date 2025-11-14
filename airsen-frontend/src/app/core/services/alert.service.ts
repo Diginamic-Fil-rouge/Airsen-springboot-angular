@@ -45,7 +45,7 @@ export class AlertService {
    *
    * Backend Endpoint: GET /api/v1/users/{userId}/notifications/recent?limit=N
    */
-  getRecentNotifications(userId: number, limit: number = 5): Observable<CampaignNotification[]> {
+  getRecentNotifications(userId: number, limit = 5): Observable<CampaignNotification[]> {
     const params = new HttpParams().set("limit", limit.toString());
     return this.http.get<CampaignNotification[]>(`${this.apiUrl}/${userId}/notifications/recent`, { params });
   }

@@ -1,5 +1,5 @@
 <div class="page-container">
-    <back-button route="/forum" textContent="Retour au forum"></back-button>
+    <app-back-button route="/forum" textContent="Retour au forum"></app-back-button>
     <h2>Créer une nouvelle discussion</h2>
     @if (errors$.length > 0) {
         @for (error of errors$ ; track $index) {

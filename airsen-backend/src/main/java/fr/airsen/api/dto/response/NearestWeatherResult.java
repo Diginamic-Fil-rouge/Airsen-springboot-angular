@@ -16,6 +16,14 @@ import java.time.LocalDate;
  * @param windSpeed Wind speed in km/h
  * @param windDirection Wind direction in degrees (0-360)
  * @param weatherCode WMO weather code
+ * @param apparentTemperature Apparent temperature in Celsius
+ * @param precipitation Total precipitation in mm
+ * @param rain Rain amount in mm
+ * @param showers Shower intensity in mm
+ * @param snowfall Snowfall amount in cm
+ * @param cloudCover Cloud coverage percentage
+ * @param windGusts Wind gust speed in km/h
+ * @param pressureMsl Mean sea level pressure in hPa
  * @param distanceKm Distance from target commune to this nearest commune
  */
 public record NearestWeatherResult(
@@ -29,6 +37,14 @@ public record NearestWeatherResult(
     Double windSpeed,
     Integer windDirection,
     Integer weatherCode,
+    Double apparentTemperature,
+    Double precipitation,
+    Double rain,
+    Double showers,
+    Double snowfall,
+    Integer cloudCover,
+    Double windGusts,
+    Double pressureMsl,
     Double distanceKm
 ) {
     /**

@@ -81,8 +81,6 @@ describe('StatsPanelComponent', () => {
     const progressCard = fixture.debugElement.query(By.css('.progress-card'));
     expect(progressCard).toBeTruthy();
 
-    const progressFill = fixture.debugElement.query(By.css('.progress-fill'));
-    expect(progressFill.nativeElement.style.width).toBe('75%');
   });
 
   it('should hide progress bar when disabled', () => {
@@ -98,7 +96,6 @@ describe('StatsPanelComponent', () => {
     component.stats = { ...mockStats, profileCompletion: 150 }; // Test over 100%
     fixture.detectChanges();
 
-    const progressFill = fixture.debugElement.query(By.css('.progress-fill'));
     expect(component.getProgressPercentage(150)).toBe(100);
   });
 

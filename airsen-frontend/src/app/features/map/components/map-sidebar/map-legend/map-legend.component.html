@@ -1,0 +1,18 @@
+<div class="map-legend">
+  <div class="legend-header">
+    <span class="legend-title">Échelle ATMO</span>
+  </div>
+  <div class="color-scale">
+    <div class="scale-bar">
+      <div class="scale-segment" [style.backgroundColor]="item.color" *ngFor="let item of legend"></div>
+    </div>
+    <div class="scale-labels">
+      <span class="scale-label">{{ legend[0].min }}</span>
+      <span class="scale-label">{{ legend[1].max }}</span>
+      <span class="scale-label">{{ legend[2].max }}</span>
+      <span class="scale-label">{{ legend[3].max }}</span>
+      <span class="scale-label">{{ legend[4].max }}</span>
+      <span class="scale-label">{{ legend[5].max }}+</span>
+    </div>
+  </div>
+</div>

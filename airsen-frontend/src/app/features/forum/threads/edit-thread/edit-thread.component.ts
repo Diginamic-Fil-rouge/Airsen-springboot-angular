@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ForumService } from '../../services/forum.service';
 import { ThreadService } from '../../services/thread.service';
 import { Observable } from 'rxjs';
@@ -7,12 +7,12 @@ import { Thread } from '../../models/thread.model';
 import { Category } from '../../models/category.model';
 @Component({
     standalone: false,
-    selector: 'forum-edit-thread',
+    selector: 'app-forum-edit-thread',
     templateUrl: './edit-thread.component.html',
     styleUrls: ['./edit-thread.component.scss']
 })
 
-export class EditThreadComponent {
+export class EditThreadComponent implements OnInit {
     activatedRoute = inject(ActivatedRoute);
     service: ThreadService = inject(ThreadService)
     forumService: ForumService = inject(ForumService);
@@ -22,8 +22,8 @@ export class EditThreadComponent {
     thread$!: Observable<Thread | undefined>;
     categories$!: Observable<Category[] | undefined>;
 
-    title: string = '';
-    content: string = '';
+    title = '';
+    content = '';
     categoryId: number | undefined = 0;
 
     errors$: string[] = [];

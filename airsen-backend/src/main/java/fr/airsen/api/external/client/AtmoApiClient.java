@@ -7,6 +7,9 @@ import fr.airsen.api.external.dto.atmo.AtmoAirQualityResponse;
 import fr.airsen.api.external.dto.atmo.AtmoGeoJsonResponse;
 import fr.airsen.api.external.dto.atmo.PollutionEpisodeDTO;
 import fr.airsen.api.external.exception.AtmoApiException;
+import fr.airsen.api.service.ratelimit.RateLimiterService;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +43,12 @@ public class AtmoApiClient {
     private final AtmoApiConfig config;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
-    
+    private final RateLimiterService rateLimiterService;
+    private final CircuitBreaker circuitBreaker;
+
     private static final String JWT_TOKEN_CACHE_KEY = "atmo:jwt:token";
     private static final Duration TOKEN_CACHE_DURATION = Duration.ofHours(24); // Cache token for 24 hour
-    
+
     // In-memory cache as fallback when Redis is unavailable
     private String cachedToken = null;
     private java.time.Instant tokenExpirationTime = null;
@@ -51,10 +56,14 @@ public class AtmoApiClient {
     @Autowired
     public AtmoApiClient(@Qualifier("atmoWebClient") WebClient webClient,
                         AtmoApiConfig config,
-                        @Autowired(required = false) RedisTemplate<String, Object> redisTemplate) {
+                        @Autowired(required = false) RedisTemplate<String, Object> redisTemplate,
+                        RateLimiterService rateLimiterService,
+                        @Qualifier("atmoCircuitBreaker") CircuitBreaker circuitBreaker) {
         this.webClient = webClient;
         this.config = config;
         this.redisTemplate = redisTemplate;
+        this.rateLimiterService = rateLimiterService;
+        this.circuitBreaker = circuitBreaker;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -160,25 +169,31 @@ public class AtmoApiClient {
     @Retryable(value = {AtmoApiException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public Flux<AtmoAirQualityResponse> getCurrentAirQualityIndices() {
         log.info("Fetching current air quality indices from ATMO API with JWT authentication");
-        
-        return getJwtToken()
-            .flatMapMany(token -> webClient
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/api/v2/data/indices/atmo")
-                    .queryParam("format", "geojson")
-                    .queryParam("date", LocalDate.now().minusDays(1).toString())
-                    .build())
-                .header("Authorization", "Bearer " + token)
-                .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response -> 
-                    Mono.error(new AtmoApiException("Client error: " + response.statusCode())))
-                .onStatus(HttpStatusCode::is5xxServerError, response -> 
-                    Mono.error(new AtmoApiException("Server error: " + response.statusCode())))
-                .bodyToMono(AtmoGeoJsonResponse.class)
-                .flatMapMany(geoJson -> Flux.fromIterable(geoJson.features()))
-                .map(feature -> feature.properties())
-                .doOnError(error -> log.error("Failed to fetch air quality indices", error)))
+
+        // Check rate limit before making API call
+        return Mono.fromCallable(() -> {
+                rateLimiterService.tryConsumeAtmo();
+                return true;
+            })
+            .flatMapMany(ignored -> getJwtToken()
+                .flatMapMany(token -> webClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                        .path("/api/v2/data/indices/atmo")
+                        .queryParam("format", "geojson")
+                        .queryParam("date", LocalDate.now().minusDays(1).toString())
+                        .build())
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, response ->
+                        Mono.error(new AtmoApiException("Client error: " + response.statusCode())))
+                    .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        Mono.error(new AtmoApiException("Server error: " + response.statusCode())))
+                    .bodyToMono(AtmoGeoJsonResponse.class)
+                    .flatMapMany(geoJson -> Flux.fromIterable(geoJson.features()))
+                    .map(feature -> feature.properties())
+                    .doOnError(error -> log.error("Failed to fetch air quality indices", error))))
+            .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
             .timeout(Duration.ofMillis(config.getTimeoutMs()));
     }
 
@@ -209,25 +224,31 @@ public class AtmoApiClient {
      * @return Flux containing historical air quality data
      */
     @Retryable(value = {AtmoApiException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public Flux<AtmoAirQualityResponse> getHistoricalAirQuality(String communeInseeCode, 
-                                                               LocalDate startDate, 
+    public Flux<AtmoAirQualityResponse> getHistoricalAirQuality(String communeInseeCode,
+                                                               LocalDate startDate,
                                                                LocalDate endDate) {
-        log.info("Fetching historical air quality data for commune: {} from {} to {}", 
+        log.info("Fetching historical air quality data for commune: {} from {} to {}",
                 communeInseeCode, startDate, endDate);
-        
-        return webClient
-            .get()
-            .uri("/air-quality/historical", builder -> builder
-                .queryParam("commune", communeInseeCode)
-                .queryParam("start_date", startDate.toString())
-                .queryParam("end_date", endDate.toString())
-                .build())
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> 
-                Mono.error(new AtmoApiException("API error: " + response.statusCode())))
-            .bodyToFlux(AtmoAirQualityResponse.class)
-            .doOnError(error -> log.error("Failed to fetch historical air quality for commune: {}", 
-                                        communeInseeCode, error))
+
+        // Check rate limit before making API call
+        return Mono.fromCallable(() -> {
+                rateLimiterService.tryConsumeAtmo();
+                return true;
+            })
+            .flatMapMany(ignored -> webClient
+                .get()
+                .uri("/air-quality/historical", builder -> builder
+                    .queryParam("commune", communeInseeCode)
+                    .queryParam("start_date", startDate.toString())
+                    .queryParam("end_date", endDate.toString())
+                    .build())
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response ->
+                    Mono.error(new AtmoApiException("API error: " + response.statusCode())))
+                .bodyToFlux(AtmoAirQualityResponse.class)
+                .doOnError(error -> log.error("Failed to fetch historical air quality for commune: {}",
+                                            communeInseeCode, error)))
+            .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
             .timeout(Duration.ofMillis(config.getTimeoutMs() * 2));
     }
 
@@ -244,23 +265,29 @@ public class AtmoApiClient {
     @Cacheable(value = "atmo:episodes", unless = "#result == null || #result.isEmpty()")
     public List<PollutionEpisodeDTO> getPollutionEpisodes() {
         log.info("Fetching active pollution episodes from ATMO API");
-        
+
         try {
-            return getJwtToken()
-                .flatMapMany(token -> webClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                        .path("/api/v2/episodes")
-                        .queryParam("isActive", "true")
-                        .queryParam("endDate_gte", LocalDate.now().toString())
-                        .build())
-                    .header("Authorization", "Bearer " + token)
-                    .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, response -> 
-                        Mono.error(new AtmoApiException("Client error: " + response.statusCode())))
-                    .onStatus(HttpStatusCode::is5xxServerError, response -> 
-                        Mono.error(new AtmoApiException("Server error: " + response.statusCode())))
-                    .bodyToFlux(PollutionEpisodeDTO.class))
+            // Check rate limit before making API call
+            return Mono.fromCallable(() -> {
+                    rateLimiterService.tryConsumeAtmo();
+                    return true;
+                })
+                .flatMapMany(ignored -> getJwtToken()
+                    .flatMapMany(token -> webClient
+                        .get()
+                        .uri(uriBuilder -> uriBuilder
+                            .path("/api/v2/episodes")
+                            .queryParam("isActive", "true")
+                            .queryParam("endDate_gte", LocalDate.now().toString())
+                            .build())
+                        .header("Authorization", "Bearer " + token)
+                        .retrieve()
+                        .onStatus(HttpStatusCode::is4xxClientError, response ->
+                            Mono.error(new AtmoApiException("Client error: " + response.statusCode())))
+                        .onStatus(HttpStatusCode::is5xxServerError, response ->
+                            Mono.error(new AtmoApiException("Server error: " + response.statusCode())))
+                        .bodyToFlux(PollutionEpisodeDTO.class)))
+                .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
                 .collectList()
                 .doOnSuccess(episodes -> log.info("Successfully fetched {} pollution episodes", episodes.size()))
                 .doOnError(error -> log.error("Failed to fetch pollution episodes from ATMO API", error))

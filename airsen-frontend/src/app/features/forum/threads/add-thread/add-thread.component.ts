@@ -3,15 +3,15 @@ import { ForumService } from '../../services/forum.service';
 import { Router } from '@angular/router';
 @Component({
     standalone : false,
-    selector: 'forum-add-thread',
+    selector: 'app-forum-add-thread',
     templateUrl: './add-thread.component.html',
     styleUrls: ['./add-thread.component.scss']
 })
 
 export class AddThreadComponent {
-    title: string = '';
-    content: string = '';
-    categoryId: number = 0;
+    title = '';
+    content = '';
+    categoryId = 0;
 
     errors$: string[] = [];
 

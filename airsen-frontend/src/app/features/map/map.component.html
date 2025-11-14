@@ -1,134 +1,48 @@
-<div class="page-container" (click)="closeSearchResults()">
-  <!-- Loading Spinner -->
-  @if (isLoading){
-  <div class="loading-container">
-    <mat-spinner diameter="50"></mat-spinner>
-    <p>Chargement de la carte...</p>
-  </div>
-  }
-  <div class="search-bar">
-    <div class="search-input">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"
-        data-lov-id="src/pages/Map.tsx:57:16"
-        data-lov-name="Search"
-        data-component-path="src/pages/Map.tsx"
-        data-component-line="57"
-        data-component-file="Map.tsx"
-        data-component-name="Search"
-        data-component-content="%7B%22className%22%3A%22absolute%20left-3%20top-1%2F2%20transform%20-translate-y-1%2F2%20text-muted-foreground%20w-4%20h-4%22%7D"
-      >
-        <circle cx="11" cy="11" r="8"></circle>
-        <path d="m21 21-4.3-4.3"></path>
-      </svg>
-      <input
-        type="text"
-        placeholder="Rechercher une ville"
-        [(ngModel)]="searchQuery"
-        (input)="onSearchInput()"
-      />
-    </div>
-    <div
-      class="search-results"
-      style="display: {{ searchResults == null ? 'none' : 'block' }}"
-    >
-      <ul>
-        @for (result of searchResults; track $index){
-        <li (click)="onSearchResultClicked(result)">
-          {{ result.name }} ({{
-            result.departmentCode ||
-              result.department?.code ||
-              result.department?.name ||
-              "N/A"
-          }})
-        </li>
-        }
-      </ul>
-    </div>
-  </div>
-  @if (!isLoading && currentUser){
+<div class="map-page">
+  <div class="map-layout">
+    <app-map-sidebar class="map-layout__sidebar" [class.overlay-mode]="isOverlayMode" [commune]="selectedCommune"
+      [open]="isSidebarOpen" [displayMode]="sidebarDisplayMode" (openChange)="onSidebarOpenChange($event)"
+      (clearSelection)="onSidebarClearSelection()"></app-map-sidebar>
 
-  <!-- Map Content -->
-  <app-map-view
-    (onMarkerClick)="clickEvent($event, 'LATEST')"
-    [communes]="communes"
-    [communeSearched]="communeSearched"
-  ></app-map-view>
-
-  <div class="map-info-card" id="map-datas">
-    @if (communeClicked){
-    <!-- Header Section -->
-    <div class="card-header">
-      <div class="header-top">
-        <h2 class="commune-name">
-          <span class="pin-icon">📍</span>{{ communeClicked.name }}
-        </h2>
-        <!-- Action Buttons Section -->
-        <div class="action-buttons">
-          <app-favorite-button
-            [communeInseeCode]="communeClicked.inseeCode"
-            size="medium">
-          </app-favorite-button>
-          <button
-            class="export-button"
-            title="Exporter les données en PDF"
-            [disabled]="!communeClicked || isExportingPDF"
-            (click)="exportCurrentDataAsPDF()">
-            <mat-icon *ngIf="!isExportingPDF">download</mat-icon>
-            <mat-spinner *ngIf="isExportingPDF" diameter="20"></mat-spinner>
-          </button>
-        </div>
+    <div class="map-layout__canvas">
+      <div class="loading-overlay" *ngIf="isLoading$ | async">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p>Chargement de la carte...</p>
       </div>
-      <p class="commune-population">
-        Population : {{ communeClicked.population | number : '' : 'fr-FR' }} habitants
-      </p>
-      <p class="last-updated" *ngIf="airQualityClicked?.lastUpdated || weatherClicked?.measurementDate">
-        Dernière mise à jour : {{ (airQualityClicked?.lastUpdated || weatherClicked?.measurementDate) | date : 'dd/MM/yyyy' }}
-      </p>
-    </div>
 
-    <!-- Data Section -->
-    @if (!isLoadingDatas){
-    <app-map-data
-      [airQualityClicked]="airQualityClicked"
-      [weatherClicked]="weatherClicked"
-    ></app-map-data>
-    } @else if (isLoadingDatas) {
-    <div class="loading-data">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>Chargement des données...</p>
-    </div>
-    }
-    } @else {
-    <div class="empty-state">
-      <mat-icon>location_on</mat-icon>
-      <p>Cliquez sur une commune pour afficher ses données environnementales</p>
-    </div>
-    }
-  </div>
-  }
+      <div class="error-overlay" *ngIf="error$ | async as error">
+        <mat-card class="error-content">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h2>Erreur de chargement</h2>
+          <p class="error-message">{{ error }}</p>
+          <div class="error-actions">
+            <button mat-raised-button color="primary" (click)="retryLoadCommunes()">
+              <mat-icon>refresh</mat-icon>
+              Réessayer
+            </button>
+          </div>
+        </mat-card>
+      </div>
 
-  <!-- Error State -->
-  @if (!isLoading && !currentUser){
-  <div class="error-container">
-    <mat-icon>error_outline</mat-icon>
-    <h2>Impossible de charger la carte</h2>
-    <p>
-      Cela peut être dû à un dysfonctionnement interne ou une erreur de
-      connexion
-    </p>
-    <button mat-raised-button color="primary" (click)="logout()">
-      Retour au Login
-    </button>
+      <app-leaflet-map *ngIf="!(isLoading$ | async) && !(error$ | async)" [communes]="communes"
+        [selectedCommune]="selectedCommune" (communeClicked)="onCommuneClicked($event)"
+        (zoomChanged)="onMapZoomChanged($event)"></app-leaflet-map>
+
+      <!-- Search Bar Overlay -->
+      <div class="search-overlay" *ngIf="!(isLoading$ | async) && !(error$ | async)">
+        <app-search-bar (communeSelected)="onSearchCommuneSelected($event)"></app-search-bar>
+      </div>
+
+      <div class="debug-info" *ngIf="communes.length > 0">
+        <small>{{ communes.length }} communes chargées</small>
+      </div>
+    </div>
   </div>
-  }
+
+  <button mat-fab color="primary" class="sidebar-toggle" *ngIf="isOverlayMode && !isSidebarOpen" (click)="openSidebar()"
+    aria-label="Afficher les détails de la commune sélectionnée">
+    <mat-icon>insights</mat-icon>
+  </button>
+
+  <div class="sidebar-backdrop" *ngIf="isOverlayMode && isSidebarOpen" (click)="onSidebarOpenChange(false)"></div>
 </div>
