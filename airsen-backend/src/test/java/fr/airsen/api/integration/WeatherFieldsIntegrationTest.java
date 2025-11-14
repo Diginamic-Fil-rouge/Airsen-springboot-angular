@@ -1,6 +1,6 @@
 package fr.airsen.api.integration;
 
-
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.dto.response.NearestWeatherResult;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.Department;
@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
@@ -50,10 +49,9 @@ import static org.mockito.Mockito.*;
  * - Validation constraint testing
  */
 @SpringBootTest
-@ActiveProfiles("test")
 @Transactional
 @DisplayName("Weather Fields Integration Tests")
-class WeatherFieldsIntegrationTest {
+class WeatherFieldsIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
     private WeatherService weatherService;

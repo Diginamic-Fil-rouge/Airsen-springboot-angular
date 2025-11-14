@@ -1,6 +1,6 @@
 package fr.airsen.api.config;
 
-import com.redis.testcontainers.RedisContainer;
+import fr.airsen.api.AbstractTestContainersTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,12 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -36,31 +30,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - Cache eviction operations
  *
  * Requires Docker to be running to execute tests.
+ * Inherits TestContainers configuration from AbstractTestContainersTest.
  */
 @SpringBootTest
-@Testcontainers
-@ActiveProfiles("test")
 @DisplayName("Redis Cache Integration Tests (TestContainers)")
-class RedisCacheIntegrationTest {
-
-    /**
-     * Redis 7 Alpine container for integration testing.
-     *
-     * Uses TestContainers to spin up a real Redis instance.
-     */
-    @Container
-    static RedisContainer redis = new RedisContainer(DockerImageName.parse("redis:7-alpine"))
-            .withExposedPorts(6379)
-            .withReuse(true);
-
-    /**
-     * Dynamically configure Spring Boot to use TestContainers Redis instance.
-     */
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379).toString());
-    }
+class RedisCacheIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
     private CacheManager cacheManager;

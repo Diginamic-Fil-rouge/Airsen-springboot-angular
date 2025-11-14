@@ -1,16 +1,14 @@
 package fr.airsen.api.repository;
 
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.entity.*;
 import fr.airsen.api.entity.enums.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,23 +16,24 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@EntityScan(basePackageClasses = {
-        UserFavorite.class,
-        User.class,
-        Commune.class,
-        Department.class,
-        Region.class
-})
-@EnableJpaRepositories(basePackageClasses = UserFavoriteRepository.class)
 @DisplayName("UserFavoriteRepository integration tests")
-class UserFavoriteRepositoryTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
+@Transactional
+class UserFavoriteRepositoryTest extends AbstractTestContainersTest {
 
     @Autowired
     private UserFavoriteRepository userFavoriteRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CommuneRepository communeRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private RegionRepository regionRepository;
 
     private User persistedUser;
     private Commune montpellier;
@@ -58,9 +57,6 @@ class UserFavoriteRepositoryTest {
     void findByUserId_returnsFavoritesWithCommuneHierarchy() {
         persistFavorite(persistedUser, montpellier);
         persistFavorite(persistedUser, paris);
-
-        entityManager.flush();
-        entityManager.clear();
 
         List<UserFavorite> favorites = userFavoriteRepository.findByUserId(persistedUser.getId());
 
@@ -98,7 +94,6 @@ class UserFavoriteRepositoryTest {
         persistFavorite(persistedUser, montpellier);
 
         userFavoriteRepository.deleteByUserIdAndCommuneInseeCode(persistedUser.getId(), montpellier.getInseeCode());
-        entityManager.flush();
 
         boolean exists = userFavoriteRepository.existsById_UserIdAndId_CommuneInseeCode(persistedUser.getId(), montpellier.getInseeCode());
         assertFalse(exists);
@@ -111,7 +106,6 @@ class UserFavoriteRepositoryTest {
         persistFavorite(persistedUser, paris);
 
         userFavoriteRepository.deleteAllByUserId(persistedUser.getId());
-        entityManager.flush();
 
         int count = userFavoriteRepository.countByUserId(persistedUser.getId());
         assertEquals(0, count);
@@ -124,9 +118,6 @@ class UserFavoriteRepositoryTest {
         persistFavorite(persistedUser, montpellier);
         persistFavorite(persistedUser, paris);
         persistFavorite(otherUser, paris);
-
-        entityManager.flush();
-        entityManager.clear();
 
         List<Object[]> results = userFavoriteRepository.findMostFavoritedCommunes(PageRequest.of(0, 10));
 
@@ -153,8 +144,7 @@ class UserFavoriteRepositoryTest {
 
     private UserFavorite persistFavorite(User user, Commune commune) {
         UserFavorite favorite = new UserFavorite(user, commune);
-        entityManager.persist(favorite);
-        return favorite;
+        return userFavoriteRepository.save(favorite);
     }
 
     private Commune persistCommune(String inseeCode, String name, Department department) {
@@ -167,20 +157,17 @@ class UserFavoriteRepositoryTest {
         commune.setPopulation(100_000);
         commune.setLatitude(new BigDecimal("43.6000"));
         commune.setLongitude(new BigDecimal("3.8800"));
-        entityManager.persist(commune);
-        return commune;
+        return communeRepository.save(commune);
     }
 
     private Department persistDepartment(String code, String name, Region region) {
         Department department = new Department(name, code, region.getRegionCode(), region);
-        entityManager.persist(department);
-        return department;
+        return departmentRepository.save(department);
     }
 
     private Region persistRegion(String code, String name) {
         Region region = new Region(name, code);
-        entityManager.persist(region);
-        return region;
+        return regionRepository.save(region);
     }
 
     private User persistUser(String email) {
@@ -190,8 +177,6 @@ class UserFavoriteRepositoryTest {
         user.setRole(UserRole.USER);
         user.setCreatedAt(LocalDateTime.now());
         user.setEmailVerified(true);
-        entityManager.persist(user);
-        entityManager.flush();
-        return user;
+        return userRepository.save(user);
     }
 }

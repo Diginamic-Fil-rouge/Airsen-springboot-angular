@@ -33,7 +33,7 @@ class UserFavoriteIdTest {
         UserFavoriteId id = new UserFavoriteId(null, null);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, id::validate);
-        assertEquals("UserFavoriteId requires both userId and communeId", exception.getMessage());
+        assertEquals("UserFavoriteId requires both userId and communeInseeCode", exception.getMessage());
     }
 
     @Test

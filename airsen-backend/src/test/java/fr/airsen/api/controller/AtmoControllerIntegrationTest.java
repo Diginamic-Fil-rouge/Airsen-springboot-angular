@@ -1,7 +1,11 @@
 package fr.airsen.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.dto.response.AirQualityResponse;
+import fr.airsen.api.external.client.AtmoApiClient;
+import fr.airsen.api.external.client.InseeApiClient;
+import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.repository.AirQualityRepository;
 import fr.airsen.api.repository.CommuneRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -9,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,23 +32,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests the complete flow from HTTP request to database query,
  * including geodistance fallback mechanism with real spatial calculations
  * and ATMO index quality mapping.
+ *
+ * NOTE: SQL scripts run BEFORE_TEST_METHOD to ensure TestContainers are started.
+ * BEFORE_TEST_CLASS would fail because containers start during test instantiation.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-                properties = {
-                    "spring.profiles.active=test",
-                    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE",
-                    "spring.jpa.hibernate.ddl-auto=create",
-                    "spring.jpa.defer-datasource-initialization=true",
-                    "spring.sql.init.mode=always",
-                    "airsen.data.initialize=false"
-                })
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureMockMvc(addFilters = false)  // Disable security filters for integration tests
 @Transactional
 @Sql(scripts = {
     "/test-data/communes.sql",
     "/test-data/air-quality.sql"
-}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-class AtmoControllerIntegrationTest {
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -57,6 +57,19 @@ class AtmoControllerIntegrationTest {
     @Autowired
     private CommuneRepository communeRepository;
 
+    // Mock external API clients to prevent HTTP calls during integration tests
+    @MockBean
+    private AtmoApiClient atmoApiClient;
+
+    @MockBean
+    private OpenMeteoApiClient openMeteoApiClient;
+
+    @MockBean
+    private InseeApiClient inseeApiClient;
+
+    // Valid JWT token for test authentication (expires 2025-11-14, signed with base64 test secret from application-test.yml)
+    private static final String VALID_JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYXJhaEBhaXJzZW4uZnIiLCJlbWFpbCI6InNhcmFoQGFpcnNlbi5mciIsInJvbGUiOiJBRE1JTiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3NjMxMDc4NzQsImV4cCI6MTc5NDY0Mzg3NH0.OTXUU6Jpl8vjJRBfAimTArWkLvyYqFtuRS9dkDGVZq8";
+
     @Test
     @DisplayName("Should return direct air quality data when available for requested commune")
     void shouldReturnDirectAirQualityData() throws Exception {
@@ -65,7 +78,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Paris
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", parisInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -110,7 +124,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Saint-Denis
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", saintDenisInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -152,7 +167,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Créteil
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", creteilInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -184,7 +200,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Meaux
         mockMvc.perform(get("/atmo/air-quality/{inseeCode}", meauxInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No air quality data within 20km"));
     }
@@ -197,7 +214,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for non-existent commune
         mockMvc.perform(get("/atmo/air-quality/{inseeCode}", invalidInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Commune not found"));
     }
@@ -210,7 +228,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Boulogne-Billancourt
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", boulogneBillancourt)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -233,7 +252,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Aubervilliers
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", aubervilliers)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -256,7 +276,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Paris
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", parisInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -293,7 +314,8 @@ class AtmoControllerIntegrationTest {
 
         // When: Request air quality for Saint-Denis (should fallback to Paris)
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", saintDenisInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andReturn();
 

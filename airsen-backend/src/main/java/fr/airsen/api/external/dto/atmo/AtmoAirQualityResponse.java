@@ -12,7 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record AtmoAirQualityResponse(
     @JsonProperty("code_zone") String communeInsee,
     @JsonProperty("date_ech") String measurementDate,
-    @JsonProperty("code_qual") Integer atmoIndex,
+    @JsonProperty("valeur") Integer atmoIndex,
+    @JsonProperty("code_qual") String qualityCode,
     @JsonProperty("lib_qual") String qualifier,
     @JsonProperty("coul_qual") String color,
     @JsonProperty("code_no2") Integer no2Code,

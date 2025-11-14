@@ -1,5 +1,6 @@
 package fr.airsen.api.dto.validation;
 
+import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.entity.WeatherData;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import jakarta.validation.Validation;
 import java.util.Set;
@@ -27,9 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * - Wind gusts non-negative values
  */
 @SpringBootTest
-@ActiveProfiles("test")
 @DisplayName("Weather Field Validation Tests")
-class WeatherFieldValidationTest {
+class WeatherFieldValidationTest extends AbstractTestContainersTest {
 
     private Validator validator;
 

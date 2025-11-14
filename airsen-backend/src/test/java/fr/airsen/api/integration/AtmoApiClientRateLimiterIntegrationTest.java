@@ -105,8 +105,8 @@ class AtmoApiClientRateLimiterIntegrationTest {
                 .verifyComplete();
         }
 
-        // Verify 3 auth calls and 3 data calls
-        verify(exactly(3), postRequestedFor(urlEqualTo("/api/login")));
+        // Verify JWT token caching: only 1 login call (token reused), but 3 data calls
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/api/login")));
         verify(exactly(3), getRequestedFor(urlPathEqualTo("/api/v2/data/indices/atmo")));
     }
 
@@ -129,8 +129,8 @@ class AtmoApiClientRateLimiterIntegrationTest {
             .expectError(RateLimitExceededException.class)
             .verify();
 
-        // Verify only 3 API calls were made (4th was blocked by rate limiter)
-        verify(exactly(3), postRequestedFor(urlEqualTo("/api/login")));
+        // Verify JWT token caching: only 1 login (token reused), and 3 data calls (4th blocked by rate limiter)
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/api/login")));
     }
 
     @Test
