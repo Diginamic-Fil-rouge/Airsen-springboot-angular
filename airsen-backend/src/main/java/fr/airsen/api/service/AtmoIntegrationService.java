@@ -294,7 +294,8 @@ public class AtmoIntegrationService {
         log.debug("Cache miss or refresh needed, fetching air quality from database");
 
         // Validate commune exists first - prevents 500 errors for non-existent communes
-        if (communeRepository.findByInseeCode(inseeCode).isEmpty()) {
+        Optional<Commune> requestedCommune = communeRepository.findByInseeCode(inseeCode);
+        if (requestedCommune.isEmpty()) {
             log.warn("Commune not found: {}", inseeCode);
             throw new ResourceNotFoundException("Commune not found");
         }
@@ -317,11 +318,11 @@ public class AtmoIntegrationService {
             log.info("Using estimated air quality from {} ({} km away)",
                      nearestData.get().communeName(),
                      nearestData.get().distanceKm());
-            return airQualityMapper.toEstimatedResponse(nearestData.get());
+            return airQualityMapper.toEstimatedResponse(nearestData.get(), requestedCommune.get());
         }
 
         throw new ResourceNotFoundException(
-            "No air quality data within 20km for commune: " + inseeCode
+            "No air quality data within 20km"
         );
     }
 
