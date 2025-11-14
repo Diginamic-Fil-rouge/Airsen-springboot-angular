@@ -1,5 +1,6 @@
 package fr.airsen.api.dto.auth;
 
+import fr.airsen.api.entity.User;
 import fr.airsen.api.entity.enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -64,6 +65,19 @@ public class UserDTO {
     private Boolean isEmailVerified;
 
     public UserDTO() {
+    }
+
+    public UserDTO(User user){
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
+        this.address = user.getAddress();
+        this.telephone = user.getTelephone();
+        this.bio = user.getBio();
+        this.role = user.getRole();
+        this.isActive = user.getIsActive();
+        this.createdAt = user.getCreatedAt();
     }
 
     public UserDTO(Long id, String email, String firstName, String lastName, String address, String telephone, String bio, UserRole role) {

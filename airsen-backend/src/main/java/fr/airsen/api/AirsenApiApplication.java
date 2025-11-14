@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAsync
 @EnableRetry
 @EnableTransactionManagement
-@EnableJpaAuditing
+//@EnableJpaAuditing
 public class AirsenApiApplication {
 
 

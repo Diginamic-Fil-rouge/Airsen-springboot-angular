@@ -37,7 +37,6 @@ on:
         default: true
 
 env:
-  # Project Configuration
   PROJECT_NAME: airsen
   JAVA_VERSION: '21'
   NODE_VERSION: '22'
@@ -45,11 +44,9 @@ env:
   # Determine environment from branch
   DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/develop' && 'staging' || startsWith(github.ref, 'refs/heads/release/') && 'staging' || startsWith(github.ref, 'refs/heads/hotfix/') && 'staging' || 'dev' }}
 
-  # API Rate Limiting
   USE_API_MOCKS: ${{ startsWith(github.ref, 'refs/heads/feature/') && 'true' || 'false' }}
 
 jobs:
-    # JOB 1: VALIDATE BRANCH & SETUP
   validate:
     name:  Validate Branch
     runs-on: ubuntu-latest
@@ -62,7 +59,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for commit counting
+          fetch-depth: 0
 
       - name: Validate GitFlow branch naming
         run: |
@@ -115,18 +112,11 @@ jobs:
             echo "should_deploy=false" >> $GITHUB_OUTPUT
           fi
 
-    # JOB 2: BUILD & TEST BACKEND
 
   backend:
     name: Backend Build & Test
     runs-on: ubuntu-latest
     needs: validate
-
-    # NOTE: use TestContainers for test infrastructure (MariaDB, Redis)
-    # TestContainers automatically manages container lifecycle during test execution
-    # - MariaDB 11.6 container spins up per test run
-    # - Redis 7-alpine container for cache tests
-    # - WireMock standalone (NOT as service) for external API mocking (ATMO, Open-Meteo, INSEE)
 
 
     steps:
@@ -157,12 +147,8 @@ jobs:
       - name: Run unit tests with TestContainers
         working-directory: airsen-backend
         env:
-          # TestContainers will automatically start MariaDB and Redis containers
-          # using @Testcontainers annotation and @Container fields in test classes
           SPRING_PROFILES_ACTIVE: test
-          # Hibernate will auto-create schema from JPA entities (ddl-auto=create-drop)
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
-          # Enable TestContainers
           TESTCONTAINERS_RYUK_DISABLED: false
         run: |
           mvn test -B
@@ -175,7 +161,6 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
           TESTCONTAINERS_RYUK_DISABLED: false
-          # External API credentials (WireMock will mock these in tests)
           USE_API_MOCKS: ${{ env.USE_API_MOCKS }}
           ATMO_API_KEY: ${{ secrets.ATMO_API_KEY }}
           INSEE_API_KEY: ${{ secrets.INSEE_API_KEY }}
@@ -189,11 +174,6 @@ jobs:
           mvn jacoco:report
           COVERAGE=$(grep -oP '(?<=<counter type="INSTRUCTION" missed="\d+" covered=")(\d+)' target/site/jacoco/jacoco.xml | head -1)
           echo " Code coverage: ${COVERAGE}%"
-
-      # NOTE: use Hibernate ddl-auto for schema management
-      # Database schema is automatically created/updated from JPA entities
-      # ddl-auto:create-drop for Test environment
-      # ddl-auto:update for Dev environment
 
       - name: Security scan with TruffleHog
         uses: trufflesecurity/trufflehog@main
@@ -225,8 +205,6 @@ jobs:
             airsen-backend/target/surefire-reports/
             airsen-backend/target/site/jacoco/
           retention-days: 7
-
-  # JOB 3: BUILD & TEST FRONTEND
 
   frontend:
     name:  Frontend Build & Test
@@ -280,7 +258,6 @@ jobs:
           path: airsen-frontend/dist/
           retention-days: 7
 
-  # JOB 4: BUILD DOCKER IMAGES
   docker:
     name:  Build Docker Images
     runs-on: ubuntu-latest
@@ -335,11 +312,6 @@ jobs:
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
-  # JOB 5: DEPLOY TO CLOUD
-
-  # NOTE: use Hibernate ddl-auto for schema management
-  # Schema is automatically managed by Spring Boot on application startup
-
   deploy:
     name:  Deploy to ${{ needs.validate.outputs.environment }}
     runs-on: ubuntu-latest
@@ -362,7 +334,6 @@ jobs:
           name: frontend-dist
           path: airsen-frontend/dist/
 
-      # Railway deployment
       - name: Deploy to Railway
         if: github.event.inputs.cloud_provider == 'railway' || vars.CLOUD_PROVIDER == 'railway'
         uses: railwayapp/cli@v1
@@ -371,7 +342,6 @@ jobs:
         with:
           command: up --service airsen-api --environment ${{ needs.validate.outputs.environment }}
 
-      # AWS deployment
       - name: Deploy to AWS
         if: github.event.inputs.cloud_provider == 'aws' || vars.CLOUD_PROVIDER == 'aws'
         uses: aws-actions/configure-aws-credentials@v4
@@ -395,7 +365,6 @@ jobs:
             --delete \
             --cache-control "max-age=3600"
 
-      # GCP deployment
       - name: Deploy to Google Cloud Run
         if: github.event.inputs.cloud_provider == 'gcp' || vars.CLOUD_PROVIDER == 'gcp'
         uses: google-github-actions/deploy-cloudrun@v2
@@ -426,8 +395,6 @@ jobs:
               ;;
           esac
 
-
-  # JOB 7: E2E TESTS (POST-DEPLOYMENT)
   e2e-tests:
     name:  E2E Tests
     runs-on: ubuntu-latest
@@ -467,7 +434,6 @@ jobs:
           path: airsen-frontend/cypress/videos/
           retention-days: 7
 
-  # JOB 8: NOTIFY & TAG
   notify:
     name:  Notify & Tag
     runs-on: ubuntu-latest

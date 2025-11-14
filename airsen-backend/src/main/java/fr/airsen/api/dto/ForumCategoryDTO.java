@@ -3,6 +3,7 @@ package fr.airsen.api.dto;
 import fr.airsen.api.entity.ForumCategory;
 import fr.airsen.api.entity.ForumThread;
 import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,13 +31,13 @@ public class ForumCategoryDTO {
         this.name = forumCategory.getName();
         this.description = forumCategory.getDescription();
         this.color = forumCategory.getColor();
-        if (withThreads) {
-            this.threads = new ArrayList<>();
-            if (forumCategory.getThreads() != null && !forumCategory.getThreads().isEmpty()) {
-                for (ForumThread forumThread : forumCategory.getThreads()) {
-                    this.threads.add(new ForumThreadDTO(forumThread, false));
-                }
+        this.threads = new ArrayList<>();
+        if (withThreads && forumCategory.getThreads() != null && !forumCategory.getThreads().isEmpty()) {
+
+            for (ForumThread forumThread : forumCategory.getThreads()) {
+                this.threads.add(new ForumThreadDTO(forumThread, false));
             }
+
         }
     }
 
