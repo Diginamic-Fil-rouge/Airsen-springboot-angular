@@ -2,6 +2,7 @@ package fr.airsen.api.mapper;
 
 import fr.airsen.api.dto.response.NearestWeatherResult;
 import fr.airsen.api.dto.response.WeatherResponse;
+import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.WeatherData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -23,14 +24,35 @@ public interface WeatherMapper {
     WeatherResponse toDirectResponse(WeatherData weatherData);
 
     /**
-     * Map NearestWeatherResult to estimated response (data from nearest commune)
+     * Map NearestWeatherResult to estimated response
+     *
+     * @param result Weather data from nearest commune
+     * @param requestedCommune The commune that was originally requested
+     * @return WeatherResponse with requested commune's ID/name and ESTIMATED data from nearest
      */
+    @Mapping(target = "inseeCode", source = "requestedCommune.inseeCode")
+    @Mapping(target = "communeName", source = "requestedCommune.name")
+    @Mapping(target = "measurementDate", source = "result.measurementDate")
+    @Mapping(target = "temperature", source = "result.temperature")
+    @Mapping(target = "humidity", source = "result.humidity")
+    @Mapping(target = "windSpeed", source = "result.windSpeed")
+    @Mapping(target = "windDirection", source = "result.windDirection")
+    @Mapping(target = "weatherCode", source = "result.weatherCode")
+    @Mapping(target = "weatherDescription", source = "result.weatherCode", qualifiedByName = "weatherCodeToDescription")
+    @Mapping(target = "apparentTemperature", source = "result.apparentTemperature")
+    @Mapping(target = "precipitation", source = "result.precipitation")
+    @Mapping(target = "rain", source = "result.rain")
+    @Mapping(target = "showers", source = "result.showers")
+    @Mapping(target = "snowfall", source = "result.snowfall")
+    @Mapping(target = "cloudCover", source = "result.cloudCover")
+    @Mapping(target = "pressureMsl", source = "result.pressureMsl")
+    @Mapping(target = "windGusts", source = "result.windGusts")
     @Mapping(target = "dataSource", constant = "ESTIMATED")
-    @Mapping(target = "estimatedFromCommune", source = "communeName")
-    @Mapping(target = "weatherDescription", source = "weatherCode", qualifiedByName = "weatherCodeToDescription")
+    @Mapping(target = "estimatedFromCommune", source = "result.communeName")
+    @Mapping(target = "distanceKm", source = "result.distanceKm")
     @Mapping(target = "dataQualityNote",
         expression = "java(String.format(\"Données estimées depuis %s (%.1f km)\", result.communeName(), result.distanceKm()))")
-    WeatherResponse toEstimatedResponse(NearestWeatherResult result);
+    WeatherResponse toEstimatedResponse(NearestWeatherResult result, Commune requestedCommune);
 
     @Named("weatherCodeToDescription")
     default String weatherCodeToDescription(Integer weatherCode) {
