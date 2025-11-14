@@ -65,8 +65,8 @@ public class WeatherController {
      */
     @GetMapping("/current/{inseeCode}")
     @Operation(
-        summary = "Get current weather for a commune",
-        description = """
+            summary = "Get current weather for a commune",
+            description = """
             Returns current weather data from the local database.
             If no direct data is available, estimates from the nearest commune within 20km.
             Returns 404 if no data is available within 20km radius (PRD requirement).
@@ -76,19 +76,19 @@ public class WeatherController {
             - ESTIMATED: Estimated from nearest commune (includes distance metadata)
             - NOT_AVAILABLE: No data within 20km
             """,
-        tags = {"Weather Data"}
+            tags = {"Weather Data"}
     )
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Weather data found (direct or estimated)",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = WeatherResponse.class),
-                examples = {
-                    @ExampleObject(
-                        name = "Direct Data",
-                        value = """
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Weather data found (direct or estimated)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = WeatherResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Direct Data",
+                                            value = """
                             {
                               \"inseeCode\": \"75056\",
                               \"communeName\": \"Paris\",
@@ -111,10 +111,10 @@ public class WeatherController {
                               \"dataQualityNote\": \"Données mesurées pour cette commune\"
                             }
                             """
-                    ),
-                    @ExampleObject(
-                        name = "Estimated Data",
-                        value = """
+                                    ),
+                                    @ExampleObject(
+                                            name = "Estimated Data",
+                                            value = """
                             {
                               \"inseeCode\": \"78646\",
                               \"communeName\": \"Vélizy-Villacoublay\",
@@ -139,21 +139,21 @@ public class WeatherController {
                               \"dataQualityNote\": \"Données estimées depuis Paris (17.3 km)\"
                             }
                             """
+                                    )
+                            }
                     )
-                }
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Commune not found or no weather data within 20km",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = fr.airsen.api.dto.response.ErrorResponse.class)
+                    )
             )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Commune not found or no weather data within 20km",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = fr.airsen.api.dto.response.ErrorResponse.class)
-            )
-        )
     })
     public ResponseEntity<WeatherResponse> getCurrentWeather(
-        @PathVariable @Parameter(description = "INSEE code of the commune") String inseeCode
+            @PathVariable @Parameter(description = "INSEE code of the commune") String inseeCode
     ) {
         log.info("REST request to get current weather for commune: {}", inseeCode);
 
@@ -291,13 +291,13 @@ public class WeatherController {
      */
     @GetMapping("/forecast/{communeInseeCode}")
     @Operation(
-        summary = "Get weather forecast",
-        description = "Retrieves weather forecast from Open-Meteo API for a commune"
+            summary = "Get weather forecast",
+            description = "Retrieves weather forecast from Open-Meteo API for a commune"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Forecast data retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Commune not found"),
-        @ApiResponse(responseCode = "500", description = "External API error or server error")
+            @ApiResponse(responseCode = "200", description = "Forecast data retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Commune not found"),
+            @ApiResponse(responseCode = "500", description = "External API error or server error")
     })
     public ResponseEntity<List<WeatherDataDTO>> getWeatherForecast(
             @Parameter(description = "INSEE code of the commune", example = "75101")
@@ -317,9 +317,9 @@ public class WeatherController {
         try {
             // Convert reactive to synchronous to fix authentication context issue
             List<WeatherDataDTO> forecastData = weatherService.getWeatherForecastForCommune(communeInseeCode, days)
-                .map(this::mapToDTO)
-                .collectList()
-                .block(java.time.Duration.ofSeconds(15)); // 15 second timeout for forecast
+                    .map(this::mapToDTO)
+                    .collectList()
+                    .block(java.time.Duration.ofSeconds(15)); // 15 second timeout for forecast
 
             log.info("Successfully retrieved forecast for commune: {}", communeInseeCode);
             return ResponseEntity.ok(forecastData != null ? forecastData : List.of());
@@ -342,13 +342,13 @@ public class WeatherController {
      */
     @GetMapping("/historical/{communeInseeCode}")
     @Operation(
-        summary = "Get historical weather data",
-        description = "Retrieves historical weather data from database for a commune within a date range"
+            summary = "Get historical weather data",
+            description = "Retrieves historical weather data from database for a commune within a date range"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Historical data retrieved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid date range"),
-        @ApiResponse(responseCode = "404", description = "Commune not found")
+            @ApiResponse(responseCode = "200", description = "Historical data retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid date range"),
+            @ApiResponse(responseCode = "404", description = "Commune not found")
     })
     public ResponseEntity<List<WeatherDataDTO>> getHistoricalWeather(
             @Parameter(description = "INSEE code of the commune", example = "75101")
@@ -373,9 +373,9 @@ public class WeatherController {
         try {
             // Convert reactive to synchronous to fix authentication context issue
             List<WeatherDataDTO> historicalData = weatherService.getHistoricalWeather(communeInseeCode, startDate, endDate)
-                .map(this::mapToDTO)
-                .collectList()
-                .block(java.time.Duration.ofSeconds(20)); // 20 second timeout for historical data
+                    .map(this::mapToDTO)
+                    .collectList()
+                    .block(java.time.Duration.ofSeconds(20)); // 20 second timeout for historical data
 
             log.info("Successfully retrieved historical data for commune: {}", communeInseeCode);
             return ResponseEntity.ok(historicalData != null ? historicalData : List.of());
@@ -394,12 +394,12 @@ public class WeatherController {
      */
     @PostMapping("/bulk-update")
     @Operation(
-        summary = "Bulk update weather data",
-        description = "Updates weather data for multiple communes from Open-Meteo API"
+            summary = "Bulk update weather data",
+            description = "Updates weather data for multiple communes from Open-Meteo API"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Bulk update initiated"),
-        @ApiResponse(responseCode = "400", description = "Invalid commune codes")
+            @ApiResponse(responseCode = "200", description = "Bulk update initiated"),
+            @ApiResponse(responseCode = "400", description = "Invalid commune codes")
     })
     public Flux<WeatherUpdateResponse> bulkUpdateWeatherData(
             @Parameter(description = "List of INSEE codes")
