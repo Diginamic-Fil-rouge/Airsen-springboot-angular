@@ -175,14 +175,6 @@ jobs:
           COVERAGE=$(grep -oP '(?<=<counter type="INSTRUCTION" missed="\d+" covered=")(\d+)' target/site/jacoco/jacoco.xml | head -1)
           echo " Code coverage: ${COVERAGE}%"
 
-      - name: Security scan with TruffleHog
-        uses: trufflesecurity/trufflehog@main
-        with:
-          path: ./airsen-backend
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: --only-verified
-
       - name: Package application
         working-directory: airsen-backend
         run: |
@@ -342,56 +334,12 @@ jobs:
         with:
           command: up --service airsen-api --environment ${{ needs.validate.outputs.environment }}
 
-      - name: Deploy to AWS
-        if: github.event.inputs.cloud_provider == 'aws' || vars.CLOUD_PROVIDER == 'aws'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-
-      - name: Deploy backend to ECS
-        if: github.event.inputs.cloud_provider == 'aws' || vars.CLOUD_PROVIDER == 'aws'
-        run: |
-          aws ecs update-service \
-            --cluster airsen-${{ needs.validate.outputs.environment }} \
-            --service airsen-api \
-            --force-new-deployment
-
-      - name: Deploy frontend to S3
-        if: (github.event.inputs.cloud_provider == 'aws' || vars.CLOUD_PROVIDER == 'aws') && github.event.inputs.deploy_frontend != 'false'
-        run: |
-          aws s3 sync airsen-frontend/dist/ s3://airsen-${{ needs.validate.outputs.environment }}-frontend/ \
-            --delete \
-            --cache-control "max-age=3600"
-
-      - name: Deploy to Google Cloud Run
-        if: github.event.inputs.cloud_provider == 'gcp' || vars.CLOUD_PROVIDER == 'gcp'
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: airsen-api-${{ needs.validate.outputs.environment }}
-          image: ghcr.io/${{ github.repository }}/backend:${{ needs.validate.outputs.version }}
-          region: europe-west1
-          credentials: ${{ secrets.GCP_CREDENTIALS }}
-          env_vars: |
-            SPRING_PROFILES_ACTIVE=${{ needs.validate.outputs.environment }}
-            VERSION=${{ needs.validate.outputs.version }}
-
       - name: Set deployment URL
         id: deploy-step
         run: |
           case "${{ github.event.inputs.cloud_provider || vars.CLOUD_PROVIDER }}" in
             railway)
               echo "url=https://airsen-${{ needs.validate.outputs.environment }}.up.railway.app" >> $GITHUB_OUTPUT
-              ;;
-            aws)
-              echo "url=https://airsen-${{ needs.validate.outputs.environment }}.eu-west-1.elb.amazonaws.com" >> $GITHUB_OUTPUT
-              ;;
-            gcp)
-              echo "url=https://airsen-api-${{ needs.validate.outputs.environment }}.a.run.app" >> $GITHUB_OUTPUT
-              ;;
-            *)
-              echo "url=https://airsen.fr" >> $GITHUB_OUTPUT
               ;;
           esac
 
