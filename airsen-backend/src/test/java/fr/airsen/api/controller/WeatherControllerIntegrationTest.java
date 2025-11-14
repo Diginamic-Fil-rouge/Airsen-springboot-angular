@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.airsen.api.AbstractTestContainersTest;
 import fr.airsen.api.dto.response.WeatherResponse;
 import fr.airsen.api.entity.WeatherData;
+import fr.airsen.api.external.client.AtmoApiClient;
+import fr.airsen.api.external.client.InseeApiClient;
+import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.repository.WeatherDataRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,14 +32,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * Tests the complete flow from HTTP request to database query,
  * including geodistance fallback mechanism with real spatial calculations.
+ *
+ * NOTE: SQL scripts run BEFORE_TEST_METHOD to ensure TestContainers are started.
+ * BEFORE_TEST_CLASS would fail because containers start during test instantiation.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)  // Disable security filters for integration tests
 @Transactional
 @Sql(scripts = {
     "/test-data/communes.sql",
     "/test-data/weather-data.sql"
-}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
@@ -50,15 +57,25 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
     @Autowired
     private CommuneRepository communeRepository;
 
-        @Test
+    // Mock external API clients to prevent HTTP calls during integration tests
+    @MockBean
+    private AtmoApiClient atmoApiClient;
+
+    @MockBean
+    private OpenMeteoApiClient openMeteoApiClient;
+
+    @MockBean
+    private InseeApiClient inseeApiClient;
+
+    // Valid JWT token for test authentication (expires 2025-11-14, signed with base64 test secret from application-test.yml)
+    private static final String VALID_JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYXJhaEBhaXJzZW4uZnIiLCJlbWFpbCI6InNhcmFoQGFpcnNlbi5mciIsInJvbGUiOiJBRE1JTiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3NjMxMDc4NzQsImV4cCI6MTc5NDY0Mzg3NH0.OTXUU6Jpl8vjJRBfAimTArWkLvyYqFtuRS9dkDGVZq8";
+
+    @Test
     @DisplayName("Should return direct weather data when commune has no weather data")
     public void shouldReturnDirectWeatherData() throws Exception {
-        // Valid JWT token using test secret
-        String validJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYXJhaEBhaXJzZW4uZnIiLCJlbWFpbCI6InNhcmFoQGFpcnNlbi5mciIsInJvbGUiOiJBRE1JTiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3NjIzNTM2NDcsImV4cCI6MTc2MjQ0MDA0N30.w-euByR_MXCXMIv8_KW8D4gKgWil4ygdkdFuIuCw60U";
-
         mockMvc.perform(get("/weather/current/75056")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer " + validJwtToken))
+                        .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk());
     }
 
@@ -73,7 +90,8 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
 
         // When: Request weather for Saint-Denis
         MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", saintDenisInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -110,7 +128,8 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
 
         // When: Request weather for Créteil
         MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", creteilInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -137,7 +156,8 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
 
         // When: Request weather for Meaux
         mockMvc.perform(get("/weather/current/{inseeCode}", meauxInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No weather data within 20km"));
     }
@@ -150,7 +170,8 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
 
         // When: Request weather for non-existent commune
         mockMvc.perform(get("/weather/current/{inseeCode}", invalidInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Commune not found"));
     }
@@ -173,7 +194,8 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
         // This should still work if there's ANY data (regardless of age)
         // The endpoint returns available data; scheduler handles freshness
         MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", meauxInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -198,7 +220,8 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
 
         // When: Request weather with invalid format
         mockMvc.perform(get("/weather/current/{inseeCode}", invalidFormat)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isBadRequest());
     }
 
@@ -211,7 +234,8 @@ class WeatherControllerIntegrationTest extends AbstractTestContainersTest {
 
         // When: Request weather for Saint-Denis (should fallback to Paris)
         MvcResult result = mockMvc.perform(get("/weather/current/{inseeCode}", saintDenisInseeCode)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andReturn();
 

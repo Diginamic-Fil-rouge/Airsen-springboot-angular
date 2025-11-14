@@ -31,11 +31,12 @@ import java.util.Map;
  * Configures connection settings, serialization, and provides RedisTemplate beans
  * for different use cases (caching, sessions, etc.).
  *
- * NOTE: This configuration is optional and will only activate if Redis is available.
+ * NOTE: This configuration activates when spring.cache.type=redis is set.
+ * Compatible with TestContainers which use @DynamicPropertySource for host/port.
  */
 @Configuration
 @EnableCaching
-@ConditionalOnProperty(name = "spring.data.redis.host", matchIfMissing = false)
+@ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis", matchIfMissing = false)
 public class RedisConfig {
 
     private static final Logger log = LoggerFactory.getLogger(RedisConfig.class);
