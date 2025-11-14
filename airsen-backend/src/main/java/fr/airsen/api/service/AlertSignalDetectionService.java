@@ -389,12 +389,16 @@ public class AlertSignalDetectionService {
     /**
      * Determines if ATMO data represents a pollution episode.
      * 
+     * ATMO air quality index scale (1-6):
+     * 1 = Bon (Good), 2 = Moyen (Moderate), 3 = Dégradé (Degraded),
+     * 4 = Mauvais (Bad), 5 = Très mauvais (Very Bad), 6 = Extrêmement mauvais (Extremely Bad)
+     * 
      * @param data ATMO air quality response
-     * @return true if episode detected
+     * @return true if episode detected (index >= 4, meaning Bad or worse)
      */
     private boolean isAtmoEpisode(AtmoAirQualityResponse data) {
-        // Consider AQI >= 7 (poor to very poor) as episode
-        return data.atmoIndex() != null && data.atmoIndex() >= 7;
+        // Consider AQI >= 4 (Bad, Very Bad, or Extremely Bad) as episode
+        return data.atmoIndex() != null && data.atmoIndex() >= 4;
     }
 
     /**
