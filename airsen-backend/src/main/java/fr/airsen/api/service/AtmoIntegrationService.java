@@ -293,6 +293,12 @@ public class AtmoIntegrationService {
     private AirQualityResponse fetchAirQualityWithFallback(String inseeCode) {
         log.debug("Cache miss or refresh needed, fetching air quality from database");
 
+        // Validate commune exists first - prevents 500 errors for non-existent communes
+        if (communeRepository.findByInseeCode(inseeCode).isEmpty()) {
+            log.warn("Commune not found: {}", inseeCode);
+            throw new ResourceNotFoundException("Commune not found");
+        }
+
         // Try direct database query
         Optional<AirQuality> directData = airQualityRepository
             .findLatestByCommune_InseeCode(inseeCode);
@@ -329,6 +335,12 @@ public class AtmoIntegrationService {
     @Deprecated
     public Optional<AirQualityResponseDTO> getLatestStoredAirQualityLegacy(String inseeCode) {
         log.info("Fetching latest stored air quality data for commune: {} (legacy method)", inseeCode);
+
+        // Validate commune exists first - prevents 500 errors for non-existent communes
+        if (communeRepository.findByInseeCode(inseeCode).isEmpty()) {
+            log.warn("Commune not found: {}", inseeCode);
+            return Optional.empty();  // Controller will throw proper 404 ResourceNotFoundException
+        }
 
         // Step 1: Try to get recent direct data from database
         Optional<AirQuality> directDataOpt = airQualityRepository.findLatestByCommune_InseeCode(inseeCode);
