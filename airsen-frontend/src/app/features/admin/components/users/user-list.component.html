@@ -1,0 +1,111 @@
+<div class="user-list">
+  <h2>User Management</h2>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="onSearch()"
+        placeholder="Search by email or name..."
+        class="search-input"
+      />
+      <button class="btn btn-primary" (click)="onSearch()">Search</button>
+    </div>
+
+    <div class="filter-group">
+      <select [(ngModel)]="roleFilter" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Roles</option>
+        <option value="VISITOR">Visitor</option>
+        <option value="USER">User</option>
+        <option value="ADMIN">Admin</option>
+      </select>
+
+      <select
+        [(ngModel)]="statusFilter"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option [ngValue]="undefined">All Status</option>
+        <option [ngValue]="true">Active</option>
+        <option [ngValue]="false">Suspended</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading/Error States -->
+  <div *ngIf="loading" class="loading">Loading users...</div>
+  <div *ngIf="error && !loading" class="error">{{ error }}</div>
+
+  <!-- Users Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td><span class="badge badge-role">{{ user.role }}</span></td>
+          <td>
+            <span [class]="user.isActive ? 'badge badge-success' : 'badge badge-danger'">
+              {{ user.isActive ? 'Active' : 'Suspended' }}
+            </span>
+          </td>
+          <td>{{ user.createdAt | date: 'short' }}</td>
+          <td class="actions">
+            <button
+              *ngIf="user.isActive"
+              class="btn-sm btn-warning"
+              (click)="suspendUser(user.id)"
+            >
+              Suspend
+            </button>
+            <button
+              *ngIf="!user.isActive"
+              class="btn-sm btn-success"
+              (click)="activateUser(user.id)"
+            >
+              Activate
+            </button>
+            <button class="btn-sm btn-info" (click)="updateRole(user.id, user.role)">
+              Change Role
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button
+        class="btn"
+        [disabled]="currentPage === 0"
+        (click)="onPageChange(currentPage - 1)"
+      >
+        Previous
+      </button>
+      <span class="page-info">
+        Page {{ currentPage + 1 }} of {{ totalPages }} ({{ totalElements }} total)
+      </span>
+      <button
+        class="btn"
+        [disabled]="currentPage >= totalPages - 1"
+        (click)="onPageChange(currentPage + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>

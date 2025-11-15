@@ -1,0 +1,57 @@
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-header">
+      <h2>AIRSEN Admin</h2>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <span>☰</span>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="icon">📊</span>
+        <span class="label">Dashboard</span>
+      </a>
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+        <span class="icon">👥</span>
+        <span class="label">Users</span>
+      </a>
+      <a routerLink="/admin/alerts" routerLinkActive="active" class="nav-item">
+        <span class="icon">🚨</span>
+        <span class="label">Alerts</span>
+      </a>
+      <a routerLink="/admin/campaigns" routerLinkActive="active" class="nav-item">
+        <span class="icon">📢</span>
+        <span class="label">Campaigns</span>
+      </a>
+      <a routerLink="/admin/audit" routerLinkActive="active" class="nav-item">
+        <span class="icon">📋</span>
+        <span class="label">Audit Log</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/dashboard" class="nav-item">
+        <span class="icon">←</span>
+        <span class="label">Back to Dashboard</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="admin-content" [class.sidebar-open]="sidebarOpen">
+    <!-- Header -->
+    <header class="admin-header">
+      <button class="menu-toggle" (click)="toggleSidebar()">
+        <span>☰</span>
+      </button>
+      <h1 class="page-title">Admin Dashboard</h1>
+    </header>
+
+    <!-- Content Area -->
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
