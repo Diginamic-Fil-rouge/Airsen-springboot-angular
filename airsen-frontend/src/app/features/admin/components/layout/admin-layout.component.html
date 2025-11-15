@@ -4,37 +4,37 @@
     <div class="sidebar-header">
       <h2>AIRSEN Admin</h2>
       <button class="toggle-btn" (click)="toggleSidebar()">
-        <span>☰</span>
+        <mat-icon>menu</mat-icon>
       </button>
     </div>
 
     <nav class="sidebar-nav">
       <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
-        <span class="icon">📊</span>
-        <span class="label">Dashboard</span>
+        <mat-icon class="icon">dashboard</mat-icon>
+        <span class="label">Tableau de Bord</span>
       </a>
       <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
-        <span class="icon">👥</span>
-        <span class="label">Users</span>
+        <mat-icon class="icon">group</mat-icon>
+        <span class="label">Utilisateurs</span>
       </a>
       <a routerLink="/admin/alerts" routerLinkActive="active" class="nav-item">
-        <span class="icon">🚨</span>
-        <span class="label">Alerts</span>
+        <mat-icon class="icon">notification_important</mat-icon>
+        <span class="label">Signaux d'Alerte</span>
       </a>
       <a routerLink="/admin/campaigns" routerLinkActive="active" class="nav-item">
-        <span class="icon">📢</span>
-        <span class="label">Campaigns</span>
+        <mat-icon class="icon">campaign</mat-icon>
+        <span class="label">Campagnes</span>
       </a>
       <a routerLink="/admin/audit" routerLinkActive="active" class="nav-item">
-        <span class="icon">📋</span>
-        <span class="label">Audit Log</span>
+        <mat-icon class="icon">assignment</mat-icon>
+        <span class="label">Journal d'Audit</span>
       </a>
     </nav>
 
     <div class="sidebar-footer">
       <a routerLink="/dashboard" class="nav-item">
-        <span class="icon">←</span>
-        <span class="label">Back to Dashboard</span>
+        <mat-icon class="icon">arrow_back</mat-icon>
+        <span class="label">Retour au Tableau de Bord</span>
       </a>
     </div>
   </aside>
@@ -44,9 +44,9 @@
     <!-- Header -->
     <header class="admin-header">
       <button class="menu-toggle" (click)="toggleSidebar()">
-        <span>☰</span>
+        <mat-icon>menu</mat-icon>
       </button>
-      <h1 class="page-title">Admin Dashboard</h1>
+      <h1 class="page-title">Administration</h1>
     </header>
 
     <!-- Content Area -->

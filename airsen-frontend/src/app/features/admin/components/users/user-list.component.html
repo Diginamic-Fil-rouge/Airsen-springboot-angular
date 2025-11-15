@@ -1,5 +1,5 @@
 <div class="user-list">
-  <h2>User Management</h2>
+  <h2>Gestion des Utilisateurs</h2>
 
   <!-- Filters -->
   <div class="filters">
@@ -8,18 +8,18 @@
         type="text"
         [(ngModel)]="searchTerm"
         (keyup.enter)="onSearch()"
-        placeholder="Search by email or name..."
+        placeholder="Rechercher par email ou nom..."
         class="search-input"
       />
-      <button class="btn btn-primary" (click)="onSearch()">Search</button>
+      <button class="btn btn-primary" (click)="onSearch()">Rechercher</button>
     </div>
 
     <div class="filter-group">
       <select [(ngModel)]="roleFilter" (change)="onFilterChange()" class="filter-select">
-        <option value="">All Roles</option>
-        <option value="VISITOR">Visitor</option>
-        <option value="USER">User</option>
-        <option value="ADMIN">Admin</option>
+        <option value="">Tous les Rôles</option>
+        <option value="VISITOR">Visiteur</option>
+        <option value="USER">Utilisateur</option>
+        <option value="ADMIN">Administrateur</option>
       </select>
 
       <select
@@ -27,15 +27,15 @@
         (change)="onFilterChange()"
         class="filter-select"
       >
-        <option [ngValue]="undefined">All Status</option>
-        <option [ngValue]="true">Active</option>
-        <option [ngValue]="false">Suspended</option>
+        <option [ngValue]="undefined">Tous les Statuts</option>
+        <option [ngValue]="true">Actif</option>
+        <option [ngValue]="false">Suspendu</option>
       </select>
     </div>
   </div>
 
   <!-- Loading/Error States -->
-  <div *ngIf="loading" class="loading">Loading users...</div>
+  <div *ngIf="loading" class="loading">Chargement des utilisateurs...</div>
   <div *ngIf="error && !loading" class="error">{{ error }}</div>
 
   <!-- Users Table -->
@@ -45,10 +45,10 @@
         <tr>
           <th>ID</th>
           <th>Email</th>
-          <th>Name</th>
-          <th>Role</th>
-          <th>Status</th>
-          <th>Created</th>
+          <th>Nom</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Créé le</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -60,7 +60,7 @@
           <td><span class="badge badge-role">{{ user.role }}</span></td>
           <td>
             <span [class]="user.isActive ? 'badge badge-success' : 'badge badge-danger'">
-              {{ user.isActive ? 'Active' : 'Suspended' }}
+              {{ user.isActive ? 'Actif' : 'Suspendu' }}
             </span>
           </td>
           <td>{{ user.createdAt | date: 'short' }}</td>
@@ -70,17 +70,17 @@
               class="btn-sm btn-warning"
               (click)="suspendUser(user.id)"
             >
-              Suspend
+              Suspendre
             </button>
             <button
               *ngIf="!user.isActive"
               class="btn-sm btn-success"
               (click)="activateUser(user.id)"
             >
-              Activate
+              Activer
             </button>
             <button class="btn-sm btn-info" (click)="updateRole(user.id, user.role)">
-              Change Role
+              Changer le Rôle
             </button>
           </td>
         </tr>
@@ -94,17 +94,17 @@
         [disabled]="currentPage === 0"
         (click)="onPageChange(currentPage - 1)"
       >
-        Previous
+        Précédent
       </button>
       <span class="page-info">
-        Page {{ currentPage + 1 }} of {{ totalPages }} ({{ totalElements }} total)
+        Page {{ currentPage + 1 }} sur {{ totalPages }} ({{ totalElements }} au total)
       </span>
       <button
         class="btn"
         [disabled]="currentPage >= totalPages - 1"
         (click)="onPageChange(currentPage + 1)"
       >
-        Next
+        Suivant
       </button>
     </div>
   </div>
@@ -112,10 +112,10 @@
   <!-- Confirmation Dialogs -->
   <app-confirm-dialog
     [isOpen]="showSuspendConfirm"
-    title="Suspend User"
-    message="Are you sure you want to suspend this user?"
-    confirmText="Yes, Suspend"
-    cancelText="Cancel"
+    title="Suspendre l'Utilisateur"
+    message="Êtes-vous sûr de vouloir suspendre cet utilisateur ?"
+    confirmText="Oui, Suspendre"
+    cancelText="Annuler"
     confirmButtonClass="btn-danger"
     (confirmed)="onSuspendConfirmed()"
     (cancelled)="showSuspendConfirm = false; selectedUserId = null"
@@ -123,11 +123,11 @@
 
   <app-input-dialog
     [isOpen]="showSuspendInput"
-    title="Suspension Reason"
-    message="Please enter the reason for suspending this user:"
-    placeholder="Enter suspension reason..."
-    submitText="Suspend User"
-    cancelText="Cancel"
+    title="Raison de la Suspension"
+    message="Veuillez saisir la raison de la suspension de cet utilisateur :"
+    placeholder="Entrer la raison de la suspension..."
+    submitText="Suspendre l'Utilisateur"
+    cancelText="Annuler"
     [required]="true"
     (submitted)="onSuspendReasonSubmitted($event)"
     (cancelled)="showSuspendInput = false; showSuspendConfirm = false; selectedUserId = null"
@@ -135,10 +135,10 @@
 
   <app-confirm-dialog
     [isOpen]="showActivateConfirm"
-    title="Activate User"
-    message="Are you sure you want to activate this user?"
-    confirmText="Yes, Activate"
-    cancelText="Cancel"
+    title="Activer l'Utilisateur"
+    message="Êtes-vous sûr de vouloir activer cet utilisateur ?"
+    confirmText="Oui, Activer"
+    cancelText="Annuler"
     confirmButtonClass="btn-success"
     (confirmed)="onActivateConfirmed()"
     (cancelled)="showActivateConfirm = false; selectedUserId = null"

@@ -1,112 +1,142 @@
 <div class="admin-dashboard">
   <div class="dashboard-header">
-    <h2>Dashboard Overview</h2>
-    <button class="btn btn-refresh" (click)="refresh()" [disabled]="loading">
-      <span>🔄</span> Refresh
+    <h2>Tableau de Bord Administration</h2>
+    <button mat-raised-button color="primary" (click)="refresh()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon>
+      Actualiser
     </button>
   </div>
 
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading statistics...</p>
+    <mat-progress-spinner color="primary" mode="indeterminate" diameter="40"></mat-progress-spinner>
+    <p>Chargement des statistiques...</p>
   </div>
 
   <!-- Error State -->
   <div *ngIf="error && !loading" class="error-state">
+    <mat-icon color="warn">error</mat-icon>
     <p>{{ error }}</p>
-    <button class="btn btn-primary" (click)="refresh()">Try Again</button>
+    <button mat-raised-button color="primary" (click)="refresh()">Réessayer</button>
   </div>
 
   <!-- Statistics Grid -->
   <div *ngIf="statistics && !loading && !error" class="stats-grid">
     <!-- User Statistics -->
-    <div class="stat-card stat-card-primary">
-      <div class="stat-icon">👥</div>
-      <div class="stat-content">
-        <h3>Total Users</h3>
-        <p class="stat-number">{{ statistics.totalUsers }}</p>
-        <div class="stat-details">
-          <span class="badge badge-success">{{ statistics.activeUsers }} active</span>
-          <span class="badge badge-warning">{{ statistics.suspendedUsers }} suspended</span>
+    <mat-card class="stat-card stat-card-primary">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon color="primary">group</mat-icon>
         </div>
-      </div>
-    </div>
+        <div class="stat-content">
+          <h3>Utilisateurs Total</h3>
+          <p class="stat-number">{{ statistics.totalUsers }}</p>
+          <div class="stat-details">
+            <mat-chip color="primary">{{ statistics.activeUsers }} actifs</mat-chip>
+            <mat-chip color="warn">{{ statistics.suspendedUsers }} suspendus</mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
-    <div class="stat-card stat-card-success">
-      <div class="stat-icon">✨</div>
-      <div class="stat-content">
-        <h3>New This Week</h3>
-        <p class="stat-number">{{ statistics.newUsersThisWeek }}</p>
-        <p class="stat-subtitle">New user registrations</p>
-      </div>
-    </div>
+    <mat-card class="stat-card stat-card-success">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon color="accent">new_releases</mat-icon>
+        </div>
+        <div class="stat-content">
+          <h3>Nouveaux Cette Semaine</h3>
+          <p class="stat-number">{{ statistics.newUsersThisWeek }}</p>
+          <p class="stat-subtitle">Nouvelles inscriptions</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Alert Statistics -->
-    <div class="stat-card stat-card-warning">
-      <div class="stat-icon">🚨</div>
-      <div class="stat-content">
-        <h3>Alert Signals</h3>
-        <p class="stat-number">{{ statistics.totalAlerts }}</p>
-        <div class="stat-details">
-          <span class="badge badge-danger">{{ statistics.activeAlerts }} active</span>
+    <mat-card class="stat-card stat-card-warning">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon color="warn">notification_important</mat-icon>
         </div>
-      </div>
-    </div>
+        <div class="stat-content">
+          <h3>Signaux d'Alerte</h3>
+          <p class="stat-number">{{ statistics.totalAlerts }}</p>
+          <div class="stat-details">
+            <mat-chip color="warn">{{ statistics.activeAlerts }} actifs</mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Campaign Statistics -->
-    <div class="stat-card stat-card-info">
-      <div class="stat-icon">📢</div>
-      <div class="stat-content">
-        <h3>Campaigns</h3>
-        <p class="stat-number">{{ statistics.totalCampaigns }}</p>
-        <div class="stat-details">
-          <span class="badge badge-info">{{ statistics.campaignsInProgress }} in progress</span>
+    <mat-card class="stat-card stat-card-info">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon color="accent">campaign</mat-icon>
         </div>
-      </div>
-    </div>
+        <div class="stat-content">
+          <h3>Campagnes</h3>
+          <p class="stat-number">{{ statistics.totalCampaigns }}</p>
+          <div class="stat-details">
+            <mat-chip color="accent">{{ statistics.campaignsInProgress }} en cours</mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Forum Statistics -->
-    <div class="stat-card">
-      <div class="stat-icon">💬</div>
-      <div class="stat-content">
-        <h3>Forum Threads</h3>
-        <p class="stat-number">{{ statistics.totalForumThreads }}</p>
-        <p class="stat-subtitle">Total discussions</p>
-      </div>
-    </div>
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>forum</mat-icon>
+        </div>
+        <div class="stat-content">
+          <h3>Sujets Forum</h3>
+          <p class="stat-number">{{ statistics.totalForumThreads }}</p>
+          <p class="stat-subtitle">Total discussions</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Notification Statistics -->
-    <div class="stat-card">
-      <div class="stat-icon">📬</div>
-      <div class="stat-content">
-        <h3>Notifications Sent</h3>
-        <p class="stat-number">{{ statistics.totalNotificationsSent | number }}</p>
-        <p class="stat-subtitle">Lifetime total</p>
-      </div>
-    </div>
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>notifications</mat-icon>
+        </div>
+        <div class="stat-content">
+          <h3>Notifications Envoyées</h3>
+          <p class="stat-number">{{ statistics.totalNotificationsSent | number }}</p>
+          <p class="stat-subtitle">Total depuis le début</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
   </div>
 
   <!-- Quick Actions -->
-  <div *ngIf="statistics && !loading" class="quick-actions">
-    <h3>Quick Actions</h3>
-    <div class="action-buttons">
-      <a routerLink="/admin/users" class="action-btn">
-        <span class="icon">👥</span>
-        <span>Manage Users</span>
-      </a>
-      <a routerLink="/admin/alerts" class="action-btn">
-        <span class="icon">🚨</span>
-        <span>Create Alert</span>
-      </a>
-      <a routerLink="/admin/campaigns" class="action-btn">
-        <span class="icon">📢</span>
-        <span>New Campaign</span>
-      </a>
-      <a routerLink="/admin/audit" class="action-btn">
-        <span class="icon">📋</span>
-        <span>View Audit Log</span>
-      </a>
-    </div>
-  </div>
+  <mat-card *ngIf="statistics && !loading" class="quick-actions">
+    <mat-card-header>
+      <mat-card-title>Actions Rapides</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="action-buttons">
+        <button mat-stroked-button color="primary" routerLink="/admin/users" class="action-btn">
+          <mat-icon>group</mat-icon>
+          <span>Gérer Utilisateurs</span>
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/admin/alerts" class="action-btn">
+          <mat-icon>notification_important</mat-icon>
+          <span>Créer Alerte</span>
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/admin/campaigns" class="action-btn">
+          <mat-icon>campaign</mat-icon>
+          <span>Nouvelle Campagne</span>
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/admin/audit" class="action-btn">
+          <mat-icon>assignment</mat-icon>
+          <span>Journal d'Audit</span>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

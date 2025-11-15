@@ -30,7 +30,7 @@
   <nav class="sidebar-nav">
     <!-- Main Navigation -->
     <ul class="nav-list">
-      <li *ngFor="let item of visibleNavItems" class="nav-item-wrapper">
+      <li *ngFor="let item of mainNavItems" class="nav-item-wrapper">
         <a
           [routerLink]="item.route"
           routerLinkActive="active"
@@ -48,7 +48,32 @@
       </li>
     </ul>
 
-    <!-- Divider -->
+    <!-- Admin Section -->
+    <div *ngIf="adminNavItems.length > 0">
+      <div class="nav-divider" *ngIf="isExpanded"></div>
+      <div class="nav-section-header" *ngIf="isExpanded">
+        <span class="section-title">Administration</span>
+      </div>
+      <ul class="nav-list nav-list-admin">
+        <li *ngFor="let item of adminNavItems" class="nav-item-wrapper">
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            class="nav-item nav-item-admin"
+            [class.nav-item-featured]="item.featured"
+            [matTooltip]="!isExpanded ? item.label : ''"
+            matTooltipPosition="right">
+            <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+            <span class="nav-label" *ngIf="isExpanded">{{ item.label }}</span>
+            <span class="nav-badge" *ngIf="isExpanded && item.badgeCount && item.badgeCount > 0">
+              {{ item.badgeCount }}
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- User Section Divider -->
     <div class="nav-divider" *ngIf="isExpanded"></div>
 
     <!-- Logout -->

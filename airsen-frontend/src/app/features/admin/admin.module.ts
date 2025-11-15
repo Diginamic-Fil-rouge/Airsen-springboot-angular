@@ -10,7 +10,6 @@ import { SharedModule } from '@/shared/shared.module';
 import { AdminRoutingModule } from './admin-routing.module';
 
 // Components
-import { AdminLayoutComponent } from './components/layout/admin-layout.component';
 import { AdminDashboardComponent } from './components/dashboard/admin-dashboard.component';
 import { UserListComponent } from './components/users/user-list.component';
 import { AlertListComponent } from './components/alerts/alert-list.component';
@@ -31,7 +30,6 @@ import { AuditLogComponent } from './components/audit/audit-log.component';
  */
 @NgModule({
   declarations: [
-    AdminLayoutComponent,
     AdminDashboardComponent,
     UserListComponent,
     AlertListComponent,
