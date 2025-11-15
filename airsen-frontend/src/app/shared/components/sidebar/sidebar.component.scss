@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use '../../../../styles/design-system' as *;
+@use 'styles/design-system' as *;
 
 // Sidebar Container
 
@@ -165,6 +165,19 @@
   margin: $space-3 $space-3 $space-2 $space-3;
 }
 
+// Nav section headers
+.nav-section-header {
+  padding: $space-3 $space-4 $space-2 $space-4;
+
+  .section-title {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-500;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-wide;
+  }
+}
+
 .nav-item {
   display: flex;
   align-items: center;
@@ -245,6 +258,15 @@
 
   &:last-child {
     margin-bottom: 0;
+  }
+}
+
+// Admin navigation styling - aligned with regular nav items
+.nav-list-admin {
+  .nav-item-admin {
+    // Remove all custom styling to match regular nav items
+    // Admin items now behave exactly like main navigation items
+    // Visual separation is provided by the section header only
   }
 }
 

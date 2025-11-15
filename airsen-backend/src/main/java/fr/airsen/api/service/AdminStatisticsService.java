@@ -1,7 +1,7 @@
 package fr.airsen.api.service;
 
 import fr.airsen.api.dto.response.AdminStatisticsDTO;
-import fr.airsen.api.entity.enums.CampaignStatus;
+import fr.airsen.api.entity.enums.NotificationCampaignStatus;
 import fr.airsen.api.repository.AlertSignalRepository;
 import fr.airsen.api.repository.ForumThreadRepository;
 import fr.airsen.api.repository.NotificationCampaignRepository;
@@ -112,10 +112,10 @@ public class AdminStatisticsService {
     private Long countCampaignsInProgress() {
         try {
             return notificationCampaignRepository.findAll().stream()
-                    .filter(campaign -> campaign.getStatus() == CampaignStatus.SENDING)
+                    .filter(campaign -> campaign.getStatus() == NotificationCampaignStatus.SENDING)
                     .count();
         } catch (Exception e) {
-            // If CampaignStatus enum doesn't exist, return 0
+            // If NotificationCampaignStatus enum doesn't exist, return 0
             return 0L;
         }
     }

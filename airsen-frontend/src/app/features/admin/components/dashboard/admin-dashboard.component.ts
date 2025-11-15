@@ -14,7 +14,8 @@ import { AdminService, AdminStatistics } from '../../services/admin.service';
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.scss']
+  styleUrls: ['./admin-dashboard.component.scss'],
+  standalone: false
 })
 export class AdminDashboardComponent implements OnInit {
   statistics: AdminStatistics | null = null;

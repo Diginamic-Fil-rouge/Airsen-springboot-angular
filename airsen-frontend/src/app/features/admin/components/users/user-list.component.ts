@@ -11,7 +11,8 @@ import { ToastService } from '@/shared/services/toast.service';
 @Component({
   selector: 'app-user-list',
   templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss']
+  styleUrls: ['./user-list.component.scss'],
+  standalone: false
 })
 export class UserListComponent implements OnInit {
   users: User[] = [];
@@ -65,7 +66,7 @@ export class UserListComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'Failed to load users. Please try again.';
+        this.error = 'Échec du chargement des utilisateurs. Veuillez réessayer.';
         this.loading = false;
         console.error('Error loading users:', err);
       }
@@ -100,12 +101,12 @@ export class UserListComponent implements OnInit {
     if (this.selectedUserId !== null) {
       this.adminService.suspendUser(this.selectedUserId, reason).subscribe({
         next: () => {
-          this.toastService.success('User suspended successfully');
+          this.toastService.success('Utilisateur suspendu avec succès');
           this.loadUsers();
           this.selectedUserId = null;
         },
         error: (err) => {
-          this.toastService.error('Failed to suspend user');
+          this.toastService.error('Échec de la suspension de l\'utilisateur');
           console.error(err);
         }
       });
@@ -121,12 +122,12 @@ export class UserListComponent implements OnInit {
     if (this.selectedUserId !== null) {
       this.adminService.activateUser(this.selectedUserId).subscribe({
         next: () => {
-          this.toastService.success('User activated successfully');
+          this.toastService.success('Utilisateur activé avec succès');
           this.loadUsers();
           this.selectedUserId = null;
         },
         error: (err) => {
-          this.toastService.error('Failed to activate user');
+          this.toastService.error('Échec de l\'activation de l\'utilisateur');
           console.error(err);
         }
       });
@@ -135,15 +136,15 @@ export class UserListComponent implements OnInit {
 
   updateRole(userId: number, currentRole: string): void {
     // For now, keep using prompt for role update - can be enhanced with a select dialog later
-    const newRole = prompt(`Enter new role (current: ${currentRole}):`);
+    const newRole = prompt(`Entrer le nouveau rôle (actuel : ${currentRole}) :`);
     if (newRole && newRole !== currentRole) {
       this.adminService.updateUserRole(userId, newRole).subscribe({
         next: () => {
-          this.toastService.success('User role updated successfully');
+          this.toastService.success('Rôle de l\'utilisateur mis à jour avec succès');
           this.loadUsers();
         },
         error: (err) => {
-          this.toastService.error('Failed to update user role');
+          this.toastService.error('Échec de la mise à jour du rôle de l\'utilisateur');
           console.error(err);
         }
       });

@@ -61,29 +61,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * Items without roles are visible to all authenticated users
    */
   navItems: NavItem[] = [
-    // General Section - Home/Dashboard
+    // Main Navigation Section
     { label: "Accueil", icon: "home", route: "/dashboard" },
-
-    // Map/Air Quality
     { label: "Carte", icon: "map", route: "/map" },
-
-    // Alerts (with badge count - ADMIN only)
-    { label: "Alertes", icon: "notifications", route: "/alerts", roles: ["ADMIN"] },
-
-    // Community
     { label: "Forum", icon: "forum", route: "/forum" },
-
-    // Favorites
     { label: "Favoris", icon: "favorite", route: "/favorites" },
-
-    // Export/Download
     { label: "Exports", icon: "download", route: "/export" },
-
-    // User Profile
     { label: "Profil", icon: "person", route: "/profile" },
-
-    // Settings
     { label: "Paramètres", icon: "settings", route: "/settings" },
+
+    // Admin Section - only visible to ADMIN users
+    { label: "Tableau de Bord", icon: "dashboard", route: "/admin/dashboard", roles: ["ADMIN"] },
+    { label: "Utilisateurs", icon: "group", route: "/admin/users", roles: ["ADMIN"] },
+    { label: "Signaux d'Alerte", icon: "notification_important", route: "/admin/alerts", roles: ["ADMIN"] },
+    { label: "Campagnes", icon: "campaign", route: "/admin/campaigns", roles: ["ADMIN"] },
+    { label: "Journal d'Audit", icon: "assignment", route: "/admin/audit", roles: ["ADMIN"] },
   ];
 
   constructor(
@@ -208,7 +200,27 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get list of visible navigation items based on user roles
+   * Get list of visible main navigation items (non-admin)
+   * @returns Array of main navigation items visible to current user
+   */
+  get mainNavItems(): NavItem[] {
+    return this.navItems
+      .filter((item) => !item.roles || !item.roles.includes("ADMIN"))
+      .filter((item) => this.shouldShowNavItem(item));
+  }
+
+  /**
+   * Get list of visible admin navigation items
+   * @returns Array of admin navigation items visible to current user
+   */
+  get adminNavItems(): NavItem[] {
+    return this.navItems
+      .filter((item) => item.roles && item.roles.includes("ADMIN"))
+      .filter((item) => this.shouldShowNavItem(item));
+  }
+
+  /**
+   * Get list of all visible navigation items (for backward compatibility)
    * @returns Array of navigation items visible to current user
    */
   get visibleNavItems(): NavItem[] {
