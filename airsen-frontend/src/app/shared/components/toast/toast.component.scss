@@ -1,0 +1,131 @@
+@use '../../../../../styles/design-system' as *;
+
+.toast-container {
+  position: fixed;
+  top: $space-4;
+  right: $space-4;
+  z-index: $z-index-modal + 10; // Above modals
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  pointer-events: none;
+}
+
+.toast {
+  background-color: $airsen-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  padding: $space-4;
+  min-width: 300px;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  pointer-events: all;
+  animation: slideIn $duration-normal $ease-out;
+  border-left: 4px solid;
+
+  &.toast-success {
+    border-left-color: $airsen-success;
+
+    .toast-icon {
+      color: $airsen-success;
+      background-color: rgba($airsen-success, 0.1);
+    }
+  }
+
+  &.toast-error {
+    border-left-color: $airsen-error;
+
+    .toast-icon {
+      color: $airsen-error;
+      background-color: rgba($airsen-error, 0.1);
+    }
+  }
+
+  &.toast-warning {
+    border-left-color: $airsen-warning;
+
+    .toast-icon {
+      color: $airsen-warning;
+      background-color: rgba($airsen-warning, 0.1);
+    }
+  }
+
+  &.toast-info {
+    border-left-color: $airsen-secondary;
+
+    .toast-icon {
+      color: $airsen-secondary;
+      background-color: rgba($airsen-secondary, 0.1);
+    }
+  }
+}
+
+.toast-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  flex: 1;
+  color: $airsen-gray-900;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-normal;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: $airsen-gray-500;
+  font-size: $font-size-2xl;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  transition: $transition-colors;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: $airsen-gray-100;
+    color: $airsen-gray-900;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Responsive
+@include respond-max(sm) {
+  .toast-container {
+    top: $space-2;
+    right: $space-2;
+    left: $space-2;
+  }
+
+  .toast {
+    min-width: unset;
+    max-width: unset;
+  }
+}

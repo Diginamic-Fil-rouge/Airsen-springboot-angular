@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminService, User, UserFilterParams, PaginatedResponse } from '../../services/admin.service';
+import { ToastService } from '@/shared/services/toast.service';
 
 /**
  * UserListComponent
@@ -28,7 +29,17 @@ export class UserListComponent implements OnInit {
   roleFilter = '';
   statusFilter: boolean | undefined = undefined;
 
-  constructor(private adminService: AdminService) {}
+  // Dialogs
+  showSuspendConfirm = false;
+  showActivateConfirm = false;
+  showSuspendInput = false;
+  selectedUserId: number | null = null;
+  suspensionReason = '';
+
+  constructor(
+    private adminService: AdminService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -77,32 +88,45 @@ export class UserListComponent implements OnInit {
   }
 
   suspendUser(userId: number): void {
-    if (confirm('Are you sure you want to suspend this user?')) {
-      const reason = prompt('Enter suspension reason:');
-      if (reason) {
-        this.adminService.suspendUser(userId, reason).subscribe({
-          next: () => {
-            alert('User suspended successfully');
-            this.loadUsers();
-          },
-          error: (err) => {
-            alert('Failed to suspend user');
-            console.error(err);
-          }
-        });
-      }
+    this.selectedUserId = userId;
+    this.showSuspendConfirm = true;
+  }
+
+  onSuspendConfirmed(): void {
+    this.showSuspendInput = true;
+  }
+
+  onSuspendReasonSubmitted(reason: string): void {
+    if (this.selectedUserId !== null) {
+      this.adminService.suspendUser(this.selectedUserId, reason).subscribe({
+        next: () => {
+          this.toastService.success('User suspended successfully');
+          this.loadUsers();
+          this.selectedUserId = null;
+        },
+        error: (err) => {
+          this.toastService.error('Failed to suspend user');
+          console.error(err);
+        }
+      });
     }
   }
 
   activateUser(userId: number): void {
-    if (confirm('Are you sure you want to activate this user?')) {
-      this.adminService.activateUser(userId).subscribe({
+    this.selectedUserId = userId;
+    this.showActivateConfirm = true;
+  }
+
+  onActivateConfirmed(): void {
+    if (this.selectedUserId !== null) {
+      this.adminService.activateUser(this.selectedUserId).subscribe({
         next: () => {
-          alert('User activated successfully');
+          this.toastService.success('User activated successfully');
           this.loadUsers();
+          this.selectedUserId = null;
         },
         error: (err) => {
-          alert('Failed to activate user');
+          this.toastService.error('Failed to activate user');
           console.error(err);
         }
       });
@@ -110,15 +134,16 @@ export class UserListComponent implements OnInit {
   }
 
   updateRole(userId: number, currentRole: string): void {
+    // For now, keep using prompt for role update - can be enhanced with a select dialog later
     const newRole = prompt(`Enter new role (current: ${currentRole}):`);
     if (newRole && newRole !== currentRole) {
       this.adminService.updateUserRole(userId, newRole).subscribe({
         next: () => {
-          alert('User role updated successfully');
+          this.toastService.success('User role updated successfully');
           this.loadUsers();
         },
         error: (err) => {
-          alert('Failed to update user role');
+          this.toastService.error('Failed to update user role');
           console.error(err);
         }
       });

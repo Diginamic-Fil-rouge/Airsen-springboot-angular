@@ -108,4 +108,39 @@
       </button>
     </div>
   </div>
+
+  <!-- Confirmation Dialogs -->
+  <app-confirm-dialog
+    [isOpen]="showSuspendConfirm"
+    title="Suspend User"
+    message="Are you sure you want to suspend this user?"
+    confirmText="Yes, Suspend"
+    cancelText="Cancel"
+    confirmButtonClass="btn-danger"
+    (confirmed)="onSuspendConfirmed()"
+    (cancelled)="showSuspendConfirm = false; selectedUserId = null"
+  ></app-confirm-dialog>
+
+  <app-input-dialog
+    [isOpen]="showSuspendInput"
+    title="Suspension Reason"
+    message="Please enter the reason for suspending this user:"
+    placeholder="Enter suspension reason..."
+    submitText="Suspend User"
+    cancelText="Cancel"
+    [required]="true"
+    (submitted)="onSuspendReasonSubmitted($event)"
+    (cancelled)="showSuspendInput = false; showSuspendConfirm = false; selectedUserId = null"
+  ></app-input-dialog>
+
+  <app-confirm-dialog
+    [isOpen]="showActivateConfirm"
+    title="Activate User"
+    message="Are you sure you want to activate this user?"
+    confirmText="Yes, Activate"
+    cancelText="Cancel"
+    confirmButtonClass="btn-success"
+    (confirmed)="onActivateConfirmed()"
+    (cancelled)="showActivateConfirm = false; selectedUserId = null"
+  ></app-confirm-dialog>
 </div>
