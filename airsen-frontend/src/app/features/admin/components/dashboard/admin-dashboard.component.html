@@ -1,0 +1,112 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <h2>Dashboard Overview</h2>
+    <button class="btn btn-refresh" (click)="refresh()" [disabled]="loading">
+      <span>🔄</span> Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading statistics...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="refresh()">Try Again</button>
+  </div>
+
+  <!-- Statistics Grid -->
+  <div *ngIf="statistics && !loading && !error" class="stats-grid">
+    <!-- User Statistics -->
+    <div class="stat-card stat-card-primary">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <h3>Total Users</h3>
+        <p class="stat-number">{{ statistics.totalUsers }}</p>
+        <div class="stat-details">
+          <span class="badge badge-success">{{ statistics.activeUsers }} active</span>
+          <span class="badge badge-warning">{{ statistics.suspendedUsers }} suspended</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card-success">
+      <div class="stat-icon">✨</div>
+      <div class="stat-content">
+        <h3>New This Week</h3>
+        <p class="stat-number">{{ statistics.newUsersThisWeek }}</p>
+        <p class="stat-subtitle">New user registrations</p>
+      </div>
+    </div>
+
+    <!-- Alert Statistics -->
+    <div class="stat-card stat-card-warning">
+      <div class="stat-icon">🚨</div>
+      <div class="stat-content">
+        <h3>Alert Signals</h3>
+        <p class="stat-number">{{ statistics.totalAlerts }}</p>
+        <div class="stat-details">
+          <span class="badge badge-danger">{{ statistics.activeAlerts }} active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign Statistics -->
+    <div class="stat-card stat-card-info">
+      <div class="stat-icon">📢</div>
+      <div class="stat-content">
+        <h3>Campaigns</h3>
+        <p class="stat-number">{{ statistics.totalCampaigns }}</p>
+        <div class="stat-details">
+          <span class="badge badge-info">{{ statistics.campaignsInProgress }} in progress</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forum Statistics -->
+    <div class="stat-card">
+      <div class="stat-icon">💬</div>
+      <div class="stat-content">
+        <h3>Forum Threads</h3>
+        <p class="stat-number">{{ statistics.totalForumThreads }}</p>
+        <p class="stat-subtitle">Total discussions</p>
+      </div>
+    </div>
+
+    <!-- Notification Statistics -->
+    <div class="stat-card">
+      <div class="stat-icon">📬</div>
+      <div class="stat-content">
+        <h3>Notifications Sent</h3>
+        <p class="stat-number">{{ statistics.totalNotificationsSent | number }}</p>
+        <p class="stat-subtitle">Lifetime total</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div *ngIf="statistics && !loading" class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-buttons">
+      <a routerLink="/admin/users" class="action-btn">
+        <span class="icon">👥</span>
+        <span>Manage Users</span>
+      </a>
+      <a routerLink="/admin/alerts" class="action-btn">
+        <span class="icon">🚨</span>
+        <span>Create Alert</span>
+      </a>
+      <a routerLink="/admin/campaigns" class="action-btn">
+        <span class="icon">📢</span>
+        <span>New Campaign</span>
+      </a>
+      <a routerLink="/admin/audit" class="action-btn">
+        <span class="icon">📋</span>
+        <span>View Audit Log</span>
+      </a>
+    </div>
+  </div>
+</div>
