@@ -63,12 +63,32 @@
 
 .modal-body {
   padding: $space-6;
+}
+
+.modal-message {
   color: $airsen-gray-700;
   font-size: $font-size-base;
   line-height: $line-height-relaxed;
+  margin: 0 0 $space-4 0;
+}
 
-  p {
-    margin: 0;
+.modal-input {
+  width: 100%;
+  padding: $space-3;
+  border: 1px solid $airsen-gray-300;
+  border-radius: $radius-md;
+  font-size: $font-size-base;
+  color: $airsen-gray-900;
+  transition: $transition-all;
+
+  &:focus {
+    outline: none;
+    border-color: $airsen-secondary;
+    box-shadow: 0 0 0 3px rgba($airsen-secondary, 0.1);
+  }
+
+  &::placeholder {
+    color: $airsen-gray-400;
   }
 }
 
@@ -89,30 +109,17 @@
   cursor: pointer;
   transition: $transition-all;
 
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   &.btn-secondary {
     background-color: $airsen-gray-200;
     color: $airsen-gray-900;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: $airsen-gray-300;
-    }
-  }
-
-  &.btn-danger {
-    background-color: $airsen-error;
-    color: $airsen-white;
-
-    &:hover {
-      background-color: darken($airsen-error, 10%);
-    }
-  }
-
-  &.btn-success {
-    background-color: $airsen-success;
-    color: $airsen-white;
-
-    &:hover {
-      background-color: darken($airsen-success, 10%);
     }
   }
 
@@ -120,7 +127,7 @@
     background-color: $airsen-secondary;
     color: $airsen-white;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: darken($airsen-secondary, 10%);
     }
   }

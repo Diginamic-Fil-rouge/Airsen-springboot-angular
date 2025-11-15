@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+// Shared Module
+import { SharedModule } from '@/shared/shared.module';
+
 // Routing
 import { AdminRoutingModule } from './admin-routing.module';
 
@@ -40,6 +43,7 @@ import { AuditLogComponent } from './components/audit/audit-log.component';
     ReactiveFormsModule,
     FormsModule,
     HttpClientModule,
+    SharedModule,
     AdminRoutingModule
   ]
 })
