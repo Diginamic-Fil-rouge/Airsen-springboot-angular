@@ -42,10 +42,10 @@ export class ToastComponent implements OnInit, OnDestroy {
 
   getIcon(type: Toast['type']): string {
     switch (type) {
-      case 'success': return '✓';
-      case 'error': return '✕';
-      case 'warning': return '⚠';
-      case 'info': return 'ℹ';
+      case 'success': return '';
+      case 'error': return '';
+      case 'warning': return '�';
+      case 'info': return '9';
       default: return '';
     }
   }
