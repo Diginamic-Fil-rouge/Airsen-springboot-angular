@@ -15,6 +15,7 @@ import { UserListComponent } from './components/users/user-list.component';
 import { AlertListComponent } from './components/alerts/alert-list.component';
 import { CampaignListComponent } from './components/campaigns/campaign-list.component';
 import { AuditLogComponent } from './components/audit/audit-log.component';
+import { CategoryListComponent } from './components/categories/category-list.component';
 
 /**
  * AdminModule - Admin dashboard feature module
@@ -34,7 +35,8 @@ import { AuditLogComponent } from './components/audit/audit-log.component';
     UserListComponent,
     AlertListComponent,
     CampaignListComponent,
-    AuditLogComponent
+    AuditLogComponent,
+    CategoryListComponent
   ],
   imports: [
     CommonModule,

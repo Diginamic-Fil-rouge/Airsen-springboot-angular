@@ -1,0 +1,71 @@
+<div class="category-list">
+  <!-- Header Section -->
+  <div class="category-header">
+    <div class="header-content">
+      <h2 class="header-title">Gestion des catégories</h2>
+      <p class="header-description">Gérer les catégories du forum</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="openAddDialog()" class="add-button">
+      <mat-icon>add</mat-icon>
+      <span>Ajouter</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <mat-progress-spinner color="primary" mode="indeterminate" diameter="40"></mat-progress-spinner>
+    <p>Chargement des catégories...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadCategories()">Réessayer</button>
+  </div>
+
+  <!-- Categories List -->
+  <div *ngIf="categories && !loading && !error" class="categories-list">
+    <!-- Empty State -->
+    <div *ngIf="categories.length === 0" class="empty-state">
+      <mat-icon>category</mat-icon>
+      <p>Aucune catégorie créée</p>
+      <button mat-raised-button color="primary" (click)="openAddDialog()">
+        Créer la première catégorie
+      </button>
+    </div>
+
+    <!-- Category Cards -->
+    <mat-card *ngFor="let category of categories" class="category-card">
+      <!-- Action Buttons: Top-Right Positioning -->
+      <div class="category-actions">
+        <button mat-icon-button (click)="openEditDialog(category)" matTooltip="Modifier" matTooltipPosition="below">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteCategory(category)" matTooltip="Supprimer" matTooltipPosition="below">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+
+      <mat-card-content>
+        <!-- Category Info Section -->
+        <div class="category-info">
+          <h3 class="category-name">{{ category.name }}</h3>
+          <p class="category-description">{{ category.description }}</p>
+        </div>
+
+        <!-- Category Stats -->
+        <div class="category-stats">
+          <mat-chip class="stat-chip discussions-chip">
+            <mat-icon>forum</mat-icon>
+            {{ category.threads?.length || 0 }} discussions
+          </mat-chip>
+          <mat-chip class="stat-chip status-chip">
+            <mat-icon>check_circle</mat-icon>
+            Actif
+          </mat-chip>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

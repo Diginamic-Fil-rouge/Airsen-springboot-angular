@@ -7,6 +7,7 @@ import { UserListComponent } from './components/users/user-list.component';
 import { AlertListComponent } from './components/alerts/alert-list.component';
 import { CampaignListComponent } from './components/campaigns/campaign-list.component';
 import { AuditLogComponent } from './components/audit/audit-log.component';
+import { CategoryListComponent } from './components/categories/category-list.component';
 
 /**
  * Admin Routing Module
@@ -45,6 +46,11 @@ const routes: Routes = [
   {
     path: 'audit',
     component: AuditLogComponent
+  },
+  // Category Management
+  {
+    path: 'categories',
+    component: CategoryListComponent
   }
 ];
 
