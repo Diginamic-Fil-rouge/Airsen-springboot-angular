@@ -1,0 +1,350 @@
+@use 'sass:color';
+@use '../../../../../styles/design-system' as *;
+
+.category-list {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $space-6;
+
+  @include respond-max(md) {
+    padding: $space-4;
+  }
+
+  @include respond-max(sm) {
+    padding: $space-3;
+  }
+}
+
+// Header Section
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $space-8;
+  gap: $space-4;
+
+  @include respond-max(md) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-content {
+    flex: 1;
+
+    .header-title {
+      font-size: $font-size-3xl;
+      font-weight: $font-weight-semibold;
+      color: $airsen-gray-900;
+      margin: 0 0 $space-1 0;
+    }
+
+    .header-description {
+      font-size: $font-size-base;
+      color: $airsen-gray-600;
+      margin: 0;
+    }
+  }
+
+  .add-button {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-3 $space-5;
+    background-color: $airsen-primary !important;
+    color: $airsen-white !important;
+    border-radius: $radius-lg;
+    font-weight: $font-weight-semibold;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: $transition-all;
+
+    &:hover {
+      background-color: color.adjust($airsen-primary, $lightness: -5%) !important;
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    @include respond-max(md) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+// Loading and Error States
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $space-16 $space-8;
+  text-align: center;
+
+  p {
+    margin: $space-4 0 0 0;
+    color: $airsen-gray-600;
+    font-size: $font-size-lg;
+  }
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: $space-4;
+  }
+
+  button {
+    margin-top: $space-4;
+  }
+}
+
+// Categories List
+.categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  max-width: 900px;
+  margin: 0 auto;
+
+  @include respond-max(md) {
+    gap: $space-4;
+  }
+
+  @include respond-max(sm) {
+    gap: $space-3;
+  }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $space-16 $space-8;
+  text-align: center;
+  background-color: $airsen-gray-50;
+  border-radius: $radius-lg;
+  border: 2px dashed $airsen-gray-300;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: $airsen-gray-400;
+    margin-bottom: $space-4;
+  }
+
+  p {
+    margin: 0 0 $space-4 0;
+    color: $airsen-gray-600;
+    font-size: $font-size-lg;
+  }
+}
+
+// Category Cards
+.category-card {
+  position: relative;
+  @include card();
+  transition: $transition-all;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+    padding: $space-5 !important;
+  }
+}
+
+// Action Buttons: Top-Right Positioning
+.category-actions {
+  position: absolute;
+  top: $space-4;
+  right: $space-4;
+  display: flex;
+  gap: $space-1;
+  flex-shrink: 0;
+  z-index: 10;
+
+  button {
+    transition: background-color $duration-normal $ease-in-out;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+// Category Info Section
+.category-info {
+  padding-right: $space-12;
+
+  .category-name {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $airsen-gray-900;
+    margin: 0 0 $space-2 0;
+    word-break: break-word;
+  }
+
+  .category-description {
+    font-size: $font-size-sm;
+    color: $airsen-gray-600;
+    margin: 0;
+    line-height: $line-height-normal;
+  }
+}
+
+// Category Stats
+.category-stats {
+  display: flex;
+  gap: $space-3;
+  flex-wrap: wrap;
+
+  .stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-2 $space-5 !important;
+    border-radius: 20px !important;
+    font-size: $font-size-xs !important;
+    font-weight: $font-weight-medium !important;
+    height: auto !important;
+    min-height: 32px;
+    border: none !important;
+    transition: all $duration-normal $ease-in-out;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &.discussions-chip {
+      background-color: $airsen-secondary !important;
+      color: $airsen-white !important;
+
+      &:hover {
+        background-color: color.adjust($airsen-secondary, $lightness: -10%) !important;
+        transform: translateY(-1px);
+        box-shadow: $shadow-sm;
+      }
+    }
+
+    &.status-chip {
+      background-color: $airsen-success !important;
+      color: $airsen-white !important;
+
+      &:hover {
+        background-color: color.adjust($airsen-success, $lightness: -10%) !important;
+        transform: translateY(-1px);
+        box-shadow: $shadow-sm;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@include respond-max(sm) {
+  .category-header {
+    margin-bottom: $space-6;
+
+    .header-content {
+      .header-title {
+        font-size: $font-size-2xl;
+      }
+    }
+  }
+
+  .category-card {
+    mat-card-content {
+      padding: $space-4 !important;
+    }
+  }
+
+  .category-actions {
+    top: $space-3;
+    right: $space-3;
+
+    button mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .category-info {
+    padding-right: $space-10;
+
+    .category-name {
+      font-size: $font-size-lg;
+    }
+  }
+
+  .category-stats {
+    gap: $space-2;
+
+    .stat-chip {
+      padding: $space-1 $space-3 !important;
+      font-size: $font-size-xs !important;
+      min-height: 28px;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+}
+
+// Accessibility
+.category-card:focus-visible {
+  outline: 3px solid $airsen-primary;
+  outline-offset: 2px;
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .add-button,
+  .category-card {
+    &:hover {
+      transform: none;
+    }
+  }
+
+  * {
+    transition: none !important;
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .category-card {
+    border: 2px solid $airsen-gray-900;
+  }
+
+  .category-name {
+    font-weight: $font-weight-bold;
+  }
+}
