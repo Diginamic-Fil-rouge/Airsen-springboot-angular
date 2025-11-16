@@ -5,7 +5,6 @@ import fr.airsen.api.dto.response.WeatherResponse;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.Department;
 import fr.airsen.api.entity.WeatherData;
-import fr.airsen.api.entity.enums.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,20 +68,20 @@ class WeatherMapperTest {
         parisWeatherData.setCommune(parisCommune);
         parisWeatherData.setMeasurementDate(LocalDate.of(2025, 11, 16));
         // Basic fields (5)
-        parisWeatherData.setTemperature(new BigDecimal("18.5"));
+        parisWeatherData.setTemperature(18.5);
         parisWeatherData.setHumidity(65);
-        parisWeatherData.setWindSpeed(new BigDecimal("12.5"));
+        parisWeatherData.setWindSpeed(12.5);
         parisWeatherData.setWindDirection(180);
         parisWeatherData.setWeatherCode(2); // Partly cloudy
         // Advanced fields (8)
-        parisWeatherData.setApparentTemperature(new BigDecimal("17.2"));
-        parisWeatherData.setPrecipitation(new BigDecimal("2.5"));
-        parisWeatherData.setRain(new BigDecimal("2.0"));
-        parisWeatherData.setShowers(new BigDecimal("0.5"));
-        parisWeatherData.setSnowfall(new BigDecimal("0.0"));
+        parisWeatherData.setApparentTemperature(17.2);
+        parisWeatherData.setPrecipitation(2.5);
+        parisWeatherData.setRain(2.0);
+        parisWeatherData.setShowers(0.5);
+        parisWeatherData.setSnowfall(0.0);
         parisWeatherData.setCloudCover(50);
-        parisWeatherData.setWindGusts(new BigDecimal("25.0"));
-        parisWeatherData.setPressureMsl(new BigDecimal("1013.25"));
+        parisWeatherData.setWindGusts(25.0);
+        parisWeatherData.setPressureMsl(1013.25);
     }
 
     // ============================================
@@ -122,7 +121,7 @@ class WeatherMapperTest {
         assertThat(response.pressureMsl()).isCloseTo(1013.25, within(0.01));
 
         // Verify data source metadata
-        assertThat(response.dataSource()).isEqualTo(DataSource.DIRECT);
+        assertThat(response.dataSource()).isEqualTo(WeatherResponse.DataSource.DIRECT);
         assertThat(response.estimatedFromCommune()).isNull();
         assertThat(response.distanceKm()).isNull();
         assertThat(response.dataQualityNote()).isEqualTo("Données mesurées pour cette commune");
@@ -135,9 +134,9 @@ class WeatherMapperTest {
         WeatherData basicWeather = new WeatherData();
         basicWeather.setCommune(parisCommune);
         basicWeather.setMeasurementDate(LocalDate.now());
-        basicWeather.setTemperature(new BigDecimal("20.0"));
+        basicWeather.setTemperature(20.0);
         basicWeather.setHumidity(70);
-        basicWeather.setWindSpeed(new BigDecimal("10.0"));
+        basicWeather.setWindSpeed(10.0);
         basicWeather.setWindDirection(90);
         basicWeather.setWeatherCode(0);
         // All advanced fields are null
@@ -219,7 +218,7 @@ class WeatherMapperTest {
         assertThat(response.pressureMsl()).isCloseTo(1010.5, within(0.01));
 
         // Verify data source metadata
-        assertThat(response.dataSource()).isEqualTo(DataSource.ESTIMATED);
+        assertThat(response.dataSource()).isEqualTo(WeatherResponse.DataSource.ESTIMATED);
         assertThat(response.estimatedFromCommune()).isEqualTo("Saint-Denis");
         assertThat(response.distanceKm()).isEqualTo(9.2);
         assertThat(response.dataQualityNote())
@@ -345,9 +344,9 @@ class WeatherMapperTest {
         WeatherData extremeHot = new WeatherData();
         extremeHot.setCommune(parisCommune);
         extremeHot.setMeasurementDate(LocalDate.now());
-        extremeHot.setTemperature(new BigDecimal("45.0"));  // Extreme heat
+        extremeHot.setTemperature(45.0);  // Extreme heat
         extremeHot.setHumidity(10);
-        extremeHot.setWindSpeed(new BigDecimal("5.0"));
+        extremeHot.setWindSpeed(5.0);
         extremeHot.setWindDirection(0);
         extremeHot.setWeatherCode(0);  // Clear sky
 
@@ -365,13 +364,13 @@ class WeatherMapperTest {
         WeatherData snowyWeather = new WeatherData();
         snowyWeather.setCommune(parisCommune);
         snowyWeather.setMeasurementDate(LocalDate.now());
-        snowyWeather.setTemperature(new BigDecimal("-5.0"));
+        snowyWeather.setTemperature(-5.0);
         snowyWeather.setHumidity(90);
-        snowyWeather.setWindSpeed(new BigDecimal("20.0"));
+        snowyWeather.setWindSpeed(20.0);
         snowyWeather.setWindDirection(45);
         snowyWeather.setWeatherCode(71);  // Snow
-        snowyWeather.setSnowfall(new BigDecimal("10.5"));
-        snowyWeather.setPrecipitation(new BigDecimal("10.5"));
+        snowyWeather.setSnowfall(10.5);
+        snowyWeather.setPrecipitation(10.5);
 
         // When
         WeatherResponse response = mapper.toDirectResponse(snowyWeather);

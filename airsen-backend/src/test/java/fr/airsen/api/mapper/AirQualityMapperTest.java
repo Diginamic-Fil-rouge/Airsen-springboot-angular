@@ -5,7 +5,6 @@ import fr.airsen.api.dto.response.NearestAirQualityResult;
 import fr.airsen.api.entity.AirQuality;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.Department;
-import fr.airsen.api.entity.enums.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -110,7 +109,7 @@ class AirQualityMapperTest {
         assertThat(pollutants.get("SO2")).isEqualTo(10);
 
         // Verify data source metadata
-        assertThat(response.dataSource()).isEqualTo(DataSource.DIRECT);
+        assertThat(response.dataSource()).isEqualTo(AirQualityResponse.DataSource.DIRECT);
         assertThat(response.estimatedFromCommune()).isNull();
         assertThat(response.distanceKm()).isNull();
         assertThat(response.dataQualityNote()).isEqualTo("Données mesurées pour cette commune");
@@ -200,7 +199,7 @@ class AirQualityMapperTest {
         assertThat(pollutants.get("SO2")).isEqualTo(15);
 
         // Verify data source metadata
-        assertThat(response.dataSource()).isEqualTo(DataSource.ESTIMATED);
+        assertThat(response.dataSource()).isEqualTo(AirQualityResponse.DataSource.ESTIMATED);
         assertThat(response.estimatedFromCommune()).isEqualTo("Saint-Denis");
         assertThat(response.distanceKm()).isEqualTo(9.2);
         assertThat(response.dataQualityNote())
@@ -228,7 +227,7 @@ class AirQualityMapperTest {
         assertThat(response.communeName()).isEqualTo("Paris");
 
         // But metadata should indicate data is from Saint-Denis
-        assertThat(response.dataSource()).isEqualTo(DataSource.ESTIMATED);
+        assertThat(response.dataSource()).isEqualTo(AirQualityResponse.DataSource.ESTIMATED);
         assertThat(response.estimatedFromCommune()).isEqualTo("Saint-Denis");
         assertThat(response.distanceKm()).isCloseTo(9.2, within(0.1));
     }

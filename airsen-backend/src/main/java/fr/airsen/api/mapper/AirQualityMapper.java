@@ -46,7 +46,7 @@ public interface AirQualityMapper {
     @Mapping(target = "estimatedFromCommune", source = "result.communeName")
     @Mapping(target = "distanceKm", source = "result.distanceKm")
     @Mapping(target = "dataQualityNote",
-        expression = "java(String.format(\"Données estimées depuis %s (%.1f km)\", result.communeName(), result.distanceKm()))")
+        expression = "java(String.format(java.util.Locale.FRENCH, \"Données estimées depuis %s (%.1f km)\", result.communeName(), result.distanceKm()))")
     AirQualityResponse toEstimatedResponse(NearestAirQualityResult result, Commune requestedCommune);
 
     /**

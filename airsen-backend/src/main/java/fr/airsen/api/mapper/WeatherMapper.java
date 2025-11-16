@@ -8,6 +8,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+import java.util.Locale;
+
 @Mapper(componentModel = "spring")
 public interface WeatherMapper {
 
@@ -51,7 +53,7 @@ public interface WeatherMapper {
     @Mapping(target = "estimatedFromCommune", source = "result.communeName")
     @Mapping(target = "distanceKm", source = "result.distanceKm")
     @Mapping(target = "dataQualityNote",
-        expression = "java(String.format(\"Données estimées depuis %s (%.1f km)\", result.communeName(), result.distanceKm()))")
+        expression = "java(String.format(java.util.Locale.FRENCH, \"Données estimées depuis %s (%.1f km)\", result.communeName(), result.distanceKm()))")
     WeatherResponse toEstimatedResponse(NearestWeatherResult result, Commune requestedCommune);
 
     @Named("weatherCodeToDescription")
