@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use '../../../styles/design-system' as *;
+@use 'styles/design-system' as *;
 
 .home-public {
   display: flex;
@@ -25,7 +25,7 @@
   align-items: center;
   justify-content: center;
   padding: $space-2 $space-4;
-  border-radius: $radius-full;
+  border-radius: $radius-lg;
   background-color: color.change($airsen-primary-light, $alpha: 0.1);
   color: $airsen-primary;
   font-size: $font-size-sm;
@@ -120,20 +120,9 @@
 
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: $space-8;
-
-  @include breakpoint(lg) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media (max-width: $breakpoint-md) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: $breakpoint-sm) {
-    grid-template-columns: 1fr;
-  }
+  align-items: stretch;
 }
 
 .feature-card {
@@ -141,10 +130,20 @@
   border: 1px solid $airsen-gray-200;
   text-align: left;
   min-height: 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  transition: transform $duration-normal, box-shadow $duration-normal, border-color $duration-normal;
 
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: $shadow-xl;
+  &:hover,
+  &:focus-within {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+    border-color: $airsen-primary;
+
+    .feature-icon {
+      transform: scale(1.1) rotate(-5deg);
+    }
   }
 }
 
@@ -158,6 +157,7 @@
   background: color.change($airsen-primary-light, $alpha: 0.15);
   color: $airsen-primary;
   margin-bottom: $space-6;
+  transition: $transition-transform;
 
   mat-icon {
     font-size: 28px;
@@ -171,6 +171,9 @@
   font-weight: $font-weight-semibold;
   color: $airsen-gray-800;
   margin: 0 0 $space-3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .feature-description {
@@ -178,6 +181,7 @@
   color: $airsen-gray-600;
   font-size: $font-size-sm;
   line-height: $line-height-relaxed;
+  flex-grow: 1;
 }
 
 .learn-more {
@@ -195,7 +199,7 @@
   color: $airsen-primary;
   text-decoration: none;
   padding: $space-3 $space-5;
-  border-radius: $radius-full;
+  border-radius: none;
   background-color: color.change($airsen-primary-light, $alpha: 0.1);
   transition: $transition-all;
 
@@ -209,6 +213,182 @@
   }
 }
 
+// Statistics Section
+.statistics-section {
+  padding: $space-12 0;
+  background-color: $airsen-gray-50;
+}
+
+.stats-container {
+  max-width: $container-lg;
+  margin: 0 auto;
+  padding: 0 $space-6;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: $space-8;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: $space-8;
+  background-color: $airsen-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  transition: $transition-all;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-full;
+  background: color.change($airsen-primary-light, $alpha: 0.15);
+  color: $airsen-primary;
+  margin-bottom: $space-4;
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.stat-number {
+  display: block;
+  font-size: $font-size-4xl;
+  font-weight: $font-weight-bold;
+  color: $airsen-gray-900;
+  margin-bottom: $space-2;
+  letter-spacing: $letter-spacing-tight;
+}
+
+.stat-label {
+  display: block;
+  font-size: $font-size-sm;
+  color: $airsen-gray-600;
+  font-weight: $font-weight-medium;
+}
+
+// Testimonials Section
+.testimonials-section {
+  padding: $space-16 0;
+  background-color: $airsen-white;
+}
+
+.testimonials-container {
+  max-width: $container-lg;
+  margin: 0 auto;
+  padding: 0 $space-6;
+  text-align: center;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: $space-8;
+  margin-top: $space-12;
+}
+
+.testimonial-card {
+  display: flex;
+  flex-direction: column;
+  padding: $space-8;
+  background-color: $airsen-gray-50;
+  border-radius: $radius-lg;
+  border: 1px solid $airsen-gray-200;
+  transition: $transition-all;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-md;
+    border-color: $airsen-primary;
+  }
+}
+
+.quote {
+  font-size: $font-size-base;
+  line-height: $line-height-relaxed;
+  color: $airsen-gray-800;
+  font-style: italic;
+  margin: 0 0 $space-6 0;
+  text-align: left;
+  flex-grow: 1;
+
+  &::before {
+    content: '"';
+    font-size: $font-size-2xl;
+    color: $airsen-primary;
+    font-weight: $font-weight-bold;
+  }
+
+  &::after {
+    content: '"';
+    font-size: $font-size-2xl;
+    color: $airsen-primary;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  text-align: left;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: $radius-full;
+  background: linear-gradient(135deg, $airsen-primary 0%, $airsen-primary-light 100%);
+  color: $airsen-white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+  box-shadow: $shadow-sm;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.name {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $airsen-gray-900;
+}
+
+.location {
+  font-size: $font-size-sm;
+  color: $airsen-gray-600;
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-6;
+  }
+}
+
 @media (max-width: 768px) {
   .hero-actions {
     flex-direction: column;
@@ -217,5 +397,33 @@
 
   .btn-primary {
     width: 100%;
+    min-width: auto;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: $space-6;
+  }
+
+  .feature-card {
+    min-height: auto;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: $space-6;
+  }
+
+  .stat-card {
+    padding: $space-6;
+  }
+
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+    gap: $space-6;
+  }
+
+  .testimonial-card {
+    padding: $space-6;
   }
 }
