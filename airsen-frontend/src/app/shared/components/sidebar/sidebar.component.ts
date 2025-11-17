@@ -68,7 +68,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { label: "Favoris", icon: "favorite", route: "/favorites" },
     { label: "Exports", icon: "download", route: "/export" },
     { label: "Profil", icon: "person", route: "/profile" },
-    { label: "Paramètres", icon: "settings", route: "/settings" },
 
     // Admin Section - only visible to ADMIN users
     { label: "Tableau de Bord", icon: "dashboard", route: "/admin/dashboard", roles: ["ADMIN"] },
@@ -78,11 +77,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { label: "Journal d'Audit", icon: "assignment", route: "/admin/audit", roles: ["ADMIN"] },
   ];
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private sidebarService: SidebarService
-  ) {}
+  constructor(private authService: AuthService, private router: Router, private sidebarService: SidebarService) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -114,12 +109,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private loadSidebarState(): void {
     this.isExpanded = this.sidebarService.getSidebarState();
     // Listen to sidebar state changes
-    this.sidebarService.sidebarExpanded$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((isExpanded: boolean) => {
-        this.isExpanded = isExpanded;
-        this.updateBackdropVisibility();
-      });
+    this.sidebarService.sidebarExpanded$.pipe(takeUntil(this.destroy$)).subscribe((isExpanded: boolean) => {
+      this.isExpanded = isExpanded;
+      this.updateBackdropVisibility();
+    });
   }
 
   /**

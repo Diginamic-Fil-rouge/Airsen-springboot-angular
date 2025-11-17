@@ -53,13 +53,10 @@
   padding: 2rem 3rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 2.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
     padding: 1.75rem;
     gap: 1.75rem;
   }
@@ -69,7 +66,6 @@
   display: flex;
   align-items: center;
   gap: 1.75rem;
-  flex: 1;
 }
 
 .welcome-avatar {
@@ -108,36 +104,6 @@
   font-weight: 400;
 }
 
-.cta-primary {
-  padding: 0.75rem 2rem;
-  border-radius: 999px;
-  background: $airsen-primary;
-  color: $airsen-white;
-  border: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  box-shadow: 0 12px 28px rgba(45, 106, 79, 0.2);
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  &:hover {
-    transform: translateY(-2px);
-    background-color: color.scale($airsen-primary, $lightness: -6%);
-    box-shadow: 0 16px 36px rgba(45, 106, 79, 0.28);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    white-space: normal;
-  }
-}
-
 .dashboard-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -148,64 +114,8 @@
   }
 }
 
-.cta-banner {
-  background: linear-gradient(135deg, rgba(45, 106, 79, 0.12), rgba(45, 106, 79, 0.05));
-  border: 1px solid color.change($airsen-primary-light, $alpha: 0.25);
-  border-radius: 1.75rem;
-  padding: 2rem 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.cta-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  h3 {
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: $airsen-gray-900;
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: $airsen-gray-600;
-  }
-}
-
-.cta-secondary {
-  padding: 0.75rem 1.5rem;
-  border-radius: 999px;
-  border: 1px solid $airsen-primary;
-  background-color: $airsen-white;
-  color: $airsen-primary;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    background-color: $airsen-primary;
-    color: $airsen-white;
-    transform: translateY(-2px);
-  }
-}
-
 @media (max-width: 768px) {
   .dashboard-grid {
     gap: 1.5rem;
-  }
-
-  .cta-banner {
-    padding: 1.75rem;
   }
 }
