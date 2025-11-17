@@ -494,7 +494,8 @@ class NotificationServiceTest {
     void shouldNotSendEmailForInvalidNotificationConfiguration() throws Exception {
         // Given
         Long notificationId = 1L;
-        // Don't prepare for email delivery - notification is invalid
+        // Make notification invalid by setting emailVerified to false
+        recipientUser.setEmailVerified(false);
 
         when(notificationRepository.findById(notificationId))
             .thenReturn(Optional.of(testNotification));

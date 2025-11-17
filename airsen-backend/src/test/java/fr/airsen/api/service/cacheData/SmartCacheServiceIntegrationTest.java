@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +38,7 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @DisplayName("SmartCacheService Integration Tests")
 class SmartCacheServiceIntegrationTest {
 
@@ -61,6 +63,7 @@ class SmartCacheServiceIntegrationTest {
     void setUp() {
         meterRegistry = new SimpleMeterRegistry();
         objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules(); // Register JSR310 module for LocalDateTime support
         cacheService = new SmartCacheService(redisTemplate, objectMapper, meterRegistry, cacheMetricsService);
 
         // Use lenient() for stub that may not be used in all tests
@@ -265,10 +268,10 @@ class SmartCacheServiceIntegrationTest {
         // Arrange
         CacheMetadata metadata = new CacheMetadata(TEST_KEY, CacheMetadata.DataSource.ON_DEMAND_FETCH);
 
-        // Assert
+        // Assert - fresh cache should return "just now"
         String ageDescription = metadata.getAgeDescription();
         assertThat(ageDescription).isNotNull();
-        assertThat(ageDescription).contains("ago");
+        assertThat(ageDescription).isEqualTo("just now");
     }
 
     @Test
@@ -294,16 +297,6 @@ class SmartCacheServiceIntegrationTest {
     @DisplayName("Generic type handling works correctly with custom DTO")
     void testGenericTypeHandling() {
         // Arrange
-        class TestWeatherDTO {
-            public String temperature;
-            public String humidity;
-
-            TestWeatherDTO(String temp, String humidity) {
-                this.temperature = temp;
-                this.humidity = humidity;
-            }
-        }
-
         TestWeatherDTO testData = new TestWeatherDTO("25C", "65%");
         CacheMetadata metadata = new CacheMetadata(TEST_KEY, CacheMetadata.DataSource.ON_DEMAND_FETCH);
         CachedEntry<TestWeatherDTO> cachedEntry = new CachedEntry<>(testData, metadata);
@@ -319,8 +312,8 @@ class SmartCacheServiceIntegrationTest {
             () -> { throw new RuntimeException("Should not be called"); }
         );
 
-        // Assert
-        assertThat(result.getData()).isEqualTo(testData);
+        // Assert - verify data was correctly deserialized (field comparison, not object equality)
+        assertThat(result.getData()).isNotNull();
         assertThat(result.getData().temperature).isEqualTo("25C");
         assertThat(result.getData().humidity).isEqualTo("65%");
     }
@@ -395,5 +388,21 @@ class SmartCacheServiceIntegrationTest {
 
         // Assert
         assertThat(callCount.get()).isEqualTo(1);
+    }
+
+    /**
+     * Test DTO for generic type handling test.
+     * Must be static for Jackson deserialization.
+     */
+    static class TestWeatherDTO {
+        public String temperature;
+        public String humidity;
+
+        public TestWeatherDTO() {} // Required for Jackson
+
+        public TestWeatherDTO(String temp, String humidity) {
+            this.temperature = temp;
+            this.humidity = humidity;
+        }
     }
 }

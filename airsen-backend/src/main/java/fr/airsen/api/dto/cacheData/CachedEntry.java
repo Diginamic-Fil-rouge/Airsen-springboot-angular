@@ -1,5 +1,6 @@
 package fr.airsen.api.dto.cacheData;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.airsen.api.entity.cacheData.CacheMetadata;
 
 /**
@@ -16,6 +17,12 @@ import fr.airsen.api.entity.cacheData.CacheMetadata;
 public class CachedEntry<T> {
     private T data;
     private CacheMetadata metadata;
+
+    /**
+     * Default no-arg constructor for Jackson deserialization.
+     */
+    public CachedEntry() {
+    }
 
     /**
      * Create a cached entry with data and metadata.
@@ -39,6 +46,7 @@ public class CachedEntry<T> {
      *
      * @return true if entry is fresh
      */
+    @JsonIgnore
     public boolean isFresh() {
         return !metadata.isExpired() && !metadata.shouldRefresh();
     }
@@ -54,6 +62,7 @@ public class CachedEntry<T> {
      *
      * @return true if entry is not expired (even if stale)
      */
+    @JsonIgnore
     public boolean isUsableAsStale() {
         return !metadata.isExpired();
     }
@@ -77,5 +86,23 @@ public class CachedEntry<T> {
      */
     public CacheMetadata getMetadata() {
         return metadata;
+    }
+
+    /**
+     * Set the cached data (for Jackson deserialization).
+     *
+     * @param data the cached data
+     */
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    /**
+     * Set the cache metadata (for Jackson deserialization).
+     *
+     * @param metadata the cache metadata
+     */
+    public void setMetadata(CacheMetadata metadata) {
+        this.metadata = metadata;
     }
 }

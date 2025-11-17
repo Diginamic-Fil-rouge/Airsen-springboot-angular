@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -33,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Inherits TestContainers configuration from AbstractTestContainersTest.
  */
 @SpringBootTest
+@Testcontainers
 @DisplayName("Redis Cache Integration Tests (TestContainers)")
 class RedisCacheIntegrationTest extends AbstractTestContainersTest {
 

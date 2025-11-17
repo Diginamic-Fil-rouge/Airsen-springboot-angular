@@ -1,5 +1,6 @@
 package fr.airsen.api.entity.cacheData;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -48,6 +49,12 @@ public class CacheMetadata {
     private String version = "1.0";
 
     /**
+     * Default no-arg constructor for Jackson deserialization.
+     */
+    public CacheMetadata() {
+    }
+
+    /**
      * Create cache metadata with source-aware TTL.
      *
      * @param key the cache key
@@ -71,6 +78,7 @@ public class CacheMetadata {
      *
      * @return staleness ratio
      */
+    @JsonIgnore
     public double getStaleness() {
         long age = Duration.between(cachedAt, LocalDateTime.now()).getSeconds();
         return Math.min((double) age / ttlSeconds, 1.0);
@@ -84,6 +92,7 @@ public class CacheMetadata {
      *
      * @return true if staleness >= 0.8
      */
+    @JsonIgnore
     public boolean shouldRefresh() {
         return getStaleness() >= 0.8;
     }
@@ -93,6 +102,7 @@ public class CacheMetadata {
      *
      * @return true if current time > expiresAt
      */
+    @JsonIgnore
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
     }
@@ -103,6 +113,7 @@ public class CacheMetadata {
      *
      * @return human-readable age string
      */
+    @JsonIgnore
     public String getAgeDescription() {
         long minutes = Duration.between(cachedAt, LocalDateTime.now()).toMinutes();
         if (minutes < 1) return "just now";
@@ -138,5 +149,30 @@ public class CacheMetadata {
 
     public String getVersion() {
         return version;
+    }
+
+    // Setters (for Jackson deserialization)
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public void setSource(DataSource source) {
+        this.source = source;
+    }
+
+    public void setCachedAt(LocalDateTime cachedAt) {
+        this.cachedAt = cachedAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public void setTtlSeconds(long ttlSeconds) {
+        this.ttlSeconds = ttlSeconds;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }
