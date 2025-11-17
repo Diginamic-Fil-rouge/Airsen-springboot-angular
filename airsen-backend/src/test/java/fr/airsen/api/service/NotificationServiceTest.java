@@ -346,7 +346,7 @@ class NotificationServiceTest {
 
         // Then
         assertThat(result.wasSent()).isTrue();
-        assertThat(result.getSentAt()).isNotNull();
+        assertThat(result.getSentDate()).isNotNull();
 
         verify(notificationRepository).save(testNotification);
     }
@@ -431,7 +431,7 @@ class NotificationServiceTest {
     void shouldSendEmailNotificationSuccessfully() throws Exception {
         // Given
         Long notificationId = 1L;
-        testNotification.prepareForEmailDelivery();  // Set up for email delivery
+        // Notification already configured for email delivery by default constructor
 
         when(notificationRepository.findById(notificationId))
             .thenReturn(Optional.of(testNotification));
@@ -464,7 +464,7 @@ class NotificationServiceTest {
     void shouldHandleEmailSendingFailureGracefully() throws Exception {
         // Given
         Long notificationId = 1L;
-        testNotification.prepareForEmailDelivery();
+        // Notification already configured for email delivery by default constructor
 
         when(notificationRepository.findById(notificationId))
             .thenReturn(Optional.of(testNotification));

@@ -116,7 +116,7 @@ class NotificationCampaignServiceTest {
         testSignal = new AlertSignal(
             AlertSignalSource.ATMO,
             AlertSignalKind.AQI,
-            AlertSignalLevel.WARNING,
+            AlertSignalLevel.ALERT,
             GeographicScopeType.COMMUNE,
             1L,
             "High air pollution detected",

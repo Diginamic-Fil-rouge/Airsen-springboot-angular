@@ -88,8 +88,8 @@ class AdminAlertSignalControllerTest {
             LocalDateTime.now(),
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(1),
-            true,
-            false
+            LocalDateTime.now(),
+            LocalDateTime.now()
         );
     }
 
@@ -213,8 +213,9 @@ class AdminAlertSignalControllerTest {
     void shouldCreateManualAlertSignalSuccessfully() {
         // Given
         CreateManualSignalRequest request = new CreateManualSignalRequest(
+            AlertSignalSource.WEATHER,
             AlertSignalKind.HEAT,
-            AlertSignalLevel.WARNING,
+            AlertSignalLevel.ALERT,
             GeographicScopeType.DEPARTMENT,
             75L,
             "Manual heat alert for Paris",
@@ -226,7 +227,7 @@ class AdminAlertSignalControllerTest {
         AlertSignal createdSignal = new AlertSignal(
             AlertSignalSource.WEATHER,
             AlertSignalKind.HEAT,
-            AlertSignalLevel.WARNING,
+            AlertSignalLevel.ALERT,
             GeographicScopeType.DEPARTMENT,
             75L,
             "Manual heat alert for Paris",
@@ -238,7 +239,7 @@ class AdminAlertSignalControllerTest {
             100L,
             AlertSignalSource.WEATHER,
             AlertSignalKind.HEAT,
-            AlertSignalLevel.WARNING,
+            AlertSignalLevel.ALERT,
             GeographicScopeType.DEPARTMENT,
             75L,
             "Manual heat alert for Paris",
@@ -246,8 +247,8 @@ class AdminAlertSignalControllerTest {
             LocalDateTime.now(),
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(2),
-            true,
-            false
+            LocalDateTime.now(),
+            LocalDateTime.now()
         );
 
         when(detectionService.createManualSignal(request))
@@ -264,7 +265,7 @@ class AdminAlertSignalControllerTest {
         assertThat(response.getBody().id()).isEqualTo(100L);
         assertThat(response.getBody().summary()).isEqualTo("Manual heat alert for Paris");
         assertThat(response.getBody().kind()).isEqualTo(AlertSignalKind.HEAT);
-        assertThat(response.getBody().level()).isEqualTo(AlertSignalLevel.WARNING);
+        assertThat(response.getBody().level()).isEqualTo(AlertSignalLevel.ALERT);
 
         verify(detectionService).createManualSignal(request);
         verify(alertSignalMapper).toDTO(createdSignal);
@@ -275,6 +276,7 @@ class AdminAlertSignalControllerTest {
     void shouldCreateManualSignalForAllScopeTypes() {
         // Test FRANCE scope
         CreateManualSignalRequest franceRequest = new CreateManualSignalRequest(
+            AlertSignalSource.WEATHER,
             AlertSignalKind.WIND,
             AlertSignalLevel.INFO,
             GeographicScopeType.FRANCE,
@@ -406,7 +408,7 @@ class AdminAlertSignalControllerTest {
 
         AlertSignal atmoSignal2 = createTestSignal(2L, AlertSignalKind.AQI, "AQI alert 2");
         atmoSignal2.setSource(AlertSignalSource.ATMO);
-        atmoSignal2.setLevel(AlertSignalLevel.WARNING);
+        atmoSignal2.setLevel(AlertSignalLevel.WATCH);
         atmoSignal2.setDetectedAt(LocalDateTime.now().minusHours(1));
 
         AlertSignal weatherSignal = createTestSignal(3L, AlertSignalKind.HEAT, "Heat alert");
@@ -440,11 +442,11 @@ class AdminAlertSignalControllerTest {
         // Verify level breakdown
         Map<String, Integer> byLevel = response.getBody().byLevel();
         assertThat(byLevel.get("ALERT")).isEqualTo(2);
-        assertThat(byLevel.get("WARNING")).isEqualTo(1);
+        assertThat(byLevel.get("WATCH")).isEqualTo(1);
 
         // Verify last detection timestamp (should be weatherSignal's timestamp)
-        assertThat(response.getBody().lastDetection()).isNotNull();
-        assertThat(response.getBody().lastDetection())
+        assertThat(response.getBody().lastDetectionAt()).isNotNull();
+        assertThat(response.getBody().lastDetectionAt())
             .isCloseTo(weatherSignal.getDetectedAt(), within(1, java.time.temporal.ChronoUnit.SECONDS));
 
         verify(detectionService).getAllSignals(Pageable.unpaged());
@@ -468,7 +470,7 @@ class AdminAlertSignalControllerTest {
         assertThat(response.getBody().totalSignals()).isZero();
         assertThat(response.getBody().bySource()).isEmpty();
         assertThat(response.getBody().byLevel()).isEmpty();
-        assertThat(response.getBody().lastDetection()).isNull();
+        assertThat(response.getBody().lastDetectionAt()).isNull();
     }
 
     @Test
@@ -481,7 +483,7 @@ class AdminAlertSignalControllerTest {
 
         AlertSignal windWarning = createTestSignal(2L, AlertSignalKind.WIND, "Wind");
         windWarning.setSource(AlertSignalSource.WEATHER);
-        windWarning.setLevel(AlertSignalLevel.WARNING);
+        windWarning.setLevel(AlertSignalLevel.WATCH);
 
         AlertSignal rainInfo = createTestSignal(3L, AlertSignalKind.RAIN, "Rain");
         rainInfo.setSource(AlertSignalSource.WEATHER);
@@ -507,7 +509,7 @@ class AdminAlertSignalControllerTest {
         assertThat(response.getBody().bySource().get("WEATHER")).isEqualTo(3);
         assertThat(response.getBody().bySource().get("ATMO")).isEqualTo(1);
         assertThat(response.getBody().byLevel().get("ALERT")).isEqualTo(2);
-        assertThat(response.getBody().byLevel().get("WARNING")).isEqualTo(1);
+        assertThat(response.getBody().byLevel().get("WATCH")).isEqualTo(1);
         assertThat(response.getBody().byLevel().get("INFO")).isEqualTo(1);
     }
 
@@ -543,8 +545,8 @@ class AdminAlertSignalControllerTest {
             LocalDateTime.now(),
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(1),
-            true,
-            false
+            LocalDateTime.now(),
+            LocalDateTime.now()
         );
     }
 }

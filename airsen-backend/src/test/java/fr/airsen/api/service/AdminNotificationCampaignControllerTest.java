@@ -103,14 +103,11 @@ class AdminNotificationCampaignControllerTest {
             GeographicScopeType.FRANCE,
             null,
             null,
-            1L,
-            "admin@airsen.fr",
             LocalDateTime.now(),
             NotificationCampaignStatus.DRAFT,
             0,
             0,
             0,
-            0.0,
             0.0
         );
     }
@@ -195,11 +192,9 @@ class AdminNotificationCampaignControllerTest {
             GeographicScopeType.REGION,
             11L,
             null,
-            1L,
-            "admin@airsen.fr",
             LocalDateTime.now(),
             NotificationCampaignStatus.DRAFT,
-            0, 0, 0, 0.0, 0.0
+            0, 0, 0, 0.0
         );
 
         when(currentUserService.getCurrentUser()).thenReturn(adminUser);
@@ -247,7 +242,7 @@ class AdminNotificationCampaignControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().campaignId()).isEqualTo(campaignId);
-        assertThat(response.getBody().recipientCount()).isEqualTo(150);
+        assertThat(response.getBody().totalRecipients()).isEqualTo(150);
 
         verify(campaignService).fanOutRecipients(campaignId);
     }
@@ -267,7 +262,7 @@ class AdminNotificationCampaignControllerTest {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().recipientCount()).isZero();
+        assertThat(response.getBody().totalRecipients()).isZero();
 
         verify(campaignService).fanOutRecipients(campaignId);
     }
@@ -556,7 +551,7 @@ class AdminNotificationCampaignControllerTest {
         ResponseEntity<CampaignFanOutResponseDTO> fanOutResponse =
             controller.fanOutRecipients(campaignId);
         assertThat(fanOutResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(fanOutResponse.getBody().recipientCount()).isEqualTo(100);
+        assertThat(fanOutResponse.getBody().totalRecipients()).isEqualTo(100);
 
         // Step 3: Send campaign
         doNothing().when(campaignService).sendCampaign(campaignId);
@@ -606,11 +601,9 @@ class AdminNotificationCampaignControllerTest {
             GeographicScopeType.FRANCE,
             null,
             null,
-            1L,
-            "admin@airsen.fr",
             LocalDateTime.now(),
             status,
-            0, 0, 0, 0.0, 0.0
+            0, 0, 0, 0.0
         );
     }
 }

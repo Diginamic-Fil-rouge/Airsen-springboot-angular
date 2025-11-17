@@ -94,13 +94,15 @@ class AlertSignalDetectionServiceTest {
     void shouldDetectAtmoEpisodeWhenAQIEqualsFour() {
         // Given: ATMO data with AQI = 4 (Bad - threshold)
         AtmoAirQualityResponse badAirQuality = new AtmoAirQualityResponse(
-            "75056",
-            "Paris",
-            "2025-11-16",
-            4,  // CRITICAL: AQI = 4 (Bad) - should trigger alert
-            "Mauvais",
-            "#ff0000",
-            4, 4, 4, 4, 4 // Pollutant codes
+            "75056",              // communeInsee
+            "2025-11-16",         // measurementDate
+            4,                    // atmoIndex - CRITICAL: AQI = 4 (Bad) - should trigger alert
+            "Mauvais",            // qualifier
+            "#ff0000",            // color
+            4, 4, 4, 4, 4,        // no2Code, o3Code, pm10Code, pm25Code, so2Code
+            "Paris",              // zoneName
+            "ATMO",               // source
+            "2025-11-16"          // updateDate
         );
 
         when(atmoApiClient.getCurrentAirQualityIndices())
@@ -136,12 +138,14 @@ class AlertSignalDetectionServiceTest {
         // Given: ATMO data with AQI = 3 (Degraded - below threshold)
         AtmoAirQualityResponse degradedAirQuality = new AtmoAirQualityResponse(
             "75056",
-            "Paris",
             "2025-11-16",
             3,  // AQI = 3 (Degraded) - should NOT trigger alert
             "Dégradé",
             "#ffcc00",
-            3, 3, 3, 3, 3
+            3, 3, 3, 3, 3,
+            "Paris",
+            "ATMO",
+            "2025-11-16"
         );
 
         when(atmoApiClient.getCurrentAirQualityIndices())
@@ -161,12 +165,14 @@ class AlertSignalDetectionServiceTest {
         // Given: ATMO data with AQI = 6 (Extremely Bad)
         AtmoAirQualityResponse extremelyBadAirQuality = new AtmoAirQualityResponse(
             "93008",
-            "Saint-Denis",
             "2025-11-16",
             6,  // AQI = 6 (Extremely Bad) - should definitely trigger alert
             "Extrêmement mauvais",
             "#960032",
-            6, 6, 6, 6, 6
+            6, 6, 6, 6, 6,
+            "Saint-Denis",
+            "ATMO",
+            "2025-11-16"
         );
 
         when(atmoApiClient.getCurrentAirQualityIndices())
@@ -187,13 +193,13 @@ class AlertSignalDetectionServiceTest {
     void shouldHandleMultipleAtmoEpisodes() {
         // Given: Multiple communes with AQI >= 4
         AtmoAirQualityResponse episode1 = new AtmoAirQualityResponse(
-            "75056", "Paris", "2025-11-16", 5, "Très mauvais", "#960032", 5, 5, 5, 5, 5
+            "75056", "2025-11-16", 5, "Très mauvais", "#960032", 5, 5, 5, 5, 5, "Paris", "ATMO", "2025-11-16"
         );
         AtmoAirQualityResponse episode2 = new AtmoAirQualityResponse(
-            "93008", "Saint-Denis", "2025-11-16", 4, "Mauvais", "#ff0000", 4, 4, 4, 4, 4
+            "93008", "2025-11-16", 4, "Mauvais", "#ff0000", 4, 4, 4, 4, 4, "Saint-Denis", "ATMO", "2025-11-16"
         );
         AtmoAirQualityResponse noEpisode = new AtmoAirQualityResponse(
-            "92012", "Boulogne-Billancourt", "2025-11-16", 2, "Moyen", "#50ccaa", 2, 2, 2, 2, 2
+            "92012", "2025-11-16", 2, "Moyen", "#50ccaa", 2, 2, 2, 2, 2, "Boulogne-Billancourt", "ATMO", "2025-11-16"
         );
 
         when(atmoApiClient.getCurrentAirQualityIndices())
@@ -217,12 +223,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("CRITICAL: Should detect heat alert when temperature >= 35.0°C")
     void shouldDetectHeatAlertAtExactThreshold() {
         // Given: Weather forecast with max temperature = 35.0°C (exact threshold)
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16", "2025-11-17", "2025-11-18"),
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16"), java.time.LocalDate.parse("2025-11-17"), java.time.LocalDate.parse("2025-11-18")),
             Arrays.asList(35.0, 32.0, 30.0),  // 35.0°C - CRITICAL threshold
-            null,
-            Arrays.asList(50.0, 45.0, 40.0),
-            Arrays.asList(0.0, 0.0, 0.0)
+            Arrays.asList(20.0, 18.0, 16.0),  // minTemperatures
+            Arrays.asList(0.0, 0.0, 0.0),     // precipitationSum
+            Arrays.asList(50.0, 45.0, 40.0),  // maxWindSpeed
+            Arrays.asList(0, 0, 0)            // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -259,12 +266,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("CRITICAL: Should NOT detect heat alert when temperature = 34.9°C (just below threshold)")
     void shouldNotDetectHeatAlertBelowThreshold() {
         // Given: Weather forecast with max temperature = 34.9°C (just below threshold)
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
             Arrays.asList(34.9),  // 34.9°C - just below 35°C threshold
-            null,
-            Arrays.asList(50.0),
-            Arrays.asList(0.0)
+            Arrays.asList(20.0),  // minTemperatures
+            Arrays.asList(0.0),   // precipitationSum
+            Arrays.asList(50.0),  // maxWindSpeed
+            Arrays.asList(0)      // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -284,12 +292,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("CRITICAL: Should detect heat alert when temperature = 40°C (well above threshold)")
     void shouldDetectHeatAlertWellAboveThreshold() {
         // Given: Extreme heat forecast (40°C)
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
             Arrays.asList(40.0),  // 40°C - dangerous heat level
-            null,
-            Arrays.asList(50.0),
-            Arrays.asList(0.0)
+            Arrays.asList(25.0),  // minTemperatures
+            Arrays.asList(0.0),   // precipitationSum
+            Arrays.asList(50.0),  // maxWindSpeed
+            Arrays.asList(0)      // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -317,12 +326,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("CRITICAL: Should detect wind alert when speed >= 70.0 km/h")
     void shouldDetectWindAlertAtExactThreshold() {
         // Given: Weather forecast with max wind speed = 70.0 km/h (exact threshold)
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
-            Arrays.asList(25.0),
-            null,
-            Arrays.asList(70.0),  // 70.0 km/h - CRITICAL threshold
-            Arrays.asList(0.0)
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
+            Arrays.asList(25.0),  // maxTemperatures
+            Arrays.asList(15.0),  // minTemperatures
+            Arrays.asList(0.0),   // precipitationSum
+            Arrays.asList(70.0),  // maxWindSpeed - 70.0 km/h - CRITICAL threshold
+            Arrays.asList(0)      // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -355,12 +365,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("CRITICAL: Should NOT detect wind alert when speed = 69.9 km/h (just below threshold)")
     void shouldNotDetectWindAlertBelowThreshold() {
         // Given: Wind speed just below threshold
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
-            Arrays.asList(25.0),
-            null,
-            Arrays.asList(69.9),  // 69.9 km/h - just below 70 km/h threshold
-            Arrays.asList(0.0)
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
+            Arrays.asList(25.0),  // maxTemperatures
+            Arrays.asList(15.0),  // minTemperatures
+            Arrays.asList(0.0),   // precipitationSum
+            Arrays.asList(69.9),  // maxWindSpeed - 69.9 km/h - just below 70 km/h threshold
+            Arrays.asList(0)      // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -384,12 +395,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("CRITICAL: Should detect rain alert when precipitation >= 30.0 mm")
     void shouldDetectRainAlertAtExactThreshold() {
         // Given: Weather forecast with precipitation = 30.0 mm (exact threshold)
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
-            Arrays.asList(25.0),
-            null,
-            Arrays.asList(50.0),
-            Arrays.asList(30.0)  // 30.0 mm - CRITICAL threshold
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
+            Arrays.asList(25.0),  // maxTemperatures
+            Arrays.asList(15.0),  // minTemperatures
+            Arrays.asList(30.0),  // precipitationSum - 30.0 mm - CRITICAL threshold
+            Arrays.asList(50.0),  // maxWindSpeed
+            Arrays.asList(0)      // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -422,12 +434,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("CRITICAL: Should NOT detect rain alert when precipitation = 29.9 mm (just below threshold)")
     void shouldNotDetectRainAlertBelowThreshold() {
         // Given: Precipitation just below threshold
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
-            Arrays.asList(25.0),
-            null,
-            Arrays.asList(50.0),
-            Arrays.asList(29.9)  // 29.9 mm - just below 30 mm threshold
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
+            Arrays.asList(25.0),  // maxTemperatures
+            Arrays.asList(15.0),  // minTemperatures
+            Arrays.asList(29.9),  // precipitationSum - 29.9 mm - just below 30 mm threshold
+            Arrays.asList(50.0),  // maxWindSpeed
+            Arrays.asList(0)      // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -451,12 +464,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("Should detect multiple alert types simultaneously (heat + wind + rain)")
     void shouldDetectMultipleAlertTypesSimultaneously() {
         // Given: Extreme weather with all thresholds exceeded
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
-            Arrays.asList(38.0),   // Heat: 38°C > 35°C ✓
-            null,
-            Arrays.asList(85.0),   // Wind: 85 km/h > 70 km/h ✓
-            Arrays.asList(45.0)    // Rain: 45 mm > 30 mm ✓
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
+            Arrays.asList(38.0),   // maxTemperatures - Heat: 38°C > 35°C ✓
+            Arrays.asList(20.0),   // minTemperatures
+            Arrays.asList(45.0),   // precipitationSum - Rain: 45 mm > 30 mm ✓
+            Arrays.asList(85.0),   // maxWindSpeed - Wind: 85 km/h > 70 km/h ✓
+            Arrays.asList(0)       // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -555,8 +569,9 @@ class AlertSignalDetectionServiceTest {
     void shouldCreateManualAlertSignal() {
         // Given
         CreateManualSignalRequest request = new CreateManualSignalRequest(
+            AlertSignalSource.WEATHER,
             AlertSignalKind.HEAT,
-            AlertSignalLevel.WARNING,
+            AlertSignalLevel.ALERT,
             GeographicScopeType.DEPARTMENT,
             75L,
             "Manual heat alert for Paris",
@@ -583,7 +598,7 @@ class AlertSignalDetectionServiceTest {
 
         assertThat(capturedSignal.getSource()).isEqualTo(AlertSignalSource.WEATHER);
         assertThat(capturedSignal.getKind()).isEqualTo(AlertSignalKind.HEAT);
-        assertThat(capturedSignal.getLevel()).isEqualTo(AlertSignalLevel.WARNING);
+        assertThat(capturedSignal.getLevel()).isEqualTo(AlertSignalLevel.ALERT);
         assertThat(capturedSignal.getScopeType()).isEqualTo(GeographicScopeType.DEPARTMENT);
         assertThat(capturedSignal.getScopeId()).isEqualTo(75L);
         assertThat(capturedSignal.getSummary()).isEqualTo("Manual heat alert for Paris");
@@ -598,12 +613,13 @@ class AlertSignalDetectionServiceTest {
     @DisplayName("Should handle null temperature values in forecast")
     void shouldHandleNullTemperatureValues() {
         // Given: Forecast with null temperature values
-        OpenMeteoForecastResponse.DailyWeather daily = new OpenMeteoForecastResponse.DailyWeather(
-            Arrays.asList("2025-11-16"),
-            Arrays.asList((Double) null),  // Null temperature
-            null,
-            Arrays.asList(50.0),
-            Arrays.asList(10.0)
+        OpenMeteoForecastResponse.DailyForecast daily = new OpenMeteoForecastResponse.DailyForecast(
+            Arrays.asList(java.time.LocalDate.parse("2025-11-16")),
+            Arrays.asList((Double) null),  // maxTemperatures - Null temperature
+            Arrays.asList((Double) null),  // minTemperatures - Null temperature
+            Arrays.asList(10.0),           // precipitationSum
+            Arrays.asList(50.0),           // maxWindSpeed
+            Arrays.asList(0)               // weatherCodes
         );
         OpenMeteoForecastResponse forecast = new OpenMeteoForecastResponse("Europe/Paris", daily);
 
@@ -624,12 +640,14 @@ class AlertSignalDetectionServiceTest {
         // Given: ATMO data with null index
         AtmoAirQualityResponse nullIndexData = new AtmoAirQualityResponse(
             "75056",
-            "Paris",
             "2025-11-16",
             null,  // Null ATMO index
             "Unknown",
             "#000000",
-            null, null, null, null, null
+            null, null, null, null, null,
+            "Paris",
+            "ATMO",
+            "2025-11-16"
         );
 
         when(atmoApiClient.getCurrentAirQualityIndices())
