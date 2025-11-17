@@ -101,11 +101,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  goToHistoricData(): void {
-    // TODO: Implement map feature for historical data
-    console.warn("Map feature not yet implemented");
-  }
-
   // Getters for template
   get welcomeName(): string {
     return this.currentUser?.firstName || "là";
@@ -141,25 +136,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private handleQuickAction(action: QuickActionKey): void {
     switch (action) {
       case "map":
-        // TODO: Navigate to map feature when implemented
-        console.warn("Map feature not yet implemented");
+        this.router.navigate(["/map"]);
         break;
       case "alerts":
-        // TODO: Navigate to map alerts view when implemented
-        console.warn("Map feature not yet implemented");
+        this.router.navigate(["/profile"], {
+          queryParams: { tab: "notifications-tab" },
+        });
         break;
       case "forum":
         this.router.navigate(["/forum"]);
         break;
       case "favorites":
-        this.router.navigate(["/profile"], {
-          queryParams: { tab: "favorites" },
-        });
+        this.router.navigate(["/favorites"]);
         break;
       case "export":
-        this.router.navigate(["/profile"], {
-          queryParams: { tab: "exports" },
-        });
+        this.router.navigate(["/profile"]);
         break;
       default:
         break;
@@ -169,13 +160,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private handleStatClick(event: StatClickEvent): void {
     switch (event.statKey) {
       case "favoriteIndicators":
-        this.router.navigate(["/profile"], {
-          queryParams: { tab: "favorites" },
-        });
+        this.router.navigate(["/favorites"]);
         break;
       case "alertsReceived":
-        // TODO: Navigate to map alerts view when implemented
-        console.warn("Map feature not yet implemented");
+        this.router.navigate(["/map"]);
         break;
       case "forumPosts":
         this.router.navigate(["/forum"]);
