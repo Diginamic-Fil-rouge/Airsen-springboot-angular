@@ -84,9 +84,9 @@ describe("PollutantBreakdownComponent", () => {
       },
     });
 
-    expect(component.pollutantConfig[0].color).toBe("#50F0E6");
-    expect(component.pollutantConfig[1].color).toBe("#F0E641");
-    expect(component.pollutantConfig[2].color).toBe("#FF5050");
+    expect(component.pollutantConfig[0].color).toBe("#50F0E6"); // PM2.5: 15 <= 25 (threshold) → Good (Cyan)
+    expect(component.pollutantConfig[1].color).toBe("#F0E641"); // PM10: 60 > 50 (threshold) AND 60 <= 100 (danger) → Moderate (Yellow)
+    expect(component.pollutantConfig[2].color).toBe("#F0E641"); // SO2: 30 > 20 (threshold) AND 30 <= 40 (danger) → Moderate (Yellow)
   });
 
   it("should return correct status text", () => {

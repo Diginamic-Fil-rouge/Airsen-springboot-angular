@@ -3,6 +3,13 @@
     <div class="location-header__title">
       <mat-icon class="location-icon">location_on</mat-icon>
       <h3 class="commune-name">{{ commune.name }}</h3>
+
+      <!-- Favorite button integration -->
+      <app-favorite-button
+        [communeInseeCode]="commune.inseeCode"
+        size="medium"
+        class="favorite-action">
+      </app-favorite-button>
     </div>
 
     <div class="location-header__meta">

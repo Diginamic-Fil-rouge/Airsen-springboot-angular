@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { ActivatedRoute } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { of, BehaviorSubject } from 'rxjs';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { MapComponent } from './map.component';
 import { CommuneDataService } from '@/core/services/commune-data.service';
@@ -90,7 +91,8 @@ describe('MapComponent', () => {
         { provide: CommuneDataService, useValue: mockCommuneDataService },
         { provide: BreakpointObserver, useValue: mockBreakpointObserver },
         { provide: ActivatedRoute, useValue: mockActivatedRoute }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapComponent);

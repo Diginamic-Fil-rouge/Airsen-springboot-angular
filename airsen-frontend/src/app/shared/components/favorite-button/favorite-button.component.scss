@@ -11,17 +11,26 @@
   padding: 8px;
 
   &.small {
-    .mat-icon { font-size: 20px; }
+    .mat-icon {
+      font-size: 20px;
+    }
+
     padding: 6px;
   }
 
   &.medium {
-    .mat-icon { font-size: 24px; }
+    .mat-icon {
+      font-size: 24px;
+    }
+
     padding: 8px;
   }
 
   &.large {
-    .mat-icon { font-size: 32px; }
+    .mat-icon {
+      font-size: 32px;
+    }
+
     padding: 10px;
   }
 
@@ -29,7 +38,7 @@
     color: var(--airsen-gray-500);
 
     &.favorited {
-      color: #4CAF50;
+      color: #f44336;
     }
 
     // Ensure proper styling when disabled at max limit
@@ -39,13 +48,13 @@
     }
   }
 
-  // Only apply green background when favorited and not disabled
+  // Only apply red background when favorited and not disabled
   &.is-favorited:not(:disabled) {
-    background: rgba(76, 175, 80, 0.1);
+    background: rgba(244, 67, 54, 0.1);
 
     &:hover:not(:disabled) {
       transform: scale(1.1);
-      background: rgba(76, 175, 80, 0.15);
+      background: rgba(244, 67, 54, 0.15);
     }
   }
 
@@ -60,7 +69,7 @@
   // Special styling when at max limit and not favorited
   &.at-max-limit {
     background: transparent !important;
-    
+
     &:hover:not(:disabled) {
       background: transparent !important;
     }
@@ -70,7 +79,7 @@
     opacity: 0.5;
     cursor: not-allowed;
     background: transparent !important;
-    
+
     // Ensure no green background when disabled, even if favorited
     &.is-favorited {
       background: transparent !important;
@@ -98,7 +107,13 @@
 }
 
 @keyframes heartBeat {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-}
 
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+}

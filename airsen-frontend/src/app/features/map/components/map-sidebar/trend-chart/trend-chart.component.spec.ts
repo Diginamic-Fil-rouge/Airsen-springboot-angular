@@ -86,7 +86,8 @@ describe("TrendChartComponent", () => {
     const historicalDataServiceSpy = jasmine.createSpyObj("HistoricalDataService", ["getHistoricalData"]);
 
     await TestBed.configureTestingModule({
-      imports: [TrendChartComponent, MaterialModule, BrowserAnimationsModule, BaseChartDirective],
+      declarations: [TrendChartComponent],
+      imports: [MaterialModule, BrowserAnimationsModule, BaseChartDirective],
       providers: [{ provide: HistoricalDataService, useValue: historicalDataServiceSpy }],
     }).compileComponents();
 

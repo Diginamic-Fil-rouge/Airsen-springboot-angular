@@ -29,12 +29,18 @@
     }
 
     .commune-name {
+      flex: 1;
       margin: 0;
       font-size: $font-size-2xl;
       font-weight: $font-weight-bold;
       line-height: $line-height-tight;
       color: $airsen-white;
       word-break: break-word;
+    }
+
+    .favorite-action {
+      flex-shrink: 0;
+      margin-left: auto;
     }
   }
 
@@ -102,8 +108,17 @@
     padding: $space-3;
 
     &__title {
+      gap: $space-2;
+
       .commune-name {
         font-size: $font-size-xl;
+      }
+
+      .favorite-action {
+        // Ensure button doesn't get too cramped on mobile
+        ::ng-deep .favorite-button {
+          min-width: 40px;
+        }
       }
     }
 
