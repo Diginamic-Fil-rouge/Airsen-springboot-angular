@@ -172,6 +172,7 @@ class UserFavoritesServiceTest {
     @Test
     @DisplayName("removeFavorite deletes when favorite exists")
     void removeFavorite_success() {
+        when(communeRepository.findByInseeCode("34172")).thenReturn(Optional.of(commune));
         when(favoriteRepository.existsById(new UserFavoriteId(user.getId(), "34172"))).thenReturn(true);
 
         userFavoritesService.removeFavorite(user.getId(), "34172");
@@ -182,6 +183,7 @@ class UserFavoritesServiceTest {
     @Test
     @DisplayName("removeFavorite throws when favorite missing")
     void removeFavorite_missing() {
+        when(communeRepository.findByInseeCode("34172")).thenReturn(Optional.of(commune));
         when(favoriteRepository.existsById(new UserFavoriteId(user.getId(), "34172"))).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class,

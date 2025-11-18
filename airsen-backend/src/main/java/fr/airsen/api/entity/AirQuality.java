@@ -240,7 +240,7 @@ public class AirQuality {
     }
 
     public Integer getPm25Concentration() {
-        return Pm25 != null ? Pm25 : 0;
+        return Pm25;
     }
 
     public void setPm25Concentration(Integer pm25) {

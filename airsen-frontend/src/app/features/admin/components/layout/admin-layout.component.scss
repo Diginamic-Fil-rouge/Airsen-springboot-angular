@@ -1,0 +1,191 @@
+@use 'styles/design-system' as *;
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: $airsen-gray-100;
+}
+
+// =============================================================================
+// SIDEBAR
+// =============================================================================
+
+.admin-sidebar {
+  width: $sidebar-width;
+  background-color: $airsen-gray-900;
+  color: $airsen-white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  transition: transform $duration-slow $ease-in-out;
+  z-index: $z-index-fixed;
+
+  &:not(.open) {
+    transform: translateX(-$sidebar-width);
+  }
+}
+
+.sidebar-header {
+  padding: $space-6 $space-4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    margin: 0;
+    color: $airsen-secondary-light;
+  }
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: $airsen-white;
+  cursor: pointer;
+  font-size: $font-size-2xl;
+  padding: $space-1;
+  transition: $transition-colors;
+
+  &:hover {
+    color: $airsen-secondary-light;
+  }
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: $space-4 0;
+  overflow-y: auto;
+  @include custom-scrollbar($airsen-gray-700, rgba(255, 255, 255, 0.05));
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: $space-3 $space-4;
+  margin: $space-1 $space-2;
+  color: $airsen-gray-300;
+  text-decoration: none;
+  border-radius: $radius-lg;
+  transition: $transition-all;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(96, 165, 250, 0.1);
+    color: $airsen-white;
+  }
+
+  &.active {
+    background-color: $airsen-secondary;
+    color: $airsen-white;
+  }
+
+  .icon {
+    font-size: $font-size-xl;
+    margin-right: $space-3;
+    width: 24px;
+    text-align: center;
+  }
+
+  .label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.sidebar-footer {
+  padding: $space-4;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// =============================================================================
+// MAIN CONTENT
+// =============================================================================
+
+.admin-content {
+  flex: 1;
+  margin-left: $sidebar-width;
+  transition: margin-left $duration-slow $ease-in-out;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &:not(.sidebar-open) {
+    margin-left: 0;
+  }
+}
+
+.admin-header {
+  background-color: $airsen-white;
+  padding: $space-4 $space-8;
+  border-bottom: 1px solid $airsen-gray-200;
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  position: sticky;
+  top: 0;
+  z-index: $z-index-sticky;
+  box-shadow: $shadow-sm;
+}
+
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: $font-size-2xl;
+  cursor: pointer;
+  padding: $space-2;
+  color: $airsen-gray-900;
+  transition: $transition-colors;
+
+  &:hover {
+    color: $airsen-secondary;
+  }
+}
+
+.page-title {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-semibold;
+  margin: 0;
+  color: $airsen-gray-900;
+}
+
+.content-area {
+  flex: 1;
+  padding: $space-8;
+  max-width: $container-2xl;
+  width: 100%;
+  margin: 0 auto;
+}
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+@include respond-max(md) {
+  .admin-sidebar {
+    transform: translateX(-$sidebar-width);
+
+    &.open {
+      transform: translateX(0);
+      box-shadow: $shadow-lg;
+    }
+  }
+
+  .admin-content {
+    margin-left: 0;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .content-area {
+    padding: $space-4;
+  }
+}

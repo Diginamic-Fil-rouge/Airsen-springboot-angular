@@ -144,7 +144,9 @@ export class FavoritesComponent implements OnInit, OnDestroy {
   }
 
   viewCommuneDetails(communeInseeCode: string): void {
-    this.router.navigate(['/communes', communeInseeCode, 'details']);
+    this.router.navigate(['/map'], {
+      queryParams: { commune: communeInseeCode, openSidebar: 'true' }
+    });
   }
 
   browseCommunes(): void {

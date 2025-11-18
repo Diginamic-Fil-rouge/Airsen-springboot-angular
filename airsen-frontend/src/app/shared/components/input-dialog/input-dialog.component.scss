@@ -1,0 +1,169 @@
+@use 'styles/design-system' as *;
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-index-modal;
+  padding: $space-4;
+  animation: fadeIn $duration-fast $ease-in-out;
+}
+
+.modal-dialog {
+  background-color: $airsen-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-xl;
+  max-width: 500px;
+  width: 100%;
+  animation: scaleIn $duration-normal $ease-out;
+}
+
+.modal-header {
+  padding: $space-6 $space-6 $space-4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $airsen-gray-200;
+}
+
+.modal-title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $airsen-gray-900;
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: $airsen-gray-500;
+  font-size: $font-size-3xl;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  transition: $transition-colors;
+
+  &:hover {
+    background-color: $airsen-gray-100;
+    color: $airsen-gray-900;
+  }
+}
+
+.modal-body {
+  padding: $space-6;
+}
+
+.modal-message {
+  color: $airsen-gray-700;
+  font-size: $font-size-base;
+  line-height: $line-height-relaxed;
+  margin: 0 0 $space-4 0;
+}
+
+.modal-input {
+  width: 100%;
+  padding: $space-3;
+  border: 1px solid $airsen-gray-300;
+  border-radius: $radius-md;
+  font-size: $font-size-base;
+  color: $airsen-gray-900;
+  transition: $transition-all;
+
+  &:focus {
+    outline: none;
+    border-color: $airsen-secondary;
+    box-shadow: 0 0 0 3px rgba($airsen-secondary, 0.1);
+  }
+
+  &::placeholder {
+    color: $airsen-gray-400;
+  }
+}
+
+.modal-footer {
+  padding: $space-4 $space-6 $space-6;
+  display: flex;
+  justify-content: flex-end;
+  gap: $space-3;
+  border-top: 1px solid $airsen-gray-200;
+}
+
+.btn {
+  padding: $space-2 $space-4;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  border: none;
+  cursor: pointer;
+  transition: $transition-all;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.btn-secondary {
+    background-color: $airsen-gray-200;
+    color: $airsen-gray-900;
+
+    &:hover:not(:disabled) {
+      background-color: $airsen-gray-300;
+    }
+  }
+
+  &.btn-primary {
+    background-color: $airsen-secondary;
+    color: $airsen-white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($airsen-secondary, 10%);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Responsive
+@include respond-max(sm) {
+  .modal-dialog {
+    max-width: 100%;
+    margin: $space-2;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding-left: $space-4;
+    padding-right: $space-4;
+  }
+}

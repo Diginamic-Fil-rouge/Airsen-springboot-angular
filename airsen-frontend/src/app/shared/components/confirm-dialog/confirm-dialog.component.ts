@@ -1,39 +1,45 @@
-import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-export interface ConfirmDialogData {
-  title: string;
-  message: string;
-  confirmButtonText?: string;
-  cancelButtonText?: string;
-}
-
+/**
+ * ConfirmDialogComponent
+ *
+ * A reusable confirmation dialog component.
+ * Displays a modal with title, message, and confirm/cancel buttons.
+ */
 @Component({
-  standalone: false,
   selector: 'app-confirm-dialog',
   templateUrl: './confirm-dialog.component.html',
   styleUrls: ['./confirm-dialog.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  standalone: false
 })
 export class ConfirmDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<ConfirmDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
-  ) {
-    // Set default button texts if not provided
-    if (!this.data.confirmButtonText) {
-      this.data.confirmButtonText = 'Confirm';
-    }
-    if (!this.data.cancelButtonText) {
-      this.data.cancelButtonText = 'Cancel';
-    }
-  }
+  @Input() isOpen = false;
+  @Input() title = 'Confirm Action';
+  @Input() message = 'Are you sure you want to proceed?';
+  @Input() confirmText = 'Confirm';
+  @Input() cancelText = 'Cancel';
+  @Input() confirmButtonClass = 'btn-danger';
+
+  @Output() confirmed = new EventEmitter<void>();
+  @Output() cancelled = new EventEmitter<void>();
 
   onConfirm(): void {
-    this.dialogRef.close(true);
+    this.confirmed.emit();
+    this.close();
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    this.cancelled.emit();
+    this.close();
+  }
+
+  close(): void {
+    this.isOpen = false;
+  }
+
+  onBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.onCancel();
+    }
   }
 }

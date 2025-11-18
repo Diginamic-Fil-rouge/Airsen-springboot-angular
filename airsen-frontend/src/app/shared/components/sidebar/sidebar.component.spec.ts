@@ -41,7 +41,13 @@ describe('SidebarComponent', () => {
   });
 
   it('should initialize with user data', () => {
-    const mockUser = { name: 'John Doe', email: 'john@example.com' };
+    const mockUser = {
+      id: 1,
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      role: 'USER'
+    };
     authService.getCurrentUser.and.returnValue(mockUser);
 
     component.ngOnInit();

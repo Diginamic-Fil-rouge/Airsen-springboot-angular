@@ -46,7 +46,7 @@ public abstract class AbstractTestContainersTest {
 
     /**
      * Dynamically inject TestContainers connection details into Spring context.
-     * This overrides static configuration in application-test.yml.
+     * This overrides static configuration in application-test.properties.
      */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -62,5 +62,14 @@ public abstract class AbstractTestContainersTest {
 
         // Enable Redis caching for integration tests
         registry.add("spring.cache.type", () -> "redis");
+
+        // HikariCP connection pool tuning (prevent pool exhaustion)
+        registry.add("spring.datasource.hikari.maximum-pool-size", () -> "20");
+        registry.add("spring.datasource.hikari.minimum-idle", () -> "5");
+        registry.add("spring.datasource.hikari.connection-timeout", () -> "30000");
+        registry.add("spring.datasource.hikari.leak-detection-threshold", () -> "60000");
+
+        // Enable connection leak detection logging
+        registry.add("logging.level.com.zaxxer.hikari", () -> "DEBUG");
     }
 }

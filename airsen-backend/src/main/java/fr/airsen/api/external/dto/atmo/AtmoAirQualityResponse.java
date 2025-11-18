@@ -8,12 +8,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * Maps the ATMO France API GeoJSON response for air quality indices
  * and pollutant concentrations from the features.properties structure.
+ *
+ * The code_qual field represents the ATMO air quality index (1-6 scale):
+ * 1 = Bon (Good), 2 = Moyen (Moderate), 3 = Dégradé (Degraded),
+ * 4 = Mauvais (Bad), 5 = Très mauvais (Very Bad), 6 = Extrêmement mauvais (Extremely Bad)
  */
 public record AtmoAirQualityResponse(
     @JsonProperty("code_zone") String communeInsee,
     @JsonProperty("date_ech") String measurementDate,
-    @JsonProperty("valeur") Integer atmoIndex,
-    @JsonProperty("code_qual") String qualityCode,
+    @JsonProperty("code_qual") Integer atmoIndex,
     @JsonProperty("lib_qual") String qualifier,
     @JsonProperty("coul_qual") String color,
     @JsonProperty("code_no2") Integer no2Code,

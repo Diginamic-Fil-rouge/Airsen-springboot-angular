@@ -1,8 +1,15 @@
-<h2 mat-dialog-title>{{ data.title }}</h2>
-<mat-dialog-content>
-  <p>{{ data.message }}</p>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">{{ data.cancelButtonText }}</button>
-  <button mat-raised-button color="warn" (click)="onConfirm()">{{ data.confirmButtonText }}</button>
-</mat-dialog-actions>
+<div *ngIf="isOpen" class="modal-overlay" (click)="onBackdropClick($event)">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ title }}</h3>
+      <button class="modal-close" (click)="onCancel()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p>{{ message }}</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onCancel()">{{ cancelText }}</button>
+      <button class="btn {{ confirmButtonClass }}" (click)="onConfirm()">{{ confirmText }}</button>
+    </div>
+  </div>
+</div>

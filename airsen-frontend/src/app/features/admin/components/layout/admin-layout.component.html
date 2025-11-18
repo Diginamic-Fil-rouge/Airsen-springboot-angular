@@ -1,0 +1,57 @@
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-header">
+      <h2>AIRSEN Admin</h2>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <mat-icon>menu</mat-icon>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <mat-icon class="icon">dashboard</mat-icon>
+        <span class="label">Tableau de Bord</span>
+      </a>
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+        <mat-icon class="icon">group</mat-icon>
+        <span class="label">Utilisateurs</span>
+      </a>
+      <a routerLink="/admin/alerts" routerLinkActive="active" class="nav-item">
+        <mat-icon class="icon">notification_important</mat-icon>
+        <span class="label">Signaux d'Alerte</span>
+      </a>
+      <a routerLink="/admin/campaigns" routerLinkActive="active" class="nav-item">
+        <mat-icon class="icon">campaign</mat-icon>
+        <span class="label">Campagnes</span>
+      </a>
+      <a routerLink="/admin/audit" routerLinkActive="active" class="nav-item">
+        <mat-icon class="icon">assignment</mat-icon>
+        <span class="label">Journal d'Audit</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/dashboard" class="nav-item">
+        <mat-icon class="icon">arrow_back</mat-icon>
+        <span class="label">Retour au Tableau de Bord</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="admin-content" [class.sidebar-open]="sidebarOpen">
+    <!-- Header -->
+    <header class="admin-header">
+      <button class="menu-toggle" (click)="toggleSidebar()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <h1 class="page-title">Administration</h1>
+    </header>
+
+    <!-- Content Area -->
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,6 +37,13 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    // Mock external services to prevent startup issues
+    @MockBean
+    private fr.airsen.api.scheduler.InseeDataInitializer inseeDataInitializer;
+
+    @MockBean
+    private fr.airsen.api.scheduler.CacheAwareTieredScheduler cacheAwareTieredScheduler;
 
     @Autowired
     private CommuneRepository communeRepository;
@@ -127,7 +135,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     @WithMockUser(roles = "USER")
     @DisplayName("GET /communes/{inseeCode}/export-data - Success with USER role")
     void testGetExportDataSuccessWithUserRole() throws Exception {
-        mockMvc.perform(get("/api/v1/communes/75056/export-data")
+        mockMvc.perform(get("/communes/75056/export-data")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commune").exists())
@@ -148,7 +156,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /communes/{inseeCode}/export-data - Success with ADMIN role")
     void testGetExportDataSuccessWithAdminRole() throws Exception {
-        mockMvc.perform(get("/api/v1/communes/75056/export-data")
+        mockMvc.perform(get("/communes/75056/export-data")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commune.inseeCode").value("75056"));
@@ -157,7 +165,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     @Test
     @DisplayName("GET /communes/{inseeCode}/export-data - Unauthorized without authentication")
     void testGetExportDataUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(get("/api/v1/communes/75056/export-data")
+        mockMvc.perform(get("/communes/75056/export-data")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -166,7 +174,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     @WithMockUser(roles = "USER")
     @DisplayName("GET /communes/{inseeCode}/export-data - Not found for invalid INSEE code")
     void testGetExportDataNotFoundForInvalidInseeCode() throws Exception {
-        mockMvc.perform(get("/api/v1/communes/99999/export-data")
+        mockMvc.perform(get("/communes/99999/export-data")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -175,7 +183,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     @WithMockUser(roles = "USER")
     @DisplayName("GET /communes/{inseeCode}/export-data - Includes complete geographic hierarchy")
     void testGetExportDataIncludesCompleteGeography() throws Exception {
-        mockMvc.perform(get("/api/v1/communes/75056/export-data")
+        mockMvc.perform(get("/communes/75056/export-data")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commune.department").exists())
@@ -195,7 +203,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
         LocalDate today = LocalDate.now();
         LocalDate startDate = today.minusDays(7);
 
-        mockMvc.perform(get("/api/v1/communes/75056/historical-data")
+        mockMvc.perform(get("/communes/75056/historical-data")
                 .param("startDate", startDate.toString())
                 .param("endDate", today.toString())
                 .accept(MediaType.APPLICATION_JSON))
@@ -219,7 +227,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     void testGetHistoricalDataUnauthorizedWithoutAuth() throws Exception {
         LocalDate today = LocalDate.now();
 
-        mockMvc.perform(get("/api/v1/communes/75056/historical-data")
+        mockMvc.perform(get("/communes/75056/historical-data")
                 .param("startDate", today.minusDays(7).toString())
                 .param("endDate", today.toString())
                 .accept(MediaType.APPLICATION_JSON))
@@ -232,7 +240,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     void testGetHistoricalDataBadRequestWithInvalidDateRange() throws Exception {
         LocalDate today = LocalDate.now();
 
-        mockMvc.perform(get("/api/v1/communes/75056/historical-data")
+        mockMvc.perform(get("/communes/75056/historical-data")
                 .param("startDate", today.toString())
                 .param("endDate", today.minusDays(7).toString())  // End before start
                 .accept(MediaType.APPLICATION_JSON))
@@ -245,7 +253,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     void testGetHistoricalDataBadRequestForExcessiveDateRange() throws Exception {
         LocalDate today = LocalDate.now();
 
-        mockMvc.perform(get("/api/v1/communes/75056/historical-data")
+        mockMvc.perform(get("/communes/75056/historical-data")
                 .param("startDate", today.minusDays(91).toString())
                 .param("endDate", today.toString())
                 .accept(MediaType.APPLICATION_JSON))
@@ -258,7 +266,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     void testGetHistoricalDataNotFoundForInvalidInseeCode() throws Exception {
         LocalDate today = LocalDate.now();
 
-        mockMvc.perform(get("/api/v1/communes/99999/historical-data")
+        mockMvc.perform(get("/communes/99999/historical-data")
                 .param("startDate", today.minusDays(7).toString())
                 .param("endDate", today.toString())
                 .accept(MediaType.APPLICATION_JSON))
@@ -272,7 +280,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
         LocalDate today = LocalDate.now();
         LocalDate startDate = today.minusDays(7);
 
-        mockMvc.perform(get("/api/v1/communes/75056/historical-data")
+        mockMvc.perform(get("/communes/75056/historical-data")
                 .param("startDate", startDate.toString())
                 .param("endDate", today.toString())
                 .accept(MediaType.APPLICATION_JSON))
@@ -291,7 +299,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     void testGetHistoricalDataSuccessWithAdminRole() throws Exception {
         LocalDate today = LocalDate.now();
 
-        mockMvc.perform(get("/api/v1/communes/75056/historical-data")
+        mockMvc.perform(get("/communes/75056/historical-data")
                 .param("startDate", today.minusDays(7).toString())
                 .param("endDate", today.toString())
                 .accept(MediaType.APPLICATION_JSON))
@@ -310,7 +318,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
         // Remove air quality data
         airQualityRepository.deleteAll();
 
-        mockMvc.perform(get("/api/v1/communes/75056/export-data")
+        mockMvc.perform(get("/communes/75056/export-data")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commune").exists())
@@ -324,7 +332,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
         // Remove weather data
         weatherDataRepository.deleteAll();
 
-        mockMvc.perform(get("/api/v1/communes/75056/export-data")
+        mockMvc.perform(get("/communes/75056/export-data")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commune").exists())
@@ -337,7 +345,7 @@ class ExportDataControllerIntegrationTest extends AbstractTestContainersTest {
     void testGetHistoricalDataEmptyDataPointsForFutureRange() throws Exception {
         LocalDate futureDate = LocalDate.now().plusDays(30);
 
-        mockMvc.perform(get("/api/v1/communes/75056/historical-data")
+        mockMvc.perform(get("/communes/75056/historical-data")
                 .param("startDate", futureDate.toString())
                 .param("endDate", futureDate.plusDays(7).toString())
                 .accept(MediaType.APPLICATION_JSON))

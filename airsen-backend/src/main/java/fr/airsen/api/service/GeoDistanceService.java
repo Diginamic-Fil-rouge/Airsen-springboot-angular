@@ -75,6 +75,9 @@ public class GeoDistanceService {
                 + Math.cos(lat1Rad) * Math.cos(lat2Rad)
                 * Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
+        // Clamp 'a' to [0, 1] to handle floating point errors with antipodal points
+        a = Math.max(0.0, Math.min(1.0, a));
+
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         double distance = EARTH_RADIUS_KM * c;

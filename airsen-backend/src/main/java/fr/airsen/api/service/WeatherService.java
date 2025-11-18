@@ -1,14 +1,19 @@
 package fr.airsen.api.service;
 
+import fr.airsen.api.dto.response.NearestWeatherResult;
+import fr.airsen.api.dto.response.WeatherResponse;
 import fr.airsen.api.entity.Commune;
 import fr.airsen.api.entity.WeatherData;
+import fr.airsen.api.entity.cacheData.CacheMetadata;
 import fr.airsen.api.external.client.InseeApiClient;
 import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoCurrentResponse;
 import fr.airsen.api.external.dto.openmeteo.OpenMeteoForecastResponse;
+import fr.airsen.api.mapper.WeatherMapper;
 import fr.airsen.api.repository.CommuneRepository;
 import fr.airsen.api.repository.WeatherDataRepository;
 import fr.airsen.api.exception.ResourceNotFoundException;
+import fr.airsen.api.service.cacheData.SmartCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -41,15 +46,24 @@ public class WeatherService {
     private final InseeApiClient inseeApiClient;
     private final WeatherDataRepository weatherDataRepository;
     private final CommuneRepository communeRepository;
+    private final GeoDistanceService geoDistanceService;
+    private final WeatherMapper weatherMapper;
+    private final SmartCacheService smartCacheService;
 
     public WeatherService(OpenMeteoApiClient openMeteoApiClient,
                          InseeApiClient inseeApiClient,
                          WeatherDataRepository weatherDataRepository,
-                         CommuneRepository communeRepository) {
+                         CommuneRepository communeRepository,
+                         GeoDistanceService geoDistanceService,
+                         WeatherMapper weatherMapper,
+                         SmartCacheService smartCacheService) {
         this.openMeteoApiClient = openMeteoApiClient;
         this.inseeApiClient = inseeApiClient;
         this.weatherDataRepository = weatherDataRepository;
         this.communeRepository = communeRepository;
+        this.geoDistanceService = geoDistanceService;
+        this.weatherMapper = weatherMapper;
+        this.smartCacheService = smartCacheService;
     }
 
     /**
@@ -193,6 +207,75 @@ public class WeatherService {
     @CacheEvict(value = "weather", allEntries = true)
     public void evictAllWeatherCache() {
         log.info("Cleared all weather cache");
+    }
+
+    /**
+     * Gets the latest stored weather data for a commune with geodistance fallback.
+     *
+     * Implementation pattern mirrors AtmoIntegrationService.getLatestStoredAirQuality():
+     * 1. Try direct database query for requested commune
+     * 2. If no data found, search within 20km radius using Haversine algorithm
+     * 3. Return DIRECT or ESTIMATED response with proper metadata
+     *
+     * Uses SmartCacheService with 6-hour TTL (weather.cache.ttl).
+     *
+     * @param inseeCode INSEE code of the requested commune
+     * @return WeatherResponse with DIRECT or ESTIMATED data source
+     * @throws ResourceNotFoundException if commune doesn't exist OR no data within 20km
+     */
+    @Transactional(readOnly = true)
+    public WeatherResponse getLatestStoredWeather(String inseeCode) {
+        log.debug("Fetching weather for commune: {}", inseeCode);
+
+        String cacheKey = "weather:" + inseeCode;
+
+        return smartCacheService.getOrFetch(
+            cacheKey,
+            WeatherResponse.class,
+            CacheMetadata.DataSource.ON_DEMAND_FETCH,
+            false, // forceRefresh
+            () -> fetchWeatherWithFallback(inseeCode)
+        ).getData();
+    }
+
+    /**
+     * Private helper to fetch weather with geodistance fallback.
+     * Throws ResourceNotFoundException if no data available.
+     */
+    private WeatherResponse fetchWeatherWithFallback(String inseeCode) {
+        log.debug("Cache miss or refresh needed, fetching weather from database");
+
+        // Validate commune exists first - prevents 500 errors for non-existent communes
+        Optional<Commune> requestedCommune = communeRepository.findByInseeCode(inseeCode);
+        if (requestedCommune.isEmpty()) {
+            log.warn("Commune not found: {}", inseeCode);
+            throw new ResourceNotFoundException("Commune not found");
+        }
+
+        // Try direct database query
+        Optional<WeatherData> directData = weatherDataRepository
+            .findLatestExportDataByInseeCode(inseeCode);
+
+        if (directData.isPresent()) {
+            log.debug("Found direct weather data for commune: {}", inseeCode);
+            return weatherMapper.toDirectResponse(directData.get());
+        }
+
+        // Geodistance fallback (20km threshold) - PRESERVED AS-IS
+        log.debug("No direct data, attempting geodistance fallback within 20km");
+        Optional<NearestWeatherResult> nearestData = geoDistanceService
+            .findNearestCommuneWithWeather(inseeCode, 20.0);
+
+        if (nearestData.isPresent()) {
+            log.info("Using estimated weather from {} ({} km away)",
+                    nearestData.get().communeName(),
+                    nearestData.get().distanceKm());
+            return weatherMapper.toEstimatedResponse(nearestData.get(), requestedCommune.get());
+        }
+
+        throw new ResourceNotFoundException(
+            "No weather data within 20km"
+        );
     }
 
     /**

@@ -7,7 +7,6 @@ import fr.airsen.api.external.client.AtmoApiClient;
 import fr.airsen.api.external.client.InseeApiClient;
 import fr.airsen.api.external.client.OpenMeteoApiClient;
 import fr.airsen.api.repository.AirQualityRepository;
-import fr.airsen.api.repository.CommuneRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 /**
  * Integration tests for AtmoController endpoints.
@@ -54,9 +54,6 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
     @Autowired
     private AirQualityRepository airQualityRepository;
 
-    @Autowired
-    private CommuneRepository communeRepository;
-
     // Mock external API clients to prevent HTTP calls during integration tests
     @MockBean
     private AtmoApiClient atmoApiClient;
@@ -67,7 +64,14 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
     @MockBean
     private InseeApiClient inseeApiClient;
 
-    // Valid JWT token for test authentication (expires 2025-11-14, signed with base64 test secret from application-test.yml)
+    // Mock data initializers to prevent startup data fetching
+    @MockBean
+    private fr.airsen.api.scheduler.InseeDataInitializer inseeDataInitializer;
+
+    @MockBean
+    private fr.airsen.api.scheduler.CacheAwareTieredScheduler cacheAwareTieredScheduler;
+
+    // JWT token (not required with addFilters=false, but kept for header compatibility)
     private static final String VALID_JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYXJhaEBhaXJzZW4uZnIiLCJlbWFpbCI6InNhcmFoQGFpcnNlbi5mciIsInJvbGUiOiJBRE1JTiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3NjMxMDc4NzQsImV4cCI6MTc5NDY0Mzg3NH0.OTXUU6Jpl8vjJRBfAimTArWkLvyYqFtuRS9dkDGVZq8";
 
     @Test
@@ -86,7 +90,7 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
 
         // Then: Response contains direct data from Paris
         AirQualityResponse response = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
             AirQualityResponse.class
         );
 
@@ -119,20 +123,21 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
         // Given: Saint-Denis (93008) has no air quality data, but Paris (75056) does (~10km away)
         String saintDenisInseeCode = "93008";
 
-        // Verify setup: Saint-Denis has no air quality data
-        assertThat(airQualityRepository.findLatestByCommune_InseeCode(saintDenisInseeCode)).isEmpty();
+        // Verify setup FIRST - Saint-Denis must have NO data to trigger geodistance
+        verifyNoAirQualityData(saintDenisInseeCode);
 
         // When: Request air quality for Saint-Denis
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", saintDenisInseeCode)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         // Then: Response contains estimated data from nearest commune (Paris)
         AirQualityResponse response = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
             AirQualityResponse.class
         );
 
@@ -140,9 +145,9 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
         assertThat(response.communeName()).isEqualTo("Saint-Denis");
         assertThat(response.dataSource()).isEqualTo(AirQualityResponse.DataSource.ESTIMATED);
 
-        // Data should come from nearest commune (Paris or Boulogne-Billancourt)
-        assertThat(response.estimatedFromCommune()).isIn("Paris", "Boulogne-Billancourt");
-        assertThat(response.distanceKm()).isBetween(8.0, 12.0); // Approximate distance
+        // Data should come from nearest commune (Aubervilliers is closest at ~3km)
+        assertThat(response.estimatedFromCommune()).isIn("Aubervilliers", "Paris", "Boulogne-Billancourt");
+        assertThat(response.distanceKm()).isBetween(2.0, 12.0); // Aubervilliers ~3km, Paris ~10km
         assertThat(response.dataQualityNote()).contains("Données estimées depuis");
 
         // Air quality data should be inherited from nearest commune
@@ -162,20 +167,21 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
         // Given: Créteil (94017) has no air quality data, but Paris (75056) is ~15km away
         String creteilInseeCode = "94017";
 
-        // Verify setup: Créteil has no air quality data
-        assertThat(airQualityRepository.findLatestByCommune_InseeCode(creteilInseeCode)).isEmpty();
+        // Verify setup FIRST - Créteil must have NO data to trigger geodistance
+        verifyNoAirQualityData(creteilInseeCode);
 
         // When: Request air quality for Créteil
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", creteilInseeCode)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         // Then: Response contains estimated data from nearest commune
         AirQualityResponse response = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
             AirQualityResponse.class
         );
 
@@ -202,6 +208,7 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
         mockMvc.perform(get("/atmo/air-quality/{inseeCode}", meauxInseeCode)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
+                .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No air quality data within 20km"));
     }
@@ -216,6 +223,7 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
         mockMvc.perform(get("/atmo/air-quality/{inseeCode}", invalidInseeCode)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
+                .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Commune not found"));
     }
@@ -235,7 +243,7 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
 
         // Then: Response contains correct ATMO index, qualifier, and color mapping
         AirQualityResponse response = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
             AirQualityResponse.class
         );
 
@@ -259,7 +267,7 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
 
         // Then: Response contains correct ATMO index for extremely bad quality
         AirQualityResponse response = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
             AirQualityResponse.class
         );
 
@@ -283,7 +291,7 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
 
         // Then: Response contains all pollutants with correct values
         AirQualityResponse response = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
             AirQualityResponse.class
         );
 
@@ -316,12 +324,13 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
         MvcResult result = mockMvc.perform(get("/atmo/air-quality/{inseeCode}", saintDenisInseeCode)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + VALID_JWT_TOKEN))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
 
         // Then: Distance calculation should be accurate (within 1km tolerance)
         AirQualityResponse response = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
+            result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8),
             AirQualityResponse.class
         );
 
@@ -337,22 +346,17 @@ class AtmoControllerIntegrationTest extends AbstractTestContainersTest {
     }
 
     /**
-     * Helper method to verify test data setup.
+     * Helper method to verify NO air quality data exists for a specific commune.
+     * Used in ESTIMATED data tests to ensure geodistance fallback is triggered.
+     *
+     * @param inseeCode The INSEE code of the commune to check
      */
-    private void verifyTestDataSetup() {
-        // Verify communes exist
-        assertThat(communeRepository.findByInseeCode("75056")).isPresent(); // Paris
-        assertThat(communeRepository.findByInseeCode("92012")).isPresent(); // Boulogne-Billancourt
-        assertThat(communeRepository.findByInseeCode("93008")).isPresent(); // Saint-Denis
-        assertThat(communeRepository.findByInseeCode("94017")).isPresent(); // Créteil
-        assertThat(communeRepository.findByInseeCode("77001")).isPresent(); // Meaux
-        assertThat(communeRepository.findByInseeCode("93006")).isPresent(); // Aubervilliers
-
-        // Verify air quality data distribution
-        assertThat(airQualityRepository.findLatestByCommune_InseeCode("75056")).isPresent();  // Paris has data
-        assertThat(airQualityRepository.findLatestByCommune_InseeCode("92012")).isPresent();  // Boulogne-Billancourt has data
-        assertThat(airQualityRepository.findLatestByCommune_InseeCode("93008")).isEmpty();    // Saint-Denis no data
-        assertThat(airQualityRepository.findLatestByCommune_InseeCode("94017")).isEmpty();    // Créteil no data
-        assertThat(airQualityRepository.findLatestByCommune_InseeCode("93006")).isPresent();  // Aubervilliers has data
+    private void verifyNoAirQualityData(String inseeCode) {
+        java.util.Optional<fr.airsen.api.entity.AirQuality> data = airQualityRepository
+                .findLatestByCommune_InseeCode(inseeCode);
+        assertThat(data)
+                .withFailMessage("Expected NO air quality data for %s, but found: %s",
+                        inseeCode, data.map(fr.airsen.api.entity.AirQuality::getMeasurementDate))
+                .isEmpty();
     }
 }

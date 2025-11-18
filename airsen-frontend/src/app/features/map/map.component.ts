@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
 import { BreakpointObserver } from "@angular/cdk/layout";
 import { CommuneDataService } from "@/core/services/commune-data.service";
 import { Commune, CommuneWithAirQuality } from "@/shared/models/commune.model";
-import { Observable, Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { BehaviorSubject, Observable, Subject, combineLatest } from "rxjs";
+import { takeUntil, filter } from "rxjs/operators";
 import { MapSidebarDisplayMode } from "./components/map-sidebar/map-sidebar.types";
 
 /**
@@ -53,6 +54,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private loadedPopulationThreshold = 50000; // Track what we've already loaded
   private destroy$ = new Subject<void>();
   private isProgrammaticZoom = false; // Flag to skip progressive loading during search zoom
+  private communesLoaded$ = new BehaviorSubject<boolean>(false); // Track when communes are loaded
 
   private readonly breakpointQueries = {
     desktop: "(min-width: 1024px)",
@@ -60,7 +62,11 @@ export class MapComponent implements OnInit, OnDestroy {
     mobile: "(max-width: 639px)",
   };
 
-  constructor(private communeDataService: CommuneDataService, private breakpointObserver: BreakpointObserver) {
+  constructor(
+    private communeDataService: CommuneDataService,
+    private breakpointObserver: BreakpointObserver,
+    private route: ActivatedRoute
+  ) {
     this.isLoading$ = this.communeDataService.loading$;
     this.error$ = this.communeDataService.error$;
   }
@@ -71,6 +77,34 @@ export class MapComponent implements OnInit, OnDestroy {
     // INITIAL LOAD: Only major cities (50K+ population)
     console.log("[Map] Initial load: Fetching major cities (pop >= 50000)");
     this.loadCommunes(50000);
+
+    // Handle query params from favorites navigation
+    // CRITICAL: Use combineLatest to wait for BOTH communes to load AND query params to be available
+    combineLatest([
+      this.route.queryParams,
+      this.communesLoaded$.pipe(filter(loaded => loaded)) // Only proceed when communes are loaded
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([params, _]) => {
+        const communeId = params["commune"];
+        const shouldOpenSidebar = params["openSidebar"] === "true";
+
+        if (communeId) {
+          console.log(`[Map] Query param detected: commune=${communeId}, openSidebar=${shouldOpenSidebar}`);
+
+          // Find commune in loaded list and select it
+          const commune = this.communes.find((c) => c.inseeCode === communeId);
+          if (commune) {
+            console.log(`[Map] Commune found in list: ${commune.name}, selecting...`);
+            this.onCommuneClicked(commune);
+            if (shouldOpenSidebar) {
+              this.openSidebar();
+            }
+          } else {
+            console.warn(`[Map] Commune with inseeCode ${communeId} not found in loaded communes list`);
+          }
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -90,6 +124,9 @@ export class MapComponent implements OnInit, OnDestroy {
 
         const filterMsg = minPopulation ? `(pop >= ${minPopulation})` : "(all)";
         console.log(`[Map]  Loaded ${communes.length} communes ${filterMsg}`);
+
+        // Notify that communes are loaded (enables query param processing)
+        this.communesLoaded$.next(true);
       },
       error: (error) => {
         console.error("[Map]  Failed to load communes:", error);

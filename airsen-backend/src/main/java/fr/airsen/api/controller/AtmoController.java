@@ -1,10 +1,7 @@
 package fr.airsen.api.controller;
 
-import fr.airsen.api.dto.AirQualityResponseDTO;
 import fr.airsen.api.dto.response.AirQualityResponse;
 import fr.airsen.api.dto.response.ErrorResponse;
-import fr.airsen.api.exception.AirQualityDataNotFoundException;
-import fr.airsen.api.exception.ResourceNotFoundException;
 import fr.airsen.api.service.AtmoIntegrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,15 +14,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * REST controller for ATMO France air quality data integration.
@@ -127,24 +121,8 @@ public class AtmoController {
         @PathVariable @Parameter(description = "INSEE code of the commune") String inseeCode
     ) {
         log.info("REST request to get air quality for commune: {}", inseeCode);
-
-        try {
-            Optional<AirQualityResponseDTO> optionalData = atmoIntegrationService.getAirQualityForCommuneSync(inseeCode);
-
-            if (optionalData.isEmpty()) {
-                throw new AirQualityDataNotFoundException("No air quality data available for commune: " + inseeCode);
-            }
-
-            AirQualityResponseDTO dto = optionalData.get();
-            AirQualityResponse response = convertToAirQualityResponse(dto);
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            log.error("Commune not found: {}", inseeCode);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (AirQualityDataNotFoundException e) {
-            log.warn("No air quality data available: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        AirQualityResponse response = atmoIntegrationService.getLatestStoredAirQuality(inseeCode);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -259,69 +237,4 @@ public class AtmoController {
         }
     }
 
-    /**
-     * Creates a standardized air quality response map from DTO.
-     *
-     * @param airQuality the air quality DTO
-     * @return formatted response map
-     */
-    private Map<String, Object> createAirQualityResponse(AirQualityResponseDTO airQuality) {
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("status", "success");
-        response.put("commune", Map.of(
-            "inseeCode", airQuality.communeInseeCode(),
-            "name", airQuality.communeName(),
-            "department", airQuality.departmentName(),
-            "region", airQuality.regionName()
-        ));
-
-        response.put("airQuality", Map.of(
-            "measurementDate", airQuality.measurementDate(),
-            "atmoIndex", airQuality.atmoIndex(),
-            "qualifier", airQuality.qualifier(),
-            "color", airQuality.color(),
-            "pollutants", Map.of(
-                "NO2", airQuality.no2Concentration(),
-                "O3", airQuality.o3Concentration(),
-                "PM10", airQuality.pm10Concentration(),
-                "PM2_5", airQuality.pm25Concentration(),
-                "SO2", airQuality.so2Concentration()
-            )
-        ));
-
-        response.put("lastUpdated", airQuality.createdAt());
-
-        return response;
-    }
-
-    /**
-     * Helper method to convert AirQualityResponseDTO to AirQualityResponse.
-     * This is a temporary conversion until the service layer is refactored.
-     *
-     * @param dto The DTO from the service layer
-     * @return AirQualityResponse for the controller response
-     */
-    private AirQualityResponse convertToAirQualityResponse(AirQualityResponseDTO dto) {
-        Map<String, Integer> pollutants = new HashMap<>();
-        pollutants.put("NO2", dto.no2Concentration());
-        pollutants.put("O3", dto.o3Concentration());
-        pollutants.put("PM10", dto.pm10Concentration());
-        pollutants.put("PM25", dto.pm25Concentration());
-        pollutants.put("SO2", dto.so2Concentration());
-
-        return new AirQualityResponse(
-            dto.communeInseeCode(),
-            dto.communeName(),
-            dto.measurementDate(),
-            dto.atmoIndex(),
-            dto.qualifier(),
-            dto.color(),
-            pollutants,
-            AirQualityResponse.DataSource.DIRECT, // Default to DIRECT for now
-            null, // No estimated commune
-            null, // No distance
-            "Données mesurées pour cette commune" // Default quality note
-        );
-    }
 }

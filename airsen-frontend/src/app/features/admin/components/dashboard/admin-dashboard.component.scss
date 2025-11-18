@@ -1,0 +1,296 @@
+@use 'sass:color';
+@use 'styles/design-system' as *;
+
+.admin-dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $space-6;
+
+  @include respond-max(md) {
+    padding: $space-4;
+  }
+}
+
+// Header Section
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-8;
+
+  @include respond-max(md) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $space-4;
+  }
+
+  h2 {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-900;
+    margin: 0;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+}
+
+// Loading and Error States
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $space-16 $space-8;
+  text-align: center;
+
+  p {
+    margin: $space-4 0 0 0;
+    color: $airsen-gray-600;
+    font-size: $font-size-lg;
+  }
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: $space-4;
+  }
+
+  button {
+    margin-top: $space-4;
+  }
+}
+
+// Statistics Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: $space-6;
+  margin-bottom: $space-8;
+
+  @include respond-max(md) {
+    grid-template-columns: 1fr;
+    gap: $space-4;
+  }
+}
+
+// Stat Cards using Material Cards
+.stat-card {
+  @include card();
+  transition: transform $duration-normal $ease-in-out, box-shadow $duration-normal $ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: $space-4;
+    padding: $space-6 !important;
+  }
+}
+
+.stat-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-lg;
+  background-color: rgba($airsen-gray-100, 0.8);
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.stat-content {
+  flex: 1;
+
+  h3 {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-600;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-wide;
+    margin: 0 0 $space-2 0;
+  }
+
+  .stat-number {
+    font-size: $font-size-data;
+    font-weight: $font-weight-bold;
+    color: $airsen-gray-900;
+    margin: 0 0 $space-3 0;
+    line-height: $line-height-tight;
+  }
+
+  .stat-subtitle {
+    font-size: $font-size-sm;
+    color: $airsen-gray-600;
+    margin: 0;
+    line-height: $line-height-normal;
+  }
+}
+
+.stat-details {
+  display: flex;
+  gap: $space-2;
+  flex-wrap: wrap;
+  margin-top: $space-2;
+
+  mat-chip {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    height: 28px;
+  }
+}
+
+// Color variants for stat cards
+.stat-card-primary {
+  .stat-icon {
+    background-color: rgba($airsen-primary, 0.1);
+  }
+}
+
+.stat-card-success {
+  .stat-icon {
+    background-color: rgba($airsen-success, 0.1);
+  }
+}
+
+.stat-card-warning {
+  .stat-icon {
+    background-color: rgba($airsen-warning, 0.1);
+  }
+}
+
+.stat-card-info {
+  .stat-icon {
+    background-color: rgba($airsen-secondary, 0.1);
+  }
+}
+
+// Quick Actions Card
+.quick-actions {
+  @include card();
+
+  mat-card-header {
+    margin-bottom: $space-4;
+  }
+
+  mat-card-title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-900;
+  }
+
+  .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $space-4;
+
+    @include respond-max(md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    padding: $space-4 $space-6;
+    height: auto;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    text-decoration: none;
+    border-radius: $radius-md;
+    transition: $transition-all;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    span {
+      flex: 1;
+      text-align: left;
+    }
+  }
+}
+
+// Responsive adjustments
+@include respond-max(sm) {
+  .admin-dashboard {
+    padding: $space-4 $space-2;
+  }
+
+  .dashboard-header {
+    h2 {
+      font-size: $font-size-2xl;
+    }
+  }
+
+  .stat-card {
+    mat-card-content {
+      flex-direction: column;
+      text-align: center;
+      padding: $space-4 !important;
+    }
+
+    .stat-icon {
+      margin-bottom: $space-3;
+    }
+  }
+
+  .quick-actions {
+    .action-buttons {
+      grid-template-columns: 1fr;
+    }
+
+    .action-btn {
+      justify-content: center;
+      text-align: center;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .stat-card {
+    border: 2px solid $airsen-gray-300;
+  }
+
+  .stat-icon {
+    border: 2px solid currentColor;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .action-btn {
+    &:hover {
+      transform: none;
+    }
+  }
+
+  * {
+    transition: none !important;
+  }
+}

@@ -268,7 +268,7 @@ class AtmoApiClientRateLimiterIntegrationTest {
                     "nom_zone": "Paris",
                     "date": "2024-01-15",
                     "valeur": 4,
-                    "code_qual": "MOYEN",
+                    "code_qual": 2,
                     "lib_qual": "Moyen"
                   },
                   "geometry": {
@@ -285,7 +285,7 @@ class AtmoApiClientRateLimiterIntegrationTest {
                     "nom_zone": "Lyon",
                     "date": "2024-01-15",
                     "valeur": 3,
-                    "code_qual": "BON",
+                    "code_qual": 1,
                     "lib_qual": "Bon"
                   },
                   "geometry": {

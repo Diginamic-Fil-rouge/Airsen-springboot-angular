@@ -1,62 +1,149 @@
 <div class="home-public">
+  <!-- Hero Section -->
   <section class="hero">
     <div class="hero-container">
       <span class="hero-tagline">Plateforme citoyenne pour une qualité de l'air maîtrisée</span>
       <h1 class="hero-title">Respirez mieux avec Airsen</h1>
       <p class="hero-subtitle">
-        Découvrez un espace dédié à la protection de l'environnement et à l'action locale.
-        Connectez-vous pour suivre ce qui se passe près de chez vous.
+        Surveillez la qualité de l'air en temps réel et participez à la protection de votre environnement local.
       </p>
       <div class="hero-actions">
-        <button class="btn-primary" (click)="goToLogin()">Connect to check air quality near you</button>
+        <button class="btn-primary" (click)="goToLogin()">Connectez-vous pour consulter la qualité de l'air</button>
       </div>
       <p class="hero-note">
-        L'accès aux cartes, aux alertes personnalisées et aux données détaillées est réservé aux membres connectés.
+        Accès complet réservé aux membres connectés.
       </p>
     </div>
   </section>
 
+  <!-- Statistics Section -->
+  <section class="statistics-section">
+    <div class="stats-container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <mat-icon>people</mat-icon>
+          </div>
+          <span class="stat-number">1,247</span>
+          <span class="stat-label">Utilisateurs actifs</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <mat-icon>location_city</mat-icon>
+          </div>
+          <span class="stat-number">50+</span>
+          <span class="stat-label">Villes surveillées</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <span class="stat-number">24/7</span>
+          <span class="stat-label">Surveillance continue</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Preview Section -->
   <section class="feature-preview">
     <div class="feature-container">
-      <h2 class="section-title">Ce qui vous attend une fois connecté</h2>
+      <h2 class="section-title">Fonctionnalités principales</h2>
       <p class="section-subtitle">
-        Visualisez la plateforme sans dévoiler de données en direct. Chaque carte illustre les services disponibles après authentification.
+        Découvrez tous les outils à votre disposition pour surveiller et comprendre la qualité de l'air.
       </p>
       <div class="feature-grid">
         <article class="feature-card">
           <div class="feature-icon" aria-hidden="true">
             <mat-icon>notifications_active</mat-icon>
           </div>
-          <h3 class="feature-title">Get real-time environmental alerts</h3>
+          <h3 class="feature-title">Alertes personnalisées</h3>
           <p class="feature-description">
-            Recevez des notifications personnalisées dès que les niveaux de pollution changent dans votre zone.
+            Notifications en temps réel sur la qualité de l'air dans votre zone.
           </p>
         </article>
         <article class="feature-card">
           <div class="feature-icon" aria-hidden="true">
             <mat-icon>map</mat-icon>
           </div>
-          <h3 class="feature-title">Access maps and historic data</h3>
+          <h3 class="feature-title">Carte interactive</h3>
           <p class="feature-description">
-            Explorez des cartes interactives et les tendances passées pour comprendre l'évolution de la qualité de l'air.
+            Visualisez la qualité de l'air et les tendances historiques par commune.
           </p>
         </article>
         <article class="feature-card">
           <div class="feature-icon" aria-hidden="true">
             <mat-icon>groups</mat-icon>
           </div>
-          <h3 class="feature-title">Join the eco-community forum</h3>
+          <h3 class="feature-title">Forum communautaire</h3>
           <p class="feature-description">
-            Partagez des conseils et coordonnez des actions locales avec les citoyens engagés de votre territoire.
+            Échangez et partagez des conseils avec la communauté locale.
+          </p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <mat-icon>download</mat-icon>
+          </div>
+          <h3 class="feature-title">Export de données</h3>
+          <p class="feature-description">
+            Téléchargez les données au format PDF ou CSV.
           </p>
         </article>
       </div>
     </div>
   </section>
 
+  <!-- Community Testimonials Section -->
+  <section class="testimonials-section">
+    <div class="testimonials-container">
+      <h2 class="section-title">Ce que disent nos utilisateurs</h2>
+      <div class="testimonials-grid">
+        <article class="testimonial-card">
+          <p class="quote">
+            "Interface claire et données fiables. Les cartes interactives permettent de visualiser facilement les zones
+            à risque."
+          </p>
+          <div class="author">
+            <div class="avatar">KW</div>
+            <div class="info">
+              <span class="name">Kyle Wasnick</span>
+              <span class="location">Media Director, Yarn Around Music Group</span>
+            </div>
+          </div>
+        </article>
+        <article class="testimonial-card">
+          <p class="quote">
+            "Je peux planifier mes sorties en fonction de la qualité de l'air. Indispensable pour les personnes
+            sensibles."
+          </p>
+          <div class="author">
+            <div class="avatar">MC</div>
+            <div class="info">
+              <span class="name">Marie Curie</span>
+              <span class="location">Professeure, Lyon</span>
+            </div>
+          </div>
+        </article>
+        <article class="testimonial-card">
+          <p class="quote">
+            "Plateforme complète et accessible. Le forum permet de partager des conseils pratiques avec la communauté."
+          </p>
+          <div class="author">
+            <div class="avatar">JD</div>
+            <div class="info">
+              <span class="name">Jean Dupont</span>
+              <span class="location">Ingénieur environnemental, Paris</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Learn More Section -->
   <section class="learn-more">
     <a routerLink="/about/mission" class="learn-more-link">
-      Learn more about the platform →
+      En savoir plus sur la plateforme →
     </a>
   </section>
 </div>

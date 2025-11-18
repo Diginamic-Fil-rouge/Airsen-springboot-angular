@@ -6,7 +6,9 @@ import fr.airsen.api.entity.enums.UserRole;
 import fr.airsen.api.exception.GlobalExceptionHandler;
 import fr.airsen.api.exception.MaximumFavoritesExceededException;
 import fr.airsen.api.exception.ResourceNotFoundException;
+import fr.airsen.api.security.JwtTokenProvider;
 import fr.airsen.api.security.UserPrincipal;
+import fr.airsen.api.service.JwtBlacklistService;
 import fr.airsen.api.service.UserFavoritesService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,12 @@ class UserFavoritesControllerTest {
 
     @MockBean
     private UserFavoritesService favoritesService;
+
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private JwtBlacklistService jwtBlacklistService;
 
     @Test
     @DisplayName("GET /users/{id}/favorites returns list when access granted")

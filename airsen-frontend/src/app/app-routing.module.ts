@@ -4,6 +4,7 @@ import { RouterModule, Routes } from "@angular/router";
 // Guards
 import { AuthGuard } from "@/auth/guards/auth.guard";
 import { GuestGuard } from "@/auth/guards/guest.guard";
+import { RoleGuard } from "@/auth/guards/role.guard";
 
 // Components (only NotFoundComponent - not lazy loaded)
 import { NotFoundComponent } from "./features/not-found/not-found.component";
@@ -59,13 +60,13 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
 
-  // Admin Routes (uncomment when AdminModule is created)
-  // {
-  //   path: 'admin',
-  //   loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
-  //   canActivate: [AuthGuard, RoleGuard],
-  //   data: { roles: ['ADMIN'] }
-  // },
+  // Admin Routes (requires ADMIN role)
+  {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['ADMIN'] }
+  },
 
   // Error Handling Routes
   {

@@ -1,0 +1,146 @@
+<div class="user-list">
+  <h2>Gestion des Utilisateurs</h2>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="onSearch()"
+        placeholder="Rechercher par email ou nom..."
+        class="search-input"
+      />
+      <button class="btn btn-primary" (click)="onSearch()">Rechercher</button>
+    </div>
+
+    <div class="filter-group">
+      <select [(ngModel)]="roleFilter" (change)="onFilterChange()" class="filter-select">
+        <option value="">Tous les Rôles</option>
+        <option value="VISITOR">Visiteur</option>
+        <option value="USER">Utilisateur</option>
+        <option value="ADMIN">Administrateur</option>
+      </select>
+
+      <select
+        [(ngModel)]="statusFilter"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option [ngValue]="undefined">Tous les Statuts</option>
+        <option [ngValue]="true">Actif</option>
+        <option [ngValue]="false">Suspendu</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading/Error States -->
+  <div *ngIf="loading" class="loading">Chargement des utilisateurs...</div>
+  <div *ngIf="error && !loading" class="error">{{ error }}</div>
+
+  <!-- Users Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Nom</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Créé le</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td><span class="badge badge-role">{{ user.role }}</span></td>
+          <td>
+            <span [class]="user.isActive ? 'badge badge-success' : 'badge badge-danger'">
+              {{ user.isActive ? 'Actif' : 'Suspendu' }}
+            </span>
+          </td>
+          <td>{{ user.createdAt | date: 'short' }}</td>
+          <td class="actions">
+            <button
+              *ngIf="user.isActive"
+              class="btn-sm btn-warning"
+              (click)="suspendUser(user.id)"
+            >
+              Suspendre
+            </button>
+            <button
+              *ngIf="!user.isActive"
+              class="btn-sm btn-success"
+              (click)="activateUser(user.id)"
+            >
+              Activer
+            </button>
+            <button class="btn-sm btn-info" (click)="updateRole(user.id, user.role)">
+              Changer le Rôle
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button
+        class="btn"
+        [disabled]="currentPage === 0"
+        (click)="onPageChange(currentPage - 1)"
+      >
+        Précédent
+      </button>
+      <span class="page-info">
+        Page {{ currentPage + 1 }} sur {{ totalPages }} ({{ totalElements }} au total)
+      </span>
+      <button
+        class="btn"
+        [disabled]="currentPage >= totalPages - 1"
+        (click)="onPageChange(currentPage + 1)"
+      >
+        Suivant
+      </button>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialogs -->
+  <app-confirm-dialog
+    [isOpen]="showSuspendConfirm"
+    title="Suspendre l'Utilisateur"
+    message="Êtes-vous sûr de vouloir suspendre cet utilisateur ?"
+    confirmText="Oui, Suspendre"
+    cancelText="Annuler"
+    confirmButtonClass="btn-danger"
+    (confirmed)="onSuspendConfirmed()"
+    (cancelled)="showSuspendConfirm = false; selectedUserId = null"
+  ></app-confirm-dialog>
+
+  <app-input-dialog
+    [isOpen]="showSuspendInput"
+    title="Raison de la Suspension"
+    message="Veuillez saisir la raison de la suspension de cet utilisateur :"
+    placeholder="Entrer la raison de la suspension..."
+    submitText="Suspendre l'Utilisateur"
+    cancelText="Annuler"
+    [required]="true"
+    (submitted)="onSuspendReasonSubmitted($event)"
+    (cancelled)="showSuspendInput = false; showSuspendConfirm = false; selectedUserId = null"
+  ></app-input-dialog>
+
+  <app-confirm-dialog
+    [isOpen]="showActivateConfirm"
+    title="Activer l'Utilisateur"
+    message="Êtes-vous sûr de vouloir activer cet utilisateur ?"
+    confirmText="Oui, Activer"
+    cancelText="Annuler"
+    confirmButtonClass="btn-success"
+    (confirmed)="onActivateConfirmed()"
+    (cancelled)="showActivateConfirm = false; selectedUserId = null"
+  ></app-confirm-dialog>
+</div>

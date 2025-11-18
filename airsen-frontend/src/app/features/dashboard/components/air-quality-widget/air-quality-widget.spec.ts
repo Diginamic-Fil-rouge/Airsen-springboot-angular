@@ -50,7 +50,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should load air quality data on init', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     
     fixture.detectChanges(); // triggers ngOnInit
@@ -61,7 +61,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should display air quality data when loaded', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     
     fixture.detectChanges(); // triggers ngOnInit
@@ -76,7 +76,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should handle loading state', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     
     fixture.detectChanges();
@@ -91,7 +91,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should handle error state', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(
+    airQualityService.getAirLatestQuality.and.returnValue(
       throwError(() => new Error('API Error'))
     );
     component.communeCode = '75056';
@@ -104,7 +104,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should display error message when data fails to load', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(
+    airQualityService.getAirLatestQuality.and.returnValue(
       throwError(() => new Error('API Error'))
     );
     component.communeCode = '75056';
@@ -116,7 +116,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should retry loading data on refresh', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     
     fixture.detectChanges();
@@ -139,7 +139,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should display refresh button when enabled', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     component.showRefreshButton = true;
     
@@ -150,7 +150,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should hide refresh button when disabled', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     component.showRefreshButton = false;
     
@@ -161,7 +161,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should set correct AQI indicator color', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     
     fixture.detectChanges();
@@ -171,7 +171,7 @@ describe('AirQualityWidgetComponent', () => {
   });
 
   it('should display AQI scale', () => {
-    airQualityService.getAirLatestQuality.mockReturnValue(of(mockAirQualityData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(mockAirQualityData));
     component.communeCode = '75056';
     
     fixture.detectChanges();
@@ -188,7 +188,7 @@ describe('AirQualityWidgetComponent', () => {
       timestamp: new Date()
     };
 
-    airQualityService.getAirLatestQuality.mockReturnValue(of(alternativeData));
+    airQualityService.getAirLatestQuality.and.returnValue(of(alternativeData));
     component.communeCode = '69003';
     
     fixture.detectChanges();
