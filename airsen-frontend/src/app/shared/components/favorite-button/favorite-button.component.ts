@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -34,7 +34,7 @@ import { AuthService } from '@/core/auth/services/auth.service';
   styleUrls: ['./favorite-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FavoriteButtonComponent implements OnInit, OnDestroy {
+export class FavoriteButtonComponent implements OnInit, OnChanges, OnDestroy {
   @Input() communeInseeCode!: string; // 5-digit INSEE code (REQUIRED)
   @Input() size: 'small' | 'medium' | 'large' = 'medium';
   @Output() favoriteToggled = new EventEmitter<boolean>(); // true = added, false = removed
@@ -78,6 +78,22 @@ export class FavoriteButtonComponent implements OnInit, OnDestroy {
         this.isMaxReached = count.count >= count.maximum;
         this.cdr.markForCheck();
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Re-check favorite status when communeInseeCode input changes
+    // This fixes the bug where button shows stale state when switching between communes
+    if (changes['communeInseeCode'] && !changes['communeInseeCode'].firstChange) {
+      // Reset state immediately to prevent showing stale favorited state
+      this.isFavorited = false;
+      this.animateSuccess = false;
+
+      // Re-check favorite status for the new commune
+      if (this.currentUserId && this.communeInseeCode) {
+        this.checkInitialFavorite();
+      }
+      this.cdr.markForCheck();
+    }
   }
 
   ngOnDestroy(): void {
