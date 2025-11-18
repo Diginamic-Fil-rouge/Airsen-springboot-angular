@@ -187,11 +187,12 @@ class ForumVoteDTOIntegrationTest extends AbstractTestContainersTest {
     void testListMapping() {
 
         User user = createUser("eve");
+        User user2 = createUser("robert");
         ForumCategory category = createCategory("test");
         ForumThread thread = createThread("Thread E", user, category);
 
         createVote(user, thread, VoteType.LIKE);
-        createVote(user, thread, VoteType.DISLIKE);
+        createVote(user2, thread, VoteType.DISLIKE);
 
         List<ForumVote> votes = voteRepository.findAll();
         List<ForumVoteDTO> dtoList = mapper.toDTOs(votes);
