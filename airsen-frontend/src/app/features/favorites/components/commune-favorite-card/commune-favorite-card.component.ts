@@ -10,8 +10,10 @@ import { UserFavoriteResponse } from '@/shared/models/favorite.model';
 })
 export class CommuneFavoriteCardComponent {
   @Input() favorite!: UserFavoriteResponse;
+  @Input() isPrimary = false;
   @Output() viewDetails = new EventEmitter<string>();
   @Output() removeFavorite = new EventEmitter<string>();
+  @Output() setPrimary = new EventEmitter<string>();
 
   onViewDetails(): void {
     this.viewDetails.emit(this.favorite.communeInseeCode);
@@ -19,5 +21,9 @@ export class CommuneFavoriteCardComponent {
 
   onRemoveFavorite(): void {
     this.removeFavorite.emit(this.favorite.communeInseeCode);
+  }
+
+  onSetPrimary(): void {
+    this.setPrimary.emit(this.favorite.communeInseeCode);
   }
 }

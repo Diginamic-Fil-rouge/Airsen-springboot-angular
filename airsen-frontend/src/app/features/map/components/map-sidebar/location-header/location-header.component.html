@@ -5,12 +5,28 @@
       <h3 class="commune-name">{{ commune.name }}</h3>
 
       <!-- Favorite button integration -->
-      <app-favorite-button
-        [communeInseeCode]="commune.inseeCode"
-        size="medium"
-        class="favorite-action">
+      <app-favorite-button [communeInseeCode]="commune.inseeCode" size="medium" class="favorite-action">
       </app-favorite-button>
+
+      <!-- Quick Export button -->
+      <app-quick-export-button
+        [communeInseeCode]="commune.inseeCode"
+        [communeName]="commune.name"
+        size="medium"
+        class="export-action"
+        (advancedExportRequested)="onAdvancedExportRequested()">
+      </app-quick-export-button>
     </div>
+
+    <!-- Advanced Export Panel -->
+    <app-advanced-export-panel
+      *ngIf="showAdvancedExportPanel"
+      [communeInseeCode]="commune.inseeCode"
+      [communeName]="commune.name"
+      [visible]="showAdvancedExportPanel"
+      (exportComplete)="onExportComplete()"
+      (panelClosed)="onAdvancedExportPanelClosed()">
+    </app-advanced-export-panel>
 
     <div class="location-header__meta">
       <span class="meta-item" *ngIf="commune.departmentCode">

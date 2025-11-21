@@ -1,24 +1,26 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
 
 // Material Module
-import { MaterialModule } from './material/material.module';
+import { MaterialModule } from "./material/material.module";
 
 // Components
-import { LoaderComponent } from './components/loader/loader.component';
-import { BackButtonComponent } from './components/backButton/back-button.component';
-import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
-import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-loader.component';
-import { SidebarComponent } from './components/sidebar/sidebar.component';
-import { FavoriteButtonComponent } from './components/favorite-button/favorite-button.component';
-import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
-import { InputDialogComponent } from './components/input-dialog/input-dialog.component';
-import { ToastComponent } from './components/toast/toast.component';
+import { LoaderComponent } from "./components/loader/loader.component";
+import { BackButtonComponent } from "./components/backButton/back-button.component";
+import { BreadcrumbComponent } from "./components/breadcrumb/breadcrumb.component";
+import { SkeletonLoaderComponent } from "./components/skeleton-loader/skeleton-loader.component";
+import { SidebarComponent } from "./components/sidebar/sidebar.component";
+import { FavoriteButtonComponent } from "./components/favorite-button/favorite-button.component";
+import { QuickExportButtonComponent } from "./components/quick-export-button/quick-export-button.component";
+import { AdvancedExportPanelComponent } from "./components/advanced-export-panel/advanced-export-panel.component";
+import { ConfirmDialogComponent } from "./components/confirm-dialog/confirm-dialog.component";
+import { InputDialogComponent } from "./components/input-dialog/input-dialog.component";
+import { ToastComponent } from "./components/toast/toast.component";
 
 // Pipes
-import { AqiColorPipe } from './pipes/aqi-color.pipe';
+import { AqiColorPipe } from "./pipes/aqi-color.pipe";
 
 /**
  * SharedModule - Reusable components, pipes, and modules for AIRSEN application
@@ -68,19 +70,15 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     SkeletonLoaderComponent,
     SidebarComponent,
     FavoriteButtonComponent,
+    QuickExportButtonComponent,
+    AdvancedExportPanelComponent,
     ConfirmDialogComponent,
     InputDialogComponent,
     ToastComponent,
     // Pipes
-    AqiColorPipe
+    AqiColorPipe,
   ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
-    MaterialModule
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MaterialModule],
   exports: [
     // Modules - re-export for convenience
     CommonModule,
@@ -95,11 +93,13 @@ import { AqiColorPipe } from './pipes/aqi-color.pipe';
     SkeletonLoaderComponent,
     SidebarComponent,
     FavoriteButtonComponent,
+    QuickExportButtonComponent,
+    AdvancedExportPanelComponent,
     ConfirmDialogComponent,
     InputDialogComponent,
     ToastComponent,
     // Pipes
-    AqiColorPipe
-  ]
+    AqiColorPipe,
+  ],
 })
-export class SharedModule { }
+export class SharedModule {}

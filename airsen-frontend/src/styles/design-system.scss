@@ -6,44 +6,44 @@
 // =============================================================================
 
 // Air Quality Scale Colors (European Index Standards)
-$airsen-green-good: #4CAF50 !default;        // 0-50: Bon
-$airsen-yellow-moderate: #FFC107 !default;   // 51-100: Moyen
-$airsen-orange-sensitive: #FF9800 !default;  // 101-150: Dégradé
-$airsen-red-unhealthy: #F44336 !default;     // 151-200: Mauvais
-$airsen-purple-very: #9C27B0 !default;       // 201-300: Très mauvais
-$airsen-maroon-hazardous: #8D2635 !default;  // 301+: Extrêmement mauvais
+$airsen-green-good: #4CAF50 !default; // 0-50: Bon
+$airsen-yellow-moderate: #FFC107 !default; // 51-100: Moyen
+$airsen-orange-sensitive: #FF9800 !default; // 101-150: Dégradé
+$airsen-red-unhealthy: #F44336 !default; // 151-200: Mauvais
+$airsen-purple-very: #9C27B0 !default; // 201-300: Très mauvais
+$airsen-maroon-hazardous: #8D2635 !default; // 301+: Extrêmement mauvais
 
 // Brand Colors
-$airsen-primary: #2E7D32 !default;           // Forest green - trust, environment
-$airsen-primary-light: #66BB6A !default;     // Light green for hovers
-$airsen-primary-dark: #1B5E20 !default;      // Dark green for emphasis
+$airsen-primary: #4CAF50 !default; // Green 500 - Fresh, healthy
+$airsen-primary-light: #81C784 !default; // Green 300
+$airsen-primary-dark: #388E3C !default; // Green 700
 
-$airsen-secondary: #1976D2 !default;         // Professional blue
-$airsen-secondary-light: #42A5F5 !default;   // Light blue for info
-$airsen-secondary-dark: #0D47A1 !default;    // Dark blue for links
+$airsen-secondary: #2E7D32 !default; // Green 800 - Forest, deep
+$airsen-secondary-light: #4CAF50 !default; // Green 500
+$airsen-secondary-dark: #1B5E20 !default; // Green 900
 
-$airsen-accent: #00BCD4 !default;            // Cyan for highlights
-$airsen-accent-light: #4DD0E1 !default;      // Light cyan
-$airsen-accent-dark: #00838F !default;       // Dark cyan
+$airsen-accent: #00BCD4 !default; // Cyan for highlights
+$airsen-accent-light: #4DD0E1 !default; // Light cyan
+$airsen-accent-dark: #00838F !default; // Dark cyan
 
 // Neutral Palette
-$airsen-gray-50: #FAFAFA !default;           // Background
-$airsen-gray-100: #F5F5F5 !default;         // Light background
-$airsen-gray-200: #EEEEEE !default;         // Borders
-$airsen-gray-300: #E0E0E0 !default;         // Disabled
-$airsen-gray-400: #BDBDBD !default;         // Placeholder
-$airsen-gray-500: #9E9E9E !default;         // Secondary text
-$airsen-gray-600: #757575 !default;         // Icons
-$airsen-gray-700: #616161 !default;         // Secondary headings
-$airsen-gray-800: #424242 !default;         // Primary text
-$airsen-gray-900: #212121 !default;         // Headings
+$airsen-gray-50: #FAFAFA !default; // Background
+$airsen-gray-100: #F5F5F5 !default; // Light background
+$airsen-gray-200: #EEEEEE !default; // Borders
+$airsen-gray-300: #E0E0E0 !default; // Disabled
+$airsen-gray-400: #BDBDBD !default; // Placeholder
+$airsen-gray-500: #9E9E9E !default; // Secondary text
+$airsen-gray-600: #757575 !default; // Icons
+$airsen-gray-700: #616161 !default; // Secondary headings
+$airsen-gray-800: #424242 !default; // Primary text
+$airsen-gray-900: #212121 !default; // Headings
 
 // Semantic Colors
-$airsen-white: #FFFFFF !default;             // Cards, modals
-$airsen-success: #4CAF50 !default;          // Success states
-$airsen-warning: #FF9800 !default;          // Warnings
-$airsen-error: #F44336 !default;            // Errors
-$airsen-info: #2196F3 !default;             // Information
+$airsen-white: #FFFFFF !default; // Cards, modals
+$airsen-success: #4CAF50 !default; // Success states
+$airsen-warning: #FF9800 !default; // Warnings
+$airsen-error: #F44336 !default; // Errors
+$airsen-info: #2196F3 !default; // Information
 
 // AQI Color Aliases (for backward compatibility with _variables.scss)
 $aqi-good: $airsen-green-good !default;
@@ -78,8 +78,7 @@ $air-quality-colors: (
   "sensitive": $airsen-orange-sensitive,
   "unhealthy": $airsen-red-unhealthy,
   "very-unhealthy": $airsen-purple-very,
-  "hazardous": $airsen-maroon-hazardous
-) !default;
+  "hazardous": $airsen-maroon-hazardous) !default;
 
 $brand-colors: (
   "primary": $airsen-primary,
@@ -90,8 +89,7 @@ $brand-colors: (
   "secondary-dark": $airsen-secondary-dark,
   "accent": $airsen-accent,
   "accent-light": $airsen-accent-light,
-  "accent-dark": $airsen-accent-dark
-) !default;
+  "accent-dark": $airsen-accent-dark) !default;
 
 $gray-colors: (
   "50": $airsen-gray-50,
@@ -103,28 +101,38 @@ $gray-colors: (
   "600": $airsen-gray-600,
   "700": $airsen-gray-700,
   "800": $airsen-gray-800,
-  "900": $airsen-gray-900
-) !default;
+  "900": $airsen-gray-900) !default;
 
 // =============================================================================
 // TYPOGRAPHY
 // =============================================================================
 
 // Font Families
-$font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !default;
-$font-family-mono: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !default;
+$font-family-sans: -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Roboto,
+  'Helvetica Neue',
+  Arial,
+  sans-serif !default;
+$font-family-mono: 'SF Mono',
+  Monaco,
+  'Inconsolata',
+  'Roboto Mono',
+  'Source Code Pro',
+  monospace !default;
 
 // Font Sizes (rem units)
-$font-size-xs: 0.75rem !default;     // 12px - Caption text
-$font-size-sm: 0.875rem !default;    // 14px - Small text
-$font-size-base: 1rem !default;      // 16px - Default body text
-$font-size-lg: 1.125rem !default;    // 18px - Large body text
-$font-size-xl: 1.25rem !default;     // 20px - Component titles
-$font-size-2xl: 1.5rem !default;     // 24px - Card titles
-$font-size-3xl: 2rem !default;       // 32px - Section headings
-$font-size-4xl: 2.5rem !default;     // 40px - Page titles
-$font-size-5xl: 3.5rem !default;     // 56px - Hero numbers
-$font-size-data: 2.25rem !default;   // 36px - Data values
+$font-size-xs: 0.75rem !default; // 12px - Caption text
+$font-size-sm: 0.875rem !default; // 14px - Small text
+$font-size-base: 1rem !default; // 16px - Default body text
+$font-size-lg: 1.125rem !default; // 18px - Large body text
+$font-size-xl: 1.25rem !default; // 20px - Component titles
+$font-size-2xl: 1.5rem !default; // 24px - Card titles
+$font-size-3xl: 2rem !default; // 32px - Section headings
+$font-size-4xl: 2.5rem !default; // 40px - Page titles
+$font-size-5xl: 3.5rem !default; // 56px - Hero numbers
+$font-size-data: 2.25rem !default; // 36px - Data values
 
 // Font Weights
 $font-weight-light: 300 !default;
@@ -134,14 +142,14 @@ $font-weight-semibold: 600 !default;
 $font-weight-bold: 700 !default;
 
 // Line Heights
-$line-height-tight: 1.2 !default;    // Headings
-$line-height-normal: 1.5 !default;   // Body text
+$line-height-tight: 1.2 !default; // Headings
+$line-height-normal: 1.5 !default; // Body text
 $line-height-relaxed: 1.75 !default; // Large text blocks
 
 // Letter Spacing
 $letter-spacing-tight: -0.025em !default;
 $letter-spacing-normal: 0 !default;
-$letter-spacing-wide: 0.05em !default;   // Labels, small caps
+$letter-spacing-wide: 0.05em !default; // Labels, small caps
 
 // Typography Scale Map
 $font-sizes: (
@@ -154,26 +162,25 @@ $font-sizes: (
   "3xl": $font-size-3xl,
   "4xl": $font-size-4xl,
   "5xl": $font-size-5xl,
-  "data": $font-size-data
-) !default;
+  "data": $font-size-data) !default;
 
 // =============================================================================
 // SPACING SYSTEM
 // =============================================================================
 
 // Base spacing unit: 8px
-$space-1: 0.25rem !default;   // 4px
-$space-2: 0.5rem !default;    // 8px
-$space-3: 0.75rem !default;   // 12px
-$space-4: 1rem !default;      // 16px
-$space-5: 1.25rem !default;   // 20px
-$space-6: 1.5rem !default;    // 24px
-$space-8: 2rem !default;      // 32px
-$space-10: 2.5rem !default;   // 40px
-$space-12: 3rem !default;     // 48px
-$space-16: 4rem !default;     // 64px
-$space-20: 5rem !default;     // 80px
-$space-24: 6rem !default;     // 96px
+$space-1: 0.25rem !default; // 4px
+$space-2: 0.5rem !default; // 8px
+$space-3: 0.75rem !default; // 12px
+$space-4: 1rem !default; // 16px
+$space-5: 1.25rem !default; // 20px
+$space-6: 1.5rem !default; // 24px
+$space-8: 2rem !default; // 32px
+$space-10: 2.5rem !default; // 40px
+$space-12: 3rem !default; // 48px
+$space-16: 4rem !default; // 64px
+$space-20: 5rem !default; // 80px
+$space-24: 6rem !default; // 96px
 
 // Spacing Map
 $spacing: (
@@ -188,8 +195,7 @@ $spacing: (
   "12": $space-12,
   "16": $space-16,
   "20": $space-20,
-  "24": $space-24
-) !default;
+  "24": $space-24) !default;
 
 // =============================================================================
 // LAYOUT & GRID
@@ -232,8 +238,7 @@ $breakpoints: (
   "md": $breakpoint-md,
   "lg": $breakpoint-lg,
   "xl": $breakpoint-xl,
-  "2xl": $breakpoint-2xl
-) !default;
+  "2xl": $breakpoint-2xl) !default;
 
 // =============================================================================
 // SHADOWS & EFFECTS
@@ -254,8 +259,7 @@ $shadows: (
   "md": $shadow-md,
   "lg": $shadow-lg,
   "xl": $shadow-xl,
-  "focus": $shadow-focus
-) !default;
+  "focus": $shadow-focus) !default;
 
 // Border Radius
 $radius-none: 0 !default;
@@ -272,8 +276,7 @@ $radius: (
   "md": $radius-md,
   "lg": $radius-lg,
   "xl": $radius-xl,
-  "full": $radius-full
-) !default;
+  "full": $radius-full) !default;
 
 // =============================================================================
 // TRANSITIONS & ANIMATIONS
@@ -292,7 +295,9 @@ $ease-in-out: ease-in-out !default;
 
 // Common Transitions
 $transition-all: all $duration-normal $ease-in-out !default;
-$transition-colors: background-color $duration-normal $ease-in-out, border-color $duration-normal $ease-in-out, color $duration-normal $ease-in-out !default;
+$transition-colors: background-color $duration-normal $ease-in-out,
+  border-color $duration-normal $ease-in-out,
+  color $duration-normal $ease-in-out !default;
 $transition-transform: transform $duration-normal $ease-in-out !default;
 $transition-opacity: opacity $duration-normal $ease-in-out !default;
 
@@ -316,8 +321,7 @@ $z-indices: (
   "modal-backdrop": $z-index-modal-backdrop,
   "modal": $z-index-modal,
   "popover": $z-index-popover,
-  "tooltip": $z-index-tooltip
-) !default;
+  "tooltip": $z-index-tooltip) !default;
 
 // =============================================================================
 // COMPONENT SPECIFIC TOKENS
@@ -366,19 +370,20 @@ $badge-font-weight: $font-weight-medium !default;
 
 // Function to get color from maps
 @function color($palette, $tone: null) {
-  @if $tone == null {
-    @return map-get($brand-colors, $palette);
-  }
-  
-  @if $palette == "gray" {
-    @return map-get($gray-colors, $tone);
-  }
-  
-  @if $palette == "air-quality" {
-    @return map-get($air-quality-colors, $tone);
-  }
-  
-  @return null;
+  @if $tone ==null {
+    @return map-get($brand-colors, $palette
+  );
+}
+
+@if $palette =="gray" {
+  @return map-get($gray-colors, $tone);
+}
+
+@if $palette =="air-quality" {
+  @return map-get($air-quality-colors, $tone);
+}
+
+@return null;
 }
 
 // Function to get spacing value
@@ -411,7 +416,9 @@ $badge-font-weight: $font-weight-medium !default;
     @media (min-width: map.get($breakpoints, $size)) {
       @content;
     }
-  } @else {
+  }
+
+  @else {
     @warn "Unknown breakpoint: #{$size}";
   }
 }
@@ -422,7 +429,9 @@ $badge-font-weight: $font-weight-medium !default;
     @media (max-width: map.get($breakpoints, $size) - 1px) {
       @content;
     }
-  } @else {
+  }
+
+  @else {
     @warn "Unknown breakpoint: #{$size}";
   }
 }
@@ -440,7 +449,7 @@ $badge-font-weight: $font-weight-medium !default;
   box-shadow: $card-shadow;
   padding: $card-padding;
   transition: box-shadow $duration-normal $ease-in-out;
-  
+
   &:hover {
     box-shadow: $card-shadow-hover;
   }
@@ -457,41 +466,47 @@ $badge-font-weight: $font-weight-medium !default;
   cursor: pointer;
   transition: $transition-all;
   text-decoration: none;
-  
-  @if $size == "sm" {
+
+  @if $size =="sm" {
     padding: $btn-padding-sm;
     font-size: $btn-font-size-sm;
-  } @else if $size == "lg" {
+  }
+
+  @else if $size =="lg" {
     padding: $btn-padding-lg;
     font-size: $btn-font-size-lg;
-  } @else {
+  }
+
+  @else {
     padding: $btn-padding-md;
     font-size: $btn-font-size-md;
   }
-  
-  @if $variant == "primary" {
+
+  @if $variant =="primary" {
     background: $airsen-primary;
     color: $airsen-white;
-    
+
     &:hover:not(:disabled) {
       background: $airsen-primary-dark;
       transform: translateY(-1px);
     }
-  } @else if $variant == "secondary" {
+  }
+
+  @else if $variant =="secondary" {
     background: transparent;
     color: $airsen-primary;
     border: 2px solid $airsen-primary;
-    
+
     &:hover:not(:disabled) {
       background: $airsen-primary;
       color: $airsen-white;
     }
   }
-  
+
   &:focus {
     @include focus-ring();
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -500,22 +515,32 @@ $badge-font-weight: $font-weight-medium !default;
 
 // Air quality color mixin
 @mixin air-quality-color($level) {
-  @if $level == "good" {
+  @if $level =="good" {
     background-color: $airsen-green-good;
     color: $airsen-white;
-  } @else if $level == "moderate" {
+  }
+
+  @else if $level =="moderate" {
     background-color: $airsen-yellow-moderate;
     color: $airsen-gray-900;
-  } @else if $level == "sensitive" {
+  }
+
+  @else if $level =="sensitive" {
     background-color: $airsen-orange-sensitive;
     color: $airsen-white;
-  } @else if $level == "unhealthy" {
+  }
+
+  @else if $level =="unhealthy" {
     background-color: $airsen-red-unhealthy;
     color: $airsen-white;
-  } @else if $level == "very-unhealthy" {
+  }
+
+  @else if $level =="very-unhealthy" {
     background-color: $airsen-purple-very;
     color: $airsen-white;
-  } @else if $level == "hazardous" {
+  }
+
+  @else if $level =="hazardous" {
     background-color: $airsen-maroon-hazardous;
     color: $airsen-white;
   }
@@ -554,7 +579,7 @@ $badge-font-weight: $font-weight-medium !default;
   position: relative;
   padding-bottom: calc(($height / $width) * 100%);
 
-  > * {
+  >* {
     position: absolute;
     top: 0;
     left: 0;
@@ -921,15 +946,13 @@ $badge-font-weight: $font-weight-medium !default;
 .aqi-scale {
   height: 24px;
   border-radius: $radius-full;
-  background: linear-gradient(
-    to right,
-    $airsen-green-good 0%,
-    $airsen-yellow-moderate 16.67%,
-    $airsen-orange-sensitive 33.33%,
-    $airsen-red-unhealthy 50%,
-    $airsen-purple-very 66.67%,
-    $airsen-maroon-hazardous 100%
-  );
+  background: linear-gradient(to right,
+      $airsen-green-good 0%,
+      $airsen-yellow-moderate 16.67%,
+      $airsen-orange-sensitive 33.33%,
+      $airsen-red-unhealthy 50%,
+      $airsen-purple-very 66.67%,
+      $airsen-maroon-hazardous 100%);
   box-shadow: $shadow-md;
 }
 
@@ -964,10 +987,12 @@ $badge-font-weight: $font-weight-medium !default;
 // =============================================================================
 
 @keyframes aqi-pulse {
+
   0%,
   100% {
     box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
   }
+
   50% {
     box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
   }
@@ -978,6 +1003,7 @@ $badge-font-weight: $font-weight-medium !default;
 // =============================================================================
 
 @media (max-width: $breakpoint-sm) {
+
   .aqi-badge-good,
   .aqi-badge-moderate,
   .aqi-badge-sensitive,
@@ -1013,11 +1039,11 @@ $airsen-text-primary: $airsen-gray-900 !default;
 $airsen-text-secondary: $airsen-gray-600 !default;
 
 // Spacing aliases (map new space-* to old spacing-*)
-$spacing-xs: $space-2 !default;   // 8px
-$spacing-sm: $space-3 !default;   // 12px
-$spacing-md: $space-4 !default;   // 16px
-$spacing-lg: $space-6 !default;   // 24px
-$spacing-xl: $space-8 !default;   // 32px
+$spacing-xs: $space-2 !default; // 8px
+$spacing-sm: $space-3 !default; // 12px
+$spacing-md: $space-4 !default; // 16px
+$spacing-lg: $space-6 !default; // 24px
+$spacing-xl: $space-8 !default; // 32px
 $spacing-xxl: $space-12 !default; // 48px
 
 // Border radius aliases (already defined, but included for completeness)

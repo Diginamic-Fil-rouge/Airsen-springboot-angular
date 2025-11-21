@@ -9,13 +9,13 @@
 
   <mat-card-content>
     <h2 class="commune-name">{{ favorite.communeName }}</h2>
-    
+
     <div class="commune-details">
       <p class="insee-code">
         <mat-icon>location_on</mat-icon>
         Code INSEE: {{ favorite.communeInseeCode }}
       </p>
-      
+
       <p class="added-date">
         <mat-icon>schedule</mat-icon>
         Ajouté le {{ favorite.addedAt | date:'dd/MM/yyyy' }}
@@ -23,23 +23,24 @@
     </div>
   </mat-card-content>
 
-  <mat-card-actions align="end">
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="onViewDetails()"
-      [attr.aria-label]="'View details for ' + favorite.communeName">
-      <mat-icon>visibility</mat-icon>
-      Voir les détails
-    </button>
+  <mat-card-actions class="card-actions">
+    <div class="secondary-actions">
+      <button mat-icon-button class="action-btn star-btn" [class.is-active]="isPrimary" (click)="onSetPrimary()"
+        [matTooltip]="isPrimary ? 'Retirer des favoris principaux' : 'Définir comme favori principal'"
+        [attr.aria-label]="'Set ' + favorite.communeName + ' as primary'">
+        <mat-icon>{{ isPrimary ? 'star' : 'star_border' }}</mat-icon>
+      </button>
 
-    <button
-      mat-icon-button
-      color="warn"
-      (click)="onRemoveFavorite()"
-      [attr.aria-label]="'Remove ' + favorite.communeName + ' from favorites'"
-      matTooltip="Remove from favorites">
-      <mat-icon>delete</mat-icon>
+      <button mat-icon-button class="action-btn delete-btn" (click)="onRemoveFavorite()"
+        [attr.aria-label]="'Remove ' + favorite.communeName + ' from favorites'" matTooltip="Supprimer des favoris">
+        <mat-icon>delete_outline</mat-icon>
+      </button>
+    </div>
+
+    <button mat-raised-button class="details-btn" (click)="onViewDetails()"
+      [attr.aria-label]="'View details for ' + favorite.communeName">
+      <span>Voir détails</span>
+      <mat-icon iconPositionEnd>arrow_forward</mat-icon>
     </button>
   </mat-card-actions>
 </mat-card>

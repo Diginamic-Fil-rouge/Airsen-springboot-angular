@@ -237,7 +237,7 @@ public class ExportDataController {
                 throw new IllegalArgumentException("Start date must be before or equal to end date");
             }
 
-            // Validate date range size (max 1 year)
+            // Validate date range size (max 90 days)
             long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
             if (daysBetween > 90) {
                 log.warn("Date range too large: {} days", daysBetween);

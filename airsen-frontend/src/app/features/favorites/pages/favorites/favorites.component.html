@@ -29,18 +29,15 @@
     </div>
 
     <!-- Empty State -->
-    <app-favorites-empty-state 
-      *ngIf="!state.isLoading && !state.error && state.favorites.length === 0"
+    <app-favorites-empty-state *ngIf="!state.isLoading && !state.error && state.favorites.length === 0"
       (browseCommunes)="browseCommunes()">
     </app-favorites-empty-state>
 
     <!-- Favorites Grid -->
     <div class="favorites-grid" *ngIf="!state.isLoading && !state.error && state.favorites.length > 0">
-      <app-commune-favorite-card
-        *ngFor="let favorite of state.favorites"
-        [favorite]="favorite"
-        (viewDetails)="viewCommuneDetails($event)"
-        (removeFavorite)="removeFavorite($event)">
+      <app-commune-favorite-card *ngFor="let favorite of state.favorites" [favorite]="favorite"
+        [isPrimary]="isPrimary(favorite.communeInseeCode)" (viewDetails)="viewCommuneDetails($event)"
+        (removeFavorite)="removeFavorite($event)" (setPrimary)="setPrimary($event)">
       </app-commune-favorite-card>
     </div>
   </main>

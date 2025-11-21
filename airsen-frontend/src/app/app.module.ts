@@ -4,6 +4,7 @@ import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { registerLocaleData } from "@angular/common";
 import localeFr from "@angular/common/locales/fr";
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 // Core & Shared Modules
 import { CoreModule } from "./core/core.module";
@@ -75,6 +76,7 @@ registerLocaleData(localeFr);
     provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptorFn])),
     { provide: LOCALE_ID, useValue: "fr-FR" },
+    provideCharts(withDefaultRegisterables()),
   ],
   bootstrap: [AppComponent],
 })

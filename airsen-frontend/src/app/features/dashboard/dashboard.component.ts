@@ -1,12 +1,17 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { Subject, forkJoin, of } from "rxjs";
-import { takeUntil, catchError } from "rxjs/operators";
+import { takeUntil, catchError, map } from "rxjs/operators";
 
 import { AuthService } from "@/auth/services/auth.service";
 import { AuthUser } from "@/auth/models/auth.model";
 import { AlertService } from "@/core/services/alert.service";
 import { FavoriteService } from "@/features/favorites/services/favorite.service";
+import { AirQualityService, AirQualityResponse } from "@/features/map/services/air-quality.service";
+import { WeatherService } from "@/core/services/weather.service";
+import { ThreadService } from "@/features/forum/services/thread.service";
+import { Thread } from "@/features/forum/models/thread.model";
+import { WeatherData } from "@/shared/models/weather.model";
 import { CampaignNotification, NotificationDeliveryStatus } from "@/shared/models";
 import { UserFavoriteResponse } from "@/shared/models/favorite.model";
 import { QuickActionCard, QuickActionKey } from "./models/quick-action";
@@ -45,6 +50,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   forumUnreadCount = 0;
+  
+  // New properties for Hero Section
+  primaryFavoriteAqi: AirQualityResponse | null = null;
+  primaryFavoriteWeather: WeatherData | null = null;
+  trendingThread: Thread | null = null;
 
   private destroy$ = new Subject<void>();
   private clockIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -53,6 +63,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private alertService: AlertService,
     private favoriteService: FavoriteService,
+    private airQualityService: AirQualityService,
+    private weatherService: WeatherService,
+    private threadService: ThreadService,
     private router: Router
   ) {}
 
@@ -126,6 +139,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return initials.slice(0, 2);
   }
 
+  get isAdmin(): boolean {
+    return this.currentUser?.role === 'ADMIN';
+  }
+
   retryLoad(): void {
     if (this.currentUser) {
       this.loadDashboardData(this.currentUser.id);
@@ -144,7 +161,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
         break;
       case "forum":
-        this.router.navigate(["/forum"]);
+        if (this.trendingThread) {
+           this.router.navigate(["/forum/thread", this.trendingThread.id]);
+        } else {
+           this.router.navigate(["/forum"]);
+        }
         break;
       case "favorites":
         this.router.navigate(["/favorites"]);
@@ -192,7 +213,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads dashboard data: recent notifications and user favorites.
+   * Loads dashboard data: recent notifications, user favorites, and trending thread.
    * Uses forkJoin to fetch data in parallel for optimal performance.
    */
   private loadDashboardData(userId: number): void {
@@ -212,12 +233,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return of([]);
         })
       ),
+      trending: this.threadService.getAllThreads().pipe(
+        map(page => {
+             // Simple logic to find trending: sort by viewCount descending
+             if (page && page.content && page.content.length > 0) {
+                 return page.content.sort((a, b) => b.viewCount - a.viewCount)[0];
+             }
+             return null;
+        }),
+        catchError(err => {
+            console.error("Error loading trending thread:", err);
+            return of(null);
+        })
+      )
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ notifications, favorites }) => {
+        next: ({ notifications, favorites, trending }) => {
           this.processNotifications(notifications);
           this.processFavorites(favorites);
+          this.trendingThread = trending;
+          
+          // Fetch AQI and Weather for primary favorite
+          if (favorites.length > 0) {
+             const primaryInsee = localStorage.getItem('primaryFavoriteInseeCode');
+             const primary = favorites.find(f => f.communeInseeCode === primaryInsee) || favorites[0];
+             this.fetchPrimaryFavoriteData(primary.communeInseeCode);
+          }
+
           this.buildQuickActions();
           this.isLoading = false;
         },
@@ -226,6 +269,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.error = "Échec du chargement des données du tableau de bord";
           this.isLoading = false;
         },
+      });
+  }
+
+  private fetchPrimaryFavoriteData(inseeCode: string): void {
+      forkJoin({
+          aqi: this.airQualityService.getAirLatestQuality(inseeCode).pipe(catchError(() => of(null))),
+          weather: this.weatherService.getCurrentWeather(inseeCode).pipe(catchError(() => of(null)))
+      }).pipe(takeUntil(this.destroy$)).subscribe({
+          next: ({ aqi, weather }) => {
+              this.primaryFavoriteAqi = aqi;
+              this.primaryFavoriteWeather = weather;
+          }
       });
   }
 
@@ -247,10 +302,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.userStats.alertsReceived = notifications.length;
   }
 
+  favorites: UserFavoriteResponse[] = [];
+
   /**
    * Processes user favorites and updates stats.
    */
   private processFavorites(favorites: UserFavoriteResponse[]): void {
+    this.favorites = favorites;
     this.userStats.favoriteIndicators = favorites.length;
   }
 
@@ -344,6 +402,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         subtitle: "Accéder aux couches de qualité de l'air en temps réel.",
         icon: "map",
         action: "map",
+        // TODO: Add mini-map image url here if supported by QuickActionCard
       },
       {
         title: "Mes Notifications & Alertes",
@@ -359,24 +418,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       {
         title: "Aller au Forum",
-        subtitle:
-          this.forumUnreadCount > 0
-            ? `${this.forumUnreadCount} discussion${this.forumUnreadCount > 1 ? "s" : ""} nécessite${
-                this.forumUnreadCount > 1 ? "nt" : ""
-              } votre réponse`
-            : "Aucune discussion non lue",
+        subtitle: this.trendingThread 
+            ? `Tendance : ${this.trendingThread.title}`
+            : "Discutez avec la communauté",
         icon: "forum",
         action: "forum",
         badge: this.forumUnreadCount ? `${this.forumUnreadCount}` : undefined,
       },
       {
-        title: "Mes Favoris",
-        subtitle: `${this.userStats.favoriteIndicators} indicateur${
-          this.userStats.favoriteIndicators !== 1 ? "s" : ""
-        } enregistré${this.userStats.favoriteIndicators !== 1 ? "s" : ""}`,
-        icon: "favorite",
+        title: this.isAdmin ? "Stats Système" : "Mes Favoris",
+        subtitle: this.isAdmin 
+            ? "État de santé de l'API et utilisateurs actifs"
+            : `${this.userStats.favoriteIndicators} indicateur${this.userStats.favoriteIndicators !== 1 ? "s" : ""} enregistré${this.userStats.favoriteIndicators !== 1 ? "s" : ""}`,
+        icon: this.isAdmin ? "dns" : "favorite",
         action: "favorites",
-        badge: this.userStats.favoriteIndicators ? `${this.userStats.favoriteIndicators}` : undefined,
+        badge: !this.isAdmin && this.userStats.favoriteIndicators ? `${this.userStats.favoriteIndicators}` : undefined,
       },
       {
         title: "Historique d'Export",

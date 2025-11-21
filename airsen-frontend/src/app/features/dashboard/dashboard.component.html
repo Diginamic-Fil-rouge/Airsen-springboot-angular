@@ -5,17 +5,50 @@
   </div>
 
   <ng-container *ngIf="!isLoading && currentUser">
-    <section class="welcome-card">
-      <div class="welcome-details">
-        <div class="welcome-avatar">{{ avatarInitials }}</div>
-        <div class="welcome-text">
-          <p class="welcome-greeting">Bon retour, {{ welcomeName }} !</p>
-          <p class="welcome-meta">
-            {{ currentDateTime | date:'fullDate' }} · {{ currentDateTime | date:'shortTime' }}
-          </p>
+    <!-- Hero Section: Current Conditions -->
+    <section class="hero-card" *ngIf="primaryFavoriteAqi; else welcomeFallback"
+      [style.background-color]="primaryFavoriteAqi.color || 'var(--color-primary)'" [style.color]="'white'">
+      <div class="hero-content">
+        <div class="hero-main">
+          <h2>{{ primaryFavoriteAqi.commune }}</h2>
+          <div class="aqi-display">
+            <span class="aqi-value">{{ primaryFavoriteAqi.globalIndex }}</span>
+            <span class="aqi-label">{{ primaryFavoriteAqi.qualifier }}</span>
+          </div>
+        </div>
+        <div class="hero-weather" *ngIf="primaryFavoriteWeather">
+          <div class="weather-temp">
+            <mat-icon>thermostat</mat-icon>
+            <span>{{ primaryFavoriteWeather.temperature }}°C</span>
+          </div>
+          <div class="weather-detail">
+            <mat-icon>water_drop</mat-icon>
+            <span>{{ primaryFavoriteWeather.humidity }}%</span>
+          </div>
+          <div class="weather-detail">
+            <mat-icon>air</mat-icon>
+            <span>{{ primaryFavoriteWeather.windSpeed }} km/h</span>
+          </div>
         </div>
       </div>
+      <div class="hero-footer">
+        <p>Mise à jour : {{ currentDateTime | date:'shortTime' }}</p>
+      </div>
     </section>
+
+    <ng-template #welcomeFallback>
+      <section class="welcome-card">
+        <div class="welcome-details">
+          <div class="welcome-avatar">{{ avatarInitials }}</div>
+          <div class="welcome-text">
+            <p class="welcome-greeting">Bon retour, {{ welcomeName }} !</p>
+            <p class="welcome-meta">
+              {{ currentDateTime | date:'fullDate' }} · {{ currentDateTime | date:'shortTime' }}
+            </p>
+          </div>
+        </div>
+      </section>
+    </ng-template>
 
     <app-quick-actions [actions]="quickActions" (actionClick)="onQuickAction($event)"></app-quick-actions>
 
@@ -24,18 +57,9 @@
         (alertClick)="onAlertClick($event)" (viewAllAlerts)="onViewAllAlerts()"
         (filterByFavorites)="onFilterAlertsByFavorites()"></app-alert-summary>
 
-      <app-stats-panel [stats]="userStats" [showProgressBar]="true" (statClick)="onStatClick($event)"></app-stats-panel>
+      <app-stats-panel [stats]="userStats" [favorites]="favorites" [showProgressBar]="true"
+        (statClick)="onStatClick($event)"></app-stats-panel>
     </div>
-
-    <!-- TODO: Implement AirQualityService before enabling this widget -->
-    <!--
-    <app-air-quality-widget
-      *ngIf="currentUser.commune"
-      [communeCode]="currentUser.commune"
-      [showRefreshButton]="true"
-      [autoRefreshInterval]="15"
-    ></app-air-quality-widget>
-    -->
   </ng-container>
 
   <div *ngIf="!isLoading && !currentUser" class="error-container">

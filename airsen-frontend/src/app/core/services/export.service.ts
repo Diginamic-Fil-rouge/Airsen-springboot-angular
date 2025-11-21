@@ -22,11 +22,11 @@ import {
  * - Manages export history in localStorage (max 50 records)
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class ExportService {
-  private readonly apiUrl = `${environment.apiUrl}/export`;
-  private readonly STORAGE_KEY = 'airsen_export_history';
+  private readonly apiUrl = `${environment.apiUrl}/communes/{inseeCode}/export-data`;
+  private readonly STORAGE_KEY = "airsen_export_history";
   private readonly MAX_HISTORY_RECORDS = 50;
   private http = inject(HttpClient);
 
@@ -34,7 +34,7 @@ export class ExportService {
    * Fetches export data from backend and generates file in specified format.
    *
    * Flow:
-   * 1. POST request to /api/v1/export/data with inseeCode, startDate, endDate
+   * 1. POST request to /api/v1/communes/{inseeCode}/export-data with inseeCode, startDate, endDate
    * 2. Backend aggregates air quality and weather data
    * 3. Generate PDF or CSV based on format parameter
    * 4. Save export record to localStorage history
@@ -44,55 +44,59 @@ export class ExportService {
    * @returns Observable<ExportRecord> - Export metadata with file info
    */
   exportData(request: ExportDataRequest): Observable<ExportRecord> {
-    return this.http.post<ExportData>(`${this.apiUrl}/data`, {
-      inseeCode: request.inseeCode,
-      startDate: request.startDate,
-      endDate: request.endDate
-    }).pipe(
-      map((data: ExportData) => {
-        // Generate unique export ID: exp_{timestamp}_{random}
-        const exportId = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-        // Generate file based on format
-        let fileSize = 0;
-        const startDateStr = request.startDate?.toISOString().split('T')[0] || 'latest';
-        const endDateStr = request.endDate?.toISOString().split('T')[0] || 'latest';
-        const fileName = `airsen_export_${data.commune}_${startDateStr}_${endDateStr}.${request.format.toLowerCase()}`;
-
-        if (request.format === ExportFormat.PDF) {
-          fileSize = this.generatePDF(data, {
-            locationName: data.commune,
-            startDate: startDateStr,
-            endDate: endDateStr,
-            fileName: fileName
-          });
-        } else if (request.format === ExportFormat.CSV) {
-          fileSize = this.generateCSV(data, {
-            locationName: data.commune,
-            startDate: startDateStr,
-            endDate: endDateStr,
-            fileName: fileName
-          });
-        }
-
-        // Create export record
-        const exportRecord: ExportRecord = {
-          id: exportId,
-          userId: 0, // Will be set by component
-          locationName: data.commune,
-          inseeCode: data.inseeCode,
-          exportType: request.exportType,
-          format: request.format,
-          fileSize: fileSize,
-          createdAt: new Date()
-        };
-
-        // Save to localStorage history
-        this.saveExportToHistory(exportRecord);
-
-        return exportRecord;
+    return this.http
+      .post<ExportData>(`${this.apiUrl}/data`, {
+        inseeCode: request.inseeCode,
+        startDate: request.startDate,
+        endDate: request.endDate,
       })
-    );
+      .pipe(
+        map((data: ExportData) => {
+          // Generate unique export ID: exp_{timestamp}_{random}
+          const exportId = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+          // Generate file based on format
+          let fileSize = 0;
+          const startDateStr = request.startDate?.toISOString().split("T")[0] || "latest";
+          const endDateStr = request.endDate?.toISOString().split("T")[0] || "latest";
+          const fileName = `airsen_export_${
+            data.commune
+          }_${startDateStr}_${endDateStr}.${request.format.toLowerCase()}`;
+
+          if (request.format === ExportFormat.PDF) {
+            fileSize = this.generatePDF(data, {
+              locationName: data.commune,
+              startDate: startDateStr,
+              endDate: endDateStr,
+              fileName: fileName,
+            });
+          } else if (request.format === ExportFormat.CSV) {
+            fileSize = this.generateCSV(data, {
+              locationName: data.commune,
+              startDate: startDateStr,
+              endDate: endDateStr,
+              fileName: fileName,
+            });
+          }
+
+          // Create export record
+          const exportRecord: ExportRecord = {
+            id: exportId,
+            userId: 0, // Will be set by component
+            locationName: data.commune,
+            inseeCode: data.inseeCode,
+            exportType: request.exportType,
+            format: request.format,
+            fileSize: fileSize,
+            createdAt: new Date(),
+          };
+
+          // Save to localStorage history
+          this.saveExportToHistory(exportRecord);
+
+          return exportRecord;
+        })
+      );
   }
 
   /**
@@ -116,19 +120,22 @@ export class ExportService {
    * @param metadata - Export metadata (location, dates, fileName)
    * @returns number - Estimated file size in bytes
    */
-  generatePDF(data: ExportData, metadata: { locationName: string; startDate: string; endDate: string; fileName: string }): number {
+  generatePDF(
+    data: ExportData,
+    metadata: { locationName: string; startDate: string; endDate: string; fileName: string }
+  ): number {
     const doc = new jsPDF();
     let yPosition = 20;
 
     // Header
     doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('AIRSEN - Environmental Data Export', 105, yPosition, { align: 'center' });
+    doc.setFont("helvetica", "bold");
+    doc.text("AIRSEN - Environmental Data Export", 105, yPosition, { align: "center" });
     yPosition += 15;
 
     // Location and Date Range
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.text(`Location: ${metadata.locationName} (INSEE: ${data.inseeCode})`, 20, yPosition);
     yPosition += 8;
     doc.text(`Period: ${metadata.startDate} to ${metadata.endDate}`, 20, yPosition);
@@ -136,12 +143,12 @@ export class ExportService {
 
     // Air Quality Section
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Air Quality Data', 20, yPosition);
+    doc.setFont("helvetica", "bold");
+    doc.text("Air Quality Data", 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
 
     if (data.airQuality && data.airQuality.measurements && data.airQuality.measurements.length > 0) {
       data.airQuality.measurements.forEach((aqi) => {
@@ -153,9 +160,13 @@ export class ExportService {
         yPosition += 6;
 
         // Pollutants
-        doc.text(`  NO2: ${aqi.no2 || 'N/A'} μg/m³, O3: ${aqi.o3 || 'N/A'} μg/m³, PM10: ${aqi.pm10 || 'N/A'} μg/m³`, 25, yPosition);
+        doc.text(
+          `  NO2: ${aqi.no2 || "N/A"} μg/m³, O3: ${aqi.o3 || "N/A"} μg/m³, PM10: ${aqi.pm10 || "N/A"} μg/m³`,
+          25,
+          yPosition
+        );
         yPosition += 6;
-        doc.text(`  PM2.5: ${aqi.pm25 || 'N/A'} μg/m³`, 25, yPosition);
+        doc.text(`  PM2.5: ${aqi.pm25 || "N/A"} μg/m³`, 25, yPosition);
         yPosition += 8;
 
         // Page break if needed
@@ -165,7 +176,7 @@ export class ExportService {
         }
       });
     } else {
-      doc.text('No air quality data available for this period.', 25, yPosition);
+      doc.text("No air quality data available for this period.", 25, yPosition);
       yPosition += 10;
     }
 
@@ -173,18 +184,22 @@ export class ExportService {
 
     // Weather Section
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Weather Data', 20, yPosition);
+    doc.setFont("helvetica", "bold");
+    doc.text("Weather Data", 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
 
     if (data.weather && data.weather.measurements && data.weather.measurements.length > 0) {
       data.weather.measurements.forEach((weather) => {
         doc.text(`Date: ${weather.date}`, 25, yPosition);
         yPosition += 6;
-        doc.text(`  Temperature: ${weather.temperature}°C, Feels Like: ${weather.feelsLike}°C, Humidity: ${weather.humidity}%`, 25, yPosition);
+        doc.text(
+          `  Temperature: ${weather.temperature}°C, Feels Like: ${weather.feelsLike}°C, Humidity: ${weather.humidity}%`,
+          25,
+          yPosition
+        );
         yPosition += 6;
         doc.text(`  Wind Speed: ${weather.windSpeed} km/h, ${weather.weatherDescription}`, 25, yPosition);
         yPosition += 8;
@@ -196,7 +211,7 @@ export class ExportService {
         }
       });
     } else {
-      doc.text('No weather data available for this period.', 25, yPosition);
+      doc.text("No weather data available for this period.", 25, yPosition);
       yPosition += 10;
     }
 
@@ -206,14 +221,14 @@ export class ExportService {
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      doc.text(`Generated: ${new Date().toLocaleString()} - Page ${i} of ${totalPages}`, 105, 285, { align: 'center' });
+      doc.text(`Generated: ${new Date().toLocaleString()} - Page ${i} of ${totalPages}`, 105, 285, { align: "center" });
     }
 
     // Save and download
     doc.save(metadata.fileName);
 
     // Estimate file size (approximate)
-    return doc.output('arraybuffer').byteLength;
+    return doc.output("arraybuffer").byteLength;
   }
 
   /**
@@ -227,88 +242,91 @@ export class ExportService {
    * @param metadata - Export metadata (location, dates, fileName)
    * @returns number - Estimated file size in bytes
    */
-  generateCSV(data: ExportData, metadata: { locationName: string; startDate: string; endDate: string; fileName: string }): number {
+  generateCSV(
+    data: ExportData,
+    metadata: { locationName: string; startDate: string; endDate: string; fileName: string }
+  ): number {
     const csvData: any[] = [];
 
     // Header row
     csvData.push({
-      'Date': '',
-      'Location': metadata.locationName,
-      'INSEE Code': data.inseeCode,
-      'Period': `${metadata.startDate} to ${metadata.endDate}`,
-      'Generated': new Date().toLocaleString()
+      Date: "",
+      Location: metadata.locationName,
+      "INSEE Code": data.inseeCode,
+      Period: `${metadata.startDate} to ${metadata.endDate}`,
+      Generated: new Date().toLocaleString(),
     });
 
     // Empty row
     csvData.push({});
 
     // Air Quality Data
-    csvData.push({ 'Date': 'Air Quality Data' });
+    csvData.push({ Date: "Air Quality Data" });
     csvData.push({
-      'Date': 'Date',
-      'ATMO Index': 'ATMO Index',
-      'Qualifier': 'Qualifier',
-      'NO2 (μg/m³)': 'NO2',
-      'O3 (μg/m³)': 'O3',
-      'PM10 (μg/m³)': 'PM10',
-      'PM2.5 (μg/m³)': 'PM2.5',
-      'SO2 (μg/m³)': 'SO2'
+      Date: "Date",
+      "ATMO Index": "ATMO Index",
+      Qualifier: "Qualifier",
+      "NO2 (μg/m³)": "NO2",
+      "O3 (μg/m³)": "O3",
+      "PM10 (μg/m³)": "PM10",
+      "PM2.5 (μg/m³)": "PM2.5",
+      "SO2 (μg/m³)": "SO2",
     });
 
     if (data.airQuality && data.airQuality.measurements && data.airQuality.measurements.length > 0) {
-      data.airQuality.measurements.forEach(aqi => {
+      data.airQuality.measurements.forEach((aqi) => {
         csvData.push({
-          'Date': aqi.date,
-          'AQI': aqi.aqi,
-          'Label': aqi.aqiLabel,
-          'NO2 (μg/m³)': aqi.no2 || 'N/A',
-          'O3 (μg/m³)': aqi.o3 || 'N/A',
-          'PM10 (μg/m³)': aqi.pm10 || 'N/A',
-          'PM2.5 (μg/m³)': aqi.pm25 || 'N/A'
+          Date: aqi.date,
+          AQI: aqi.aqi,
+          Label: aqi.aqiLabel,
+          "NO2 (μg/m³)": aqi.no2 || "N/A",
+          "O3 (μg/m³)": aqi.o3 || "N/A",
+          "PM10 (μg/m³)": aqi.pm10 || "N/A",
+          "PM2.5 (μg/m³)": aqi.pm25 || "N/A",
         });
       });
     } else {
-      csvData.push({ 'Date': 'No air quality data available' });
+      csvData.push({ Date: "No air quality data available" });
     }
 
     // Empty row
     csvData.push({});
 
     // Weather Data
-    csvData.push({ 'Date': 'Weather Data' });
+    csvData.push({ Date: "Weather Data" });
     csvData.push({
-      'Date': 'Date',
-      'Temperature (°C)': 'Temperature',
-      'Humidity (%)': 'Humidity',
-      'Precipitation (mm)': 'Precipitation',
-      'Wind Speed (km/h)': 'Wind Speed'
+      Date: "Date",
+      "Temperature (°C)": "Temperature",
+      "Humidity (%)": "Humidity",
+      "Precipitation (mm)": "Precipitation",
+      "Wind Speed (km/h)": "Wind Speed",
     });
 
     if (data.weather && data.weather.measurements && data.weather.measurements.length > 0) {
-      data.weather.measurements.forEach(weather => {
+      data.weather.measurements.forEach((weather) => {
         csvData.push({
-          'Date': weather.date,
-          'Temperature (°C)': weather.temperature,
-          'Feels Like (°C)': weather.feelsLike,
-          'Humidity (%)': weather.humidity,
-          'Wind Speed (km/h)': weather.windSpeed,
-          'Description': weather.weatherDescription
+          Date: weather.date,
+          "Temperature (°C)": weather.temperature,
+          "Feels Like (°C)": weather.feelsLike,
+          "Humidity (%)": weather.humidity,
+          "Wind Speed (km/h)": weather.windSpeed,
+          Description: weather.weatherDescription,
         });
       });
     } else {
-      csvData.push({ 'Date': 'No weather data available' });
+      csvData.push({ Date: "No weather data available" });
     }
 
     // Generate CSV string
     const csv = Papa.unparse(csvData);
 
     // Create Blob and download
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', metadata.fileName);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute("download", metadata.fileName);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -334,7 +352,7 @@ export class ExportService {
       history.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       return of(history);
     } catch (error) {
-      console.error('Error reading export history from localStorage:', error);
+      console.error("Error reading export history from localStorage:", error);
       return of([]);
     }
   }
@@ -356,11 +374,11 @@ export class ExportService {
           }
 
           let history: ExportRecord[] = JSON.parse(historyJson);
-          history = history.filter(record => record.id !== exportId);
+          history = history.filter((record) => record.id !== exportId);
           localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
           resolve();
         } catch (error) {
-          console.error('Error deleting export record:', error);
+          console.error("Error deleting export record:", error);
           reject(error);
         }
       })
@@ -379,7 +397,7 @@ export class ExportService {
           localStorage.removeItem(this.STORAGE_KEY);
           resolve();
         } catch (error) {
-          console.error('Error clearing export history:', error);
+          console.error("Error clearing export history:", error);
           reject(error);
         }
       })
@@ -407,7 +425,7 @@ export class ExportService {
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
     } catch (error) {
-      console.error('Error saving export to history:', error);
+      console.error("Error saving export to history:", error);
     }
   }
 
@@ -427,13 +445,20 @@ export class ExportService {
    */
   private getAQIColor(atmoIndex: number): { r: number; g: number; b: number } {
     switch (atmoIndex) {
-      case 1: return { r: 0, g: 228, b: 0 };      // Green
-      case 2: return { r: 255, g: 255, b: 0 };    // Yellow
-      case 3: return { r: 255, g: 126, b: 0 };    // Orange
-      case 4: return { r: 255, g: 0, b: 0 };      // Red
-      case 5: return { r: 153, g: 0, b: 76 };     // Purple
-      case 6: return { r: 126, g: 0, b: 35 };     // Maroon
-      default: return { r: 128, g: 128, b: 128 }; // Gray (unknown)
+      case 1:
+        return { r: 0, g: 228, b: 0 }; // Green
+      case 2:
+        return { r: 255, g: 255, b: 0 }; // Yellow
+      case 3:
+        return { r: 255, g: 126, b: 0 }; // Orange
+      case 4:
+        return { r: 255, g: 0, b: 0 }; // Red
+      case 5:
+        return { r: 153, g: 0, b: 76 }; // Purple
+      case 6:
+        return { r: 126, g: 0, b: 35 }; // Maroon
+      default:
+        return { r: 128, g: 128, b: 128 }; // Gray (unknown)
     }
   }
 }

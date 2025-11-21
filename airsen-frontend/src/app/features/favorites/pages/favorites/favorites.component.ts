@@ -44,8 +44,37 @@ export class FavoritesComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {}
 
+  primaryFavoriteInseeCode: string | null = null;
+
   ngOnInit(): void {
+    this.primaryFavoriteInseeCode = localStorage.getItem('primaryFavoriteInseeCode');
     this.initializeComponent();
+  }
+
+  // ... existing methods ...
+
+  setPrimary(communeInseeCode: string): void {
+    if (this.primaryFavoriteInseeCode === communeInseeCode) {
+      this.primaryFavoriteInseeCode = null;
+      localStorage.removeItem('primaryFavoriteInseeCode');
+      
+      const defaultFavorite = this.state.favorites[0];
+      const defaultName = defaultFavorite ? defaultFavorite.communeName : 'première de la liste';
+      this.showSuccess(`Commune principale réinitialisée (par défaut : ${defaultName})`);
+    } else {
+      this.primaryFavoriteInseeCode = communeInseeCode;
+      localStorage.setItem('primaryFavoriteInseeCode', communeInseeCode);
+      
+      const favorite = this.state.favorites.find(f => f.communeInseeCode === communeInseeCode);
+      if (favorite) {
+        this.showSuccess(`${favorite.communeName} définie comme commune principale`);
+      }
+    }
+    this.cdr.markForCheck();
+  }
+  
+  isPrimary(communeInseeCode: string): boolean {
+      return this.primaryFavoriteInseeCode === communeInseeCode;
   }
 
   ngOnDestroy(): void {

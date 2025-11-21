@@ -5,23 +5,14 @@
       <button type="button" class="link-button" (click)="onViewAllAlerts()">
         Voir toutes les alertes
       </button>
-      <button 
-        *ngIf="showFavoritesFilter" 
-        type="button" 
-        class="link-button" 
-        (click)="onFilterByFavorites()"
-      >
+      <button *ngIf="showFavoritesFilter" type="button" class="link-button" (click)="onFilterByFavorites()">
         Favoris
       </button>
     </div>
   </div>
-  
-  <ul class="alert-list">
-    <li 
-      class="alert-item" 
-      *ngFor="let alert of paginatedAlerts"
-      (click)="onAlertClick(alert.id)"
-    >
+
+  <ul class="alert-list" *ngIf="alerts.length > 0; else emptyState">
+    <li class="alert-item" *ngFor="let alert of paginatedAlerts" (click)="onAlertClick(alert.id)">
       <div class="alert-icon" [ngClass]="alert.severity">
         <mat-icon>{{ alert.icon }}</mat-icon>
       </div>
@@ -38,24 +29,23 @@
     </li>
   </ul>
 
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <mat-icon>sentiment_satisfied_alt</mat-icon>
+      </div>
+      <p class="empty-text">Aucune alerte en cours. La qualité de l'air est stable sur vos lieux favoris.</p>
+    </div>
+  </ng-template>
+
   <div *ngIf="showPagination && totalPages > 1" class="pagination">
-    <button 
-      type="button" 
-      class="pagination-button"
-      [disabled]="!hasPreviousPage"
-      (click)="previousPage()"
-    >
+    <button type="button" class="pagination-button" [disabled]="!hasPreviousPage" (click)="previousPage()">
       <mat-icon>chevron_left</mat-icon>
     </button>
     <span class="pagination-info">
       Page {{ currentPage }} sur {{ totalPages }}
     </span>
-    <button 
-      type="button" 
-      class="pagination-button"
-      [disabled]="!hasNextPage"
-      (click)="nextPage()"
-    >
+    <button type="button" class="pagination-button" [disabled]="!hasNextPage" (click)="nextPage()">
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>

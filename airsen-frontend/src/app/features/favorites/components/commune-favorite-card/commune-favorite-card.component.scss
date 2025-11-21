@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '@angular/material' as mat;
 @use 'styles/design-system' as *;
 
@@ -27,58 +28,113 @@
     padding: $space-4;
   }
 
-  mat-card-actions {
-    padding: $space-2 $space-4 $space-4;
-    border-top: 1px solid $airsen-gray-100;
-  }
-}
-
-.geographic-hierarchy {
-  display: flex;
-  align-items: center;
-  gap: $space-2;
-  font-size: $font-size-sm;
-  color: $airsen-gray-600;
-
-  .region {
-    font-weight: $font-weight-medium;
-    color: $airsen-secondary;
-  }
-
-  .department {
-    font-weight: $font-weight-medium;
-    color: $airsen-gray-600;
-  }
-
-  .hierarchy-separator {
-    font-size: $font-size-base;
-    color: $airsen-gray-500;
-  }
-}
-
-.commune-name {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-semibold;
-  color: $airsen-gray-900;
-  margin: 0 0 $space-3 0;
-  line-height: $line-height-tight;
-}
-
-.commune-details {
-  .insee-code,
-  .added-date {
+  .geographic-hierarchy {
     display: flex;
     align-items: center;
     gap: $space-2;
-    margin: $space-2 0;
-    color: $airsen-gray-600;
     font-size: $font-size-sm;
+    color: $airsen-gray-600;
 
-    mat-icon {
-      font-size: $font-size-lg;
-      width: $font-size-lg;
-      height: $font-size-lg;
+    .region {
+      font-weight: $font-weight-medium;
+      color: $airsen-secondary;
+    }
+
+    .department {
+      font-weight: $font-weight-medium;
+      color: $airsen-gray-600;
+    }
+
+    .hierarchy-separator {
+      font-size: $font-size-base;
       color: $airsen-gray-500;
+    }
+  }
+
+  .commune-name {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-900;
+    margin: 0 0 $space-3 0;
+    line-height: $line-height-tight;
+  }
+
+  .commune-details {
+
+    .insee-code,
+    .added-date {
+      display: flex;
+      align-items: center;
+      gap: $space-2;
+      margin: $space-2 0;
+      color: $airsen-gray-600;
+      font-size: $font-size-sm;
+
+      mat-icon {
+        font-size: $font-size-lg;
+        width: $font-size-lg;
+        height: $font-size-lg;
+        color: $airsen-gray-500;
+      }
+    }
+  }
+
+  mat-card-actions.card-actions {
+    padding: $space-3 $space-4 $space-4;
+    border-top: 1px solid $airsen-gray-100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $space-2;
+
+    .secondary-actions {
+      display: flex;
+      gap: $space-1;
+    }
+
+    .action-btn {
+      color: $airsen-gray-400;
+      transition: $transition-all;
+
+      &:hover {
+        background-color: $airsen-gray-100;
+      }
+
+      &.star-btn {
+        &:hover {
+          color: $airsen-yellow-moderate;
+        }
+
+        &.is-active {
+          color: $airsen-yellow-moderate;
+        }
+      }
+
+      &.delete-btn {
+        &:hover {
+          color: $airsen-error;
+          background-color: color.adjust($airsen-error, $lightness: 45%);
+        }
+      }
+    }
+
+    .details-btn {
+      background-color: $airsen-secondary;
+      color: $airsen-white;
+      border-radius: 15px; // Force full pill shape
+      padding-left: $space-5;
+      padding-right: $space-4;
+
+      &:hover {
+        background-color: $airsen-secondary-dark;
+      }
+
+      mat-icon {
+        margin-left: $space-1;
+        font-size: 1.1rem;
+        height: 1.1rem;
+        width: 1.1rem;
+      }
     }
   }
 }
@@ -86,11 +142,16 @@
 // Responsive adjustments
 @include respond-max(sm) {
   .commune-favorite-card {
-    mat-card-actions {
-      flex-direction: column;
-      gap: $space-2;
+    mat-card-actions.card-actions {
+      flex-direction: column-reverse; // Put primary action on top/bottom depending on preference, here bottom is standard but let's stack
+      align-items: stretch;
+      gap: $space-3;
 
-      button {
+      .secondary-actions {
+        justify-content: space-between;
+      }
+
+      .details-btn {
         width: 100%;
       }
     }
