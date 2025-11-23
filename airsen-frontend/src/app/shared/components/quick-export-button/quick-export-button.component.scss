@@ -1,0 +1,124 @@
+@import 'styles/design-system.scss';
+
+
+.export-button-group {
+    display: flex;
+    align-items: center;
+    gap: $space-1;
+}
+
+.export-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: none;
+    border-radius: $radius-full;
+    background-color: $airsen-secondary;
+    color: $airsen-white;
+    cursor: pointer;
+    transition: $transition-all;
+    box-shadow: $shadow-sm;
+
+    &:hover:not(:disabled) {
+        background-color: $airsen-secondary-dark;
+        box-shadow: $shadow-md;
+        transform: translateY(-2px);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: $shadow-sm;
+    }
+
+    &:disabled {
+        background-color: $airsen-gray-200;
+        color: $airsen-gray-500;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    &.is-exporting {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    // Size variants
+    &.small {
+        width: 32px;
+        height: 32px;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    &.medium {
+        width: 40px;
+        height: 40px;
+
+        mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    &.large {
+        width: 48px;
+        height: 48px;
+
+        mat-icon {
+            font-size: 28px;
+            width: 28px;
+            height: 28px;
+        }
+    }
+
+    mat-icon {
+        line-height: $line-height-tight;
+    }
+}
+
+.advanced-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-sm;
+    background-color: transparent;
+    color: $airsen-gray-600;
+    cursor: pointer;
+    transition: $transition-all;
+
+    &:hover:not(:disabled) {
+        background-color: rgba(0, 0, 0, 0.04);
+        color: $airsen-gray-900;
+    }
+
+    &:disabled {
+        color: $airsen-gray-400;
+        cursor: not-allowed;
+    }
+
+    &.expanded mat-icon {
+        transform: rotate(180deg);
+    }
+
+    mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        transition: $transition-transform;
+    }
+}
+
+// Loading spinner styles
+mat-spinner {
+    margin: auto;
+}

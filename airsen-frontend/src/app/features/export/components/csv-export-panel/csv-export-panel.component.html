@@ -1,0 +1,135 @@
+<!-- CSV Export Panel -->
+<div class="csv-export-panel">
+  <!-- Panel Header -->
+  <div class="panel-header">
+    <h4 class="panel-title">
+      <mat-icon class="title-icon">table_chart</mat-icon>
+      Export CSV - {{ selectedCommune.communeName }}
+    </h4>
+    <button
+      mat-icon-button
+      class="close-button"
+      (click)="onClose()"
+      [attr.aria-label]="'Fermer le panneau'"
+      [disabled]="isExporting">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Commune Information -->
+  <div class="commune-info">
+    <div class="commune-details">
+      <h5>{{ selectedCommune.communeName }}</h5>
+      <p class="commune-location">{{ selectedCommune.departmentName }}, {{ selectedCommune.regionName }}</p>
+      <p class="commune-insee">Code INSEE: {{ selectedCommune.communeInseeCode }}</p>
+    </div>
+    <mat-icon class="commune-icon">location_on</mat-icon>
+  </div>
+
+  <!-- Export Form -->
+  <form [formGroup]="exportForm" class="export-form" (ngSubmit)="onExport()">
+    <!-- Date Range Section -->
+    <div class="form-section">
+      <label class="section-label">
+        <mat-icon class="label-icon">date_range</mat-icon>
+        Période de données historiques
+      </label>
+      <p class="section-description">Sélectionnez la plage de dates pour l'export CSV (maximum 90 jours)</p>
+
+      <div class="date-range-picker">
+        <mat-form-field appearance="outline" class="date-field">
+          <mat-label>Date de début</mat-label>
+          <input
+            matInput
+            [matDatepicker]="startPicker"
+            formControlName="startDate"
+            [min]="minDate"
+            [max]="maxDate"
+            placeholder="JJ/MM/AAAA"
+            [disabled]="isExporting"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+          <mat-hint>Limite : 90 jours en arrière</mat-hint>
+        </mat-form-field>
+
+        <span class="date-separator">→</span>
+
+        <mat-form-field appearance="outline" class="date-field">
+          <mat-label>Date de fin</mat-label>
+          <input
+            matInput
+            [matDatepicker]="endPicker"
+            formControlName="endDate"
+            [min]="minDate"
+            [max]="maxDate"
+            placeholder="JJ/MM/AAAA"
+            [disabled]="isExporting"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+          <mat-hint>Aujourd'hui maximum</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <!-- Validation errors -->
+      <div class="validation-errors" *ngIf="exportForm.errors && exportForm.touched">
+        <mat-error *ngIf="exportForm.errors['dateRangeInvalid']">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          {{ exportForm.errors['dateRangeInvalid'] }}
+        </mat-error>
+        <mat-error *ngIf="exportForm.errors['dateRangeTooLarge']">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          {{ exportForm.errors['dateRangeTooLarge'] }}
+        </mat-error>
+      </div>
+    </div>
+
+    <!-- CSV Format Information -->
+    <div class="format-info">
+      <div class="format-card">
+        <mat-icon class="format-icon">table_chart</mat-icon>
+        <div class="format-details">
+          <h6>Format CSV</h6>
+          <p>Données historiques avec horodatage, AQI, polluants (PM2.5, PM10, NO₂, O₃, SO₂) et météo</p>
+          <span class="format-badge">Compatible Excel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Actions -->
+    <div class="form-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="export-button"
+        [disabled]="isExporting || exportForm.invalid"
+      >
+        <mat-icon *ngIf="!isExporting">file_download</mat-icon>
+        <mat-spinner *ngIf="isExporting" diameter="20" class="button-spinner"></mat-spinner>
+        <span>{{ isExporting ? "Export en cours..." : "Exporter CSV" }}</span>
+      </button>
+
+      <button
+        mat-button
+        type="button"
+        (click)="onClose()"
+        [disabled]="isExporting"
+        class="cancel-button">
+        Annuler
+      </button>
+    </div>
+  </form>
+
+  <!-- Export Progress -->
+  <div class="export-progress" *ngIf="isExporting">
+    <div class="progress-content">
+      <mat-spinner diameter="32"></mat-spinner>
+      <div class="progress-text">
+        <p class="progress-title">Export en cours...</p>
+        <p class="progress-description">Génération du fichier CSV avec les données historiques</p>
+      </div>
+    </div>
+  </div>
+</div>

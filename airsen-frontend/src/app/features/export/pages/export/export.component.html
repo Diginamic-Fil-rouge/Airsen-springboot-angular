@@ -1,0 +1,109 @@
+<!-- Export Page Container -->
+<div class="export-page">
+  <!-- Page Header -->
+  <div class="export-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">file_download</mat-icon>
+      <div class="header-text">
+        <h1>Mes Exports</h1>
+        <p class="subtitle">Exportez vos données environnementales</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="state.isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement de vos favoris...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="state.error" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Erreur de chargement</h3>
+    <p>{{ state.error }}</p>
+    <button mat-raised-button color="primary" (click)="retryLoad()">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!state.isLoading && !state.error" class="export-content">
+
+    <!-- Favorites Section -->
+    <mat-card class="favorites-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>favorite</mat-icon>
+          Communes favorites
+          <span class="count-badge">{{ state.favoriteCount.count }}/{{ state.favoriteCount.maximum }}</span>
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Empty State -->
+        <div *ngIf="state.favorites.length === 0" class="empty-state">
+          <mat-icon class="empty-icon">favorite_border</mat-icon>
+          <h3>Aucune commune en favoris</h3>
+          <p>Ajoutez des communes en favoris depuis la carte pour pouvoir exporter leurs données.</p>
+          <button mat-raised-button color="primary" (click)="browseCommunes()">
+            <mat-icon>map</mat-icon>
+            Explorer les communes
+          </button>
+        </div>
+
+        <!-- Favorites List -->
+        <div *ngIf="state.favorites.length > 0" class="favorites-grid">
+          <div *ngFor="let favorite of state.favorites" class="favorite-card">
+            <div class="favorite-info">
+              <h4>{{ favorite.communeName }}</h4>
+              <p class="location">{{ favorite.departmentName }}, {{ favorite.regionName }}</p>
+              <p class="insee-code">INSEE: {{ favorite.communeInseeCode }}</p>
+            </div>
+
+            <div class="favorite-actions">
+              <button mat-icon-button
+                      matTooltip="Voir les détails sur la carte"
+                      (click)="viewCommuneDetails(favorite.communeInseeCode)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+
+              <button mat-raised-button
+                      color="primary"
+                      (click)="onSelectCommuneForExport(favorite)">
+                <mat-icon>file_download</mat-icon>
+                Export CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Export History Section -->
+    <mat-card class="history-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>history</mat-icon>
+          Historique d'export
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <app-export-history></app-export-history>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- CSV Export Panel -->
+  <div *ngIf="state.showCsvPanel && state.selectedCommune" class="csv-panel-overlay">
+    <div class="csv-panel-container">
+      <app-csv-export-panel
+        [selectedCommune]="state.selectedCommune"
+        (exportComplete)="onCsvExportComplete()"
+        (panelClosed)="onCsvExportCancelled()"
+      ></app-csv-export-panel>
+    </div>
+  </div>
+</div>

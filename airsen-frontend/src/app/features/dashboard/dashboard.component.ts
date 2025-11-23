@@ -7,7 +7,7 @@ import { AuthService } from "@/auth/services/auth.service";
 import { AuthUser } from "@/auth/models/auth.model";
 import { AlertService } from "@/core/services/alert.service";
 import { FavoriteService } from "@/features/favorites/services/favorite.service";
-import { AirQualityService, AirQualityResponse } from "@/features/map/services/air-quality.service";
+import { AirQualityService, AirQualityResponse } from "@/app/features/m/services/air-quality.service";
 import { WeatherService } from "@/core/services/weather.service";
 import { ThreadService } from "@/features/forum/services/thread.service";
 import { Thread } from "@/features/forum/models/thread.model";
@@ -50,7 +50,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   forumUnreadCount = 0;
-  
+
   // New properties for Hero Section
   primaryFavoriteAqi: AirQualityResponse | null = null;
   primaryFavoriteWeather: WeatherData | null = null;
@@ -140,7 +140,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get isAdmin(): boolean {
-    return this.currentUser?.role === 'ADMIN';
+    return this.currentUser?.role === "ADMIN";
   }
 
   retryLoad(): void {
@@ -162,9 +162,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         break;
       case "forum":
         if (this.trendingThread) {
-           this.router.navigate(["/forum/thread", this.trendingThread.id]);
+          this.router.navigate(["/forum/thread", this.trendingThread.id]);
         } else {
-           this.router.navigate(["/forum"]);
+          this.router.navigate(["/forum"]);
         }
         break;
       case "favorites":
@@ -234,18 +234,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
         })
       ),
       trending: this.threadService.getAllThreads().pipe(
-        map(page => {
-             // Simple logic to find trending: sort by viewCount descending
-             if (page && page.content && page.content.length > 0) {
-                 return page.content.sort((a, b) => b.viewCount - a.viewCount)[0];
-             }
-             return null;
+        map((page) => {
+          // Simple logic to find trending: sort by viewCount descending
+          if (page && page.content && page.content.length > 0) {
+            return page.content.sort((a, b) => b.viewCount - a.viewCount)[0];
+          }
+          return null;
         }),
-        catchError(err => {
-            console.error("Error loading trending thread:", err);
-            return of(null);
+        catchError((err) => {
+          console.error("Error loading trending thread:", err);
+          return of(null);
         })
-      )
+      ),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -253,12 +253,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.processNotifications(notifications);
           this.processFavorites(favorites);
           this.trendingThread = trending;
-          
+
           // Fetch AQI and Weather for primary favorite
           if (favorites.length > 0) {
-             const primaryInsee = localStorage.getItem('primaryFavoriteInseeCode');
-             const primary = favorites.find(f => f.communeInseeCode === primaryInsee) || favorites[0];
-             this.fetchPrimaryFavoriteData(primary.communeInseeCode);
+            const primaryInsee = localStorage.getItem("primaryFavoriteInseeCode");
+            const primary = favorites.find((f) => f.communeInseeCode === primaryInsee) || favorites[0];
+            this.fetchPrimaryFavoriteData(primary.communeInseeCode);
           }
 
           this.buildQuickActions();
@@ -273,14 +273,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private fetchPrimaryFavoriteData(inseeCode: string): void {
-      forkJoin({
-          aqi: this.airQualityService.getAirLatestQuality(inseeCode).pipe(catchError(() => of(null))),
-          weather: this.weatherService.getCurrentWeather(inseeCode).pipe(catchError(() => of(null)))
-      }).pipe(takeUntil(this.destroy$)).subscribe({
-          next: ({ aqi, weather }) => {
-              this.primaryFavoriteAqi = aqi;
-              this.primaryFavoriteWeather = weather;
-          }
+    forkJoin({
+      aqi: this.airQualityService.getAirLatestQuality(inseeCode).pipe(catchError(() => of(null))),
+      weather: this.weatherService.getCurrentWeather(inseeCode).pipe(catchError(() => of(null))),
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ aqi, weather }) => {
+          this.primaryFavoriteAqi = aqi;
+          this.primaryFavoriteWeather = weather;
+        },
       });
   }
 
@@ -418,18 +420,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       {
         title: "Aller au Forum",
-        subtitle: this.trendingThread 
-            ? `Tendance : ${this.trendingThread.title}`
-            : "Discutez avec la communauté",
+        subtitle: this.trendingThread ? `Tendance : ${this.trendingThread.title}` : "Discutez avec la communauté",
         icon: "forum",
         action: "forum",
         badge: this.forumUnreadCount ? `${this.forumUnreadCount}` : undefined,
       },
       {
         title: this.isAdmin ? "Stats Système" : "Mes Favoris",
-        subtitle: this.isAdmin 
-            ? "État de santé de l'API et utilisateurs actifs"
-            : `${this.userStats.favoriteIndicators} indicateur${this.userStats.favoriteIndicators !== 1 ? "s" : ""} enregistré${this.userStats.favoriteIndicators !== 1 ? "s" : ""}`,
+        subtitle: this.isAdmin
+          ? "État de santé de l'API et utilisateurs actifs"
+          : `${this.userStats.favoriteIndicators} indicateur${
+              this.userStats.favoriteIndicators !== 1 ? "s" : ""
+            } enregistré${this.userStats.favoriteIndicators !== 1 ? "s" : ""}`,
         icon: this.isAdmin ? "dns" : "favorite",
         action: "favorites",
         badge: !this.isAdmin && this.userStats.favoriteIndicators ? `${this.userStats.favoriteIndicators}` : undefined,

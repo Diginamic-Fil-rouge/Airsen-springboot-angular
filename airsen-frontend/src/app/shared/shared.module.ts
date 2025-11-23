@@ -14,7 +14,6 @@ import { SkeletonLoaderComponent } from "./components/skeleton-loader/skeleton-l
 import { SidebarComponent } from "./components/sidebar/sidebar.component";
 import { FavoriteButtonComponent } from "./components/favorite-button/favorite-button.component";
 import { QuickExportButtonComponent } from "./components/quick-export-button/quick-export-button.component";
-import { AdvancedExportPanelComponent } from "./components/advanced-export-panel/advanced-export-panel.component";
 import { ConfirmDialogComponent } from "./components/confirm-dialog/confirm-dialog.component";
 import { InputDialogComponent } from "./components/input-dialog/input-dialog.component";
 import { ToastComponent } from "./components/toast/toast.component";
@@ -71,7 +70,6 @@ import { AqiColorPipe } from "./pipes/aqi-color.pipe";
     SidebarComponent,
     FavoriteButtonComponent,
     QuickExportButtonComponent,
-    AdvancedExportPanelComponent,
     ConfirmDialogComponent,
     InputDialogComponent,
     ToastComponent,
@@ -94,7 +92,6 @@ import { AqiColorPipe } from "./pipes/aqi-color.pipe";
     SidebarComponent,
     FavoriteButtonComponent,
     QuickExportButtonComponent,
-    AdvancedExportPanelComponent,
     ConfirmDialogComponent,
     InputDialogComponent,
     ToastComponent,

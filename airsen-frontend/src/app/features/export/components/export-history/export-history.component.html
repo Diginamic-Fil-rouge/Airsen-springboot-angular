@@ -1,0 +1,92 @@
+<!-- Export History Component -->
+<div class="export-history">
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <mat-spinner diameter="24"></mat-spinner>
+    <span class="loading-text">Chargement de l'historique...</span>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <p class="error-message">{{ error() }}</p>
+    <button mat-button color="primary" (click)="loadExportHistory()">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading() && !error()" class="history-content">
+    <!-- Header Actions -->
+    <div class="history-header">
+      <div class="header-info">
+        <span class="history-count">
+          {{ exportHistory().length }} export{{ exportHistory().length > 1 ? 's' : '' }}
+        </span>
+      </div>
+      <div class="header-actions">
+        <button
+          mat-icon-button
+          matTooltip="Actualiser l'historique"
+          (click)="refreshHistory()"
+          [disabled]="isLoading()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          matTooltip="Vider l'historique"
+          (click)="clearHistory()"
+          [disabled]="exportHistory().length === 0"
+          class="clear-button">
+          <mat-icon>clear_all</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="exportHistory().length === 0" class="empty-state">
+      <mat-icon class="empty-icon">history</mat-icon>
+      <h3>Aucun export récent</h3>
+      <p>Vos exports apparaîtront ici après avoir exporté des données.</p>
+    </div>
+
+    <!-- History List -->
+    <div *ngIf="exportHistory().length > 0" class="history-list">
+      <div *ngFor="let record of exportHistory(); trackBy: trackByRecordId"
+           class="history-item">
+        <div class="item-icon">
+          <mat-icon
+            class="format-icon"
+            [ngClass]="getFormatColorClass(record.format)">
+            {{ getFormatIcon(record.format) }}
+          </mat-icon>
+        </div>
+
+        <div class="item-content">
+          <div class="item-header">
+            <h4 class="location-name">{{ record.locationName }}</h4>
+            <span class="export-format">{{ record.format }}</span>
+          </div>
+
+          <div class="item-details">
+            <span class="insee-code" *ngIf="record.inseeCode">
+              INSEE: {{ record.inseeCode }}
+            </span>
+            <span class="file-size">{{ formatFileSize(record.fileSize) }}</span>
+            <span class="export-date">{{ formatRelativeTime(record.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="item-actions">
+          <button
+            mat-icon-button
+            matTooltip="Voir les détails"
+            class="details-button">
+            <mat-icon>info</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

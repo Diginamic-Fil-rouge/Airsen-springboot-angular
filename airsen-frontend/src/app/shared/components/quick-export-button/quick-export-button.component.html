@@ -1,0 +1,18 @@
+<div class="export-button-group">
+    <!-- Quick Export Icon Button -->
+    <button class="export-button" [class.is-exporting]="isExporting" [ngClass]="size"
+        [disabled]="isExporting || !canExport" [attr.aria-label]="'Export rapide (PDF, données actuelles)'"
+        (click)="quickExport()" matTooltip="Export rapide (PDF, données actuelles)" matTooltipPosition="below">
+
+        <mat-icon *ngIf="!isExporting">file_download</mat-icon>
+        <mat-spinner *ngIf="isExporting" [diameter]="size === 'small' ? 16 : size === 'medium' ? 20 : 28">
+        </mat-spinner>
+    </button>
+
+    <!-- Advanced Options Toggle (chevron icon) -->
+    <button class="advanced-toggle" [class.expanded]="showAdvancedPanel" [disabled]="!canExport"
+        [attr.aria-label]="'Options d\'export avancées'" (click)="toggleAdvancedPanel()"
+        matTooltip="Options d'export avancées" matTooltipPosition="below">
+        <mat-icon>{{ showAdvancedPanel ? 'expand_less' : 'expand_more' }}</mat-icon>
+    </button>
+</div>

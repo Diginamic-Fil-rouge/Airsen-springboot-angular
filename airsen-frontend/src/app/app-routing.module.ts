@@ -30,7 +30,7 @@ const routes: Routes = [
   },
   {
     path: "map",
-    loadChildren: () => import("./features/map/map.module").then((m) => m.MapModule),
+    loadChildren: () => import("./features/m/map.module").then((m) => m.MapModule),
   },
   {
     path: "auth",
@@ -55,6 +55,11 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: "export",
+    loadChildren: () => import("./features/export/export.module").then((m) => m.ExportModule),
+    canActivate: [AuthGuard],
+  },
+  {
     path: "forum",
     loadChildren: () => import("./features/forum/forum.module").then((m) => m.ForumModule),
     canActivate: [AuthGuard],
@@ -62,10 +67,10 @@ const routes: Routes = [
 
   // Admin Routes (requires ADMIN role)
   {
-    path: 'admin',
-    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
+    path: "admin",
+    loadChildren: () => import("./features/admin/admin.module").then((m) => m.AdminModule),
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ["ADMIN"] },
   },
 
   // Error Handling Routes

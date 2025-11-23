@@ -1,0 +1,482 @@
+@use '/src/styles/design-system.scss' as *;
+
+// =============================================================================
+// CSV EXPORT PANEL ENHANCED AESTHETICS
+// =============================================================================
+
+.csv-export-panel {
+  padding: 0;
+  max-width: 100%;
+  position: relative;
+}
+
+// Enhanced Panel Header
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $space-6;
+  border-bottom: 1px solid rgba($airsen-gray-200, 0.3);
+  background: linear-gradient(135deg, rgba($airsen-primary, 0.02) 0%, transparent 100%);
+
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    margin: 0;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $airsen-gray-900;
+
+    .title-icon {
+      color: $airsen-primary;
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: linear-gradient(135deg, $airsen-primary, $airsen-primary-dark);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  .close-button {
+    background: rgba($airsen-gray-100, 0.5);
+    border: 1px solid rgba($airsen-gray-200, 0.6);
+    transition: all 0.2s ease-out;
+
+    &:hover:not([disabled]) {
+      background: rgba($airsen-error, 0.1);
+      border-color: $airsen-error;
+      transform: scale(1.05);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Enhanced Commune Information Section
+.commune-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $space-5 $space-6;
+  background: linear-gradient(135deg, rgba($airsen-primary, 0.03) 0%, rgba($airsen-accent, 0.02) 100%);
+  border-radius: 12px;
+  margin: $space-4 $space-6;
+  border: 1px solid rgba($airsen-primary, 0.1);
+
+  .commune-details {
+    h5 {
+      margin: 0 0 $space-1 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $airsen-gray-900;
+      letter-spacing: $letter-spacing-tight;
+    }
+
+    .commune-location {
+      margin: 0 0 $space-1 0;
+      font-size: $font-size-sm;
+      color: $airsen-gray-600;
+      font-weight: $font-weight-medium;
+    }
+
+    .commune-insee {
+      margin: 0;
+      font-size: $font-size-xs;
+      color: $airsen-gray-500;
+      font-family: $font-family-mono;
+      background: rgba($airsen-gray-100, 0.8);
+      padding: $space-1 $space-2;
+      border-radius: $space-1;
+      display: inline-block;
+    }
+  }
+
+  .commune-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: $airsen-primary;
+    background: linear-gradient(135deg, $airsen-primary, $airsen-accent);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+// Enhanced Export Form
+.export-form {
+  padding: 0 $space-6 $space-6;
+}
+
+// Enhanced Form Sections
+.form-section {
+  margin-bottom: $space-6;
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $airsen-gray-900;
+    margin-bottom: $space-2;
+
+    .label-icon {
+      color: $airsen-primary;
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  .section-description {
+    margin: 0 0 $space-4 0;
+    font-size: $font-size-sm;
+    color: $airsen-gray-600;
+    line-height: $line-height-relaxed;
+  }
+}
+
+// Enhanced Date Range Picker
+.date-range-picker {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-4;
+  flex-wrap: wrap;
+
+  .date-field {
+    flex: 1;
+    min-width: 200px;
+
+    .mat-mdc-form-field-outline {
+      color: rgba($airsen-gray-300, 0.8);
+    }
+
+    &.mat-focused .mat-mdc-form-field-outline {
+      border-color: $airsen-primary;
+    }
+
+    .mat-mdc-input-element {
+      color: $airsen-gray-900;
+    }
+
+    .mat-mdc-form-field-hint {
+      color: $airsen-gray-500;
+      font-size: $font-size-xs;
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+    }
+  }
+
+  .date-separator {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $airsen-primary;
+    margin-top: $space-2;
+    align-self: flex-start;
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: $space-3;
+
+    .date-separator {
+      align-self: center;
+      transform: rotate(90deg);
+      margin: 0;
+    }
+  }
+}
+
+// Enhanced Validation Errors
+.validation-errors {
+  margin-top: $space-3;
+  padding: $space-3;
+  background: rgba($airsen-error, 0.05);
+  border: 1px solid rgba($airsen-error, 0.2);
+  border-radius: $space-2;
+
+  .mat-mdc-error {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    color: $airsen-error;
+    font-size: $font-size-sm;
+    margin: 0;
+
+    .error-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}
+
+// Enhanced Format Information
+.format-info {
+  margin-bottom: $space-6;
+
+  .format-card {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-4;
+    padding: $space-5;
+    background: linear-gradient(135deg, rgba($airsen-accent, 0.03) 0%, rgba($airsen-primary, 0.02) 100%);
+    border: 1px solid rgba($airsen-accent, 0.2);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, $airsen-accent, $airsen-primary);
+    }
+
+    .format-icon {
+      font-size: 2rem;
+      width: 2rem;
+      height: 2rem;
+      color: $airsen-accent;
+      background: linear-gradient(135deg, $airsen-accent, $airsen-accent-dark);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      flex-shrink: 0;
+    }
+
+    .format-details {
+      h6 {
+        margin: 0 0 $space-2 0;
+        font-size: $font-size-base;
+        font-weight: $font-weight-bold;
+        color: $airsen-gray-900;
+      }
+
+      p {
+        margin: 0 0 $space-3 0;
+        font-size: $font-size-sm;
+        color: $airsen-gray-600;
+        line-height: $line-height-relaxed;
+      }
+
+      .format-badge {
+        display: inline-block;
+        padding: $space-1 $space-2;
+        background: linear-gradient(135deg, $airsen-accent, $airsen-accent-dark);
+        color: $airsen-white;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-bold;
+        border-radius: $space-1;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+    }
+  }
+}
+
+// Enhanced Form Actions
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $space-3;
+  padding-top: $space-4;
+  border-top: 1px solid rgba($airsen-gray-200, 0.3);
+
+  .export-button {
+    background: linear-gradient(135deg, $airsen-primary, $airsen-primary-dark);
+    border: none;
+    border-radius: 10px;
+    font-weight: $font-weight-semibold;
+    padding: $space-3 $space-6;
+    box-shadow: 0 4px 16px rgba($airsen-primary, 0.3);
+    transition: all 0.2s ease-out;
+
+    &:hover:not([disabled]) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba($airsen-primary, 0.4);
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 2px 8px rgba($airsen-primary, 0.2);
+    }
+
+    .button-spinner {
+      --mdc-circular-progress-active-indicator-color: #{$airsen-white};
+      margin-right: $space-2;
+    }
+
+    mat-icon {
+      margin-right: $space-2;
+    }
+  }
+
+  .cancel-button {
+    border-radius: 10px;
+    font-weight: $font-weight-medium;
+    color: $airsen-gray-600;
+    border: 1px solid rgba($airsen-gray-300, 0.6);
+
+    &:hover:not([disabled]) {
+      background: rgba($airsen-gray-100, 0.5);
+      border-color: $airsen-gray-400;
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    gap: $space-2;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Enhanced Export Progress
+.export-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba($airsen-white, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  z-index: 10;
+
+  .progress-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-4;
+    text-align: center;
+    padding: $space-6;
+
+    mat-spinner {
+      --mdc-circular-progress-active-indicator-color: #{$airsen-primary};
+    }
+
+    .progress-text {
+      .progress-title {
+        margin: 0 0 $space-2 0;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        color: $airsen-gray-900;
+      }
+
+      .progress-description {
+        margin: 0;
+        font-size: $font-size-sm;
+        color: $airsen-gray-600;
+        line-height: $line-height-relaxed;
+      }
+    }
+  }
+}
+
+// Enhanced Responsive Design
+@media (max-width: 768px) {
+  .csv-export-panel {
+    .panel-header {
+      padding: $space-4 $space-5;
+
+      .panel-title {
+        font-size: $font-size-lg;
+        gap: $space-2;
+      }
+    }
+
+    .commune-info {
+      margin: $space-3 $space-5;
+      padding: $space-4;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $space-3;
+
+      .commune-icon {
+        align-self: flex-end;
+        font-size: 1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+    }
+
+    .export-form {
+      padding: 0 $space-5 $space-5;
+    }
+
+    .format-info .format-card {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: $space-3;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .csv-export-panel {
+    .panel-header {
+      padding: $space-3 $space-4;
+
+      .panel-title {
+        font-size: $font-size-base;
+        gap: $space-2;
+
+        .title-icon {
+          font-size: 1.25rem;
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+      }
+    }
+
+    .commune-info {
+      margin: $space-2 $space-4;
+      padding: $space-3;
+    }
+
+    .export-form {
+      padding: 0 $space-4 $space-4;
+    }
+
+    .form-section .section-label {
+      font-size: $font-size-sm;
+      gap: $space-1;
+
+      .label-icon {
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+
+    .date-range-picker .date-field {
+      min-width: 160px;
+    }
+  }
+}

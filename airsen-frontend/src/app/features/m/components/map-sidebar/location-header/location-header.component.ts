@@ -12,8 +12,11 @@ import { CommuneWithAirQuality } from "@/shared/models/commune.model";
  * - Formatted population with thousands separator
  * - Department and region codes
  * - Empty state when no commune is selected
- * - Quick export button with advanced export panel toggle
+ * - Quick export button for PDF snapshots
  * - Favorite button for saving communes
+ *
+ * Note: Advanced exports (CSV with date range) are handled in the dedicated Export page.
+ * See: /export route for comprehensive export functionality.
  *
  * @example
  * <app-location-header [commune]="selectedCommune"></app-location-header>
@@ -33,38 +36,5 @@ export class LocationHeaderComponent {
    */
   @Input() commune: CommuneWithAirQuality | null = null;
 
-  /**
-   * Controls visibility of advanced export panel
-   */
-  showAdvancedExportPanel = false;
-
   private cdr = inject(ChangeDetectorRef);
-
-  /**
-   * Toggle advanced export panel visibility
-   * Triggered by QuickExportButton's "advanced options" action
-   */
-  onAdvancedExportRequested(): void {
-    this.showAdvancedExportPanel = !this.showAdvancedExportPanel;
-    this.cdr.markForCheck();
-  }
-
-  /**
-   * Close advanced export panel
-   * Triggered when user closes the panel or completes export
-   */
-  onAdvancedExportPanelClosed(): void {
-    this.showAdvancedExportPanel = false;
-    this.cdr.markForCheck();
-  }
-
-  /**
-   * Handle export completion
-   * Called when user successfully exports data from advanced panel
-   */
-  onExportComplete(): void {
-    // Close panel after successful export
-    this.showAdvancedExportPanel = false;
-    this.cdr.markForCheck();
-  }
 }
