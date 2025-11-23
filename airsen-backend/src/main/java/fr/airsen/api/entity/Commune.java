@@ -15,7 +15,9 @@ import java.util.Set;
  * and proximity search.
  */
 @Entity
-@Table(name = "communes")
+@Table(name = "communes", indexes = {
+    @Index(name = "idx_communes_epci_code", columnList = "epci_code")
+})
 public class Commune {
 
     @Id
@@ -39,6 +41,11 @@ public class Commune {
     @Column(name = "region_code", length = 10)
     @Size(max = 10, message = "Region code must not exceed 10 characters")
     private String regionCode;
+
+    @Column(name = "epci_code", length = 10)
+    @Size(max = 10, message = "EPCI code must not exceed 10 characters")
+    @Pattern(regexp = "^$|^[0-9]{9}$", message = "EPCI code must be empty or a 9-digit SIREN number")
+    private String epciCode;
 
     @Column(name = "population", nullable = false)
     @PositiveOrZero(message = "Population must be non-negative")
@@ -88,16 +95,41 @@ public class Commune {
 
     public Commune() {}
 
+    /**
+     * Constructor with all fields including EPCI code.
+     *
+     * @param inseeCode INSEE code (5-digit)
+     * @param name Commune name
+     * @param departmentCode Department code
+     * @param regionCode Region code
+     * @param epciCode EPCI code (9-digit SIREN, nullable)
+     * @param population Population count
+     * @param latitude Latitude coordinate
+     * @param longitude Longitude coordinate
+     * @param department Department entity reference
+     */
     public Commune(String inseeCode, String name, String departmentCode, String regionCode,
-                   long population, BigDecimal latitude, BigDecimal longitude, Department department) {
+                   String epciCode, long population, BigDecimal latitude, BigDecimal longitude, Department department) {
         this.inseeCode = inseeCode;
         this.name = name;
         this.departmentCode = departmentCode;
         this.regionCode = regionCode;
+        this.epciCode = epciCode;
         this.population = population;
         this.latitude = latitude;
         this.longitude = longitude;
         this.department = department;
+    }
+
+    /**
+     * Constructor without EPCI code for backward compatibility.
+     *
+     * @deprecated Use {@link #Commune(String, String, String, String, String, long, BigDecimal, BigDecimal, Department)} instead
+     */
+    @Deprecated
+    public Commune(String inseeCode, String name, String departmentCode, String regionCode,
+                   long population, BigDecimal latitude, BigDecimal longitude, Department department) {
+        this(inseeCode, name, departmentCode, regionCode, null, population, latitude, longitude, department);
     }
 
     // Getters & Setters
@@ -139,6 +171,14 @@ public class Commune {
 
     public void setRegionCode(String regionCode) {
         this.regionCode = regionCode;
+    }
+
+    public String getEpciCode() {
+        return epciCode;
+    }
+
+    public void setEpciCode(String epciCode) {
+        this.epciCode = epciCode;
     }
 
     public long getPopulation() {

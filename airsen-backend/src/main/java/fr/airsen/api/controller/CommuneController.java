@@ -10,15 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -187,7 +186,7 @@ public ResponseEntity<List<CommuneDTO>> getCommunesWithCoordinates(
             )
             @PathVariable
             @Valid
-            @Pattern(regexp = "\\d{5}", message = "INSEE code must be exactly 5 digits")
+            @Pattern(regexp = "^[a-zA-Z0-9]{5}$", message = "INSEE code must be exactly 5 digits")
             String inseeCode) {
 
         log.info("Received request for commune detail with environmental data: {}", inseeCode);

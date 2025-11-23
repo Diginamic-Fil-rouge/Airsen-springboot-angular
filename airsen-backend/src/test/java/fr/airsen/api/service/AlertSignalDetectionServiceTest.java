@@ -95,6 +95,7 @@ class AlertSignalDetectionServiceTest {
         // Given: ATMO data with AQI = 4 (Bad - threshold)
         AtmoAirQualityResponse badAirQuality = new AtmoAirQualityResponse(
             "75056",              // communeInsee
+            "commune",            // zoneType
             "2025-11-16",         // measurementDate
             4,                    // atmoIndex - CRITICAL: AQI = 4 (Bad) - should trigger alert
             "Mauvais",            // qualifier
@@ -138,6 +139,7 @@ class AlertSignalDetectionServiceTest {
         // Given: ATMO data with AQI = 3 (Degraded - below threshold)
         AtmoAirQualityResponse degradedAirQuality = new AtmoAirQualityResponse(
             "75056",
+            "commune",
             "2025-11-16",
             3,  // AQI = 3 (Degraded) - should NOT trigger alert
             "Dégradé",
@@ -165,6 +167,7 @@ class AlertSignalDetectionServiceTest {
         // Given: ATMO data with AQI = 6 (Extremely Bad)
         AtmoAirQualityResponse extremelyBadAirQuality = new AtmoAirQualityResponse(
             "93008",
+            "commune",
             "2025-11-16",
             6,  // AQI = 6 (Extremely Bad) - should definitely trigger alert
             "Extrêmement mauvais",
@@ -193,13 +196,13 @@ class AlertSignalDetectionServiceTest {
     void shouldHandleMultipleAtmoEpisodes() {
         // Given: Multiple communes with AQI >= 4
         AtmoAirQualityResponse episode1 = new AtmoAirQualityResponse(
-            "75056", "2025-11-16", 5, "Très mauvais", "#960032", 5, 5, 5, 5, 5, "Paris", "ATMO", "2025-11-16"
+            "75056", "commune", "2025-11-16", 5, "Très mauvais", "#960032", 5, 5, 5, 5, 5, "Paris", "ATMO", "2025-11-16"
         );
         AtmoAirQualityResponse episode2 = new AtmoAirQualityResponse(
-            "93008", "2025-11-16", 4, "Mauvais", "#ff0000", 4, 4, 4, 4, 4, "Saint-Denis", "ATMO", "2025-11-16"
+            "93008", "commune", "2025-11-16", 4, "Mauvais", "#ff0000", 4, 4, 4, 4, 4, "Saint-Denis", "ATMO", "2025-11-16"
         );
         AtmoAirQualityResponse noEpisode = new AtmoAirQualityResponse(
-            "92012", "2025-11-16", 2, "Moyen", "#50ccaa", 2, 2, 2, 2, 2, "Boulogne-Billancourt", "ATMO", "2025-11-16"
+            "92012", "commune", "2025-11-16", 2, "Moyen", "#50ccaa", 2, 2, 2, 2, 2, "Boulogne-Billancourt", "ATMO", "2025-11-16"
         );
 
         when(atmoApiClient.getCurrentAirQualityIndices())
@@ -640,6 +643,7 @@ class AlertSignalDetectionServiceTest {
         // Given: ATMO data with null index
         AtmoAirQualityResponse nullIndexData = new AtmoAirQualityResponse(
             "75056",
+            "commune",
             "2025-11-16",
             null,  // Null ATMO index
             "Unknown",

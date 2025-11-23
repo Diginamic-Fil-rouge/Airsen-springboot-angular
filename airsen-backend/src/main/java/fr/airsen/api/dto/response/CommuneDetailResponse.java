@@ -11,6 +11,7 @@ public record CommuneDetailResponse(
     String departmentName,
     String regionCode,
     String regionName,
+    String epciCode,
     Double latitude,
     Double longitude,
     Long population,

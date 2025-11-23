@@ -21,6 +21,7 @@ public interface CommuneDetailMapper {
     @Mapping(source = "commune.department.name", target = "departmentName")
     @Mapping(source = "commune.regionCode", target = "regionCode")
     @Mapping(source = "commune.department.region.name", target = "regionName")
+    @Mapping(source = "commune.epciCode", target = "epciCode")
     @Mapping(source = "commune.latitude", target = "latitude", qualifiedByName = "bigDecimalToDouble")
     @Mapping(source = "commune.longitude", target = "longitude", qualifiedByName = "bigDecimalToDouble")
     @Mapping(source = "commune.population", target = "population")

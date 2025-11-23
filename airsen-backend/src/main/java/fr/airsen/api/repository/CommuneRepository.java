@@ -337,6 +337,77 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
     List<Commune> findByRegionCode(String regionCode);
 
     /**
+     * Finds all communes belonging to a specific EPCI by SIREN code.
+     *
+     * Multiple communes can share the same EPCI (intercommunal grouping).
+     * Returns empty list if EPCI code not found or no communes associated.
+     * Uses database index on epci_code for optimized lookups.
+     *
+     * @param epciCode 9-digit SIREN code for EPCI
+     * @return list of communes in the EPCI grouping, ordered by name
+     */
+    List<Commune> findByEpciCode(String epciCode);
+
+    /**
+     * Finds communes matching EITHER INSEE code (exact match) OR EPCI code (grouping).
+     *
+     * Use case: External API returns zone code without type indicator.
+     * Returns single commune if INSEE match, multiple if EPCI match.
+     *
+     * Pattern: Dual OR clause leverages both indexes (insee_code, epci_code).
+     *
+     * @param code 5-digit INSEE code OR 9-digit EPCI SIREN code
+     * @return list of matching communes (1 for INSEE, 0-50 for EPCI)
+     */
+    @Query("""
+        SELECT c FROM Commune c
+        WHERE c.inseeCode = :code OR c.epciCode = :code
+        ORDER BY c.name ASC
+        """)
+    List<Commune> findByInseeCodeOrEpciCode(@Param("code") String code);
+
+    /**
+     * Finds communes by EPCI code with non-null coordinates for geodistance calculations.
+     *
+     * Used when target commune has no direct air quality data and belongs to an EPCI.
+     * Filters out invalid coordinates (NULL, 0, out of France bounds).
+     * Orders by population DESC: prefer larger communes for EPCI-level data.
+     *
+     * @param epciCode 9-digit EPCI SIREN code
+     * @return list of communes with valid coordinates, or empty if none found
+     */
+    @Query("""
+        SELECT c FROM Commune c
+        WHERE c.epciCode = :epciCode
+          AND c.latitude IS NOT NULL
+          AND c.longitude IS NOT NULL
+          AND c.latitude <> 0 AND c.longitude <> 0
+          AND c.latitude BETWEEN 41 AND 51
+          AND c.longitude BETWEEN -5 AND 10
+        ORDER BY c.population DESC
+        """)
+    List<Commune> findByEpciCodeWithCoordinates(@Param("epciCode") String epciCode);
+
+    /**
+     * Finds communes by EPCI code with eager loading of department and region relationships.
+     *
+     * Prevents LazyInitializationException when accessing commune.department.region
+     * outside transactional context (e.g., DTOs, cache serialization).
+     * Single query with 2 JOINs (better than N+1 lazy loading).
+     *
+     * @param epciCode 9-digit EPCI SIREN code
+     * @return list of communes with fully initialized relationships
+     */
+    @Query("""
+        SELECT c FROM Commune c
+        LEFT JOIN FETCH c.department d
+        LEFT JOIN FETCH d.region r
+        WHERE c.epciCode = :epciCode
+        ORDER BY c.name ASC
+        """)
+    List<Commune> findByEpciCodeWithEagerLoading(@Param("epciCode") String epciCode);
+
+    /**
      * Finds Tier 1 communes (population >= 100,000).
      *
      * Tier 1 communes are high-priority targets for frequent cache refresh
