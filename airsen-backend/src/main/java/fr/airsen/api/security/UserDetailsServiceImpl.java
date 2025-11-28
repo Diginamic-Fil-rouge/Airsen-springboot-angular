@@ -5,6 +5,7 @@ import fr.airsen.api.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
  * - Comprehensive logging for security monitoring
  */
 @Service
+@Primary
 @Transactional(readOnly = true)
 public class UserDetailsServiceImpl implements UserDetailsService {
 
