@@ -1,306 +1,183 @@
-# Airsen - Environmental Information Exchange Platform
+# Airsen - Environmental Monitoring Platform
 
-**Airsen** is an environmental monitoring platform delivering real-time air quality and weather data to French citizens. Built with Spring Boot 3.2.0 (Java 21) and Angular 20, it integrates official sources (ATMO France, Open-Meteo, INSEE) with community-driven discussions.
+**Airsen** delivers real-time air quality and weather data to French citizens through an interactive map, community forums, and personalized tracking. Built with Spring Boot 3.2.0 (Java 21) backend and Angular 20 frontend, integrating ATMO France, Open-Meteo, and INSEE official data sources.
 
 ## Key Features
 
-- **Real-Time Air Quality**: ATMO indices and pollutant data from French monitoring stations
+- **Real-Time Air Quality**: ATMO indices (1-6 scale) with pollutant measurements (PM10, PM2.5, O3, NO2, SO2)
 - **Weather Integration**: Current conditions and 7-day forecasts correlated with air quality
-- **Interactive Map**: Leaflet-based map with 35,000+ French communes, filtering, and clustering
-- **Community Forums**: Category-based discussions with voting system
-- **Admin Notification System**: Automated signal detection with admin-approved email broadcasts
-- **Data Export**: Client-side PDF and CSV generation for personal tracking
-- **Secure Access**: JWT authentication with role-based authorization (Visitor/User/Admin)
+- **Interactive Map**: Leaflet-based map with 35,000+ French communes, clustering, color-coded AQI
+- **Geodistance Fallback**: 20km radius for communes without direct monitoring (Haversine distance)
+- **Community Forums**: Category-based discussions with voting and reputation system
+- **Admin Notifications**: Automated alert signals with admin-approval workflow
+- **Data Export**: Client-side PDF/CSV generation (zero server load)
+- **Authentication**: JWT (24h access, 7d refresh), BCrypt passwords, role-based access
 
 ## Technology Stack
 
-| Category | Technology | Version |
-|----------|-----------|---------|
-| **Backend** | Spring Boot | 3.2.0 |
-| **Language** | Java | 21 |
-| **Database** | MariaDB | 11.6 |
-| **Cache** | Redis | 7 |
-| **Frontend** | Angular | 20 |
-| **Infrastructure** | Docker Compose | v2.0+ |
-
-**Full Stack**: Spring Boot + Angular + MariaDB + Redis + Docker
+| Layer | Tech Stack | Version |
+|-------|-----------|---------|
+| **Backend** | Spring Boot + Java | 3.2.0 / 21 LTS |
+| **Frontend** | Angular + Material (NgModule-based) | 20 / v7 |
+| **Database** | MariaDB (UTF-8MB4) | 11.6 |
+| **Cache** | Redis (LRU, 256MB) | 7.4 |
+| **Security** | JWT (HS512) + BCrypt | jjwt 0.11.5 / strength 12 |
+| **Testing** | JUnit 5 + TestContainers + Jasmine | Latest |
 
 ## Quick Start
 
 ### Prerequisites
-
-- Docker 20.0+ with Docker Compose v2.0+
+- Docker 20.0+ with Compose v2.0+
 - Git
-- Available ports: 3306, 6379, 8080, 4200
+- Ports available: 3306, 6379, 8080, 4200
 
-### 1. Clone Repository
+### Setup
 
 ```bash
+# 1. Clone and configure
 git clone https://github.com/Diginamic-Fil-rouge/Airsen-springboot-angular.git
 cd Airsen-springboot-angular
-```
+cp .env.example .env.dev
 
-### 2. Configure Environment
+# 2. Edit .env.dev with your credentials (DB_PASSWORD, JWT_SECRET, ATMO credentials, etc.)
+# See .env.example for complete configuration
 
-Copy `.env.example` to `.env.dev` and configure:
+# 3. Start application
+make dev                    # Full stack (backend + frontend)
+# OR
+make dev-backend           # Backend only (port 8080)
+docker-compose -f docker-compose.yml --env-file .env.dev --profile full-stack up -d
 
-```env
-# Database
-DB_HOST=mariadb
-DB_NAME=airsen_dev
-DB_USERNAME=airsen_dev
-DB_PASSWORD=dev_password
-
-# Redis
-REDIS_HOST=redis
-
-# JWT Secret (generate with: openssl rand -base64 32)
-JWT_SECRET=your-base64-encoded-secret-32-characters-minimum
-
-# External APIs
-ATMO_USERNAME=your_atmo_username
-ATMO_PASSWORD=your_atmo_password
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_gmail_app_password
-
-# Frontend
-API_BASE_URL=http://localhost:8080/api/v1
-```
-
-See `.env.example` for complete configuration options.
-
-### 3. Start Application
-
-**Backend Only** (API + Database):
-```bash
-docker-compose --env-file .env.dev --profile backend up -d
-```
-
-**Full Stack** (Backend + Frontend):
-```bash
-docker-compose --env-file .env.dev --profile full-stack up -d
-```
-
-**Production** (with Nginx reverse proxy):
-```bash
-docker-compose --env-file .env.prod --profile prod up -d
-```
-
-### 4. Verify Installation
-
-```bash
-# Check services status
-docker-compose ps
-
-# Test backend health
+# 4. Verify
 curl http://localhost:8080/actuator/health
-
-# Access Swagger UI (API documentation)
-open http://localhost:8080/api/v1/swagger-ui.html
-
-# Access frontend (if full-stack profile)
-open http://localhost:4200
+open http://localhost:4200  # Frontend
+open http://localhost:8080/api/v1/swagger-ui.html  # API docs
 ```
 
 ## Development Commands
 
 ### Backend (Spring Boot)
-
 ```bash
 cd airsen-backend
-
-# Run tests with coverage
-mvn test jacoco:report
-open target/site/jacoco/index.html
-
-# Run single test
-mvn test -Dtest=CommuneServiceTest
-
-# Build JAR
-mvn clean package
-
-# Run locally (requires MariaDB + Redis)
-mvn spring-boot:run
+mvn test jacoco:report                          # Tests + coverage
+mvn test -Dtest=CommuneServiceTest              # Specific test
+mvn clean package                               # Build JAR
+mvn spring-boot:run                             # Run locally (requires DB + Redis)
 ```
 
 ### Frontend (Angular)
-
 ```bash
 cd airsen-frontend
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm start  # http://localhost:4200
-
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-open coverage/index.html
-
-# Build for production
-npm run build
+npm install && npm start                        # Dev server on :4200
+npm test && npm run test:coverage               # Tests + coverage
+npm run build                                   # Production build
 ```
 
-## Docker Compose Profiles
-
-| Profile | Services | Use Case |
-|---------|----------|----------|
-| **backend** | MariaDB + Redis + API | Backend development |
-| **full-stack** | All services | Full application |
-| **prod** | All + Nginx | Production deployment |
-| **dev** | + Redis Commander | Development with tools |
-
-## Essential Docker Commands
-
+### Docker Management
 ```bash
-# Start services
-docker-compose --env-file .env.dev --profile backend up -d
-
-# View logs
-docker-compose logs -f api
-
-# Stop services (keeps data)
-docker-compose stop
-
-# Stop and remove containers (keeps data)
-docker-compose down
-
-# Stop and remove everything including data (DELETES DATABASE!)
-docker-compose down -v
-
-# Restart specific service
-docker-compose restart api
-
-# Rebuild service
-docker-compose --env-file .env.dev --profile backend up --build -d api
-
-# Check resource usage
-docker stats
+make logs                   # All service logs
+make logs-backend           # Backend only
+make status                 # Container status
+make health                 # Service health
+make down                   # Stop services
+make rebuild                # Clean rebuild
 ```
 
-## Database & Cache Management
+## Database & Cache
 
-**MariaDB**:
+**MariaDB** (via Docker):
 ```bash
-# Access console
 docker-compose exec mariadb mariadb -u airsen_dev -pdev_password -D airsen_dev
-
-# Run query
-docker-compose exec mariadb mariadb -u airsen_dev -pdev_password -D airsen_dev \
-  -e "SELECT COUNT(*) FROM communes;"
-
-# Backup
-docker-compose exec mariadb mariadb-dump -u airsen_dev -pdev_password airsen_dev > backup.sql
-
-# Restore
-docker-compose exec -T mariadb mariadb -u airsen_dev -pdev_password airsen_dev < backup.sql
+SELECT COUNT(*) FROM communes;  # 35,000+ communes
 ```
 
-**Redis**:
+**Redis** (via Docker):
 ```bash
-# Access CLI
 docker-compose exec redis redis-cli
-
-# Check status
-docker-compose exec redis redis-cli PING
-
-# View cached keys
-docker-compose exec redis redis-cli KEYS "*"
-
-# Clear cache
-docker-compose exec redis redis-cli FLUSHALL
+KEYS "*"                    # View cached keys
+FLUSHALL                    # Clear cache
 ```
+
+## Key Architecture Patterns
+
+1. **Layered 3-Tier**: Controller → Service → Repository (one-way dependencies)
+2. **Admin-Controlled Notifications**: No user-configurable thresholds (spam prevention)
+3. **Circuit Breaker + Retry**: Resilience4j for ATMO/Open-Meteo APIs
+4. **Smart Caching**: Redis (1h TTL air quality/weather, 24h communes) + stale-cache serving (6h on failure)
+5. **Client-Side Exports**: PDFs/CSVs generated in browser for infinite scalability
+6. **Geodistance Fallback**: Automatic Haversine distance calculation for 20km radius
+7. **TestContainers**: Integration tests use real MariaDB + Redis (production-matching)
+
+## Security Model
+
+| Layer | Implementation |
+|-------|-----------------|
+| **HTTP** | HTTPS (prod), CORS validation |
+| **Authentication** | JWT HS512, 24h access + 7d refresh, blacklist logout |
+| **Authorization** | Role-based: VISITOR (read-only), USER (data + forum), ADMIN (management) |
+| **Data** | Parameterized queries, SQL injection protection |
+| **Password** | BCrypt strength 12 (~200-250ms per login) |
+| **GDPR** | Soft-delete (30-day grace), profile visibility controls |
+| **Audit** | AdminActionLog tracks privileged operations |
+
+## REST API Summary
+
+| Domain | Endpoints | Access |
+|--------|-----------|--------|
+| **Auth** | POST /auth/login, register, refresh, logout | Public |
+| **Communes** | GET /communes, /departments/{id}/communes | USER/ADMIN |
+| **Data** | GET /atmo/{id}/latest, /weather/{id}/current | USER/ADMIN |
+| **Favorites** | POST/DELETE /favorites, GET /favorites | USER |
+| **Forum** | GET /forum/*, POST/PUT/DELETE manage | GET: public, modify: USER |
+| **Admin** | GET /admin/statistics, POST /admin/notifications | ADMIN only |
+
+## Testing
+
+**Backend**: 80% coverage target (JaCoCo enforcement)
+```bash
+cd airsen-backend && mvn test jacoco:report
+open target/site/jacoco/index.html
+```
+
+**Frontend**: 80% coverage target
+```bash
+cd airsen-frontend && npm run test:coverage
+open coverage/index.html
+```
+
+## CI/CD Pipeline
+
+GitHub Actions (`.github/workflows/`) runs:
+1. Backend: Maven test + JaCoCo (80% coverage)
+2. Frontend: npm test + Karma (80% coverage)
+3. Linting & security scan
+4. Docker multi-stage build
+5. Deploy to Railway (prod only)
 
 ## Key URLs
 
 | Service | URL |
 |---------|-----|
-| Backend API | http://localhost:8080/api/v1 |
-| Swagger UI | http://localhost:8080/api/v1/swagger-ui.html |
-| Health Check | http://localhost:8080/actuator/health |
-| Frontend | http://localhost:4200 |
-| Redis Commander | http://localhost:8082 (dev profile) |
-
-## Testing
-
-**Backend**:
-- Unit Tests: JUnit 5 + Mockito
-- Integration Tests: TestContainers (MariaDB + Redis)
-- Coverage Target: 80% (enforced by JaCoCo)
-
-**Frontend**:
-- Unit Tests: Jasmine + Karma
-- E2E Tests: Cypress
-- Coverage Target: 80%
-
-**Run All Tests**:
-```bash
-# Backend
-cd airsen-backend && mvn test
-
-# Frontend
-cd airsen-frontend && npm test
-```
+| **Backend API** | http://localhost:8080/api/v1 |
+| **Swagger UI** | http://localhost:8080/api/v1/swagger-ui.html |
+| **Health** | http://localhost:8080/actuator/health |
+| **Frontend** | http://localhost:4200 |
+| **Redis Commander** | http://localhost:8082 (dev profile) |
 
 ## Troubleshooting
 
-**Container Won't Start**:
+**Port Conflicts**: Check `lsof -i :8080` and adjust BACKEND_PORT in .env.dev
+
+**Database Connection**:
 ```bash
-docker-compose logs api
-docker-compose ps
-docker stats
+docker-compose exec mariadb mariadb -u airsen_dev -pdev_password -e "SELECT 'Connected!' as status;"
 ```
 
-**Port Conflicts**:
-```bash
-# Check port usage
-lsof -i :8080
-
-# Change port in .env.dev
-BACKEND_PORT=8081
-```
-
-**Database Issues**:
-```bash
-# Test connection
-docker-compose exec mariadb mariadb -u airsen_dev -pdev_password \
-  -e "SELECT 'Connected!' as status;"
-
-# Reset database (WARNING: deletes all data)
-docker-compose down -v
-docker-compose --env-file .env.dev --profile backend up -d
-```
-
-**Clean Everything**:
+**Clean Start** (WARNING: deletes all data):
 ```bash
 docker-compose down -v
-docker system prune -a --volumes
-docker-compose --env-file .env.dev --profile backend build --no-cache
+docker-compose --env-file .env.dev --profile full-stack up -d
 ```
-
-## CI/CD Pipeline
-
-**GitHub Actions** (`.github/workflows/ci-cd.yml`):
-1. Build & test backend (Maven + JaCoCo)
-2. Build & test frontend (npm + Karma)
-3. Lint & security scan
-4. Docker build (multi-stage)
-5. Deploy (production only)
-
-**Coverage Requirements**: 80% for backend and frontend (enforced in CI)
-
-## Key Architectural Decisions
-
-1. **Admin-Controlled Notifications**: Users receive notifications only when admins approve broadcasts (NO user-configurable thresholds)
-2. **Client-Side Exports**: PDFs and CSVs generated in browser (zero server load, infinite scalability)
-3. **Geodistance Fallback**: 20km threshold for communes without direct monitoring data (Haversine distance)
-4. **Commune-Centric Geography**: Frontend loads all communes once, filters client-side (optimized for map)
-5. **TestContainers**: Integration tests use real MariaDB + Redis (production-matching)
-
 
 ## License
 
@@ -308,4 +185,4 @@ MIT License
 
 ---
 
-**Built with ❤️ for French citizens**
+**Airsen**: Delivering environmental data to French citizens with ❤️
