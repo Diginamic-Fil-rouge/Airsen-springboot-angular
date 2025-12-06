@@ -23,7 +23,6 @@
           </div>
         </mat-card>
       </div>
-
       <app-leaflet-map *ngIf="!(isLoading$ | async) && !(error$ | async)" [communes]="communes"
         [selectedCommune]="selectedCommune" (communeClicked)="onCommuneClicked($event)"
         (zoomChanged)="onMapZoomChanged($event)"></app-leaflet-map>

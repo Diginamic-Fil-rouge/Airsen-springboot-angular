@@ -7,7 +7,7 @@ import { AuthService } from "@/auth/services/auth.service";
 import { AuthUser } from "@/auth/models/auth.model";
 import { AlertService } from "@/core/services/alert.service";
 import { FavoriteService } from "@/features/favorites/services/favorite.service";
-import { AirQualityService, AirQualityResponse } from "@/app/features/m/services/air-quality.service";
+import { AirQualityService, AirQualityResponse } from "@/features/map/services/air-quality.service";
 import { WeatherService } from "@/core/services/weather.service";
 import { ThreadService } from "@/features/forum/services/thread.service";
 import { Thread } from "@/features/forum/models/thread.model";

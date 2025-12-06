@@ -30,7 +30,7 @@ const routes: Routes = [
   },
   {
     path: "map",
-    loadChildren: () => import("./features/m/map.module").then((m) => m.MapModule),
+    loadChildren: () => import("./features/map/map.module").then((m) => m.MapModule),
   },
   {
     path: "auth",
