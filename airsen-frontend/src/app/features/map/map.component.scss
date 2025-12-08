@@ -62,13 +62,51 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: $airsen-white;
+        background: linear-gradient(135deg, $airsen-gray-50 0%, $airsen-white 100%);
         z-index: $z-index-modal;
+        animation: fade-in $duration-normal $ease-out;
+
+        mat-spinner {
+            animation: spinner-grow 1s $ease-out;
+        }
 
         p {
-            margin-top: $space-4;
-            font-size: $font-size-base;
-            color: $airsen-gray-500;
+            margin-top: $space-6;
+            font-size: $font-size-lg;
+            color: $airsen-gray-600;
+            font-weight: $font-weight-medium;
+            animation: text-fade-in $duration-slow $ease-out $duration-fast;
+        }
+    }
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes spinner-grow {
+        from {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes text-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 
@@ -82,25 +120,57 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: $airsen-gray-50;
+        background: linear-gradient(135deg, rgba(244, 67, 54, 0.02) 0%, $airsen-gray-50 100%);
         z-index: $z-index-modal;
+        animation: fade-in $duration-normal $ease-out;
 
         .error-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: $space-8;
+            padding: $space-10;
             max-width: 500px;
             text-align: center;
-            box-shadow: $shadow-lg;
+            box-shadow: $shadow-xl;
+            border-radius: $radius-xl;
+            border: 1px solid rgba(244, 67, 54, 0.1);
+            animation: error-bounce 0.5s $ease-out $duration-fast;
 
             .error-icon {
-                font-size: 64px;
-                width: 64px;
-                height: 64px;
+                font-size: 72px;
+                width: 72px;
+                height: 72px;
                 color: $airsen-error;
-                margin-bottom: $space-4;
+                margin-bottom: $space-5;
+                animation: icon-shake 0.5s $ease-out;
+                filter: drop-shadow(0 4px 8px rgba(244, 67, 54, 0.2));
+            }
+
+            @keyframes icon-shake {
+                0%, 100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-8px);
+                }
+                75% {
+                    transform: translateX(8px);
+                }
+            }
+
+            @keyframes error-bounce {
+                0% {
+                    transform: scale(0.9);
+                    opacity: 0;
+                }
+                50% {
+                    transform: scale(1.02);
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
             }
 
             h2 {
@@ -173,17 +243,54 @@
         bottom: $space-6;
         right: $space-6;
         z-index: calc(#{$z-index-modal} - 1);
-        box-shadow: $shadow-lg;
+        box-shadow: $shadow-xl;
+        transition: all $duration-normal $ease-out;
+        animation: fab-pulse 2s ease-in-out infinite;
 
-        // Adjust position for larger screens
+        &:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(76, 175, 80, 0.4);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+
+        mat-icon {
+            transition: transform $duration-normal $ease-out;
+        }
+
+        &:hover mat-icon {
+            transform: rotate(15deg);
+        }
+
+        @media (pointer: coarse) {
+            width: 64px;
+            height: 64px;
+
+            mat-icon {
+                font-size: 28px;
+                width: 28px;
+                height: 28px;
+            }
+        }
+
         @include breakpoint(md) {
             bottom: $space-8;
             right: $space-8;
         }
 
-        // Hide on desktop when sidebar is visible
         @include breakpoint(lg) {
             display: none;
+        }
+    }
+
+    @keyframes fab-pulse {
+        0%, 100% {
+            box-shadow: $shadow-xl;
+        }
+        50% {
+            box-shadow: 0 12px 32px rgba(76, 175, 80, 0.3);
         }
     }
 

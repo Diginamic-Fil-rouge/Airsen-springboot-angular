@@ -1,10 +1,11 @@
 <div class="search-bar-container">
   <!-- Search Input -->
+  <!-- Static fallback: Shows placeholder "Rechercher une commune..." when empty -->
   <div class="search-card">
     <mat-form-field appearance="outline" class="search-field">
       <mat-icon matPrefix class="search-icon">search</mat-icon>
 
-      <input type="text" matInput [formControl]="searchControl" [placeholder]="placeholder"
+      <input type="text" matInput [formControl]="searchControl" [placeholder]="placeholder || 'Rechercher une commune...'"
         aria-label="Recherche de communes françaises" />
 
       <button mat-icon-button matSuffix type="button" class="action-btn" *ngIf="searchControl.value"
@@ -13,6 +14,20 @@
       </button>
     </mat-form-field>
   </div>
+
+  <!--
+  Static data example for demo:
+  When typing "Paris", the search would show results like:
+  - Paris (75) - AQI: 2 (Bon) - Green badge
+  - Paris 12e Arrondissement (75) - AQI: 2 (Bon)
+  - Paris 18e Arrondissement (75) - AQI: 3 (Moyen)
+
+  Search supports:
+  - City names (Paris, Lyon, Marseille)
+  - Department codes (75, 69, 13)
+  - Partial matches (Par → Paris, Pari → Paris)
+  - Case-insensitive matching
+  -->
 
   <!-- Results Dropdown -->
   <ng-container *ngIf="filteredCommunes$ | async as communes">

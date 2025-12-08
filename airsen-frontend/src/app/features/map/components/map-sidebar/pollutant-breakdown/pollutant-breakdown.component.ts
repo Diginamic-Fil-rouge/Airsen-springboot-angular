@@ -121,56 +121,59 @@ export class PollutantBreakdownComponent implements OnChanges, AfterViewInit, On
   }
 
   private buildPollutantList(): void {
+    // Static fallback data for demo when no real data is available
+    // Paris example: Good air quality (values below thresholds)
     const pollutants = this.pollutants || {};
+    const useFallback = !this.pollutants;
 
     this.pollutantConfig = [
       {
         name: "PM2.5",
-        value: pollutants.pm25 ?? null,
+        value: pollutants.pm25 ?? (useFallback ? 12.5 : null),
         unit: "μg/m³",
         threshold: 25,
         dangerLevel: 50,
-        color: this.getColorForValue(pollutants.pm25, 25, 50),
+        color: this.getColorForValue(pollutants.pm25 ?? (useFallback ? 12.5 : undefined), 25, 50),
         icon: "grain",
         description: "Particules fines - Sources: combustion, trafic routier",
       },
       {
         name: "PM10",
-        value: pollutants.pm10 ?? null,
+        value: pollutants.pm10 ?? (useFallback ? 18.3 : null),
         unit: "μg/m³",
         threshold: 50,
         dangerLevel: 100,
-        color: this.getColorForValue(pollutants.pm10, 50, 100),
+        color: this.getColorForValue(pollutants.pm10 ?? (useFallback ? 18.3 : undefined), 50, 100),
         icon: "blur_on",
         description: "Particules grossières - Sources: poussières, construction",
       },
       {
         name: "SO₂",
-        value: pollutants.so2 ?? null,
+        value: pollutants.so2 ?? (useFallback ? 5.2 : null),
         unit: "μg/m³",
         threshold: 20,
         dangerLevel: 40,
-        color: this.getColorForValue(pollutants.so2, 20, 40),
+        color: this.getColorForValue(pollutants.so2 ?? (useFallback ? 5.2 : undefined), 20, 40),
         icon: "factory",
         description: "Dioxyde de soufre - Source: industrie, chauffage",
       },
       {
         name: "NO₂",
-        value: pollutants.no2 ?? null,
+        value: pollutants.no2 ?? (useFallback ? 15.8 : null),
         unit: "μg/m³",
         threshold: 25,
         dangerLevel: 50,
-        color: this.getColorForValue(pollutants.no2, 25, 50),
+        color: this.getColorForValue(pollutants.no2 ?? (useFallback ? 15.8 : undefined), 25, 50),
         icon: "directions_car",
         description: "Dioxyde d'azote - Source: trafic routier",
       },
       {
         name: "O₃",
-        value: pollutants.o3 ?? null,
+        value: pollutants.o3 ?? (useFallback ? 45.6 : null),
         unit: "μg/m³",
         threshold: 100,
         dangerLevel: 200,
-        color: this.getColorForValue(pollutants.o3, 100, 200),
+        color: this.getColorForValue(pollutants.o3 ?? (useFallback ? 45.6 : undefined), 100, 200),
         icon: "wb_sunny",
         description: "Ozone - Formé par réaction solaire avec polluants",
       },

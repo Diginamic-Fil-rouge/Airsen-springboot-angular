@@ -124,14 +124,15 @@
       right: 0;
       bottom: 0;
       height: auto;
-      max-height: 80vh; // Reduced from 85vh to ensure footer stays visible
+      max-height: 80vh;
       width: 100%;
       z-index: $z-index-modal;
       transform: translateY(100%);
-      transition: transform $duration-normal $ease-in-out;
+      transition: transform $duration-slow cubic-bezier(0.4, 0, 0.2, 1);
 
       &.open {
         transform: translateY(0);
+        animation: sidebar-slide-up $duration-slow cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .map-sidebar__card {
@@ -151,8 +152,41 @@
       }
 
       .empty-state {
-        min-height: 150px; // Further reduced for mobile
+        min-height: 150px;
       }
+
+      .map-sidebar__card {
+        border-radius: $radius-xl $radius-xl 0 0;
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: $space-2;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 48px;
+          height: 4px;
+          background: $airsen-gray-300;
+          border-radius: $radius-full;
+          transition: background $duration-fast $ease-out;
+        }
+
+        &:active::before {
+          background: $airsen-gray-400;
+        }
+      }
+    }
+  }
+
+  @keyframes sidebar-slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0.8;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 }

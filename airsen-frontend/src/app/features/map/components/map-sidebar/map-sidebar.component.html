@@ -43,6 +43,14 @@
         <mat-icon fontIcon="map"></mat-icon>
         <h3>Aucune commune sélectionnée</h3>
         <p>Sélectionnez un marqueur sur la carte pour afficher les données détaillées.</p>
+        <!--
+        Static data example for demo:
+        When real data is unavailable, components will show fallback data:
+        - Location: Paris (Dept. 75, Région 11, 2.1M habitants)
+        - AQI: Level 2 (Bon) with green color (#4CAF50)
+        - Pollutants: PM2.5: 12.5, PM10: 18.3, SO₂: 5.2, NO₂: 15.8, O₃: 45.6 μg/m³
+        All values are below thresholds (Good air quality)
+        -->
       </section>
     </ng-template>
   </mat-card>

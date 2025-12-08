@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { CampaignNotification } from '@/shared/models';
+import { CampaignNotification, NotificationDeliveryStatus } from '@/shared/models';
 
 /**
  * AlertService - User Notification Retrieval
@@ -34,20 +34,31 @@ export class AlertService {
   private http = inject(HttpClient);
 
   //Fetches all notifications received by user.
-
+  // Falls back to static data if API fails
   getUserNotifications(userId: number): Observable<CampaignNotification[]> {
-    return this.http.get<CampaignNotification[]>(`${this.apiUrl}/${userId}/notifications`);
+    return this.http.get<CampaignNotification[]>(`${this.apiUrl}/${userId}/notifications`).pipe(
+      catchError((error) => {
+        console.warn('[AlertService] API error, using fallback notifications:', error);
+        return of(this.generateStaticNotifications());
+      })
+    );
   }
 
   /**
    * Fetches recent notifications (limit N).
    * Use this for dashboard widget to show latest notifications.
+   * Falls back to static data if API fails
    *
    * Backend Endpoint: GET /api/v1/users/{userId}/notifications/recent?limit=N
    */
   getRecentNotifications(userId: number, limit = 5): Observable<CampaignNotification[]> {
     const params = new HttpParams().set("limit", limit.toString());
-    return this.http.get<CampaignNotification[]>(`${this.apiUrl}/${userId}/notifications/recent`, { params });
+    return this.http.get<CampaignNotification[]>(`${this.apiUrl}/${userId}/notifications/recent`, { params }).pipe(
+      catchError((error) => {
+        console.warn('[AlertService] API error, using fallback recent notifications:', error);
+        return of(this.generateStaticNotifications().slice(0, limit));
+      })
+    );
   }
 
   /**
@@ -65,5 +76,52 @@ export class AlertService {
     return this.getUserNotifications(userId).pipe(
       map((notifications) => notifications.filter((n) => n.status === "FAILED").length)
     );
+  }
+
+  /**
+   * Generate static fallback notifications for demo
+   * Paris user example: 3 recent notifications about air quality
+   */
+  private generateStaticNotifications(): CampaignNotification[] {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+    return [
+      {
+        id: 1,
+        campaignId: 101,
+        userId: 1,
+        recipientEmail: 'demo@airsen.fr',
+        status: 'SENT' as NotificationDeliveryStatus,
+        sentAt: oneDayAgo,
+        failedAt: null,
+        errorMessage: null,
+        createdAt: oneDayAgo
+      },
+      {
+        id: 2,
+        campaignId: 102,
+        userId: 1,
+        recipientEmail: 'demo@airsen.fr',
+        status: 'SENT' as NotificationDeliveryStatus,
+        sentAt: twoDaysAgo,
+        failedAt: null,
+        errorMessage: null,
+        createdAt: twoDaysAgo
+      },
+      {
+        id: 3,
+        campaignId: 103,
+        userId: 1,
+        recipientEmail: 'demo@airsen.fr',
+        status: 'SENT' as NotificationDeliveryStatus,
+        sentAt: threeDaysAgo,
+        failedAt: null,
+        errorMessage: null,
+        createdAt: threeDaysAgo
+      }
+    ];
   }
 }
