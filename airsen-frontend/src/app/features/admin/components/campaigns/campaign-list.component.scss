@@ -1,0 +1,288 @@
+@use 'styles/design-system' as *;
+
+.campaigns-container {
+  padding: $space-6;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .page-header {
+    margin-bottom: $space-6;
+
+    h1 {
+      font-size: $font-size-3xl;
+      font-weight: $font-weight-bold;
+      color: $airsen-gray-900;
+      margin: 0 0 $space-2;
+    }
+
+    .subtitle {
+      font-size: $font-size-lg;
+      color: $airsen-gray-600;
+      margin: 0;
+    }
+  }
+
+  .loading-state,
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $space-12;
+    text-align: center;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: $space-4;
+    }
+
+    p {
+      font-size: $font-size-lg;
+      color: $airsen-gray-600;
+      margin-bottom: $space-4;
+    }
+  }
+
+  .error-state mat-icon {
+    color: $airsen-error;
+  }
+
+  .campaigns-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+
+    .campaign-card {
+      transition: transform $duration-fast $ease-in-out, box-shadow $duration-fast $ease-in-out;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-xl;
+      }
+
+      .campaign-header-content {
+        width: 100%;
+
+        .campaign-title-section {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: $space-3;
+          flex-wrap: wrap;
+
+          h3 {
+            font-size: $font-size-xl;
+            font-weight: $font-weight-semibold;
+            color: $airsen-gray-900;
+            margin: 0;
+            flex: 1;
+          }
+
+          .status-badge {
+            display: flex;
+            align-items: center;
+            gap: $space-2;
+            padding: $space-2 $space-4;
+            border-radius: $radius-full;
+            color: $airsen-white;
+            font-weight: $font-weight-semibold;
+            font-size: $font-size-sm;
+
+            mat-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+            }
+          }
+        }
+      }
+
+      mat-card-content {
+        padding-top: $space-4;
+
+        .campaign-message {
+          margin-bottom: $space-4;
+          padding: $space-3;
+          background-color: $airsen-gray-50;
+          border-left: 3px solid $airsen-accent;
+          border-radius: $radius-md;
+
+          p {
+            font-size: $font-size-base;
+            color: $airsen-gray-800;
+            line-height: 1.6;
+            margin: 0;
+          }
+        }
+
+        .campaign-meta {
+          display: flex;
+          gap: $space-4;
+          margin-bottom: $space-4;
+          flex-wrap: wrap;
+
+          .meta-item {
+            display: flex;
+            align-items: center;
+            gap: $space-2;
+            font-size: $font-size-sm;
+            color: $airsen-gray-600;
+
+            mat-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+              color: $airsen-gray-500;
+            }
+          }
+        }
+
+        .campaign-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: $space-3;
+          margin-bottom: $space-4;
+
+          .stat-card {
+            display: flex;
+            align-items: center;
+            gap: $space-3;
+            padding: $space-3;
+            background-color: $airsen-gray-50;
+            border-radius: $radius-md;
+            border: 1px solid $airsen-gray-200;
+
+            mat-icon {
+              font-size: 32px;
+              width: 32px;
+              height: 32px;
+              color: $airsen-gray-500;
+            }
+
+            .stat-content {
+              display: flex;
+              flex-direction: column;
+
+              .stat-value {
+                font-size: $font-size-xl;
+                font-weight: $font-weight-bold;
+                color: $airsen-gray-900;
+              }
+
+              .stat-label {
+                font-size: $font-size-xs;
+                color: $airsen-gray-600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+            }
+
+            &.success {
+              mat-icon {
+                color: $airsen-success;
+              }
+            }
+
+            &.error {
+              mat-icon {
+                color: $airsen-error;
+              }
+
+              .stat-value {
+                color: $airsen-error;
+              }
+            }
+          }
+        }
+
+        .progress-section {
+          margin-top: $space-3;
+
+          .progress-text {
+            display: block;
+            margin-top: $space-2;
+            font-size: $font-size-sm;
+            color: $airsen-gray-600;
+            text-align: center;
+          }
+        }
+      }
+
+      mat-card-actions {
+        display: flex;
+        gap: $space-2;
+        padding: $space-3 $space-4;
+        border-top: 1px solid $airsen-gray-200;
+      }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: $space-12;
+      text-align: center;
+
+      mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: $airsen-gray-400;
+        margin-bottom: $space-4;
+      }
+
+      h3 {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-semibold;
+        color: $airsen-gray-900;
+        margin: 0 0 $space-2;
+      }
+
+      p {
+        font-size: $font-size-base;
+        color: $airsen-gray-600;
+        margin: 0;
+      }
+    }
+  }
+}
+
+@include respond-max(md) {
+  .campaigns-container {
+    padding: $space-4;
+
+    .page-header h1 {
+      font-size: $font-size-2xl;
+    }
+
+    .campaign-card {
+      .campaign-header-content .campaign-title-section {
+        flex-direction: column;
+        align-items: flex-start;
+
+        h3 {
+          font-size: $font-size-lg;
+        }
+
+        .status-badge {
+          align-self: flex-start;
+        }
+      }
+
+      .campaign-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    mat-card-actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

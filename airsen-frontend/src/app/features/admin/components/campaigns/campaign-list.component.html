@@ -1,0 +1,122 @@
+<div class="campaigns-container">
+  <div class="page-header">
+    <h1>Campagnes de Notifications</h1>
+    <p class="subtitle">Suivi des campagnes d'envoi d'alertes aux citoyens</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement des campagnes...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadCampaigns()">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Campaigns List -->
+  <div *ngIf="!loading && !error" class="campaigns-list">
+    <mat-card *ngFor="let campaign of campaigns" class="campaign-card">
+      <mat-card-header>
+        <div class="campaign-header-content">
+          <div class="campaign-title-section">
+            <h3>{{ campaign.title }}</h3>
+            <div class="status-badge" [style.background-color]="getStatusColor(campaign.status)">
+              <mat-icon>{{ getStatusIcon(campaign.status) }}</mat-icon>
+              <span>{{ getStatusLabel(campaign.status) }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="campaign-message">
+          <p>{{ campaign.message }}</p>
+        </div>
+
+        <div class="campaign-meta">
+          <div class="meta-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ getScopeLabel(campaign.scopeType, campaign.scopeId) }}</span>
+          </div>
+          <div class="meta-item">
+            <mat-icon>schedule</mat-icon>
+            <span>Créée: {{ formatDate(campaign.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="campaign-stats">
+          <div class="stat-card">
+            <mat-icon>people</mat-icon>
+            <div class="stat-content">
+              <span class="stat-value">{{ campaign.totalRecipients }}</span>
+              <span class="stat-label">Destinataires</span>
+            </div>
+          </div>
+
+          <div class="stat-card success">
+            <mat-icon>check_circle</mat-icon>
+            <div class="stat-content">
+              <span class="stat-value">{{ campaign.sentCount }}</span>
+              <span class="stat-label">Envoyés</span>
+            </div>
+          </div>
+
+          <div class="stat-card" [class.error]="campaign.failedCount > 0">
+            <mat-icon>{{ campaign.failedCount > 0 ? 'error' : 'remove_circle' }}</mat-icon>
+            <div class="stat-content">
+              <span class="stat-value">{{ campaign.failedCount }}</span>
+              <span class="stat-label">Échecs</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <mat-icon>analytics</mat-icon>
+            <div class="stat-content">
+              <span class="stat-value" [style.color]="getDeliveryRateColor(getDeliveryRate(campaign))">
+                {{ getDeliveryRate(campaign) }}%
+              </span>
+              <span class="stat-label">Taux de réussite</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar for SENDING status -->
+        <div *ngIf="campaign.status === 'SENDING'" class="progress-section">
+          <mat-progress-bar
+            mode="determinate"
+            [value]="getDeliveryRate(campaign)"
+            [color]="getDeliveryRate(campaign) >= 95 ? 'primary' : 'warn'">
+          </mat-progress-bar>
+          <span class="progress-text">
+            {{ campaign.sentCount }} / {{ campaign.totalRecipients }} envoyés
+          </span>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button color="primary">
+          <mat-icon>visibility</mat-icon>
+          Détails
+        </button>
+        <button mat-button *ngIf="campaign.status === 'COMPLETED'" color="accent">
+          <mat-icon>file_download</mat-icon>
+          Rapport
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Empty State -->
+    <div *ngIf="campaigns.length === 0" class="empty-state">
+      <mat-icon>campaign</mat-icon>
+      <h3>Aucune campagne</h3>
+      <p>Il n'y a actuellement aucune campagne de notification.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,304 @@
+@use 'styles/design-system' as *;
+
+.audit-container {
+  padding: $space-6;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .page-header {
+    margin-bottom: $space-6;
+
+    h1 {
+      font-size: $font-size-3xl;
+      font-weight: $font-weight-bold;
+      color: $airsen-gray-900;
+      margin: 0 0 $space-2;
+    }
+
+    .subtitle {
+      font-size: $font-size-lg;
+      color: $airsen-gray-600;
+      margin: 0;
+    }
+  }
+
+  .loading-state,
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $space-12;
+    text-align: center;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: $space-4;
+    }
+
+    p {
+      font-size: $font-size-lg;
+      color: $airsen-gray-600;
+      margin-bottom: $space-4;
+    }
+  }
+
+  .error-state mat-icon {
+    color: $airsen-error;
+  }
+
+  .audit-content {
+    .audit-timeline {
+      position: relative;
+      padding-left: $space-12;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 24px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: $airsen-gray-200;
+      }
+
+      .audit-log-item {
+        position: relative;
+        margin-bottom: $space-6;
+
+        .timeline-marker {
+          position: absolute;
+          left: -36px;
+          top: $space-4;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid $airsen-white;
+          box-shadow: $shadow-md;
+          z-index: 1;
+
+          mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+            color: $airsen-white;
+          }
+        }
+
+        .audit-log-card {
+          transition: transform $duration-fast $ease-in-out, box-shadow $duration-fast $ease-in-out;
+
+          &:hover {
+            transform: translateX(4px);
+            box-shadow: $shadow-xl;
+          }
+
+          .log-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: $space-3;
+            flex-wrap: wrap;
+
+            .action-info {
+              display: flex;
+              align-items: center;
+              gap: $space-3;
+              flex: 1;
+
+              .action-badge {
+                padding: $space-2 $space-3;
+                border-radius: $radius-md;
+                color: $airsen-white;
+                font-weight: $font-weight-semibold;
+                font-size: $font-size-sm;
+                white-space: nowrap;
+              }
+
+              .admin-info {
+                display: flex;
+                align-items: center;
+                gap: $space-1;
+                font-size: $font-size-sm;
+                color: $airsen-gray-600;
+
+                mat-icon {
+                  font-size: 16px;
+                  width: 16px;
+                  height: 16px;
+                }
+              }
+            }
+
+            .timestamp {
+              font-size: $font-size-sm;
+              color: $airsen-gray-500;
+              font-weight: $font-weight-medium;
+              white-space: nowrap;
+            }
+          }
+
+          mat-card-content {
+            padding-top: $space-3;
+
+            .action-details {
+              font-size: $font-size-base;
+              color: $airsen-gray-800;
+              line-height: 1.6;
+              margin: 0 0 $space-3;
+            }
+
+            .log-meta {
+              display: flex;
+              gap: $space-4;
+              flex-wrap: wrap;
+
+              .meta-item {
+                display: flex;
+                align-items: center;
+                gap: $space-1;
+                font-size: $font-size-xs;
+                color: $airsen-gray-500;
+                padding: $space-1 $space-2;
+                background-color: $airsen-gray-50;
+                border-radius: $radius-sm;
+
+                mat-icon {
+                  font-size: 14px;
+                  width: 14px;
+                  height: 14px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .pagination-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $space-2;
+      margin-top: $space-6;
+      padding: $space-4;
+      background-color: $airsen-gray-50;
+      border-radius: $radius-lg;
+      flex-wrap: wrap;
+
+      button {
+        &.active {
+          background-color: $airsen-primary;
+          color: $airsen-white;
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      }
+
+      .pagination-info {
+        margin-left: $space-4;
+        font-size: $font-size-sm;
+        color: $airsen-gray-600;
+      }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: $space-12;
+      text-align: center;
+
+      mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: $airsen-gray-400;
+        margin-bottom: $space-4;
+      }
+
+      h3 {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-semibold;
+        color: $airsen-gray-900;
+        margin: 0 0 $space-2;
+      }
+
+      p {
+        font-size: $font-size-base;
+        color: $airsen-gray-600;
+        margin: 0;
+      }
+    }
+  }
+}
+
+@include respond-max(md) {
+  .audit-container {
+    padding: $space-4;
+
+    .page-header h1 {
+      font-size: $font-size-2xl;
+    }
+
+    .audit-content {
+      .audit-timeline {
+        padding-left: $space-8;
+
+        &::before {
+          left: 16px;
+        }
+
+        .audit-log-item {
+          .timeline-marker {
+            left: -24px;
+            width: 40px;
+            height: 40px;
+
+            mat-icon {
+              font-size: 20px;
+              width: 20px;
+              height: 20px;
+            }
+          }
+
+          .audit-log-card {
+            .log-header-content {
+              flex-direction: column;
+              align-items: flex-start;
+
+              .action-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: $space-2;
+              }
+
+              .timestamp {
+                align-self: flex-start;
+              }
+            }
+          }
+        }
+      }
+
+      .pagination-container {
+        flex-direction: column;
+        gap: $space-3;
+
+        .pagination-info {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}

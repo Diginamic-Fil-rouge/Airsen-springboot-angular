@@ -1,0 +1,85 @@
+<div class="alerts-container">
+  <div class="page-header">
+    <h1>Signaux d'Alerte</h1>
+    <p class="subtitle">Gestion des alertes environnementales détectées</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement des signaux d'alerte...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadAlerts()">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Alerts List -->
+  <div *ngIf="!loading && !error" class="alerts-list">
+    <mat-card *ngFor="let alert of alerts" class="alert-card">
+      <mat-card-header>
+        <div class="alert-header-content">
+          <div class="alert-badge" [style.background-color]="getLevelColor(alert.level)">
+            <mat-icon>{{ alert.level === 'ALERT' ? 'warning' : alert.level === 'WATCH' ? 'visibility' : 'info' }}</mat-icon>
+            <span>{{ getLevelLabel(alert.level) }}</span>
+          </div>
+          <div class="alert-meta">
+            <span class="source-tag">
+              <mat-icon>{{ alert.source === 'ATMO' ? 'air' : 'wb_sunny' }}</mat-icon>
+              {{ getSourceLabel(alert.source) }}
+            </span>
+            <span class="kind-tag">{{ getKindLabel(alert.kind) }}</span>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="alert-description">
+          <p>{{ alert.description }}</p>
+        </div>
+
+        <div class="alert-details">
+          <div class="detail-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ getScopeLabel(alert.scopeType, alert.scopeId) }}</span>
+          </div>
+          <div class="detail-item">
+            <mat-icon>schedule</mat-icon>
+            <span>Détecté: {{ formatDate(alert.detectedAt) }}</span>
+          </div>
+          <div class="detail-item">
+            <mat-icon>event</mat-icon>
+            <span>Validité: {{ formatDate(alert.validFrom) }}
+              <ng-container *ngIf="alert.validTo"> - {{ formatDate(alert.validTo) }}</ng-container>
+              <ng-container *ngIf="!alert.validTo"> (durée indéterminée)</ng-container>
+            </span>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button color="primary">
+          <mat-icon>campaign</mat-icon>
+          Créer une campagne
+        </button>
+        <button mat-button color="warn" (click)="deleteAlert(alert.id)">
+          <mat-icon>delete</mat-icon>
+          Supprimer
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Empty State -->
+    <div *ngIf="alerts.length === 0" class="empty-state">
+      <mat-icon>check_circle</mat-icon>
+      <h3>Aucun signal d'alerte</h3>
+      <p>Il n'y a actuellement aucun signal d'alerte environnemental actif.</p>
+    </div>
+  </div>
+</div>

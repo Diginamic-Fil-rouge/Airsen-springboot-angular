@@ -1,0 +1,100 @@
+<div class="audit-container">
+  <div class="page-header">
+    <h1>Journal d'Audit</h1>
+    <p class="subtitle">Historique des actions administratives</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement des logs d'audit...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadAuditLogs()">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Audit Logs List -->
+  <div *ngIf="!loading && !error" class="audit-content">
+    <div class="audit-timeline">
+      <div *ngFor="let log of auditLogs" class="audit-log-item">
+        <div class="timeline-marker" [style.background-color]="getActionTypeColor(log.actionType)">
+          <mat-icon>{{ getActionTypeIcon(log.actionType) }}</mat-icon>
+        </div>
+
+        <mat-card class="audit-log-card">
+          <mat-card-header>
+            <div class="log-header-content">
+              <div class="action-info">
+                <span class="action-badge" [style.background-color]="getActionTypeColor(log.actionType)">
+                  {{ getActionTypeLabel(log.actionType) }}
+                </span>
+                <span class="admin-info">
+                  <mat-icon>person</mat-icon>
+                  {{ log.adminUserEmail }}
+                </span>
+              </div>
+              <span class="timestamp" [title]="formatDate(log.actionTimestamp)">
+                {{ formatRelativeTime(log.actionTimestamp) }}
+              </span>
+            </div>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p class="action-details">{{ log.actionDetails }}</p>
+
+            <div class="log-meta">
+              <div class="meta-item" *ngIf="log.targetResourceId">
+                <mat-icon>tag</mat-icon>
+                <span>Ressource ID: {{ log.targetResourceId }}</span>
+              </div>
+              <div class="meta-item" *ngIf="log.ipAddress">
+                <mat-icon>computer</mat-icon>
+                <span>IP: {{ log.ipAddress }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <button mat-icon-button
+              [disabled]="currentPage === 0"
+              (click)="onPageChange(currentPage - 1)">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+
+      <button mat-button
+              *ngFor="let page of getPaginationRange()"
+              [class.active]="page === currentPage"
+              (click)="onPageChange(page)">
+        {{ page + 1 }}
+      </button>
+
+      <button mat-icon-button
+              [disabled]="currentPage >= totalPages - 1"
+              (click)="onPageChange(currentPage + 1)">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+
+      <span class="pagination-info">
+        Page {{ currentPage + 1 }} sur {{ totalPages }} ({{ totalElements }} logs)
+      </span>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="auditLogs.length === 0" class="empty-state">
+      <mat-icon>history</mat-icon>
+      <h3>Aucun log d'audit</h3>
+      <p>Il n'y a actuellement aucun enregistrement d'audit.</p>
+    </div>
+  </div>
+</div>

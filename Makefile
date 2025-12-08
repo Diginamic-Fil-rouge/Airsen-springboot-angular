@@ -131,8 +131,8 @@ clean:
 rebuild:
 	@echo "Rebuilding development environment...";
 	docker-compose down -v
-	docker-compose --env-file .env.dev --profile full-stack --profile dev build --no-cache
-	docker-compose --env-file .env.dev --profile full-stack --profile dev up -d
+	docker-compose --env-file .env.dev --profile full-stack build --no-cache
+	docker-compose --env-file .env.dev --profile full-stack up -d
 	@echo "Rebuild completed!";
 
 # Show status of running containers
