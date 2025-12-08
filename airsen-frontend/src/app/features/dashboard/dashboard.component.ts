@@ -10,6 +10,8 @@ import { FavoriteService } from "@/features/favorites/services/favorite.service"
 import { AirQualityService, AirQualityResponse } from "@/features/map/services/air-quality.service";
 import { WeatherService } from "@/core/services/weather.service";
 import { ThreadService } from "@/features/forum/services/thread.service";
+import { UserProfileService } from "@/features/profile/services/user-profile.service";
+import { ExportService } from "@/core/services/export.service";
 import { Thread } from "@/features/forum/models/thread.model";
 import { WeatherData } from "@/shared/models/weather.model";
 import { CampaignNotification, NotificationDeliveryStatus } from "@/shared/models";
@@ -41,13 +43,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   quickActions: QuickActionCard[] = [];
   recentAlerts: AlertSummaryItem[] = [];
 
-  // Static fallback for demo: Shows realistic user activity when backend unavailable
+  // User stats - will be populated from backend API
   userStats: UserStatsSnapshot = {
-    favoriteIndicators: 5,    // Paris + 4 other cities
-    alertsReceived: 3,         // 3 recent notifications (from AlertService fallback)
-    lastExport: "Il y a 2 jours",  // Recent export activity
-    forumPosts: 8,            // Moderate forum participation
-    profileCompletion: 85,    // High but not complete profile
+    favoriteIndicators: 0,
+    alertsReceived: 0,
+    lastExport: "N/A",
+    forumPosts: 0,
+    profileCompletion: 0,
   };
 
   forumUnreadCount = 0;
@@ -67,6 +69,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private airQualityService: AirQualityService,
     private weatherService: WeatherService,
     private threadService: ThreadService,
+    private userProfileService: UserProfileService,
+    private exportService: ExportService,
     private router: Router
   ) {}
 
@@ -169,10 +173,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
         break;
       case "favorites":
-        this.router.navigate(["/favorites"]);
+        // For admin: redirect to /profile (Stats Système)
+        // For user: redirect to /favorites (Mes Favoris)
+        if (this.isAdmin) {
+          this.router.navigate(["/profile"]);
+        } else {
+          this.router.navigate(["/favorites"]);
+        }
         break;
       case "export":
-        this.router.navigate(["/profile"]);
+        this.router.navigate(["/export"]);
         break;
       default:
         break;
@@ -247,12 +257,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return of(null);
         })
       ),
+      profile: this.userProfileService.getProfile().pipe(
+        catchError((err) => {
+          console.error("Error loading user profile:", err);
+          return of(null);
+        })
+      ),
+      userThreads: this.threadService.getThreadsByAuthor(userId).pipe(
+        catchError((err) => {
+          console.error("Error loading user threads:", err);
+          return of([]);
+        })
+      ),
+      exportHistory: this.exportService.getExportHistory().pipe(
+        catchError((err) => {
+          console.error("Error loading export history:", err);
+          return of([]);
+        })
+      ),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ notifications, favorites, trending }) => {
+        next: ({ notifications, favorites, trending, profile, userThreads, exportHistory }) => {
           this.processNotifications(notifications);
           this.processFavorites(favorites);
+          this.processUserProfile(profile);
+          this.processForumPosts(userThreads);
+          this.processExportHistory(exportHistory);
           this.trendingThread = trending;
 
           // Fetch AQI and Weather for primary favorite
@@ -316,20 +347,124 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Extracts title from campaign notification.
-   * Backend may store campaign title or message content.
+   * Processes user profile and calculates profile completion.
    */
-  private extractTitleFromNotification(notification: CampaignNotification): string {
-    // Assuming campaignTitle exists in backend response (check actual API response)
-    return `Alerte Environnementale #${notification.campaignId}`;
+  private processUserProfile(profile: any): void {
+    if (profile) {
+      this.userStats.profileCompletion = this.userProfileService.calculateProfileCompletion(profile);
+    } else {
+      this.userStats.profileCompletion = 0;
+    }
   }
 
   /**
-   * Extracts location from notification (if available in backend).
-   * For now, returns generic message. Update when backend provides scope details.
+   * Counts forum posts (threads) created by the current user.
+   */
+  private processForumPosts(userThreads: Thread[]): void {
+    if (userThreads && Array.isArray(userThreads)) {
+      this.userStats.forumPosts = userThreads.length;
+    } else {
+      this.userStats.forumPosts = 0;
+    }
+  }
+
+  /**
+   * Processes export history and formats last export date.
+   */
+  private processExportHistory(exportHistory: any[]): void {
+    if (exportHistory && exportHistory.length > 0) {
+      // Sort by createdAt descending and get the most recent
+      const sortedHistory = [...exportHistory].sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      const lastExport = sortedHistory[0];
+
+      // Format relative time (e.g., "Il y a 2 jours")
+      this.userStats.lastExport = this.formatRelativeTime(lastExport.createdAt);
+    } else {
+      this.userStats.lastExport = "N/A";
+    }
+  }
+
+  /**
+   * Formats a date as relative time in French.
+   */
+  private formatRelativeTime(dateString: string | Date): string {
+    if (!dateString) {
+      return "N/A";
+    }
+
+    const date = new Date(dateString);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid date received: ${dateString}`);
+      return "N/A";
+    }
+
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+
+    // Handle future dates or invalid negative differences
+    if (diffInMs < 0) {
+      return "N/A";
+    }
+
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMinutes < 1) {
+      return "À l'instant";
+    } else if (diffInMinutes < 60) {
+      return `Il y a ${diffInMinutes} min`;
+    } else if (diffInHours < 24) {
+      return `Il y a ${diffInHours}h`;
+    } else if (diffInDays === 1) {
+      return "Hier";
+    } else if (diffInDays < 30) {
+      return `Il y a ${diffInDays} jours`;
+    } else if (diffInDays < 365) {
+      const months = Math.floor(diffInDays / 30);
+      return `Il y a ${months} mois`;
+    } else {
+      const years = Math.floor(diffInDays / 365);
+      return `Il y a ${years} an${years > 1 ? 's' : ''}`;
+    }
+  }
+
+  /**
+   * Extracts title from campaign notification.
+   * Creates user-friendly alert title based on notification status.
+   */
+  private extractTitleFromNotification(notification: CampaignNotification): string {
+    const statusText = this.getStatusText(notification.status);
+    return `Alerte qualité de l'air - ${statusText}`;
+  }
+
+  /**
+   * Gets French status text for notification.
+   */
+  private getStatusText(status: NotificationDeliveryStatus): string {
+    switch (status) {
+      case 'SENT':
+        return 'Envoyée';
+      case 'PENDING':
+        return 'En attente';
+      case 'FAILED':
+        return 'Échec d\'envoi';
+      default:
+        return 'Inconnue';
+    }
+  }
+
+  /**
+   * Extracts location/scope from notification.
+   * Shows when the alert was created as the location info.
    */
   private extractLocationFromNotification(notification: CampaignNotification): string {
-    return notification.recipientEmail; // Placeholder - backend may add scopeName field
+    // Format: "Reçue il y a X" showing when the alert was created
+    return this.formatRelativeTime(notification.createdAt);
   }
 
   /**

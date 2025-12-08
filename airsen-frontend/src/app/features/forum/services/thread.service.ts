@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { environment } from '@/environments/environment';
 import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { Thread } from '../models/thread.model';
 import { Page } from '../models/page.model';
 
@@ -36,5 +37,34 @@ export class ThreadService {
 
     deleteThread(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/${id}`);
+    }
+
+    /**
+     * Gets threads created by a specific user.
+     * If backend doesn't support authorId parameter, fetches all and filters client-side.
+     */
+    getThreadsByAuthor(authorId: number): Observable<Thread[]> {
+        // Try backend endpoint with authorId parameter
+        return this.http.get<Page>(`${this.apiUrl}`, {
+            params: {
+                authorId: authorId.toString(),
+                size: '1000' // Large size to get all user threads
+            }
+        }).pipe(
+            map((page: Page) => page.content || []),
+            catchError(() => {
+                // Fallback: fetch all threads and filter client-side
+                return this.getAllThreads().pipe(
+                    map((page: Page) => {
+                        if (page && page.content && Array.isArray(page.content)) {
+                            return page.content.filter(
+                                (thread: Thread) => thread.author && thread.author.id === authorId
+                            );
+                        }
+                        return [];
+                    })
+                );
+            })
+        );
     }
 }
