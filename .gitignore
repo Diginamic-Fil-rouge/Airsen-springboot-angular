@@ -337,3 +337,6 @@ certificates/
 # Database configuration files
 database.yml
 db-config.properties
+
+# Claude Code planning files
+plans/
