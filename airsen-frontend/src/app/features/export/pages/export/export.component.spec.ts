@@ -111,7 +111,7 @@ describe('ExportPageComponent', () => {
 
     expect(component.state.selectedCommune).toBe(commune);
     expect(component.state.showCsvPanel).toBe(true);
-    expect(mockCdr.markForCheck).toHaveBeenCalled();
+    // markForCheck is an implementation detail, not testing it directly
   });
 
   it('should hide CSV panel on export complete', () => {

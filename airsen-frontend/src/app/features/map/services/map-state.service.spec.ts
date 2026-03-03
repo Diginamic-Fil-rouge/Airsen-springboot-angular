@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { skip } from 'rxjs/operators';
 import { MapStateService, MapViewMode } from './map-state.service';
 import { CommuneWithAirQuality } from '@/shared/models/commune.model';
 
@@ -138,7 +139,7 @@ describe('MapStateService', () => {
       };
 
       let emissionCount = 0;
-      service.selectedCommune$.subscribe(() => {
+      service.selectedCommune$.pipe(skip(1)).subscribe(() => {
         emissionCount++;
       });
 
@@ -200,7 +201,7 @@ describe('MapStateService', () => {
       const center: [number, number] = [48.8566, 2.3522];
 
       let emissionCount = 0;
-      service.mapCenter$.subscribe(() => {
+      service.mapCenter$.pipe(skip(1)).subscribe(() => {
         emissionCount++;
       });
 
@@ -233,7 +234,7 @@ describe('MapStateService', () => {
 
     it('should not emit duplicate zoom values', (done) => {
       let emissionCount = 0;
-      service.zoomLevel$.subscribe(() => {
+      service.zoomLevel$.pipe(skip(1)).subscribe(() => {
         emissionCount++;
       });
 
@@ -318,7 +319,7 @@ describe('MapStateService', () => {
       const filter = { departments: ['75'] };
 
       let emissionCount = 0;
-      service.filter$.subscribe(() => {
+      service.filter$.pipe(skip(1)).subscribe(() => {
         emissionCount++;
       });
 

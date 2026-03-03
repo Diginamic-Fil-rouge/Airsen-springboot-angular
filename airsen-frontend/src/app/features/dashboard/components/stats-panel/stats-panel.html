@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div class="stats-grid">
+    <div class="stats-grid" *ngIf="stats">
       <div class="stat-item" *ngFor="let key of statKeys" [class.clickable]="isStatClickable(key)"
         (click)="onStatClick(key)">
 

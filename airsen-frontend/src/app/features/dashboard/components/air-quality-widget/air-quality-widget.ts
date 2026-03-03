@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, OnInit, OnDestroy } from "@angular/core";
 import { Subject, takeUntil, catchError, of } from "rxjs";
-import { AirQualityService } from "@/app/features/m/services/air-quality.service";
+import { AirQualityService } from "@/app/features/map/services/air-quality.service";
 
 export interface AirQualityData {
   aqi: number;

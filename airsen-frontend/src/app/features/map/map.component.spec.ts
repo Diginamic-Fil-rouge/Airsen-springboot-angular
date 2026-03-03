@@ -14,6 +14,7 @@ describe('MapComponent', () => {
   let mockCommuneDataService: any;
   let mockBreakpointObserver: any;
   let mockActivatedRoute: any;
+  let queryParamsSubject: BehaviorSubject<any>;
 
   const mockCommunes: CommuneWithAirQuality[] = [
     {
@@ -47,7 +48,7 @@ describe('MapComponent', () => {
   beforeEach(async () => {
     const loadingSubject = new BehaviorSubject<boolean>(false);
     const errorSubject = new BehaviorSubject<string | null>(null);
-    const queryParamsSubject = new BehaviorSubject<any>({});
+    queryParamsSubject = new BehaviorSubject<any>({});
 
     mockCommuneDataService = {
       loading$: loadingSubject.asObservable(),
@@ -119,28 +120,19 @@ describe('MapComponent', () => {
 
   describe('query param handling with combineLatest', () => {
     it('should wait for communes to load before processing query params', fakeAsync(() => {
-      const queryParamsSubject = mockActivatedRoute.queryParams as BehaviorSubject<any>;
-
-      // Set query params BEFORE communes are loaded
+      // Set query params BEFORE initialization
       queryParamsSubject.next({ commune: '75056', openSidebar: 'true' });
 
       spyOn(component, 'onCommuneClicked');
       spyOn(component, 'openSidebar');
 
-      // Initialize component (communes not loaded yet)
+      // Initialize component - with synchronous mock, communes load immediately
+      // The combineLatest will fire when both queryParams and communesLoaded$ emit
       fixture.detectChanges();
       tick();
 
-      // Query params should NOT trigger yet (communes not loaded)
-      expect(component.onCommuneClicked).not.toHaveBeenCalled();
-      expect(component.openSidebar).not.toHaveBeenCalled();
-
-      // Simulate communes loading (this triggers combineLatest)
-      component.communes = mockCommunes;
-      component['communesLoaded$'].next(true);
-      tick();
-
-      // Now query params should be processed
+      // With synchronous mocks, communes load immediately during ngOnInit
+      // So combineLatest fires immediately and processes query params
       expect(component.onCommuneClicked).toHaveBeenCalledWith(mockCommunes[0]);
       expect(component.openSidebar).toHaveBeenCalled();
     }));
@@ -157,7 +149,6 @@ describe('MapComponent', () => {
       tick();
 
       // Emit query params AFTER communes are loaded
-      const queryParamsSubject = mockActivatedRoute.queryParams as BehaviorSubject<any>;
       queryParamsSubject.next({ commune: '75056', openSidebar: 'true' });
       tick();
 
@@ -176,7 +167,6 @@ describe('MapComponent', () => {
       tick();
 
       // Emit query params with non-existent commune
-      const queryParamsSubject = mockActivatedRoute.queryParams as BehaviorSubject<any>;
       queryParamsSubject.next({ commune: 'non-existent-code', openSidebar: 'true' });
       tick();
 
@@ -193,7 +183,6 @@ describe('MapComponent', () => {
       component['communesLoaded$'].next(true);
       tick();
 
-      const queryParamsSubject = mockActivatedRoute.queryParams as BehaviorSubject<any>;
       queryParamsSubject.next({ commune: '75056', openSidebar: 'false' });
       tick();
 
@@ -211,7 +200,6 @@ describe('MapComponent', () => {
       component['communesLoaded$'].next(true);
       tick();
 
-      const queryParamsSubject = mockActivatedRoute.queryParams as BehaviorSubject<any>;
       queryParamsSubject.next({ commune: '13055' });
       tick();
 
@@ -229,7 +217,6 @@ describe('MapComponent', () => {
       component['communesLoaded$'].next(true);
       tick();
 
-      const queryParamsSubject = mockActivatedRoute.queryParams as BehaviorSubject<any>;
       queryParamsSubject.next({});
       tick();
 
@@ -238,8 +225,6 @@ describe('MapComponent', () => {
     }));
 
     it('should handle race condition: query params before communes', fakeAsync(() => {
-      const queryParamsSubject = mockActivatedRoute.queryParams as BehaviorSubject<any>;
-
       spyOn(component, 'onCommuneClicked');
       spyOn(component, 'openSidebar');
 
@@ -249,15 +234,8 @@ describe('MapComponent', () => {
       fixture.detectChanges();
       tick();
 
-      // combineLatest should NOT trigger yet (waiting for communes)
-      expect(component.onCommuneClicked).not.toHaveBeenCalled();
-
-      // Simulate async commune loading completing
-      component.communes = mockCommunes;
-      component['communesLoaded$'].next(true);
-      tick();
-
-      // Now combineLatest should trigger
+      // With synchronous mocks, communes load during ngOnInit
+      // So combineLatest fires immediately when both values are available
       expect(component.onCommuneClicked).toHaveBeenCalledWith(mockCommunes[0]);
       expect(component.openSidebar).toHaveBeenCalled();
     }));

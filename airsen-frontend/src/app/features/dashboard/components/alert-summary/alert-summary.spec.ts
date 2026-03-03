@@ -40,7 +40,8 @@ describe('AlertSummaryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AlertSummaryComponent, MatIconModule]
+      declarations: [AlertSummaryComponent],
+      imports: [MatIconModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AlertSummaryComponent);
@@ -139,12 +140,16 @@ describe('AlertSummaryComponent', () => {
 
     let alertElements = fixture.debugElement.queryAll(By.css('.alert-item'));
     expect(alertElements.length).toBe(2); // Should show only first 2 items
+    expect(component.currentPage).toBe(1);
+    expect(component.totalPages).toBe(2);
 
     // Test next page
     component.nextPage();
     fixture.detectChanges();
 
+    expect(component.currentPage).toBe(2);
     alertElements = fixture.debugElement.queryAll(By.css('.alert-item'));
+    // With 3 items and 2 per page: page 1 shows items 0-1, page 2 shows item 2
     expect(alertElements.length).toBe(1); // Should show only the last item
   });
 

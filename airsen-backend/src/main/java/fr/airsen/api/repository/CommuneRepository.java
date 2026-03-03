@@ -36,9 +36,9 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      * @return optional commune with department and region loaded
      */
     @Query("SELECT c FROM Commune c " +
-           "LEFT JOIN FETCH c.department d " +
-           "LEFT JOIN FETCH d.region r " +
-           "WHERE c.inseeCode = :inseeCode")
+        "LEFT JOIN FETCH c.department d " +
+        "LEFT JOIN FETCH d.region r " +
+        "WHERE c.inseeCode = :inseeCode")
     Optional<Commune> findByInseeCodeWithEagerLoading(@Param("inseeCode") String inseeCode);
 
     /**
@@ -78,15 +78,15 @@ public interface CommuneRepository extends JpaRepository<Commune, Long> {
      * @return list of object arrays: [Commune, atmoIndex, qualifier, color]
      */
     @Query("SELECT c, aq.atmIndex, aq.atmoQual, aq.atmoColor " +
-           "FROM Commune c " +
-           "LEFT JOIN c.airQuality aq " +
-           "WHERE c.department.id = :departmentId " +
-           "AND (aq.measurementDate = (" +
-           "    SELECT MAX(aq2.measurementDate) " +
-           "    FROM AirQuality aq2 " +
-           "    WHERE aq2.commune.id = c.id" +
-           ") OR aq IS NULL) " +
-           "ORDER BY c.name ASC")
+        "FROM Commune c " +
+        "LEFT JOIN c.airQuality aq " +
+        "WHERE c.department.id = :departmentId " +
+        "AND (aq.measurementDate = (" +
+        "    SELECT MAX(aq2.measurementDate) " +
+        "    FROM AirQuality aq2 " +
+        "    WHERE aq2.commune.id = c.id" +
+        ") OR aq IS NULL) " +
+        w"ORDER BY c.name ASC")
     List<Object[]> findByDepartmentIdWithLatestAirQuality(
         @Param("departmentId") Long departmentId,
         Pageable pageable

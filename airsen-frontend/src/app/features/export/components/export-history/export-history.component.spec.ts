@@ -1,10 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 import { ExportHistoryComponent } from './export-history.component';
 import { ExportDataService } from '@/core/services/export-data.service';
-import { ExportRecord, ExportFormat } from '@/shared/models/export.model';
+import { ExportRecord, ExportFormat, ExportType } from '@/shared/models/export.model';
 
 describe('ExportHistoryComponent', () => {
   let component: ExportHistoryComponent;
@@ -16,22 +21,22 @@ describe('ExportHistoryComponent', () => {
     {
       id: '1',
       userId: 1,
-      exportType: 'HISTORICAL',
+      exportType: ExportType.WEATHER,
       format: ExportFormat.CSV,
       locationName: 'Paris',
       inseeCode: '75056',
       fileSize: 2048,
-      createdAt: new Date().toISOString()
+      createdAt: new Date()
     },
     {
       id: '2',
       userId: 1,
-      exportType: 'AIR_QUALITY',
+      exportType: ExportType.AIR_QUALITY,
       format: ExportFormat.PDF,
       locationName: 'Lyon',
       inseeCode: '69123',
       fileSize: 512,
-      createdAt: new Date(Date.now() - 3600000).toISOString()
+      createdAt: new Date(Date.now() - 3600000)
     }
   ];
 
@@ -41,10 +46,12 @@ describe('ExportHistoryComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [ExportHistoryComponent],
+      imports: [MatIconModule, MatButtonModule, MatCardModule, MatProgressSpinnerModule],
       providers: [
         { provide: ExportDataService, useValue: mockExportDataService },
         { provide: MatSnackBar, useValue: mockSnackBar }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ExportHistoryComponent);

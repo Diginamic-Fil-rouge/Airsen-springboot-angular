@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter } from '@angular/core';
 import { AlertSummaryItem } from '../../models/alert-summary';
 
 @Component({
@@ -18,6 +18,8 @@ export class AlertSummaryComponent {
   @Output() filterByFavorites = new EventEmitter<void>();
 
   currentPage = 1;
+
+  constructor(private cdr: ChangeDetectorRef) {}
 
   get paginatedAlerts(): AlertSummaryItem[] {
     if (!this.showPagination) {
@@ -55,12 +57,14 @@ export class AlertSummaryComponent {
   previousPage(): void {
     if (this.hasPreviousPage) {
       this.currentPage--;
+      this.cdr.markForCheck();
     }
   }
 
   nextPage(): void {
     if (this.hasNextPage) {
       this.currentPage++;
+      this.cdr.markForCheck();
     }
   }
 }

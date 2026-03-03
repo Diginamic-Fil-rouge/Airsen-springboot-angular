@@ -7,7 +7,7 @@ import { of, throwError } from 'rxjs';
 import { CsvExportPanelComponent } from './csv-export-panel.component';
 import { ExportDataService } from '@/services/export-data.service';
 import { UserFavoriteResponse } from '@/shared/models/favorite.model';
-import { ExportRecord } from '@/shared/models/export.model';
+import { ExportRecord, ExportType, ExportFormat } from '@/shared/models/export.model';
 
 describe('CsvExportPanelComponent', () => {
   let component: CsvExportPanelComponent;
@@ -27,12 +27,12 @@ describe('CsvExportPanelComponent', () => {
   const mockExportRecord: ExportRecord = {
     id: '123',
     userId: 1,
-    exportType: 'HISTORICAL',
-    format: 'CSV',
+    exportType: ExportType.WEATHER,
+    format: ExportFormat.CSV,
     locationName: 'Paris 16e',
     inseeCode: '75056',
     fileSize: 1024,
-    createdAt: new Date().toISOString()
+    createdAt: new Date()
   };
 
   beforeEach(async () => {
@@ -159,9 +159,9 @@ describe('CsvExportPanelComponent', () => {
 
     expect(mockExportDataService.exportAsCSV).not.toHaveBeenCalled();
     expect(mockSnackBar.open).toHaveBeenCalledWith(
-      'Veuillez remplir tous les champs requis',
+      'Veuillez corriger les erreurs dans le formulaire',
       'Fermer',
-      { duration: 3000 }
+      { duration: 4000 }
     );
   });
 

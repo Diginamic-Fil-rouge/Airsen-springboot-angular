@@ -26,7 +26,8 @@ describe('QuickActionsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QuickActionsComponent, MatIconModule]
+      declarations: [QuickActionsComponent],
+      imports: [MatIconModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuickActionsComponent);

@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <ul class="alert-list" *ngIf="alerts.length > 0; else emptyState">
+  <ul class="alert-list" *ngIf="alerts && alerts.length > 0; else emptyState">
     <li class="alert-item" *ngFor="let alert of paginatedAlerts" (click)="onAlertClick(alert.id)">
       <div class="alert-icon" [ngClass]="alert.severity">
         <mat-icon>{{ alert.icon }}</mat-icon>

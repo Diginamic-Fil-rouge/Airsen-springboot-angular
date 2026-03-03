@@ -1,6 +1,6 @@
 # Airsen - Environmental Monitoring Platform
 
-**Airsen** delivers real-time air quality and weather data to French citizens through an interactive map, community forums, and personalized tracking. Built with Spring Boot 3.2.0 (Java 21) backend and Angular 20 frontend, integrating ATMO France, Open-Meteo, and INSEE official data sources.
+**Airsen** is a full-stack environmental monitoring platform delivering real-time air quality and weather data to French citizens. Built with Spring Boot 3.2.0 (Java 21) backend and Angular 20 (NgModule-based) frontend, integrating ATMO France OAuth2, Open-Meteo, and INSEE official data sources. Supports 35,000+ communes with interactive mapping, community forums, and admin-controlled notifications.
 
 ## Key Features
 
@@ -185,4 +185,8 @@ MIT License
 
 ---
 
-**Airsen**: Delivering environmental data to French citizens with ❤️
+**Last Updated:** February 11, 2026 | **Branch:** refactor/map | **Phase 2 Status:** In Progress
+
+---
+
+**Airsen**: Delivering environmental data to French citizens | Built with care by the development team
